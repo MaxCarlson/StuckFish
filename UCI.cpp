@@ -11,8 +11,8 @@
 
 #define ENGINENAME "StuckFish 0.1"
 
-//master BitBoard
-BitBoards bboard;
+//master bitboard for turn
+BitBoards newBoard;
 
 //dummy zobrist object
 ZobristH zDummy;
@@ -53,7 +53,7 @@ void UCI::uciLoop()
 		if (token == "uci")
 		{
 			std::cout << "id name " << ENGINENAME << std::endl;
-			std::cout << "id author Romain Goussault - Navid Hedjazian" << std::endl;
+			std::cout << "id author Maxwell Carlson" << std::endl;
 			//printOptions();
 			std::cout << "uciok" << std::endl;
 		}
@@ -71,14 +71,14 @@ void UCI::uciLoop()
 		}
 		else if (token == "ucinewgame")
 		{
-			newGame();
+			newGame(); //add function to reset TTables ? plus / only
 		}
 
 		else if (token == "position") {
 			updatePosition(is);
 		}
 		else if (token == "print"){
-			//std::cout << *myBoardPtr << std::endl;
+			newBoard.drawBBA();
 		}
 		else if (token == "printOptions") {
 			//printOptions();
@@ -94,7 +94,7 @@ void UCI::uciLoop()
 				else if (token == "movestogo") is >> movestogo;
 			}
 
-			search(); //search position
+			search(); //search position probably should make it on a sepperate thread eventually
 
 			/*
 			//http://stackoverflow.com/questions/12624271/c11-stdthread-giving-error-no-matching-function-to-call-stdthreadthread
@@ -116,12 +116,13 @@ void UCI::uciLoop()
 
 void UCI::newGame()
 {
-	bboard.constructBoards();
+	newBoard.constructBoards();
 
 	for (int i = 0; i < 4; i++) {
 		rookMoved[i] = false;
 		castled[i] = false;
 	}
+	turns = 0;
 
 	isWhite = true;
 }
@@ -154,8 +155,8 @@ void UCI::updatePosition(std::istringstream& input)
 		if (token != "moves")
 		{
 			m = strToMove(token);
-			bboard.makeMove(m, zDummy, isWhite); //test ~~/ position startpos moves c2c4 g8f6
-			bboard.drawBBA();
+			newBoard.makeMove(m, zDummy, isWhite); //test ~~/ position startpos moves c2c4 g8f6
+			turns += 1;
 
 			isWhite = !isWhite;
 		}
@@ -169,10 +170,33 @@ void UCI::search()
 	Move m = search.search(isWhite);
 
 	moveToStr(m);
+
+	isWhite = !isWhite; //switch color after move
+	turns += 1;
 }
 
-void UCI::moveToStr(Move& m) {
+void UCI::moveToStr(const Move& m) 
+{
+	std::string flipsL[8] = { "a", "b", "c", "d", "e", "f", "g", "h" };
+	int flipsN[8] = {8, 7, 6, 5, 4, 3, 2, 1};
 
+	int x = m.from % 8; //extract x's and y's from "from/to" 
+	int y = m.from / 8;
+	int x1 = m.to % 8;
+	int y1 = m.to / 8;
+
+	std::string promL = "";
+
+	if (m.flag == 'Q') promL = "q"; //promotion flags
+	else if (m.flag == 'R') promL = "r";
+	else if (m.flag == 'B') promL = "b";
+	else if (m.flag == 'N') promL = "n";
+
+	std::stringstream ss;
+	ss << flipsL[x] << flipsN[y] << flipsL[x1] << flipsN[y1] << promL;
+
+
+	std::cout << "bestmove "<< ss.str() << std::endl; //send move to std output for UCI GUI to pickup
 }
 
 Move UCI::strToMove(std::string& input) 
@@ -191,7 +215,7 @@ Move UCI::strToMove(std::string& input)
 	else if (cx == 'e') x = 4;
 	else if (cx == 'f') x = 5;
 	else if (cx == 'g') x = 6;
-	else if (cx == 'g') x = 7;
+	else if (cx == 'h') x = 7;
 
 	if (cx1 == 'a') x1 = 0;
 	else if (cx1 == 'b') x1 = 1;
@@ -200,7 +224,7 @@ Move UCI::strToMove(std::string& input)
 	else if (cx1 == 'e') x1 = 4;
 	else if (cx1 == 'f') x1 = 5;
 	else if (cx1 == 'g') x1 = 6;
-	else if (cx1 == 'g') x1 = 7;
+	else if (cx1 == 'h') x1 = 7;
 
 
 	y = flipsN[input[1] - '0'];
@@ -215,39 +239,39 @@ Move UCI::strToMove(std::string& input)
 	U64 f = 1LL << xyI; //create bitboards of initial 
 	U64 t = 1LL << xyE; //and landing pos
 
-	if (f & bboard.BBWhitePawns) m.piece = 'P'; //very ugly, better way to do it?
-	else if (f & bboard.BBWhiteKnights) m.piece = 'N';
-	else if (f & bboard.BBWhiteBishops) m.piece = 'B';
-	else if (f & bboard.BBWhiteRooks) m.piece = 'R';
-	else if (f & bboard.BBWhiteQueens) m.piece = 'Q';
-	else if (f & bboard.BBWhiteKing) m.piece = 'K';
-	else if (f & bboard.BBBlackPawns) m.piece = 'p';
-	else if (f & bboard.BBBlackKnights) m.piece = 'n';
-	else if (f & bboard.BBBlackBishops) m.piece = 'b';
-	else if (f & bboard.BBBlackRooks) m.piece = 'r';
-	else if (f & bboard.BBBlackQueens) m.piece = 'q';
-	else if (f & bboard.BBBlackKing) m.piece = 'k';
+	if (f & newBoard.BBWhitePawns) m.piece = 'P'; //very ugly, better way to do it?
+	else if (f & newBoard.BBWhiteKnights) m.piece = 'N';
+	else if (f & newBoard.BBWhiteBishops) m.piece = 'B';
+	else if (f & newBoard.BBWhiteRooks) m.piece = 'R';
+	else if (f & newBoard.BBWhiteQueens) m.piece = 'Q';
+	else if (f & newBoard.BBWhiteKing) m.piece = 'K';
+	else if (f & newBoard.BBBlackPawns) m.piece = 'p';
+	else if (f & newBoard.BBBlackKnights) m.piece = 'n';
+	else if (f & newBoard.BBBlackBishops) m.piece = 'b';
+	else if (f & newBoard.BBBlackRooks) m.piece = 'r';
+	else if (f & newBoard.BBBlackQueens) m.piece = 'q';
+	else if (f & newBoard.BBBlackKing) m.piece = 'k';
 
-	if (t & bboard.BBWhitePawns) m.captured = 'P';
-	else if (t & bboard.BBWhiteKnights) m.captured = 'N';
-	else if (t & bboard.BBWhiteBishops) m.captured = 'B';
-	else if (t & bboard.BBWhiteRooks) m.captured = 'R';
-	else if (t & bboard.BBWhiteQueens) m.captured = 'Q';
-	else if (t & bboard.BBWhiteKing) m.captured = 'K';
-	else if (t & bboard.BBBlackPawns) m.captured = 'p';
-	else if (t & bboard.BBBlackKnights) m.captured = 'n';
-	else if (t & bboard.BBBlackBishops) m.captured = 'b';
-	else if (t & bboard.BBBlackRooks) m.captured = 'r';
-	else if (t & bboard.BBBlackQueens) m.captured = 'q';
-	else if (t & bboard.BBBlackKing) m.captured = 'k';
+	if (t & newBoard.BBWhitePawns) m.captured = 'P';
+	else if (t & newBoard.BBWhiteKnights) m.captured = 'N';
+	else if (t & newBoard.BBWhiteBishops) m.captured = 'B';
+	else if (t & newBoard.BBWhiteRooks) m.captured = 'R';
+	else if (t & newBoard.BBWhiteQueens) m.captured = 'Q';
+	else if (t & newBoard.BBWhiteKing) m.captured = 'K';
+	else if (t & newBoard.BBBlackPawns) m.captured = 'p';
+	else if (t & newBoard.BBBlackKnights) m.captured = 'n';
+	else if (t & newBoard.BBBlackBishops) m.captured = 'b';
+	else if (t & newBoard.BBBlackRooks) m.captured = 'r';
+	else if (t & newBoard.BBBlackQueens) m.captured = 'q';
+	else if (t & newBoard.BBBlackKing) m.captured = 'k';
 	else m.captured = '0'; //no capture
 
-	std::string promotionL = "";
-
-	if (input[4] == 'q') m.flag = 'Q';
-	else if (input[4] == 'r') m.flag = 'R';
-	else if (input[4] == 'b') m.flag = 'B';
-	else if (input[4] == 'n') m.flag = 'N';
+	if (input.length() == 5) {
+		if (input[4] == 'q') m.flag = 'Q';
+		else if (input[4] == 'r') m.flag = 'R';
+		else if (input[4] == 'b') m.flag = 'B';
+		else if (input[4] == 'n') m.flag = 'N';
+	}
 	
 	
 	return m;

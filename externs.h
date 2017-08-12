@@ -14,6 +14,9 @@ class ZobristH;
 class BitBoards;
 class MoveGen;
 
+//master bitboard for turn
+extern BitBoards newBoard;
+
 //magics object
 extern SliderAttacks slider_attacks;
 

@@ -446,7 +446,7 @@ void MoveGen::possibleR(U8 location,  const U64 &friends, const U64 &enemys, con
             captured = whichPieceCaptured(landing);
         }
 
-        movegen_push(piece,captured, flag, location, index);
+        movegen_push(piece, captured, flag, location, index);
 
         moves &= ~j;
         j = moves & ~(moves-1);
@@ -480,7 +480,7 @@ void MoveGen::possibleQ(U8 location,  const U64 &friends, const U64 &enemys, con
             captured = whichPieceCaptured(landing);
         }
 
-        movegen_push(piece,captured, '0', location, index);
+        movegen_push(piece, captured, '0', location, index);
 
         moves &= ~j;
         j = moves & ~(moves-1);

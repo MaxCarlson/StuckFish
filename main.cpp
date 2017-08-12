@@ -39,7 +39,8 @@ MoveGen evalMoveGen;
 
 int main(int argc, char *argv[])
 {
-	ZobristH ZKey;
+	ZobristH ZKey; //object only used to generate zobrist key arrays at start of program
+
 	//calculate all zobrist numbers to later use with transpostion table
 	ZKey.zobristFill();
 
@@ -47,8 +48,10 @@ int main(int argc, char *argv[])
     slider_attacks.Initialize();
 
 	//initilze UCI 
-	UCI comm;
-	//comm loop
-	comm.uciLoop();
-	   
+	UCI com;
+
+	//communicate with UCI compatible GUI
+	com.uciLoop();
+	 
+	return 0;
 }

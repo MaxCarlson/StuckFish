@@ -5,7 +5,7 @@
 #include <cstdio>
 #include "externs.h"
 #include "zobristh.h"
-//#include "move.h"
+
 class Move;
 
 std::string boardArr[8][8] = {
@@ -114,7 +114,7 @@ void BitBoards::makeMove(const Move &move, ZobristH &zobrist, bool isWhite)
     xyE = move.to;
 
     //inital spot piece mask and end spot mask
-    U64 pieceMaskI = 1LL<< xyI;
+    U64 pieceMaskI = 1LL << xyI;
     U64 pieceMaskE = 1LL << xyE;
 
     //find BB that contains correct piece, remove piece from it's starting pos

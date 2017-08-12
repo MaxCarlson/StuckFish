@@ -4,9 +4,8 @@
 #include <stdlib.h>
 #include <time.h>
 #include <iostream>
-#include "externs.h"
 
-//#include "move.h"
+#include "externs.h"
 #include "evaluatebb.h"
 #include "bitboards.h"
 #include "movegen.h"
@@ -30,8 +29,6 @@ MoveGen evalGenMoves;
 extern bool searchCutoff;
 bool searchCutoff = false;
 
-//master bitboard for turn
-BitBoards newBoard;
 //master zobrist for turn
 ZobristH zobrist;
 
@@ -41,13 +38,26 @@ Ai_Logic::Ai_Logic()
 }
 
 Move Ai_Logic::search(bool isWhite) {
-	
+
+	int depth = 8;
+	int timeLimit = 10000; //add code to modify depth and time limmit based on..
+						   //time left on ours and opponenents clocks + total origional time/ moves made/ to make
+	U64 king;
+	if (isWhite) king = newBoard.BBWhiteKing;
+	else king = newBoard.BBBlackKing;
+	MoveGen checkcheck;
+	//are we in check?
+	bool flagInCheck = checkcheck.isAttacked(king, isWhite, true);
+
+	if (flagInCheck) { depth++; timeLimit += 2500; } //extend depth and time if in check ///add more complex methods of time managment
+
+	Move m = iterativeDeep(depth, isWhite, timeLimit);
+
+	return m;
 }
 
 Move Ai_Logic::iterativeDeep(int depth, bool isWhite, int timeLimmit)
 {
-    //read array and construct the bitboards to match
-    newBoard.constructBoards();
     //generate accurate zobrist key based on bitboards
     zobrist.getZobristHash(newBoard);
 
@@ -58,7 +68,7 @@ Move Ai_Logic::iterativeDeep(int depth, bool isWhite, int timeLimmit)
     clock_t IDTimeS = clock();
 
     //time limit in miliseconds
-    int timeLimmit = 1000099, ply = 0;
+    int  ply = 0;
     long endTime = IDTimeS + timeLimmit;
 
     //best overall move as calced
@@ -103,15 +113,15 @@ Move Ai_Logic::iterativeDeep(int depth, bool isWhite, int timeLimmit)
     }
 
 
-    //make final move on bitboards + draw
-    newBoard.makeMove(bestMove, zobrist, false);
+    //make final move on bitboards + draw board
+    newBoard.makeMove(bestMove, zobrist, isWhite);
     newBoard.drawBBA();
 
     evaluateBB ev; //used for prininting static eval after move
     clock_t IDTimeE = clock();
     //postion count and time it took to find move
     std::cout << positionCount << " positions searched." << std::endl;
-    //std::cout << (double) (IDTimeE - IDTimeS) / CLOCKS_PER_SEC << " seconds" << std::endl;
+    std::cout << (double) (IDTimeE - IDTimeS) / CLOCKS_PER_SEC << " seconds" << std::endl;
     std::cout << "Depth of " << distance-1 << " reached."<<std::endl;
     std::cout << qCount << " non-quiet positions searched."<< std::endl;
     //std::cout << "Board evalutes to: " << ev.evalBoard(true, newBoard, zobrist) << " for white." << std::endl;
@@ -127,7 +137,7 @@ int Ai_Logic::searchRoot(U8 depth, int alpha, int beta, bool isWhite, long curre
     bool flagInCheck;
     int score = 0;
     int best = -INF;
-    int legalMoves;
+    int legalMoves = 0;
 
     MoveGen gen_moves;
     //grab bitboards from newBoard object and store color and board to var
