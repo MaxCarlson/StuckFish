@@ -4,6 +4,8 @@
 #include "hashentry.h"
 #include "zobristh.h"
 #include "movegen.h"
+#include "UCI.h"
+#include "bitboards.h"
 
 //#include <vld.h> //memory leak detection in visual studio
 
@@ -43,5 +45,10 @@ int main(int argc, char *argv[])
 
     //Fill slider arrays and magic index arrays
     slider_attacks.Initialize();
+
+	//initilze UCI 
+	UCI comm;
+	//comm loop
+	comm.uciLoop();
 	   
 }

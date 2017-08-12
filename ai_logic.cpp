@@ -40,14 +40,19 @@ Ai_Logic::Ai_Logic()
 
 }
 
-Move Ai_Logic::iterativeDeep(int depth)
+Move Ai_Logic::search(bool isWhite) {
+	
+}
+
+Move Ai_Logic::iterativeDeep(int depth, bool isWhite, int timeLimmit)
 {
     //read array and construct the bitboards to match
     newBoard.constructBoards();
     //generate accurate zobrist key based on bitboards
     zobrist.getZobristHash(newBoard);
-    //ai is always black atm, if it wasn't update color only applied on black turn
-    zobrist.UpdateColor();
+
+    //update color only applied on black turn
+    if(!isWhite) zobrist.UpdateColor();
 
     //iterative deepening start time
     clock_t IDTimeS = clock();
@@ -74,8 +79,7 @@ Move Ai_Logic::iterativeDeep(int depth)
         }
 
         //main search
-        //bestScore = alphaBeta(distance, alpha, beta, false, currentTime, timeLimmit, ply +1, true, IS_PV);
-        bestScore = searchRoot(distance, alpha, beta, false, currentTime, timeLimmit, ply+1);
+        bestScore = searchRoot(distance, alpha, beta, isWhite, currentTime, timeLimmit, ply+1);
 /*
         if(bestScore <= alpha || bestScore >= beta){
             alpha = -INF;
@@ -107,10 +111,10 @@ Move Ai_Logic::iterativeDeep(int depth)
     clock_t IDTimeE = clock();
     //postion count and time it took to find move
     std::cout << positionCount << " positions searched." << std::endl;
-    std::cout << (double) (IDTimeE - IDTimeS) / CLOCKS_PER_SEC << " seconds" << std::endl;
+    //std::cout << (double) (IDTimeE - IDTimeS) / CLOCKS_PER_SEC << " seconds" << std::endl;
     std::cout << "Depth of " << distance-1 << " reached."<<std::endl;
     std::cout << qCount << " non-quiet positions searched."<< std::endl;
-    std::cout << "Board evalutes to: " << ev.evalBoard(true, newBoard, zobrist) << " for white." << std::endl;
+    //std::cout << "Board evalutes to: " << ev.evalBoard(true, newBoard, zobrist) << " for white." << std::endl;
 
     //decrease history values after a search
     ageHistorys();
@@ -548,6 +552,7 @@ int Ai_Logic::quiescent(int alpha, int beta, bool isWhite, int ply, int quietDep
 int Ai_Logic::contempt()
 {
     //need some way to check board material before implementing
+	return 0;
 }
 
 void Ai_Logic::addKiller(Move move, int ply)

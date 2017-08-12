@@ -17,8 +17,10 @@ class Ai_Logic
 public:
     Ai_Logic();
 
+	Move search(bool isWhite);
+
     //iterative deepening
-    Move iterativeDeep(int depth);
+    Move iterativeDeep(int depth, bool isWhite, int timeLimmit);
 
 
 private:

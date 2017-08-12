@@ -1,0 +1,48 @@
+﻿  zobristh.cpp
+c:\users\c-60\desktop\cppprograms\stuckfish\slider_attacks.h(25): warning C4244: 'argument': conversion from 'U64' to 'unsigned int', possible loss of data
+c:\users\c-60\desktop\cppprograms\stuckfish\slider_attacks.h(30): warning C4244: 'argument': conversion from 'U64' to 'unsigned int', possible loss of data
+  UCI.cpp
+UCI.cpp(61): error C3861: 'updatePosition': identifier not found
+UCI.cpp(64): error C2065: 'myBoardPtr': undeclared identifier
+UCI.cpp(67): error C3861: 'printOptions': identifier not found
+UCI.cpp(73): error C2065: 'wtime': undeclared identifier
+UCI.cpp(74): error C2065: 'btime': undeclared identifier
+UCI.cpp(75): error C2065: 'winc': undeclared identifier
+UCI.cpp(76): error C2065: 'binc': undeclared identifier
+UCI.cpp(77): error C2065: 'movestogo': undeclared identifier
+UCI.cpp(81): error C2653: 'thrd': is not a class or namespace name
+UCI.cpp(81): error C2065: 'thread': undeclared identifier
+UCI.cpp(81): error C2146: syntax error: missing ';' before identifier 'thr'
+UCI.cpp(81): error C2653: 'Uci': is not a class or namespace name
+UCI.cpp(81): error C2065: 'search': undeclared identifier
+UCI.cpp(81): error C3861: 'thr': identifier not found
+UCI.cpp(82): error C2653: 'thrd': is not a class or namespace name
+UCI.cpp(82): error C2065: 'thr': undeclared identifier
+UCI.cpp(82): error C2065: 'myThread': undeclared identifier
+UCI.cpp(82): error C3861: 'swap': identifier not found
+UCI.cpp(83): error C2065: 'myThread': undeclared identifier
+UCI.cpp(83): error C2228: left of '.join' must have class/struct/union
+  UCI.cpp(83): note: type is 'unknown-type'
+  slider_attacks.cpp
+c:\users\c-60\desktop\cppprograms\stuckfish\slider_attacks.h(25): warning C4244: 'argument': conversion from 'U64' to 'unsigned int', possible loss of data
+c:\users\c-60\desktop\cppprograms\stuckfish\slider_attacks.h(30): warning C4244: 'argument': conversion from 'U64' to 'unsigned int', possible loss of data
+  movegen.cpp
+movegen.cpp(2): fatal error C1083: Cannot open include file: 'Pieces.h': No such file or directory
+  move.cpp
+  main.cpp
+c:\users\c-60\desktop\cppprograms\stuckfish\slider_attacks.h(25): warning C4244: 'argument': conversion from 'U64' to 'unsigned int', possible loss of data
+c:\users\c-60\desktop\cppprograms\stuckfish\slider_attacks.h(30): warning C4244: 'argument': conversion from 'U64' to 'unsigned int', possible loss of data
+  hashentry.cpp
+  evaluatebb.cpp
+c:\users\c-60\desktop\cppprograms\stuckfish\slider_attacks.h(25): warning C4244: 'argument': conversion from 'U64' to 'unsigned int', possible loss of data
+c:\users\c-60\desktop\cppprograms\stuckfish\slider_attacks.h(30): warning C4244: 'argument': conversion from 'U64' to 'unsigned int', possible loss of data
+evaluatebb.cpp(531): warning C4101: 'm': unreferenced local variable
+  bitboards.cpp
+c:\users\c-60\desktop\cppprograms\stuckfish\slider_attacks.h(25): warning C4244: 'argument': conversion from 'U64' to 'unsigned int', possible loss of data
+c:\users\c-60\desktop\cppprograms\stuckfish\slider_attacks.h(30): warning C4244: 'argument': conversion from 'U64' to 'unsigned int', possible loss of data
+  ai_logic.cpp
+c:\users\c-60\desktop\cppprograms\stuckfish\slider_attacks.h(25): warning C4244: 'argument': conversion from 'U64' to 'unsigned int', possible loss of data
+c:\users\c-60\desktop\cppprograms\stuckfish\slider_attacks.h(30): warning C4244: 'argument': conversion from 'U64' to 'unsigned int', possible loss of data
+  Generating Code...
+c:\users\c-60\desktop\cppprograms\stuckfish\ai_logic.cpp(158): warning C4700: uninitialized local variable 'legalMoves' used
+c:\users\c-60\desktop\cppprograms\stuckfish\ai_logic.cpp(551): error C4716: 'Ai_Logic::contempt': must return a value

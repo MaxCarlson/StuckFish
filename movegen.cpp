@@ -1,8 +1,9 @@
 #include "movegen.h"
-#include "Pieces.h"
+
 #include "hashentry.h"
 #include "bitboards.h"
 #include "slider_attacks.h"
+#include "externs.h"
 
 
 //totally full bitboard
@@ -728,82 +729,6 @@ U64 MoveGen::ReverseBits(U64 input)
     return output;
 }
 
-void MoveGen::constructBoards()
-{
-    FullTiles = 0LL;
-    BBWhitePawns = 0LL;
-    BBWhitePieces = 0LL;
-    BBWhiteRooks = 0LL;
-    BBWhiteKnights = 0LL;
-    BBWhiteBishops = 0LL;
-    BBWhiteQueens = 0LL;
-    BBWhiteKing = 0LL;
-
-    BBBlackPieces = 0LL;
-    BBBlackPawns = 0LL;
-    BBBlackRooks = 0LL;
-    BBBlackKnights = 0LL;
-    BBBlackBishops = 0LL;
-    BBBlackQueens = 0LL;
-    BBBlackKing = 0LL;
-
-    //seed bitboards
-    for(int i = 0; i < 64; i++){
-        if(boardArr[i/8][i%8] == "P"){
-            BBWhitePawns += 1LL<<i;
-            BBWhitePieces += 1LL<<i;
-            FullTiles += 1LL<<i;
-        } else if(boardArr[i/8][i%8] == "R"){
-            BBWhiteRooks += 1LL<<i;
-            BBWhitePieces += 1LL<<i;
-            FullTiles += 1LL<<i;
-        }else if(boardArr[i/8][i%8] == "N"){
-            BBWhiteKnights += 1LL<<i;
-            BBWhitePieces += 1LL<<i;
-            FullTiles += 1LL<<i;
-        }else if(boardArr[i/8][i%8] == "B"){
-            BBWhiteBishops += 1LL<<i;
-            BBWhitePieces += 1LL<<i;
-            FullTiles += 1LL<<i;
-        }else if(boardArr[i/8][i%8] == "Q"){
-            BBWhiteQueens += 1LL<<i;
-            BBWhitePieces += 1LL<<i;
-            FullTiles += 1LL<<i;
-        }else if(boardArr[i/8][i%8] == "K"){
-            BBWhiteKing += 1LL<<i;
-            BBWhitePieces += 1LL<<i;
-            FullTiles += 1LL<<i;
-        } else if(boardArr[i/8][i%8] == "p"){
-            BBBlackPawns += 1LL<<i;
-            BBBlackPieces += 1LL<<i;
-            FullTiles += 1LL<<i;
-        } else if(boardArr[i/8][i%8] == "r"){
-            BBBlackRooks += 1LL<<i;
-            BBBlackPieces += 1LL<<i;
-            FullTiles += 1LL<<i;
-        }else if(boardArr[i/8][i%8] == "n"){
-            BBBlackKnights += 1LL<<i;
-            BBBlackPieces += 1LL<<i;
-            FullTiles += 1LL<<i;
-        }else if(boardArr[i/8][i%8] == "b"){
-            BBBlackBishops += 1LL<<i;
-            BBBlackPieces += 1LL<<i;
-            FullTiles += 1LL<<i;
-        }else if(boardArr[i/8][i%8] == "q"){
-            BBBlackQueens += 1LL<<i;
-            BBBlackPieces += 1LL<<i;
-            FullTiles += 1LL<<i;
-        }else if(boardArr[i/8][i%8] == "k"){
-            BBBlackKing += 1LL<<i;
-            BBBlackPieces += 1LL<<i;
-            FullTiles += 1LL<<i;
-        }
-    }
-
-    //mark empty tiles with 1's
-    EmptyTiles = ~FullTiles;
-
-}
 
 void MoveGen::grab_boards(const BitBoards &BBBoard, bool wOrB)
 {

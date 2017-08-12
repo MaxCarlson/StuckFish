@@ -19,29 +19,8 @@ extern SliderAttacks slider_attacks;
 
 extern MoveGen evalMoveGen;
 
-//chess board represented
-extern std::string boardArr[8][8];
-
-//string of pieces
-extern std::string blackPieces[7];
-extern std::string whitePieces[7];
-
 //half turns
 extern int turns;
-
-//values for computing if a move is valid
-extern int tempx, tempy, tempx2, tempy2;
-
-//king safety arrays
-extern bool whiteSafe[8][8];
-extern bool blackSafe[8][8];
-
-extern int count, numberOfPieceMoved;
-
-// is ai on
-extern int aiOn;
-
-extern int turnsTemp;
 
 //array holding U64 numbers for changing zobrist keys
 extern U64 zArray[2][6][64];
@@ -67,6 +46,13 @@ struct searchDriver{
     Move killers[35][2];
 };
 extern searchDriver sd;
+
+//UCI input varibles for "go"
+extern int wtime; //time left on whites clock
+extern int btime; //black clock
+extern int winc;
+extern int binc;
+extern int movestogo;
 
 
 #endif // EXTERNS_H
