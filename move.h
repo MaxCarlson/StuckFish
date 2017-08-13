@@ -12,8 +12,8 @@ public:
     U8 to;
     char piece;
     char captured;
-    int score;
-    char flag;
+	int score;
+    U8 flag;
     bool tried;
 
     /*

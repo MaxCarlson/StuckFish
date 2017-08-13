@@ -605,15 +605,13 @@ void Ai_Logic::addMoveTT(Move move, int depth, int eval, int flag)
     //get hash of current zobrist key
     int hash = (int)(zobrist.zobristKey % 15485843);
     //if the depth of the current move is greater than the one it's replacing or if it's older than
-    if(depth >= transpositionT[hash].depth || transpositionT[hash].ancient < turns - 5){
+    if(depth >= transpositionT[hash].depth){
         //add position to the table
         transpositionT[hash].zobrist = zobrist.zobristKey;
         transpositionT[hash].depth = depth;
         transpositionT[hash].eval = eval;
         transpositionT[hash].flag = flag;
         transpositionT[hash].move = move;
-        transpositionT[hash].ancient = turns;
-
     }
 
 }

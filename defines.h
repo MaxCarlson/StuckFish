@@ -1,6 +1,7 @@
 #ifndef DEFINES_H
 #define DEFINES_H
 
+#include <intrin.h>
 
 enum esqare {
     A8=0,  B8, C8, D8, E8, F8, G8, H8,
@@ -51,5 +52,26 @@ typedef long long S64;
 
 #define INF 10000
 #define INVALID 32767
+
+#define CACHE_LINE_SIZE 64 //taken from stockfish
+#if defined(_MSC_VER) || defined(__INTEL_COMPILER)
+#  define CACHE_LINE_ALIGNMENT __declspec(align(CACHE_LINE_SIZE))
+#else
+#  define CACHE_LINE_ALIGNMENT  __attribute__ ((aligned(CACHE_LINE_SIZE)))
+#endif
+
+inline U8 lsb(U64 b) {
+	unsigned long idx;
+	_BitScanForward64(&idx, b);
+	return (U8)idx;
+}
+
+inline U8 msb(U64 b) {
+	unsigned long idx;
+	_BitScanReverse64(&idx, b);
+	return (U8)idx;
+}
+
+
 
 #endif // DEFINES_H

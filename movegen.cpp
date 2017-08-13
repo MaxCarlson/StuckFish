@@ -635,7 +635,7 @@ bool MoveGen::blind(const Move &move, int pieceVal, int captureVal)
 Move MoveGen::movegen_sort(int ply)
 {
     int best = -INF;
-    int high;
+    int high = 0;
     //find best scoring move
     for(U8 i = 0; i < moveCount; ++i){
         if(moveAr[i].score > best && !moveAr[i].tried){
@@ -700,7 +700,6 @@ char MoveGen::whichPieceCaptured(U64 landing)
     return '0';
 }
 
-//implement into other MOVE GEN ASIDE FROM KINGS, MUCH FASTER THAN for 64 loop
 int MoveGen::trailingZeros(U64 i)
 {
     //find the first one and number of zeros after it
