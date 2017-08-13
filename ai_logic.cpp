@@ -40,7 +40,7 @@ Ai_Logic::Ai_Logic()
 Move Ai_Logic::search(bool isWhite) {
 
 	int depth = 8;
-	int timeLimit = 10000; //add code to modify depth and time limmit based on..
+	int timeLimit = 10000000; //add code to modify depth and time limmit based on..
 						   //time left on ours and opponenents clocks + total origional time/ moves made/ to make
 	U64 king;
 	if (isWhite) king = newBoard.BBWhiteKing;
@@ -69,7 +69,7 @@ Move Ai_Logic::iterativeDeep(int depth, bool isWhite, int timeLimmit)
 
     //time limit in miliseconds
     int  ply = 0;
-    long endTime = IDTimeS + timeLimmit;
+    long endTime = IDTimeS + timeLimmit; 
 
     //best overall move as calced
     Move bestMove;
@@ -201,7 +201,7 @@ int Ai_Logic::searchRoot(U8 depth, int alpha, int beta, bool isWhite, long curre
                 addMoveTT(newMove, depth, score, TT_BETA);
                 return beta;
             }
-
+			
             alpha = score;
             bestMove = newMove;
             addMoveTT(bestMove, depth, score, TT_ALPHA);
@@ -228,33 +228,34 @@ int Ai_Logic::alphaBeta(U8 depth, int alpha, int beta, bool isWhite, long curren
     //int  mateValue = INF - ply; // used for mate distance pruning
 
 
-    //create unqiue hash from zobrist key
+    //grab unqiue hash of board from zobrist key
     int hash = (int)(zobrist.zobristKey % 15485843);
     HashEntry entry = transpositionT[hash];
-
+/*
     //if the depth of the stored evaluation is greater and the zobrist key matches
     //don't return eval on root node
     if(entry.depth >= depth && entry.zobrist == zobrist.zobristKey){
-        //return either the eval, the beta, or the alpha depending on flag
-        switch(entry.flag){
-            case 1:
-            if(entry.eval <= alpha){
-                return alpha;
-            }
-            break;
-            case 2:
-            if(entry.eval >= beta){
-                return beta;
-            }
-            break;            
-            case 3:
-            if(entry.flag == 3){
-                return entry.eval;
-            }
-            break;
-        }
 
+		//in pv nodes only return with exact hash hit
+		if(!is_pv || (entry.eval > alpha && entry.eval < beta)){
+        //return either the eval, the beta, or the alpha depending on flag
+			switch (entry.flag) {
+			case TT_ALPHA:
+				if (entry.eval <= alpha) {
+					return alpha;
+				}
+				break;
+			case TT_BETA:
+				if (entry.eval >= beta) {
+					return beta;
+				}
+				break;
+			case TT_EXACT:
+				return entry.eval;
+			}
+        }
     }
+*/
 
     //if the time limmit has been exceded set stop search flag
     if(elapsedTime >= timeLimmit){
@@ -321,7 +322,7 @@ int Ai_Logic::alphaBeta(U8 depth, int alpha, int beta, bool isWhite, long curren
 //do we want to futility prune?
     int fmargin[4] = { 0, 200, 300, 500 };
     if(depth <= 3 && !is_pv
-    && !FlagInCheck && abs(alpha) < 9000
+    && abs(alpha) < 9000
     && eval.evalBoard(isWhite, newBoard, zobrist) + fmargin[depth] <= alpha){
         f_prune = 1;
     }
@@ -541,21 +542,14 @@ int Ai_Logic::quiescent(int alpha, int beta, bool isWhite, int ply, int quietDep
 
         if(score > alpha){
             if(score >= beta){
-                //if(newMove.captured == '0' && newMove.flag != 'Q'){
-                    //add move to killers
-                 //   addKiller(newMove, ply);
-                //}
+
                 return beta;
             }
 
            alpha = score;
-           //if we've gained a new alpha set hash Flag to exact
-           hashFlag = TT_EXACT;
-           hashMove = newMove;
         }
     }
-    //add alpha eval to hash table
-    //addTTQuiet(hashMove, ply, alpha, hashFlag, zobrist);
+
     return alpha;
 }
 
