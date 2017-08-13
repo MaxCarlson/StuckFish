@@ -47,6 +47,7 @@ struct searchDriver{
     int history[2][64][64] = {{{0}}};
     int cutoffs[2][64][64] = {{{0}}};
     Move killers[35][2];
+	
 };
 extern searchDriver sd;
 

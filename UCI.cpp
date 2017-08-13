@@ -17,6 +17,9 @@ BitBoards newBoard;
 //dummy zobrist object
 ZobristH zDummy;
 
+//master search obj
+Ai_Logic searchM;
+
 //is it whites turn?
 bool isWhite = true;
 
@@ -72,6 +75,7 @@ void UCI::uciLoop()
 		else if (token == "ucinewgame")
 		{
 			newGame(); //add function to reset TTables ? plus / only
+			searchM.clearHistorys();
 		}
 
 		else if (token == "position") {
@@ -165,9 +169,8 @@ void UCI::updatePosition(std::istringstream& input)
 }
 
 void UCI::search()
-{
-	Ai_Logic search;
-	Move m = search.search(isWhite);
+{	
+	Move m = searchM.search(isWhite);
 
 	moveToStr(m);
 

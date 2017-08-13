@@ -22,6 +22,9 @@ public:
     //iterative deepening
     Move iterativeDeep(int depth, bool isWhite, int timeLimmit);
 
+	//clear historys, for new games
+	void clearHistorys();
+
 
 private:
     //root of search ~~ experimental
@@ -44,6 +47,8 @@ private:
 
     void addKiller(Move move, int ply);
     void ageHistorys();
+
+	
 
 //transposition table functions
     //add best move to TT

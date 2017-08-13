@@ -17,6 +17,7 @@
 #define IS_PV      true //is this search in a principal variation
 #define NO_PV      false
 #define ASP        50  //aspiration windows size
+#define Move_None   Move n //possible to use this to identify a non move submited?
 
 //holds historys and killers + eventually nodes searched + other data
 searchDriver sd;
@@ -38,9 +39,9 @@ Ai_Logic::Ai_Logic()
 }
 
 Move Ai_Logic::search(bool isWhite) {
-
+	
 	int depth = 8;
-	int timeLimit = 10000000; //add code to modify depth and time limmit based on..
+	int timeLimit = 10000; //add code to modify depth and time limmit based on..
 						   //time left on ours and opponenents clocks + total origional time/ moves made/ to make
 	U64 king;
 	if (isWhite) king = newBoard.BBWhiteKing;
@@ -225,13 +226,22 @@ int Ai_Logic::alphaBeta(U8 depth, int alpha, int beta, bool isWhite, long curren
     U8 newDepth;
     //U8 newDepth; //use with futility + other pruning later
     int queitSD = 25, f_prune = 0;
-    //int  mateValue = INF - ply; // used for mate distance pruning
+    int  mateValue = INF - ply; // used for mate distance pruning
 
+	//if the time limmit has been exceded set stop search flag
+	if (elapsedTime >= timeLimmit) {
+		searchCutoff = true;
+	}
+
+	//mate distance pruning, prevents looking for mates longer than one we've already found
+	if (alpha < -mateValue) alpha = -mateValue;
+	if (beta > mateValue - 1) beta = mateValue - 1;
+	if (alpha >= beta) return alpha;
 
     //grab unqiue hash of board from zobrist key
     int hash = (int)(zobrist.zobristKey % 15485843);
     HashEntry entry = transpositionT[hash];
-/*
+
     //if the depth of the stored evaluation is greater and the zobrist key matches
     //don't return eval on root node
     if(entry.depth >= depth && entry.zobrist == zobrist.zobristKey){
@@ -254,12 +264,6 @@ int Ai_Logic::alphaBeta(U8 depth, int alpha, int beta, bool isWhite, long curren
 				return entry.eval;
 			}
         }
-    }
-*/
-
-    //if the time limmit has been exceded set stop search flag
-    if(elapsedTime >= timeLimmit){
-        searchCutoff = true;
     }
 
     int score;
@@ -583,6 +587,17 @@ void Ai_Logic::ageHistorys()
                 sd.history[cl][i][j] = sd.history[cl][i][j] / 8;
                 sd.cutoffs[cl][i][j] = 100;
             }
+}
+
+void Ai_Logic::clearHistorys()
+{
+	//used to decrease value after a search
+	for (int cl = 0; cl < 2; cl++)
+		for (int i = 0; i < 64; i++)
+			for (int j = 0; j < 64; j++) {
+				sd.history[cl][i][j] = sd.history[cl][i][j] = 0;
+				sd.cutoffs[cl][i][j] = 100;
+			}
 }
 
 void Ai_Logic::addMoveTT(Move move, int depth, int eval, int flag)
