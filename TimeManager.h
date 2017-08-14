@@ -8,5 +8,6 @@ public:
 
 	bool timeStopRoot();
 	bool timeStopSearch();
+	int getNPS();
 };
 

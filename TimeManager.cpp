@@ -9,12 +9,12 @@
 
 #if defined(_MSC_VER) || defined(_WINDOWS_)
 #include <Windows.h>
-
 unsigned int gettime() {
 	FILETIME ft;
 	GetSystemTimeAsFileTime(&ft);
 	return (unsigned int)((((U64)ft.dwHighDateTime << 32) | ft.dwLowDateTime) / 10000);
 }
+
 #else
 #include <sys/time.h>
 #include <sys/timeb.h>
@@ -79,15 +79,20 @@ void TimeManager::calcMoveTime(bool isWhite)
 
 bool TimeManager::timeStopRoot()
 {
-	if ((gettime() - sd.startTime) > sd.moveTime) return true;
-	//return (((int)(gettime() - sd.startTime) * 2) > sd.moveTime);
+	if (timeOver) return true;
+
+	//if ((int)(gettime() - sd.startTime) > sd.moveTime) return true;
+	return (((int)(gettime() - sd.startTime) * 2) > sd.moveTime);
 
 	return false;
 }
 
 bool TimeManager::timeStopSearch()
 {
+
 	if (sd.depth <= 1) return false;
+
+	//if ((int)(gettime() - sd.startTime) > sd.moveTime) return true;
 
 	if ((int)(gettime() - sd.startTime) > sd.moveTime) {
 		int movestogo = MOVESTOGO;
@@ -101,7 +106,15 @@ bool TimeManager::timeStopSearch()
 			return true;
 		}
 	}
+	
 	return false;
+}
+#include <iostream>
+int TimeManager::getNPS()
+{
+	std::cout << (double)(gettime() - sd.startTime) / 1000 << std::endl;
+	if (!((gettime() - sd.startTime)/1000)) return 0;
+	return (sd.nodes / (int)((gettime() - sd.startTime)/1000));
 }
 
 

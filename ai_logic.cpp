@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <iostream>
+#include <sstream>
 
 #include "externs.h"
 #include "evaluatebb.h"
@@ -62,10 +63,14 @@ Move Ai_Logic::search(bool isWhite) {
 	if (isWhite) king = newBoard.BBWhiteKing;
 	else king = newBoard.BBBlackKing;
 	MoveGen checkcheck;
+	checkcheck.grab_boards(newBoard, isWhite);
 	//are we in check?
-	bool flagInCheck = checkcheck.isAttacked(king, isWhite, true);
+	bool flagInCheck = checkcheck.isAttacked(king, isWhite, false);
 
-	if (flagInCheck) { depth++; sd.startTime -= 2500; } //extend depth and time if in check ///add more complex methods of time managment
+	if (flagInCheck) { //extend depth and time if in check ///add more complex methods of time managment
+		depth++; 
+		sd.moveTime += 2500; 
+	} 
 
 	Move m = iterativeDeep(depth, isWhite);
 	
@@ -87,7 +92,7 @@ Move Ai_Logic::iterativeDeep(int depth, bool isWhite)
     //iterative deepening loop starts at depth 1, iterates up till max depth or time cutoff
     while(sd.depth <= depth){
 
-		if (timeM.timeStopRoot() || timeOver) break;
+		if (timeM.timeStopRoot()) break;
 
         //main search
         bestScore = searchRoot(sd.depth, alpha, beta, isWhite, ply+1);
@@ -109,7 +114,7 @@ Move Ai_Logic::iterativeDeep(int depth, bool isWhite)
             if(sd.PV[1].tried) bestMove = sd.PV[1];
 
         }
-		std::cout << "info nodes " << sd.nodes << std::endl;
+		print(isWhite);
         //increment distance to travel (same as depth at max depth)
 		sd.depth++;
     }
@@ -604,10 +609,19 @@ void Ai_Logic::addMoveTT(Move move, int depth, int eval, int flag)
 
 void Ai_Logic::checkInput()
 {
-	if (!timeOver && (sd.nodes & 8095)) {
+	if (!timeOver && (sd.nodes & 4095)) {
 		timeOver = timeM.timeStopSearch();
 
 	}
+}
+
+void Ai_Logic::print(bool isWhite)
+{
+	evaluateBB ev;
+	std::stringstream ss;
+	ss << "info depth " << sd.depth << " nodes " << sd.nodes << " nps " << timeM.getNPS() << " score cp " << ev.evalBoard(isWhite, newBoard, zobrist);
+
+	std::cout << ss.str() << std::endl;
 }
 
 /*

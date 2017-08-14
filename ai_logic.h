@@ -54,7 +54,12 @@ private:
     //add best move to TT
     void addMoveTT(Move move, int depth, int eval, int flag);
 
+	//checks whether time is out through time manaager,
+	//will later check for input as well
 	void checkInput();
+
+	//prints data to console/gui
+	void print(bool isWhite);
 
 
 
