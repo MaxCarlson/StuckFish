@@ -33,6 +33,18 @@ enum ecolor {
     COLOR_EMPTY
 };
 
+//used for chronos flags
+enum etimef {
+	FTIME = 1,
+	FINC = 2,
+	FMOVESTOGO = 4,
+	FDEPTH = 8,
+	FNODES = 16,
+	FMATE = 32,
+	FMOVETIME = 64,
+	FINFINITE = 128
+};
+
 typedef unsigned char U8;
 typedef char S8;
 typedef unsigned short int U16;

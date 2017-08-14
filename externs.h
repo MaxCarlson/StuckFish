@@ -49,10 +49,24 @@ struct searchDriver{
     Move killers[35][2];
 	Move PV[32];
 	int nodes = 0;
-	int nps = 0;
 	int depth = 0;
+	long startTime;
+	long moveTime = 5000;
+	bool isWhite;
 };
 extern searchDriver sd;
+
+struct structtime {
+	int time[2];
+	int inc[2];
+	int movestogo;
+	int depth;
+	int nodes;
+	int mate;
+	int movetime;
+	U8 flags;
+};
+extern structtime chronos;
 
 //UCI input varibles for "go"
 extern int wtime; //time left on whites clock

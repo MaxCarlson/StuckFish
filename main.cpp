@@ -24,6 +24,10 @@ U64 zBlackMove;
 //test ~~ used to indicate a NULL move state
 U64 zNullMove;
 
+//global com interface
+extern UCI com;
+UCI com;
+
 //transposition table array
 HashEntry transpositionT[15485843]; //add megabye size conrtorl later
 //TTable of evals
@@ -46,9 +50,6 @@ int main(int argc, char *argv[])
 
     //Fill slider arrays and magic index arrays
     slider_attacks.Initialize();
-
-	//initilze UCI 
-	UCI com;
 
 	//communicate with UCI compatible GUI
 	com.uciLoop();

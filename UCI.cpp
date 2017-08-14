@@ -9,7 +9,6 @@
 #include "zobristh.h"
 #include "ai_logic.h"
 
-
 //master bitboard for turn
 BitBoards newBoard;
 
@@ -18,6 +17,8 @@ ZobristH zDummy;
 
 //master search obj
 Ai_Logic searchM;
+
+
 
 //is it whites turn?
 bool isWhite = true;

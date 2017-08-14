@@ -11,6 +11,7 @@
 #include "movegen.h"
 #include "zobristh.h"
 #include "hashentry.h"
+#include "TimeManager.h"
 
 #define DO_NULL    true //allow null moves or not
 #define NO_NULL    false
@@ -27,8 +28,10 @@ searchDriver sd;
 MoveGen evalGenMoves;
 
 //value to determine if time for search has run out
-extern bool searchCutoff;
-bool searchCutoff = false;
+bool timeOver;
+
+//master time manager
+TimeManager timeM;
 
 //master zobrist for turn
 ZobristH zobrist;
@@ -40,10 +43,21 @@ Ai_Logic::Ai_Logic()
 
 Move Ai_Logic::search(bool isWhite) {
 	
-	int depth = 19;
-	int timeLimit = 0;
-	double aiTime; //add code to modify depth and time limmit based on..
-						   //time left on ours and opponenents clocks + total origional time/ moves made/ to make
+	//max depth
+	int depth = 32;
+
+	//generate accurate zobrist key based on bitboards
+	zobrist.getZobristHash(newBoard);
+
+	//update color only applied on black turn
+	if (!isWhite) zobrist.UpdateColor();
+
+	//decrease history values after a search
+	ageHistorys();
+
+	//calc move time for us, send to search driver
+	timeM.calcMoveTime(isWhite);
+
 	U64 king;
 	if (isWhite) king = newBoard.BBWhiteKing;
 	else king = newBoard.BBBlackKing;
@@ -51,50 +65,32 @@ Move Ai_Logic::search(bool isWhite) {
 	//are we in check?
 	bool flagInCheck = checkcheck.isAttacked(king, isWhite, true);
 
-	if (flagInCheck) { depth++; timeLimit += 2500; } //extend depth and time if in check ///add more complex methods of time managment
+	if (flagInCheck) { depth++; sd.startTime -= 2500; } //extend depth and time if in check ///add more complex methods of time managment
 
-	isWhite ? aiTime = wtime : aiTime = btime; //grab remaining time for our color
-
-	Move m = iterativeDeep(depth, isWhite, timeLimit);
-
+	Move m = iterativeDeep(depth, isWhite);
+	
 	return m;
 }
 
-Move Ai_Logic::iterativeDeep(int depth, bool isWhite, int timeLimmit)
+Move Ai_Logic::iterativeDeep(int depth, bool isWhite)
 {
-    //generate accurate zobrist key based on bitboards
-    zobrist.getZobristHash(newBoard);
-
-    //update color only applied on black turn
-    if(!isWhite) zobrist.UpdateColor();
-
-    //iterative deepening start time
-    clock_t IDTimeS = clock();
-
-    //time limit in miliseconds
-    int  ply = 0;
-    long endTime = IDTimeS + timeLimmit; 
+	//reset ply
+    int ply = 0;
 
     //best overall move as calced
     Move bestMove;
-    int distance = 1, bestScore, alpha = -INF, beta = INF;
-    //search has not run out of time
-    searchCutoff = false;
+    int bestScore, alpha = -INF, beta = INF;
+	sd.depth = 1;
 
     //std::cout << zobrist.zobristKey << std::endl;
 
     //iterative deepening loop starts at depth 1, iterates up till max depth or time cutoff
-    while(distance <= depth && IDTimeS < endTime){
-        clock_t currentTime = clock();
-		sd.depth = distance;
+    while(sd.depth <= depth){
 
-        //if we're past 2/3's of our time limit, stop searching
-        if(currentTime >= endTime - (1/3 * timeLimmit)){
-            break;
-        }
+		if (timeM.timeStopRoot() || timeOver) break;
 
         //main search
-        bestScore = searchRoot(distance, alpha, beta, isWhite, currentTime, timeLimmit, ply+1);
+        bestScore = searchRoot(sd.depth, alpha, beta, isWhite, ply+1);
 /*
         if(bestScore <= alpha || bestScore >= beta){
             alpha = -INF;
@@ -105,7 +101,7 @@ Move Ai_Logic::iterativeDeep(int depth, bool isWhite, int timeLimmit)
         beta = bestScore + ASP;
 */
         //if the search is not cutoff
-        if(!searchCutoff){
+        if(!timeOver){
 
             //grab best move out of PV array ~~ need better method of grabbing best move, not based on "distance"
             //Maybe if statement is a bad fix? sometimes a max of specified depth is not reached near checkmates/possibly checks
@@ -113,11 +109,9 @@ Move Ai_Logic::iterativeDeep(int depth, bool isWhite, int timeLimmit)
             if(sd.PV[1].tried) bestMove = sd.PV[1];
 
         }
-		sd.nps = sd.nodes / ((currentTime - IDTimeS) / CLOCKS_PER_SEC);
 		std::cout << "info nodes " << sd.nodes << std::endl;
-		std::cout << "info nps " << sd.nps << std::endl;
         //increment distance to travel (same as depth at max depth)
-        distance++;
+		sd.depth++;
     }
 
 
@@ -125,22 +119,13 @@ Move Ai_Logic::iterativeDeep(int depth, bool isWhite, int timeLimmit)
     newBoard.makeMove(bestMove, zobrist, isWhite);
     newBoard.drawBBA();
 
-    evaluateBB ev; //used for prininting static eval after move
-    clock_t IDTimeE = clock();
-    //postion count and time it took to find move
-    std::cout << positionCount << " positions searched." << std::endl;
-    std::cout << (double) (IDTimeE - IDTimeS) / CLOCKS_PER_SEC << " seconds" << std::endl;
-    std::cout << "Depth of " << distance-1 << " reached."<<std::endl;
-    std::cout << qCount << " non-quiet positions searched."<< std::endl;
+    //evaluateBB ev; //used for prininting static eval after move
     //std::cout << "Board evalutes to: " << ev.evalBoard(true, newBoard, zobrist) << " for white." << std::endl;
-
-    //decrease history values after a search
-    ageHistorys();
 
     return bestMove;
 }
 
-int Ai_Logic::searchRoot(U8 depth, int alpha, int beta, bool isWhite, long currentTime, long timeLimmit, U8 ply)
+int Ai_Logic::searchRoot(U8 depth, int alpha, int beta, bool isWhite, U8 ply)
 {
     bool flagInCheck;
     int score = 0;
@@ -162,7 +147,6 @@ int Ai_Logic::searchRoot(U8 depth, int alpha, int beta, bool isWhite, long curre
     flagInCheck = gen_moves.isAttacked(king, isWhite, true);
     U8 moveNum = gen_moves.moveCount;
 
-
     if(flagInCheck) ++depth;
 
     Move bestMove;
@@ -178,22 +162,21 @@ int Ai_Logic::searchRoot(U8 depth, int alpha, int beta, bool isWhite, long curre
             gen_moves.grab_boards(newBoard, isWhite);
             continue;
         }
-        positionCount ++;
         legalMoves ++;
         sd.cutoffs[isWhite][newMove.from][newMove.to] -= 1;
 
         //PV search at root
         if(best == -INF){
             //full window PV search
-            score = -alphaBeta(depth-1, -beta, -alpha, !isWhite, currentTime, timeLimmit, ply +1, DO_NULL, IS_PV);
+            score = -alphaBeta(depth-1, -beta, -alpha, !isWhite, ply +1, DO_NULL, IS_PV);
 
        } else {
             //zero window search
-            score = -alphaBeta(depth-1, -alpha -1, -alpha, !isWhite, currentTime, timeLimmit, ply +1, DO_NULL, NO_PV);
+            score = -alphaBeta(depth-1, -alpha -1, -alpha, !isWhite, ply +1, DO_NULL, NO_PV);
 
             //if we've gained a new alpha we need to do a full window search
             if(score > alpha){
-                score = -alphaBeta(depth-1, -beta, -alpha, !isWhite, currentTime, timeLimmit, ply +1, DO_NULL, IS_PV);
+                score = -alphaBeta(depth-1, -beta, -alpha, !isWhite, ply +1, DO_NULL, IS_PV);
             }
         }
 
@@ -201,7 +184,7 @@ int Ai_Logic::searchRoot(U8 depth, int alpha, int beta, bool isWhite, long curre
         newBoard.unmakeMove(newMove, zobrist, isWhite);
         gen_moves.grab_boards(newBoard, isWhite);
 
-		if (searchCutoff) break;
+		if (timeOver) break;
 
         if(score > best) best = score;
 
@@ -224,12 +207,8 @@ int Ai_Logic::searchRoot(U8 depth, int alpha, int beta, bool isWhite, long curre
     return alpha;
 }
 
-int Ai_Logic::alphaBeta(U8 depth, int alpha, int beta, bool isWhite, long currentTime, long timeLimmit, U8 ply, bool allowNull, bool is_pv)
+int Ai_Logic::alphaBeta(U8 depth, int alpha, int beta, bool isWhite, U8 ply, bool allowNull, bool is_pv)
 {
-
-    //iterative deeping timer stuff
-    clock_t time = clock();
-    long elapsedTime = time - currentTime;
     bool FlagInCheck = false;
     bool raisedAlpha = false;
     U8 R = 2;
@@ -240,10 +219,8 @@ int Ai_Logic::alphaBeta(U8 depth, int alpha, int beta, bool isWhite, long curren
     int  mateValue = INF - ply; // used for mate distance pruning
 	sd.nodes++;
 
-	//if the time limmit has been exceded set stop search flag
-	if (elapsedTime >= timeLimmit) {
-		searchCutoff = true;
-	}
+	//checks if time over is true every 8095 nodes
+	checkInput();
 
 	//mate distance pruning, prevents looking for mates longer than one we've already found
 	if (alpha < -mateValue) alpha = -mateValue;
@@ -279,9 +256,9 @@ int Ai_Logic::alphaBeta(U8 depth, int alpha, int beta, bool isWhite, long curren
     }
 
     int score;
-    if(depth < 1 || searchCutoff){
+    if(depth < 1 || timeOver){
         //run capture search to max depth of queitSD
-        score = quiescent(alpha, beta, isWhite, ply, queitSD, currentTime, timeLimmit);
+        score = quiescent(alpha, beta, isWhite, ply, queitSD);
         return score;
     }
 
@@ -314,7 +291,7 @@ int Ai_Logic::alphaBeta(U8 depth, int alpha, int beta, bool isWhite, long curren
         if(depth > 6) R = 3;
         zobrist.UpdateColor();
 
-        score = -alphaBeta(depth -R -1, -beta, -beta +1, !isWhite, currentTime, timeLimmit, ply +1, NO_NULL, NO_PV);
+        score = -alphaBeta(depth -R -1, -beta, -beta +1, !isWhite, ply +1, NO_NULL, NO_PV);
         zobrist.UpdateColor();
         //if after getting a free move the score is too good, prune this branch
         if(score >= beta){
@@ -328,7 +305,7 @@ int Ai_Logic::alphaBeta(U8 depth, int alpha, int beta, bool isWhite, long curren
         evaluateBB eval;
         int threshold = alpha - 300 - (depth - 1) * 60;        
         if(eval.evalBoard(isWhite, newBoard, zobrist) < threshold){
-            score = quiescent(alpha, beta, isWhite, ply, queitSD, currentTime, timeLimmit);
+            score = quiescent(alpha, beta, isWhite, ply, queitSD);
 
             if(score < threshold) return alpha;
         }
@@ -369,7 +346,6 @@ moves_loop:
             gen_moves.grab_boards(newBoard, isWhite);
             continue;
         }
-        positionCount ++;
         legalMoves ++;
         reductionDepth = 0;
         newDepth = depth - 1;
@@ -406,14 +382,14 @@ re_search:
 
         if(!raisedAlpha){
             //we're in princiapl variation search or full window search
-            score = -alphaBeta(newDepth, -beta, -alpha, !isWhite, currentTime, timeLimmit, ply +1, DO_NULL, is_pv);
+            score = -alphaBeta(newDepth, -beta, -alpha, !isWhite, ply +1, DO_NULL, is_pv);
         } else {
             //zero window search
-            score = -alphaBeta(newDepth, -alpha -1, -alpha, !isWhite, currentTime, timeLimmit, ply +1, DO_NULL, NO_PV);
+            score = -alphaBeta(newDepth, -alpha -1, -alpha, !isWhite, ply +1, DO_NULL, NO_PV);
             //if our zero window search failed, do a full window search
             if(score > alpha){
                 //PV search after failed zero window
-                score = -alphaBeta(newDepth, -beta, -alpha,  !isWhite, currentTime, timeLimmit, ply +1, DO_NULL, IS_PV);
+                score = -alphaBeta(newDepth, -beta, -alpha,  !isWhite, ply +1, DO_NULL, IS_PV);
             }
         }
 
@@ -429,7 +405,7 @@ re_search:
         newBoard.unmakeMove(newMove, zobrist, isWhite);
         gen_moves.grab_boards(newBoard, isWhite);
 
-		if (searchCutoff) return 0;
+		if (timeOver) return 0;
 
         if(score > alpha){            
             hashMove = newMove;
@@ -481,27 +457,20 @@ re_search:
     return alpha;
 }
 
-int Ai_Logic::quiescent(int alpha, int beta, bool isWhite, int ply, int quietDepth, long currentTime, long timeLimmit)
+int Ai_Logic::quiescent(int alpha, int beta, bool isWhite, int ply, int quietDepth)
 {
     //iterative deeping timer stuff
-    clock_t time = clock();
-    long elapsedTime = time - currentTime;
 	sd.nodes++;
 
     //create unqiue hash from zobrist key
     int hash = (int)(zobrist.zobristKey % 15485843);
     HashEntry entry = transpositionT[hash];
 
-    //if the time limmit has been exceeded finish searching
-    if(elapsedTime >= timeLimmit){
-        searchCutoff = true;
-    }
-
     evaluateBB eval;
     //evaluate board position
     int standingPat = eval.evalBoard(isWhite, newBoard, zobrist);
 
-    if(quietDepth <= 0 || searchCutoff){
+    if(quietDepth <= 0 || timeOver){
         return standingPat;
     }
 
@@ -543,8 +512,6 @@ int Ai_Logic::quiescent(int alpha, int beta, bool isWhite, int ply, int quietDep
             continue;
         }
 
-        qCount ++;
-
         /*
         // ~~~NEEDS WORK + Testing + stop pruning in end game
         if(deltaPruning(tempMove, standingPat, isWhite, alpha, false, newBoard)){
@@ -556,7 +523,7 @@ int Ai_Logic::quiescent(int alpha, int beta, bool isWhite, int ply, int quietDep
             continue;
         }
         */
-        score = -quiescent(-beta, -alpha, !isWhite, ply+1, quietDepth-1, currentTime, timeLimmit);
+        score = -quiescent(-beta, -alpha, !isWhite, ply+1, quietDepth-1);
 
         newBoard.unmakeMove(newMove, zobrist, isWhite);
         gen_moves.grab_boards(newBoard, isWhite);
@@ -633,6 +600,14 @@ void Ai_Logic::addMoveTT(Move move, int depth, int eval, int flag)
         transpositionT[hash].move = move;
     }
 
+}
+
+void Ai_Logic::checkInput()
+{
+	if (!timeOver && (sd.nodes & 8095)) {
+		timeOver = timeM.timeStopSearch();
+
+	}
 }
 
 /*
