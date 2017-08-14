@@ -114,7 +114,7 @@ Move Ai_Logic::iterativeDeep(int depth, bool isWhite)
             if(sd.PV[1].tried) bestMove = sd.PV[1];
 
         }
-		print(isWhite);
+		print();
         //increment distance to travel (same as depth at max depth)
 		sd.depth++;
     }
@@ -615,11 +615,11 @@ void Ai_Logic::checkInput()
 	}
 }
 
-void Ai_Logic::print(bool isWhite)
+void Ai_Logic::print()
 {
 	evaluateBB ev;
 	std::stringstream ss;
-	ss << "info depth " << sd.depth << " nodes " << sd.nodes << " nps " << timeM.getNPS() << " score cp " << ev.evalBoard(isWhite, newBoard, zobrist);
+	ss << "info depth " << sd.depth << " nodes " << sd.nodes << " nps " << timeM.getNPS() << " score cp " << ev.evalBoard(true, newBoard, zobrist);
 
 	std::cout << ss.str() << std::endl;
 }
