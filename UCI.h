@@ -15,7 +15,7 @@ public:
 
 	void search();
 
-	void moveToStr(const Move & m);
+	std::string moveToStr(const Move & m);
 
 	Move strToMove(std::string & input);
 

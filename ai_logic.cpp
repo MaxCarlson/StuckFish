@@ -40,8 +40,9 @@ Ai_Logic::Ai_Logic()
 
 Move Ai_Logic::search(bool isWhite) {
 	
-	int depth = 8;
-	int timeLimit = 10000; //add code to modify depth and time limmit based on..
+	int depth = 19;
+	int timeLimit = 0;
+	double aiTime; //add code to modify depth and time limmit based on..
 						   //time left on ours and opponenents clocks + total origional time/ moves made/ to make
 	U64 king;
 	if (isWhite) king = newBoard.BBWhiteKing;
@@ -51,6 +52,8 @@ Move Ai_Logic::search(bool isWhite) {
 	bool flagInCheck = checkcheck.isAttacked(king, isWhite, true);
 
 	if (flagInCheck) { depth++; timeLimit += 2500; } //extend depth and time if in check ///add more complex methods of time managment
+
+	isWhite ? aiTime = wtime : aiTime = btime; //grab remaining time for our color
 
 	Move m = iterativeDeep(depth, isWhite, timeLimit);
 
@@ -83,6 +86,7 @@ Move Ai_Logic::iterativeDeep(int depth, bool isWhite, int timeLimmit)
     //iterative deepening loop starts at depth 1, iterates up till max depth or time cutoff
     while(distance <= depth && IDTimeS < endTime){
         clock_t currentTime = clock();
+		sd.depth = distance;
 
         //if we're past 2/3's of our time limit, stop searching
         if(currentTime >= endTime - (1/3 * timeLimmit)){
@@ -106,9 +110,12 @@ Move Ai_Logic::iterativeDeep(int depth, bool isWhite, int timeLimmit)
             //grab best move out of PV array ~~ need better method of grabbing best move, not based on "distance"
             //Maybe if statement is a bad fix? sometimes a max of specified depth is not reached near checkmates/possibly checks
             //if statement makes sure the move has been tried before storing it
-            if(pVArr[distance].tried) bestMove = pVArr[distance];
+            if(sd.PV[1].tried) bestMove = sd.PV[1];
 
         }
+		sd.nps = sd.nodes / ((currentTime - IDTimeS) / CLOCKS_PER_SEC);
+		std::cout << "info nodes " << sd.nodes << std::endl;
+		std::cout << "info nps " << sd.nps << std::endl;
         //increment distance to travel (same as depth at max depth)
         distance++;
     }
@@ -139,6 +146,8 @@ int Ai_Logic::searchRoot(U8 depth, int alpha, int beta, bool isWhite, long curre
     int score = 0;
     int best = -INF;
     int legalMoves = 0;
+
+	sd.nodes++;
 
     MoveGen gen_moves;
     //grab bitboards from newBoard object and store color and board to var
@@ -192,11 +201,13 @@ int Ai_Logic::searchRoot(U8 depth, int alpha, int beta, bool isWhite, long curre
         newBoard.unmakeMove(newMove, zobrist, isWhite);
         gen_moves.grab_boards(newBoard, isWhite);
 
+		if (searchCutoff) break;
+
         if(score > best) best = score;
 
         if(score > alpha){
             //store the principal variation
-            pVArr[depth] = newMove;
+			sd.PV[ply] = newMove;
 
             if(score > beta){
                 addMoveTT(newMove, depth, score, TT_BETA);
@@ -221,12 +232,13 @@ int Ai_Logic::alphaBeta(U8 depth, int alpha, int beta, bool isWhite, long curren
     long elapsedTime = time - currentTime;
     bool FlagInCheck = false;
     bool raisedAlpha = false;
-    char R = 2;
+    U8 R = 2;
     U8 reductionDepth;
     U8 newDepth;
     //U8 newDepth; //use with futility + other pruning later
     int queitSD = 25, f_prune = 0;
     int  mateValue = INF - ply; // used for mate distance pruning
+	sd.nodes++;
 
 	//if the time limmit has been exceded set stop search flag
 	if (elapsedTime >= timeLimmit) {
@@ -417,9 +429,13 @@ re_search:
         newBoard.unmakeMove(newMove, zobrist, isWhite);
         gen_moves.grab_boards(newBoard, isWhite);
 
+		if (searchCutoff) return 0;
+
         if(score > alpha){            
             hashMove = newMove;
             sd.cutoffs[isWhite][newMove.from][newMove.to] += 6;
+			//store the principal variation
+			sd.PV[ply] = newMove;
 
             //if move causes a beta cutoff stop searching current branch
             if(score >= beta){
@@ -470,6 +486,7 @@ int Ai_Logic::quiescent(int alpha, int beta, bool isWhite, int ply, int quietDep
     //iterative deeping timer stuff
     clock_t time = clock();
     long elapsedTime = time - currentTime;
+	sd.nodes++;
 
     //create unqiue hash from zobrist key
     int hash = (int)(zobrist.zobristKey % 15485843);
@@ -587,6 +604,7 @@ void Ai_Logic::ageHistorys()
                 sd.history[cl][i][j] = sd.history[cl][i][j] / 8;
                 sd.cutoffs[cl][i][j] = 100;
             }
+	sd.nodes = 0;
 }
 
 void Ai_Logic::clearHistorys()
@@ -598,6 +616,7 @@ void Ai_Logic::clearHistorys()
 				sd.history[cl][i][j] = sd.history[cl][i][j] = 0;
 				sd.cutoffs[cl][i][j] = 100;
 			}
+	sd.nodes = 0;
 }
 
 void Ai_Logic::addMoveTT(Move move, int depth, int eval, int flag)

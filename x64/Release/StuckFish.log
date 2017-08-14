@@ -2,9 +2,7 @@
   ai_logic.cpp
   bitboards.cpp
   evaluatebb.cpp
-  hashentry.cpp
   main.cpp
-  move.cpp
   movegen.cpp
   zobristh.cpp
   Generating Code...

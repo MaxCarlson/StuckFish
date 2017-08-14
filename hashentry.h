@@ -19,15 +19,6 @@ public:
     Move move;
     //flag denoting what the hash represents, i.e. alpha 1, beta 2, exact evaluation (between alpha beta) 3
     U8 flag;
-
-
-    //color ~~ to be removed later when search is switched to PV or negamax, false for white
-    //bool color;
-
-private:
-
-
-
 };
 
 #endif // HASHENTRY_H

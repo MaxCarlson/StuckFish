@@ -9,7 +9,6 @@
 #include "zobristh.h"
 #include "ai_logic.h"
 
-#define ENGINENAME "StuckFish 0.1"
 
 //master bitboard for turn
 BitBoards newBoard;
@@ -55,7 +54,7 @@ void UCI::uciLoop()
 
 		if (token == "uci")
 		{
-			std::cout << "id name " << ENGINENAME << std::endl;
+			std::cout << "id name " << ENGINE_NAME << std::endl;
 			std::cout << "id author Maxwell Carlson" << std::endl;
 			//printOptions();
 			std::cout << "uciok" << std::endl;
@@ -98,14 +97,9 @@ void UCI::uciLoop()
 				else if (token == "movestogo") is >> movestogo;
 			}
 
-			search(); //search position probably should make it on a sepperate thread eventually
-
-			/*
-			//http://stackoverflow.com/questions/12624271/c11-stdthread-giving-error-no-matching-function-to-call-stdthreadthread
-			thrd::thread thr(&Uci::search, this);
-			thrd::swap(thr, myThread);
-			myThread.join();
-			*/
+			std::thread thr(&UCI::search, this); 
+			thr.join(); //search on new thread
+			
 		}
 		else if (token == "quit")
 		{
@@ -172,13 +166,15 @@ void UCI::search()
 {	
 	Move m = searchM.search(isWhite);
 
-	moveToStr(m);
+	;
+
+	std::cout << "bestmove " << moveToStr(m) << std::endl; //send move to std output for UCI GUI to pickup
 
 	isWhite = !isWhite; //switch color after move
 	turns += 1;
 }
 
-void UCI::moveToStr(const Move& m) 
+std::string UCI::moveToStr(const Move& m) 
 {
 	std::string flipsL[8] = { "a", "b", "c", "d", "e", "f", "g", "h" };
 	int flipsN[8] = {8, 7, 6, 5, 4, 3, 2, 1};
@@ -198,8 +194,7 @@ void UCI::moveToStr(const Move& m)
 	std::stringstream ss;
 	ss << flipsL[x] << flipsN[y] << flipsL[x1] << flipsN[y1] << promL;
 
-
-	std::cout << "bestmove "<< ss.str() << std::endl; //send move to std output for UCI GUI to pickup
+	return ss.str();
 }
 
 Move UCI::strToMove(std::string& input) 
