@@ -123,6 +123,7 @@ Move Ai_Logic::iterativeDeep(int depth, bool isWhite)
     //make final move on bitboards + draw board
     newBoard.makeMove(bestMove, zobrist, isWhite);
     newBoard.drawBBA();
+	//std::cout << newBoard.sideMaterial[0] << " " << newBoard.sideMaterial[1] <<std::endl;
 
     //evaluateBB ev; //used for prininting static eval after move
     //std::cout << "Board evalutes to: " << ev.evalBoard(true, newBoard, zobrist) << " for white." << std::endl;
@@ -617,9 +618,14 @@ void Ai_Logic::checkInput()
 
 void Ai_Logic::print()
 {
-	evaluateBB ev;
 	std::stringstream ss;
-	ss << "info depth " << sd.depth << " nodes " << sd.nodes << " nps " << timeM.getNPS() << " score cp " << ev.evalBoard(true, newBoard, zobrist);
+	
+	ss << "info depth " << sd.depth << " nodes " << sd.nodes << " nps " << timeM.getNPS() ;
+
+	if (sd.depth == 1) { //only eval board once a turn
+		evaluateBB ev;
+		ss << " score cp " << ev.evalBoard(true, newBoard, zobrist);
+	}
 
 	std::cout << ss.str() << std::endl;
 }

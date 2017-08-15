@@ -27,12 +27,20 @@ enum epiece {
     KING
 };
 
+#define PAWN_VAL 100
+#define KNIGHT_VAL 325
+#define BISHOP_VAL 335
+#define ROOK_VAL 500
+#define QUEEN_VAL 975
+#define KING_VAL 0 //change later??
+
 enum ecolor {
     WHITE,
     BLACK,
     COLOR_EMPTY
 };
 
+/*
 //used for chronos flags
 enum etimef {
 	FTIME = 1,
@@ -44,6 +52,7 @@ enum etimef {
 	FMOVETIME = 64,
 	FINFINITE = 128
 };
+*/
 
 typedef unsigned char U8;
 typedef char S8;
@@ -67,6 +76,7 @@ typedef long long S64;
 
 #define INF 10000
 #define INVALID 32767
+#define END_GAME_MAT 1300;
 
 #define CACHE_LINE_SIZE 64 //taken from stockfish
 #if defined(_MSC_VER) || defined(__INTEL_COMPILER)

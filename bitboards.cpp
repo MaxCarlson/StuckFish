@@ -45,56 +45,72 @@ void BitBoards::constructBoards()
     BBBlackQueens = 0LL;
     BBBlackKing = 0LL;
 
+	//reset side material values
+	sideMaterial[0] = 0; //white
+	sideMaterial[1] = 0;
+
     //seed bitboards
     for(int i = 0; i < 64; i++){
         if(boardArr[i/8][i%8] == "P"){
             BBWhitePawns += 1LL<<i;
             BBWhitePieces += 1LL<<i;
             FullTiles += 1LL<<i;
+			sideMaterial[0] += PAWN_VAL;
         } else if(boardArr[i/8][i%8] == "R"){
             BBWhiteRooks += 1LL<<i;
             BBWhitePieces += 1LL<<i;
             FullTiles += 1LL<<i;
+			sideMaterial[0] += ROOK_VAL;
         }else if(boardArr[i/8][i%8] == "N"){
             BBWhiteKnights += 1LL<<i;
             BBWhitePieces += 1LL<<i;
             FullTiles += 1LL<<i;
+			sideMaterial[0] += KNIGHT_VAL;
         }else if(boardArr[i/8][i%8] == "B"){
             BBWhiteBishops += 1LL<<i;
             BBWhitePieces += 1LL<<i;
             FullTiles += 1LL<<i;
+			sideMaterial[0] += BISHOP_VAL;
         }else if(boardArr[i/8][i%8] == "Q"){
             BBWhiteQueens += 1LL<<i;
             BBWhitePieces += 1LL<<i;
             FullTiles += 1LL<<i;
+			sideMaterial[0] += QUEEN_VAL;
         }else if(boardArr[i/8][i%8] == "K"){
             BBWhiteKing += 1LL<<i;
             BBWhitePieces += 1LL<<i;
             FullTiles += 1LL<<i;
+			sideMaterial[0] += KING_VAL;
         } else if(boardArr[i/8][i%8] == "p"){
             BBBlackPawns += 1LL<<i;
             BBBlackPieces += 1LL<<i;
             FullTiles += 1LL<<i;
+			sideMaterial[1] += PAWN_VAL;
         } else if(boardArr[i/8][i%8] == "r"){
             BBBlackRooks += 1LL<<i;
             BBBlackPieces += 1LL<<i;
             FullTiles += 1LL<<i;
+			sideMaterial[1] += ROOK_VAL;
         }else if(boardArr[i/8][i%8] == "n"){
             BBBlackKnights += 1LL<<i;
             BBBlackPieces += 1LL<<i;
             FullTiles += 1LL<<i;
+			sideMaterial[1] += KNIGHT_VAL;
         }else if(boardArr[i/8][i%8] == "b"){
             BBBlackBishops += 1LL<<i;
             BBBlackPieces += 1LL<<i;
             FullTiles += 1LL<<i;
+			sideMaterial[1] += BISHOP_VAL;
         }else if(boardArr[i/8][i%8] == "q"){
             BBBlackQueens += 1LL<<i;
             BBBlackPieces += 1LL<<i;
             FullTiles += 1LL<<i;
+			sideMaterial[1] += QUEEN_VAL;
         }else if(boardArr[i/8][i%8] == "k"){
             BBBlackKing += 1LL<<i;
             BBBlackPieces += 1LL<<i;
             FullTiles += 1LL<<i;
+			sideMaterial[1] += KING_VAL;
         }
     }
 
@@ -139,6 +155,9 @@ void BitBoards::makeMove(const Move &move, ZobristH &zobrist, bool isWhite)
             } else {
                 //add queen to landing spot
                 BBWhiteQueens |= pieceMaskE;
+				//adjust maaterial on board
+				sideMaterial[0] -= PAWN_VAL;
+				sideMaterial[0] += QUEEN_VAL;
             }
             //add to color pieces then full tiles
             BBWhitePieces |= pieceMaskE;
@@ -219,6 +238,8 @@ void BitBoards::makeMove(const Move &move, ZobristH &zobrist, bool isWhite)
             } else {
                 //add queen to landing spot
                 BBBlackQueens |= pieceMaskE;
+				sideMaterial[1] -= PAWN_VAL;
+				sideMaterial[1] += QUEEN_VAL;
             }
             //add to color pieces then full tiles
             BBBlackPieces |= pieceMaskE;
@@ -325,6 +346,9 @@ void BitBoards::unmakeMove(const Move &moveKey, ZobristH &zobrist, bool isWhite)
             //promotion unmake
             } else {
                 BBWhiteQueens &= ~pieceMaskE;
+				sideMaterial[0] += PAWN_VAL;
+				sideMaterial[0] -= QUEEN_VAL;
+
             }
             //put it back where it started
             BBWhitePawns |= pieceMaskI;
@@ -379,6 +403,8 @@ void BitBoards::unmakeMove(const Move &moveKey, ZobristH &zobrist, bool isWhite)
             //promotion unmake
             } else {
                 BBBlackQueens &= ~pieceMaskE;
+				sideMaterial[1] += PAWN_VAL;
+				sideMaterial[1] -= QUEEN_VAL;
             }
             //put it back where it started
             BBBlackPawns |= pieceMaskI;
@@ -468,26 +494,33 @@ void BitBoards::undoCapture(U64 location, char piece, bool isNotWhite)
                 //no need to change FullTiles as captured piece was already there
                 BBWhitePawns |= location;
                 BBWhitePieces |= location;
+				//adjust side material balence
+				sideMaterial[0] += PAWN_VAL;
                 break;
             case 'R':
                 BBWhiteRooks |= location;
                 BBWhitePieces |= location;
+				sideMaterial[0] += ROOK_VAL;
                 break;
             case 'N':
                 BBWhiteKnights |= location;
                 BBWhitePieces |= location;
+				sideMaterial[0] += KNIGHT_VAL;
                 break;
             case 'B':
                 BBWhiteBishops |= location;
                 BBWhitePieces |= location;
+				sideMaterial[0] += BISHOP_VAL;
                 break;
             case 'Q':
                 BBWhiteQueens |= location;
                 BBWhitePieces |= location;
+				sideMaterial[0] += QUEEN_VAL;
                 break;
             case 'K':
                 BBWhiteKing |= location;
                 BBWhitePieces |= location;
+				sideMaterial[0] += KING_VAL;
                 break;
             default:
 
@@ -501,26 +534,32 @@ void BitBoards::undoCapture(U64 location, char piece, bool isNotWhite)
                 //no need to change FullTiles as captured piece was already there
                 BBBlackPawns |= location;
                 BBBlackPieces |= location;
+				sideMaterial[1] += PAWN_VAL;
                 break;
             case 'r':
                 BBBlackRooks |= location;
                 BBBlackPieces |= location;
+				sideMaterial[1] += ROOK_VAL;
                 break;
             case 'n':
                 BBBlackKnights |= location;
                 BBBlackPieces |= location;
+				sideMaterial[1] += KNIGHT_VAL;
                 break;
             case 'b':
                 BBBlackBishops |= location;
                 BBBlackPieces |= location;
+				sideMaterial[1] += BISHOP_VAL;
                 break;
             case 'q':
                 BBBlackQueens |= location;
                 BBBlackPieces |= location;
+				sideMaterial[1] += QUEEN_VAL;
                 break;
             case 'k':
                 BBBlackKing |= location;
                 BBBlackPieces |= location;
+				sideMaterial[1] += KING_VAL;
                 break;
             default:
                 drawBBA();
@@ -618,50 +657,62 @@ void BitBoards::removeCapturedPiece(char captured, U64 location)
     case 'P':
         BBWhitePawns &= ~location;
         BBWhitePieces &= ~location;
+		sideMaterial[0] -= PAWN_VAL;
         break;
     case 'N':
         BBWhiteKnights &= ~location;
         BBWhitePieces &= ~location;
+		sideMaterial[0] -= KNIGHT_VAL;
         break;
     case 'B':
         BBWhiteBishops &= ~location;
         BBWhitePieces &= ~location;
+		sideMaterial[0] -= BISHOP_VAL;
         break;
     case 'R':
         BBWhiteRooks &= ~location;
         BBWhitePieces &= ~location;
+		sideMaterial[0] -= ROOK_VAL;
         break;
     case 'Q':
         BBWhiteQueens &= ~location;
         BBWhitePieces &= ~location;
+		sideMaterial[0] -= QUEEN_VAL;
         break;
     case 'K':
         BBWhiteKing &= ~location;
         BBWhitePieces &= ~location;
+		sideMaterial[0] -= KING_VAL;
         break;
     case 'p':
         BBBlackPawns &= ~location;
         BBBlackPieces &= ~location;
+		sideMaterial[1] -= PAWN_VAL;
         break;
     case 'n':
         BBBlackKnights &= ~location;
         BBBlackPieces &= ~location;
+		sideMaterial[1] -= KNIGHT_VAL;
         break;
     case 'b':
         BBBlackBishops &= ~location;
         BBBlackPieces &= ~location;
+		sideMaterial[1] -= BISHOP_VAL;
         break;
     case 'r':
         BBBlackRooks &= ~location;
         BBBlackPieces &= ~location;
+		sideMaterial[1] -= ROOK_VAL;
         break;
     case 'q':
         BBBlackQueens &= ~location;
         BBBlackPieces &= ~location;
+		sideMaterial[1] -= QUEEN_VAL;
         break;
     case 'k':
         BBBlackKing &= ~location;
         BBBlackPieces &= ~location;
+		sideMaterial[1] -= KING_VAL;
         break;
     default:
         std::cout << "Remove Captured Piece on make move ERROR" << std::endl;

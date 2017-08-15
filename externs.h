@@ -9,6 +9,8 @@ typedef unsigned long long  U64; // supported by MSC 13.00+ and C99
 #include <unordered_map>
 #include "move.h"
 #include "slider_attacks.h"
+
+
 class HashEntry;
 class ZobristH;
 class BitBoards;
@@ -42,6 +44,7 @@ extern HashEntry transpositionT[15485843];
 extern HashEntry transpositionEval[5021983];
 extern HashEntry transpositionPawn[400000];
 
+//holds search info, killers, historys, PV, etc
 struct searchDriver{
     //color, piece loc from, piece loc to
     int history[2][64][64] = {{{0}}};
@@ -56,6 +59,8 @@ struct searchDriver{
 };
 extern searchDriver sd;
 
+//time manager not in use yet
+/*
 struct structtime {
 	int time[2];
 	int inc[2];
@@ -67,6 +72,7 @@ struct structtime {
 	U8 flags;
 };
 extern structtime chronos;
+*/
 
 //UCI input varibles for "go"
 extern int wtime; //time left on whites clock

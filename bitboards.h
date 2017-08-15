@@ -28,12 +28,8 @@ public:
     //draw out bitboards like a full chessboard array
     void drawBBA();
 
-    //slider move functions
-    //up + down + left + right without friendly / enemy check
-    U64 horizVert(int s);
-
-    //both diagonals
-    U64 DAndAntiDMoves(int s);
+	//piece material arrays for sides, using piece values
+	int sideMaterial[2]; //updated on make/unmake moves
 
 //bitboards
     U64 FullTiles;
@@ -96,8 +92,6 @@ public:
     //Bitboard of all king movements that can then be shifted
     const U64 KING_SPAN=460039L;
 
-
-    bool isAttacked(U64 pieceLoc, bool wOrB, const MoveGen &gen_moves);
 private:
     //removes cacptured piece from BB's
     void removeCapturedPiece(char captured, U64 location);

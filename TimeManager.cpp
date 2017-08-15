@@ -30,7 +30,7 @@ unsigned int gettime() {
 }
 #endif
 
-structtime chronos;
+//structtime chronos;
 
 extern bool timeOver;
 
