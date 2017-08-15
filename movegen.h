@@ -6,6 +6,7 @@ typedef unsigned long long  U64; // supported by MSC 13.00+ and C99
 
 #include <iostream>
 #include <string>
+#include <vector>
 
 #include "move.h"
 class BitBoards;
@@ -33,7 +34,7 @@ public:
     bool isAttacked(U64 pieceLoc, bool wOrB, bool isSearchKingCheck);
 
 	//static exhange eval
-	int SEE(const U64 &sq, bool isWhite);
+	int SEE(const U64 &sq, int piece, bool isWhite);
 
 	Move movegen_sort(int ply);
 
@@ -96,6 +97,8 @@ private:
 
 		//used in static exchange eval
 		std::vector<U64> getSmallestAttacker(const U64 & sq, bool isWhite);
+		Move makeCaptureSEE(const U64 & from, const U64 & to, int captured, bool isWhite);
+		void unmakeCaptureSEE(const Move &m, bool isWhite);
 
         char whichPieceCaptured(U64 landing);
 

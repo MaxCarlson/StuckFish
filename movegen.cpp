@@ -611,7 +611,7 @@ bool MoveGen::blind(const Move &move, int pieceVal, int captureVal)
 }
 
 #include <algorithm> 
-int MoveGen::SEE(const U64 &sq, bool isWhite) {
+int MoveGen::SEE(const U64 &sq, int piece, bool isWhite) {
 	int val = 0;
 
 	U64 loc = 1LL << trailingZeros(sq);
@@ -623,8 +623,14 @@ int MoveGen::SEE(const U64 &sq, bool isWhite) {
 
 	if (piece) {
 		
-		val = std::max(0, SORT_VALUE[piece] - SEE());
+		Move m = makeCaptureSEE(piece, sq, piece, isWhite);
+
+		val = std::max(0, SORT_VALUE[piece] - SEE(sq, m.piece, !isWhite));
+
+		unmakeCaptureSEE(m, isWhite);
 	}
+
+	return val;
 }
 
 std::vector<U64> MoveGen::getSmallestAttacker(const U64 &sq, bool isWhite) {
@@ -741,6 +747,91 @@ std::vector<U64> MoveGen::getSmallestAttacker(const U64 &sq, bool isWhite) {
 	att.push_back(0LL);
 	att.push_back(0LL);
 	return att;
+}
+
+Move MoveGen::makeCaptureSEE(const U64 & from, const U64 & to, int captured, bool isWhite)
+{
+	//create bitboard of only one attacker if there are multiple
+	U64 piece = 1LL << trailingZeros(from);
+	Move m;
+	m.captured = captured;
+	m.from = piece;
+	m.to = trailingZeros(to);
+
+	if (isWhite) {
+		if (piece & BBBlackPawns) {
+			BBBlackPawns &= ~piece;
+			BBBlackPawns |= to;
+			m.piece = PAWN;
+
+		} else if (piece & BBBlackKnights) {
+			BBBlackKnights &= ~piece;
+			BBBlackKnights |= to;
+			m.piece = KNIGHT;
+
+		}else if (piece & BBBlackBishops) {
+			BBBlackBishops &= ~piece;
+			BBBlackBishops |= to;
+			m.piece = BISHOP;
+
+		}else if (piece & BBBlackRooks) {
+			BBBlackRooks &= ~piece;
+			BBBlackRooks |= to;
+			m.piece = ROOK;
+
+		}else if (piece & BBBlackQueens) {
+			BBBlackQueens &= ~piece;
+			BBBlackQueens |= to;
+			m.piece = QUEEN;
+
+		}else if (piece & BBBlackKing) {
+			BBBlackKing &= ~piece;
+			BBBlackKing |= to;
+			m.piece = KING;
+		}
+		BBBlackPieces &= ~piece;
+		BBBlackPieces |= to;
+	}
+	else {
+		if (piece & BBWhitePawns) {
+			BBWhitePawns &= ~piece;
+			BBWhitePawns |= to;
+			m.piece = PAWN;
+
+		}else if (piece & BBWhiteKnights) {
+			BBWhiteKnights &= ~piece;
+			BBWhiteKnights |= to;
+			m.piece = KNIGHT;
+
+		}else if (piece & BBWhiteBishops) {
+			BBWhiteBishops &= ~piece;
+			BBWhiteBishops |= to;
+			m.piece = BISHOP;
+
+		}else if (piece & BBWhiteRooks) {
+			BBWhiteRooks &= ~piece;
+			BBWhiteRooks |= to;
+			m.piece = ROOK;
+
+		}else if (piece & BBWhiteQueens) {
+			BBWhiteQueens &= ~piece;
+			BBWhiteQueens |= to;
+			m.piece = QUEEN;
+
+		}else if (piece & BBWhiteKing) {
+			BBWhiteKing &= ~piece;
+			BBWhiteKing |= to;
+			m.piece = KING;
+		}
+		BBWhitePieces &= ~piece;
+		BBWhitePieces |= to;
+	}
+	FullTiles &= ~piece;
+	EmptyTiles = FullTiles;
+}
+
+void MoveGen::unmakeCaptureSEE(const Move & m, bool isWhite)
+{
 }
 
 Move MoveGen::movegen_sort(int ply)
