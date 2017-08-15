@@ -16,6 +16,8 @@ class ZobristH;
 class BitBoards;
 class MoveGen;
 
+extern const int SORT_VALUE[7];
+
 //master bitboard for turn
 extern BitBoards newBoard;
 

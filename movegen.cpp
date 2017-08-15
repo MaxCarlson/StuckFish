@@ -34,12 +34,12 @@ static const U64 FileMasks8[8] =/*from fileA to FileH*/
     0x1010101010101010L, 0x2020202020202020L, 0x4040404040404040L, 0x8080808080808080L
 };
 
+
 /*************************************************
 * Values used for sorting captures are the same  *
 * as normal piece values, except for a king.     *
 *************************************************/
-
-const int SORT_VALUE[7] = {0, 100, 325, 335, 500, 975, 0};
+const int SORT_VALUE[7] = { 0, 100, 325, 335, 500, 975, 0 };
 
 
 MoveGen::MoveGen()
@@ -104,7 +104,7 @@ void MoveGen::generatePsMoves(bool capturesOnly)
 //pawn moves
 void MoveGen::possibleWP(const U64 &wpawns, const U64 &blackking, bool capturesOnly)
 {
-    char piece = 'P';
+    char piece = PAWN;
     char captured;
 
     //forward one
@@ -115,7 +115,7 @@ void MoveGen::possibleWP(const U64 &wpawns, const U64 &blackking, bool capturesO
         while(i != 0){
             int index = trailingZeros(i);
 
-            movegen_push(piece, '0', '0', index+8, index);
+            movegen_push(piece, PIECE_EMPTY, '0', index+8, index);
 
             PAWN_MOVES &= ~i;
             i= PAWN_MOVES & ~(PAWN_MOVES-1);
@@ -129,7 +129,7 @@ void MoveGen::possibleWP(const U64 &wpawns, const U64 &blackking, bool capturesO
         while(i != 0){
             int index = trailingZeros(i);
 
-            movegen_push(piece, '0', '0', index+16, index);
+            movegen_push(piece, PIECE_EMPTY, '0', index+16, index);
 
             PAWN_MOVES &= ~i;
             i= PAWN_MOVES & ~(PAWN_MOVES-1);
@@ -147,7 +147,7 @@ void MoveGen::possibleWP(const U64 &wpawns, const U64 &blackking, bool capturesO
         landing += 1LL << index;
         captured = whichPieceCaptured(landing);
 
-        movegen_push(piece,captured, '0', index+7, index);
+        movegen_push(piece, captured, '0', index+7, index);
 
         PAWN_MOVES &= ~i;
         i= PAWN_MOVES & ~(PAWN_MOVES-1);
@@ -179,7 +179,7 @@ void MoveGen::possibleWP(const U64 &wpawns, const U64 &blackking, bool capturesO
     while(i != 0){
         int index = trailingZeros(i);
 
-        movegen_push(piece,'0', 'Q', index+8, index);
+        movegen_push(piece, PIECE_EMPTY, 'Q', index+8, index);
 
         PAWN_MOVES &= ~i;
         i= PAWN_MOVES & ~(PAWN_MOVES-1);
@@ -197,7 +197,7 @@ void MoveGen::possibleWP(const U64 &wpawns, const U64 &blackking, bool capturesO
         landing += 1LL << index;
         captured = whichPieceCaptured(landing);
 
-        movegen_push(piece,captured, 'Q', index+7, index);
+        movegen_push(piece, captured, 'Q', index+7, index);
 
         PAWN_MOVES &= ~i;
         i= PAWN_MOVES & ~(PAWN_MOVES-1);
@@ -215,7 +215,7 @@ void MoveGen::possibleWP(const U64 &wpawns, const U64 &blackking, bool capturesO
         landing += 1LL << index;
         captured = whichPieceCaptured(landing);
 
-        movegen_push(piece,captured, 'Q', index+9, index);
+        movegen_push(piece, captured, 'Q', index+9, index);
 
         PAWN_MOVES &= ~i;
         i = PAWN_MOVES & ~(PAWN_MOVES-1);
@@ -225,7 +225,7 @@ void MoveGen::possibleWP(const U64 &wpawns, const U64 &blackking, bool capturesO
 
 void MoveGen::possibleBP(const U64 &bpawns, const U64 &whiteking, bool capturesOnly)
 {
-    char piece = 'p';
+    char piece = PAWN;
     char captured;
     U64 PAWN_MOVES, i;
 
@@ -238,7 +238,7 @@ void MoveGen::possibleBP(const U64 &bpawns, const U64 &whiteking, bool capturesO
         while(i != 0){
             int index = trailingZeros(i);
 
-            movegen_push(piece,'0', '0', index-8, index);
+            movegen_push(piece, PIECE_EMPTY, '0', index-8, index);
 
             PAWN_MOVES &= ~i;
             i= PAWN_MOVES & ~(PAWN_MOVES-1);
@@ -252,7 +252,7 @@ void MoveGen::possibleBP(const U64 &bpawns, const U64 &whiteking, bool capturesO
         while(i != 0){
             int index = trailingZeros(i);
 
-            movegen_push(piece, '0', '0', index-16, index);
+            movegen_push(piece, PIECE_EMPTY, '0', index-16, index);
 
             PAWN_MOVES &= ~i;
             i= PAWN_MOVES & ~(PAWN_MOVES-1);
@@ -270,7 +270,7 @@ void MoveGen::possibleBP(const U64 &bpawns, const U64 &whiteking, bool capturesO
         landing += 1LL << index;
         captured = whichPieceCaptured(landing);
 
-        movegen_push(piece,captured, '0', index-9, index);
+        movegen_push(piece, captured, '0', index-9, index);
 
         PAWN_MOVES &= ~i;
         i= PAWN_MOVES & ~(PAWN_MOVES-1);
@@ -287,7 +287,7 @@ void MoveGen::possibleBP(const U64 &bpawns, const U64 &whiteking, bool capturesO
         landing += 1LL << index;
         captured = whichPieceCaptured(landing);
 
-        movegen_push(piece,captured, '0', index-7, index);
+        movegen_push(piece, captured, '0', index-7, index);
 
         PAWN_MOVES &= ~i;
         i= PAWN_MOVES & ~(PAWN_MOVES-1);
@@ -301,7 +301,7 @@ void MoveGen::possibleBP(const U64 &bpawns, const U64 &whiteking, bool capturesO
     while(i != 0){
         int index = trailingZeros(i);
 
-        movegen_push(piece,'0', 'Q', index-8, index);
+        movegen_push(piece, PIECE_EMPTY, 'Q', index-8, index);
 
         PAWN_MOVES &= ~i;
         i= PAWN_MOVES & ~(PAWN_MOVES-1);
@@ -318,7 +318,7 @@ void MoveGen::possibleBP(const U64 &bpawns, const U64 &whiteking, bool capturesO
         landing += 1LL << index;
         captured = whichPieceCaptured(landing);
 
-        movegen_push(piece,captured, 'Q', index-9, index);
+        movegen_push(piece, captured, 'Q', index-9, index);
 
         PAWN_MOVES &= ~i;
         i= PAWN_MOVES & ~(PAWN_MOVES-1);
@@ -335,7 +335,7 @@ void MoveGen::possibleBP(const U64 &bpawns, const U64 &whiteking, bool capturesO
         landing += 1LL << index;
         captured = whichPieceCaptured(landing);
 
-        movegen_push(piece,captured, 'Q', index-7, index);
+        movegen_push(piece, captured, 'Q', index-7, index);
 
         PAWN_MOVES &= ~i;
         i= PAWN_MOVES & ~(PAWN_MOVES-1);
@@ -346,9 +346,7 @@ void MoveGen::possibleBP(const U64 &bpawns, const U64 &whiteking, bool capturesO
 //other piece moves
 void MoveGen::possibleN(U8 location, const U64 &friends, const U64 &enemys, const U64 &oppositeking, const U64 &capturesOnly)
 {
-    char piece;
-    if(isWhite) piece = 'N';
-    else piece = 'n';
+    char piece = KNIGHT;
     U64 moves;
 
     //use the knight span board which holds possible knight moves
@@ -372,14 +370,14 @@ void MoveGen::possibleN(U8 location, const U64 &friends, const U64 &enemys, cons
     while(j != 0){
         //store moves
         int index = trailingZeros(j);
-        captured = '0';
+        captured = PIECE_EMPTY;
         U64 landing = 0LL;
         landing += 1LL << index;
         if(landing & enemys){
             captured = whichPieceCaptured(landing);
         }
 
-        movegen_push(piece,captured, '0', location, index);
+        movegen_push(piece, captured, '0', location, index);
 
         moves &= ~j;
         j = moves & ~(moves-1);
@@ -388,9 +386,7 @@ void MoveGen::possibleN(U8 location, const U64 &friends, const U64 &enemys, cons
 
 void MoveGen::possibleB(U8 location,  const U64 &friends, const U64 &enemys, const U64 &oppositeking, const U64 &capturesOnly)
 {
-    char piece;
-    if(isWhite) piece = 'B';
-    else piece = 'b';
+    char piece = BISHOP;
 
     U64 moves = slider_attacks.BishopAttacks(FullTiles, location);
     moves &= ~friends & capturesOnly & ~oppositeking;
@@ -400,14 +396,14 @@ void MoveGen::possibleB(U8 location,  const U64 &friends, const U64 &enemys, con
     char captured;
     while(j != 0){
         int index = trailingZeros(j);
-        captured = '0';
+        captured = PIECE_EMPTY;
         U64 landing = 0LL;
         landing += 1LL << index;
         if(landing & enemys){
             captured = whichPieceCaptured(landing);
         }
 
-        movegen_push(piece,captured, '0', location, index);
+        movegen_push(piece, captured, '0', location, index);
 
         moves &= ~j;
         j = moves & ~(moves-1);
@@ -416,20 +412,20 @@ void MoveGen::possibleB(U8 location,  const U64 &friends, const U64 &enemys, con
 
 void MoveGen::possibleR(U8 location,  const U64 &friends, const U64 &enemys, const U64 &oppositeking, const U64 &capturesOnly)
 {
-    char piece;
+    char piece = ROOK;
     char flag = '0';
-    if(isWhite){
-        piece = 'R';
-        //has rook moved flags
-        //is rook on initial location and rook hasn't moved yet
-        if(location == A1 && !rookMoved[0]) flag = A1+1;
-        else if (location == H1 && !rookMoved[1]) flag = H1+1;
-    }
-    else {
-        if(location == A8 && !rookMoved[2]) flag = A8+1;
-        else if (location == H8 && !rookMoved[3]) flag = H8+1;
-        piece = 'r';
-    }
+
+	if (isWhite) {
+		//has rook moved flags
+		//is rook on initial location and rook hasn't moved yet
+		if (location == A1 && !rookMoved[0]) flag = A1 + 1;
+		else if (location == H1 && !rookMoved[1]) flag = H1 + 1;
+	}
+	else {
+		if (location == A8 && !rookMoved[2]) flag = A8 + 1;
+		else if (location == H8 && !rookMoved[3]) flag = H8 + 1;
+	}
+    
 
     U64 moves = slider_attacks.RookAttacks(FullTiles, location);
     moves &= ~friends & capturesOnly & ~oppositeking;
@@ -439,7 +435,7 @@ void MoveGen::possibleR(U8 location,  const U64 &friends, const U64 &enemys, con
     char captured;
     while(j != 0){
         int index = trailingZeros(j);
-        captured = '0';
+        captured = PIECE_EMPTY;
         U64 landing = 0LL;
         landing += 1LL << index;
         if(landing & enemys){
@@ -456,9 +452,7 @@ void MoveGen::possibleR(U8 location,  const U64 &friends, const U64 &enemys, con
 
 void MoveGen::possibleQ(U8 location,  const U64 &friends, const U64 &enemys, const U64 &oppositeking, const U64 &capturesOnly)
 {
-    char piece;
-    if(isWhite) piece = 'Q';
-    else piece = 'q';
+    char piece = QUEEN;
 
     //grab moves from magic bitboards
     U64 moves = slider_attacks.QueenAttacks(FullTiles, location);
@@ -472,7 +466,7 @@ void MoveGen::possibleQ(U8 location,  const U64 &friends, const U64 &enemys, con
     while(j != 0){
         int index = trailingZeros(j);
 
-        captured = '0';
+        captured = PIECE_EMPTY;
         U64 landing = 0LL;
         landing += 1LL << index;
 
@@ -491,10 +485,7 @@ void MoveGen::possibleQ(U8 location,  const U64 &friends, const U64 &enemys, con
 void MoveGen::possibleK(U8 location,  const U64 &friends, const U64 &enemys, const U64 &oppositeking, const U64 &capturesOnly)
 {
     U64 moves;
-    char piece;
-    if(isWhite) piece = 'K';
-    else piece = 'k';
-
+    char piece = KING;
 
     if(location > 9){
         moves = KING_SPAN << (location-9);
@@ -515,7 +506,7 @@ void MoveGen::possibleK(U8 location,  const U64 &friends, const U64 &enemys, con
     char captured;
     while(j != 0){
         int index = trailingZeros(j);
-        captured = '0';
+        captured = PIECE_EMPTY;
         U64 landing = 0LL;
         landing += 1LL << index;
 
@@ -548,29 +539,16 @@ void MoveGen::movegen_push(char piece, char captured, char flag, U8 from, U8 to)
     moveAr[moveCount].score = sd.history[isWhite][from][to];
 
     //scoring capture moves
-    if(captured != '0'){
+    if(captured != PIECE_EMPTY){
 
-        int pNum, cNum, id;
-        if(piece == 'P' || piece == 'p') {pNum = PAWN; id = 5;} //if pieces capture the same piece, the one with the higher id gets searched first
-        else if(piece == 'N' || piece == 'n') {pNum = KNIGHT; id = 4;}
-        else if(piece == 'B' || piece == 'b') {pNum = BISHOP; id = 3;}
-        else if(piece == 'R' || piece == 'r') {pNum = ROOK; id = 2;}
-        else if(piece == 'Q' || piece == 'q') {pNum = QUEEN; id = 1;}
-        else if (piece == 'K' || piece == 'k') {pNum = KING; id = 0;}
-
-        if(captured == 'P' || captured == 'p') cNum = PAWN;
-        else if(captured == 'N' || captured == 'n') cNum = KNIGHT;
-        else if(captured == 'B' || captured == 'b') cNum = BISHOP;
-        else if(captured == 'R' || captured == 'r') cNum = ROOK;
-        else if(captured == 'Q' || captured == 'q') cNum = QUEEN;//values at and above are actual values
-        else if(captured == 'K' || captured == 'k') cNum = KING; //value 0
+		int idAr[7] = { 0, 5, 4, 3, 2, 1, 0 }; //higher id value for lower value piece - captures are better if from lower
 
         //Good captures are scored higher, based on BLIND better lower if not defended
         //need to add Static Exchange at somepoint
-        if(blind(moveAr[moveCount], SORT_VALUE[pNum], SORT_VALUE[cNum])) moveAr[moveCount].score = SORT_CAPT + SORT_VALUE[cNum] + id;
+        if(blind(moveAr[moveCount], SORT_VALUE[piece], SORT_VALUE[captured])) moveAr[moveCount].score = SORT_CAPT + SORT_VALUE[captured] + idAr[piece];
 
         //captures of defended pieces or pieces we know nothing about ~~ better if lower still, by id
-        else moveAr[moveCount].score = SORT_VALUE[cNum] + id; // + SORT_CAPT/4 ???
+        else moveAr[moveCount].score = SORT_VALUE[captured] + idAr[piece]; // + SORT_CAPT/4 ???
 
     }
 
@@ -589,7 +567,7 @@ bool MoveGen::blind(const Move &move, int pieceVal, int captureVal)
     U64 eLoc = 1LL << move.to;
 
     //captures from pawns don't lose material
-    if(piece == 'P' || piece == 'p') return true;
+    if(move.piece == PAWN) return true;
 
     //capture lower takes higher
     if(captureVal >= pieceVal - 50) return true;
@@ -630,6 +608,139 @@ bool MoveGen::blind(const Move &move, int pieceVal, int captureVal)
     if(!defended) return true;
 
     return 0; //of other captures we know not
+}
+
+#include <algorithm> 
+int MoveGen::SEE(const U64 &sq, bool isWhite) {
+	int val = 0;
+
+	U64 loc = 1LL << trailingZeros(sq);
+
+	std::vector<U64> defenders = getSmallestAttacker(loc, isWhite);
+
+	U64 piece = defenders[0];
+	int defLoc = defenders[1];
+
+	if (piece) {
+		
+		val = std::max(0, SORT_VALUE[piece] - SEE());
+	}
+}
+
+std::vector<U64> MoveGen::getSmallestAttacker(const U64 &sq, bool isWhite) {
+	U64 attacks = 0LL, piece = 0LL, enemys, pawns, knights, rooks, bishops, queens, king, ourking;
+	//int x, y, x1, y1;
+	std::vector<U64> att;
+
+	if (isWhite) {
+		pawns = BBBlackPawns;
+		knights = BBBlackKnights;
+		bishops = BBBlackBishops;
+		rooks = BBBlackRooks;
+		queens = BBBlackQueens;
+		king = BBBlackKing;
+		//pawns
+		//capture right
+		attacks = soEaOne(pawns);
+		//capture left
+		attacks |= soWeOne(pawns);
+	}
+	else {
+		pawns = BBWhitePawns;
+		knights = BBWhiteKnights;
+		bishops = BBWhiteBishops;
+		rooks = BBWhiteRooks;
+		queens = BBWhiteQueens;
+		king = BBWhiteKing;
+		//capture right
+		attacks = noEaOne(pawns);
+		//capture left
+		attacks |= noWeOne(pawns);
+	}
+
+	//pawn/s defend/s
+	if (attacks & sq) {
+		att.push_back(attacks);
+		att.push_back(1LL);
+		return att;
+	}
+
+	//int is piece/square attacked location on board
+	int location = trailingZeros(sq);
+
+	//very similar to move generation code just ending with generated bitboards of attacks
+	//knight attacks
+	if (location > 18) {
+		attacks = KNIGHT_SPAN << (location - 18);
+	}
+	else {
+		attacks = KNIGHT_SPAN >> (18 - location);
+	}
+
+	if (location % 8 < 4) {
+		attacks &= ~FILE_GH;
+	}
+	else {
+		attacks &= ~FILE_AB;
+	}
+
+	if (attacks & knights) {
+		att.push_back(attacks);
+		att.push_back(2LL);
+		return att;
+	}
+
+	
+	attacks = slider_attacks.BishopAttacks(FullTiles, location);
+	//bishop/s defend/s
+	if (attacks & bishops) {
+		att.push_back(attacks);
+		att.push_back(3LL);
+		return att;
+	}
+	
+	attacks = slider_attacks.RookAttacks(FullTiles, location);
+	//rook/s defend/s
+	if (attacks & rooks) {
+		att.push_back(attacks);
+		att.push_back(4LL);
+		return att;
+	}
+	
+	attacks = slider_attacks.QueenAttacks(FullTiles, location);
+
+	//queen/s defend/s
+	if (attacks & queens) {
+		att.push_back(attacks);
+		att.push_back(5LL);
+		return att;
+	}
+
+	if (location > 9) {
+		attacks = KING_SPAN << (location - 9);
+	}
+	else {
+		attacks = KING_SPAN >> (9 - location);
+	}
+	if (location % 8 < 4) {
+		attacks &= ~FILE_GH;
+
+	}
+	else {
+		attacks &= ~FILE_AB;
+	}
+
+	//king defend/s
+	if (attacks & king) {
+		att.push_back(attacks);
+		att.push_back(6LL);
+		return att;
+	}
+
+	//no defenders
+	att.push_back(0LL);
+	att.push_back(0LL);
+	return att;
 }
 
 Move MoveGen::movegen_sort(int ply)
@@ -681,19 +792,19 @@ void MoveGen::reorderMoves(int ply, const HashEntry &entry)
 char MoveGen::whichPieceCaptured(U64 landing)
 {
     if(isWhite){
-        if(landing & BBBlackPawns) return 'p';
-        if(landing & BBBlackKnights) return 'n';
-        if(landing & BBBlackBishops) return 'b';
-        if(landing & BBBlackRooks) return 'r';
-        if(landing & BBBlackQueens) return 'q';
-        if(landing & BBBlackKing) return 'k';
+        if(landing & BBBlackPawns) return PAWN;
+        else if(landing & BBBlackKnights) return KNIGHT;
+		else if(landing & BBBlackBishops) return BISHOP;
+		else if(landing & BBBlackRooks) return ROOK;
+		else if(landing & BBBlackQueens) return QUEEN;
+		else if(landing & BBBlackKing) return KING;
     } else {
-        if(landing & BBWhitePawns) return 'P';
-        if(landing & BBWhiteKnights) return 'N';
-        if(landing & BBWhiteBishops) return 'B';
-        if(landing & BBWhiteRooks) return 'R';
-        if(landing & BBWhiteQueens) return 'Q';
-        if(landing & BBWhiteKing) return 'K';
+		if(landing & BBWhitePawns) return PAWN;
+		else if(landing & BBWhiteKnights) return KNIGHT;
+		else if(landing & BBWhiteBishops) return BISHOP;
+		else if(landing & BBWhiteRooks) return ROOK;
+		else if(landing & BBWhiteQueens) return QUEEN;
+		else if(landing & BBWhiteKing) return KING;
     }
     drawBBA();
     std::cout << "which piece captured error" << std::endl;
@@ -834,14 +945,19 @@ bool MoveGen::isAttacked(U64 pieceLoc, bool wOrB, bool isSearchKingCheck)
     if(attacks & RQ) return true;
 
     //king attack checks
-    attacks = northOne(pieceLoc);
-    attacks |= noEaOne(pieceLoc);
-    attacks |= eastOne(pieceLoc);
-    attacks |= soEaOne(pieceLoc);
-    attacks |= southOne(pieceLoc);
-    attacks |= soWeOne(pieceLoc);
-    attacks |= westOne(pieceLoc);
-    attacks |= noWeOne(pieceLoc);
+	if (location > 9) {
+		attacks = KING_SPAN << (location - 9);
+	}
+	else {
+		attacks = KING_SPAN >> (9 - location);
+	}
+	if (location % 8 < 4) {
+		attacks &= ~FILE_GH;
+
+	}
+	else {
+		attacks &= ~FILE_AB;
+	}
 
     if(attacks & king) return true;
 

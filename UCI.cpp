@@ -238,40 +238,28 @@ Move UCI::strToMove(std::string& input)
 	U64 f = 1LL << xyI; //create bitboards of initial 
 	U64 t = 1LL << xyE; //and landing pos
 
-	if (f & newBoard.BBWhitePawns) m.piece = 'P'; //very ugly, better way to do it?
-	else if (f & newBoard.BBWhiteKnights) m.piece = 'N';
-	else if (f & newBoard.BBWhiteBishops) m.piece = 'B';
-	else if (f & newBoard.BBWhiteRooks) m.piece = 'R';
-	else if (f & newBoard.BBWhiteQueens) m.piece = 'Q';
-	else if (f & newBoard.BBWhiteKing) m.piece = 'K';
-	else if (f & newBoard.BBBlackPawns) m.piece = 'p';
-	else if (f & newBoard.BBBlackKnights) m.piece = 'n';
-	else if (f & newBoard.BBBlackBishops) m.piece = 'b';
-	else if (f & newBoard.BBBlackRooks) m.piece = 'r';
-	else if (f & newBoard.BBBlackQueens) m.piece = 'q';
-	else if (f & newBoard.BBBlackKing) m.piece = 'k';
+						//very ugly, better way to do it?
+	if (f & newBoard.BBWhitePawns || f & newBoard.BBBlackPawns) m.piece = PAWN; 
+	else if (f & newBoard.BBWhiteKnights || f & newBoard.BBBlackKnights) m.piece = KNIGHT;
+	else if (f & newBoard.BBWhiteBishops || f & newBoard.BBBlackBishops) m.piece = BISHOP;
+	else if (f & newBoard.BBWhiteRooks || f & newBoard.BBBlackRooks) m.piece = ROOK;
+	else if (f & newBoard.BBWhiteQueens || f & newBoard.BBBlackQueens) m.piece = QUEEN;
+	else if (f & newBoard.BBWhiteKing || f & newBoard.BBBlackKing) m.piece = KING;
 
-	if (t & newBoard.BBWhitePawns) m.captured = 'P';
-	else if (t & newBoard.BBWhiteKnights) m.captured = 'N';
-	else if (t & newBoard.BBWhiteBishops) m.captured = 'B';
-	else if (t & newBoard.BBWhiteRooks) m.captured = 'R';
-	else if (t & newBoard.BBWhiteQueens) m.captured = 'Q';
-	else if (t & newBoard.BBWhiteKing) m.captured = 'K';
-	else if (t & newBoard.BBBlackPawns) m.captured = 'p';
-	else if (t & newBoard.BBBlackKnights) m.captured = 'n';
-	else if (t & newBoard.BBBlackBishops) m.captured = 'b';
-	else if (t & newBoard.BBBlackRooks) m.captured = 'r';
-	else if (t & newBoard.BBBlackQueens) m.captured = 'q';
-	else if (t & newBoard.BBBlackKing) m.captured = 'k';
-	else m.captured = '0'; //no capture
+	if (t & newBoard.BBWhitePawns || t & newBoard.BBBlackPawns) m.captured = PAWN;
+	else if (t & newBoard.BBWhiteKnights || t & newBoard.BBBlackKnights) m.captured = KNIGHT;
+	else if (t & newBoard.BBWhiteBishops || t & newBoard.BBBlackBishops) m.captured = BISHOP;
+	else if (t & newBoard.BBWhiteRooks || t & newBoard.BBBlackRooks) m.captured = ROOK;
+	else if (t & newBoard.BBWhiteQueens || t & newBoard.BBBlackQueens) m.captured = QUEEN;
+	else if (t & newBoard.BBWhiteKing || t & newBoard.BBBlackKing) m.captured = KING;
+	else m.captured = PIECE_EMPTY; //no capture
 
 	if (input.length() == 5) {
 		if (input[4] == 'q') m.flag = 'Q';
 		else if (input[4] == 'r') m.flag = 'R';
 		else if (input[4] == 'b') m.flag = 'B';
 		else if (input[4] == 'n') m.flag = 'N';
-	}
-	
+	}	
 	
 	return m;
 }

@@ -375,7 +375,7 @@ moves_loop:
                 && sd.cutoffs[isWhite][newMove.from][newMove.to] < 50
                 && (newMove.from != sd.killers[0][ply].from || newMove.to != sd.killers[0][ply].to)
                 && (newMove.from != sd.killers[1][ply].from || newMove.to != sd.killers[1][ply].to)
-                && newMove.captured == '0' && newMove.flag != 'Q'){
+                && newMove.captured == PIECE_EMPTY && newMove.flag != 'Q'){
 
 
             sd.cutoffs[isWhite][newMove.from][newMove.to] = 50;
@@ -422,7 +422,7 @@ re_search:
             //if move causes a beta cutoff stop searching current branch
             if(score >= beta){
 
-                if(newMove.captured == '0' && newMove.flag != 'Q'){
+                if(newMove.captured == PIECE_EMPTY && newMove.flag != 'Q'){
                     //add move to killers
                     addKiller(hashMove, ply);
 
@@ -462,6 +462,7 @@ re_search:
 
     return alpha;
 }
+#include "bitboards.h"
 
 int Ai_Logic::quiescent(int alpha, int beta, bool isWhite, int ply, int quietDepth)
 {
@@ -507,6 +508,13 @@ int Ai_Logic::quiescent(int alpha, int beta, bool isWhite, int ply, int quietDep
     for(int i = 0; i < moveNum; ++i)
     {        
         Move newMove = gen_moves.movegen_sort(ply);
+
+		/* //also not fast enough yet, though more testing is needed
+		//delta pruning
+		if ((standingPat + SORT_VALUE[newMove.captured] + 200 < alpha)
+			&& (newBoard.sideMaterial[isWhite] - SORT_VALUE[newMove.captured] > 1300)
+			&& newMove.flag != 'Q') continue;
+		*/		
 
         newBoard.makeMove(newMove, zobrist, isWhite);
         gen_moves.grab_boards(newBoard, isWhite);
@@ -555,7 +563,7 @@ int Ai_Logic::contempt()
 
 void Ai_Logic::addKiller(Move move, int ply)
 {
-    if(move.captured == '0'){ //if move isn't a capture save it as a killer
+    if(move.captured == PIECE_EMPTY){ //if move isn't a capture save it as a killer
         //make sure killer is different
         if(move.from != sd.killers[ply][0].from
           && move.to != sd.killers[ply][0].to){

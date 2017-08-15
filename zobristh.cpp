@@ -77,97 +77,122 @@ void ZobristH::UpdateKey(int start, int end, Move moveKey, bool isWhite)
     char captured = moveKey.captured;
 
     //if a piece was captured XOR that location with randomkey at array location end
-    if (isWhite && captured != '0'){
-        if(captured == 'p'){
-            zobristKey ^= zArray[1][0][end];
-        } else if(captured == 'r'){
-            zobristKey ^= zArray[1][1][end];
-        } else if(captured == 'n'){
-            zobristKey ^= zArray[1][2][end];
-        } else if(captured == 'b'){
-            zobristKey ^= zArray[1][3][end];
-        } else if(captured == 'q'){
-            zobristKey ^= zArray[1][4][end];
-        } else if(captured == 'k'){
-            zobristKey ^= zArray[1][5][end];
-        }
-    } else if (!isWhite && captured != '0') {
-        if(captured == 'P'){
-            zobristKey ^= zArray[0][0][end];
-        } else if(captured == 'R'){
-            zobristKey ^= zArray[0][1][end];
-        } else if(captured == 'N'){
-            zobristKey ^= zArray[0][2][end];
-        } else if(captured == 'B'){
-            zobristKey ^= zArray[0][3][end];
-        } else if(captured == 'Q'){
-            zobristKey ^= zArray[0][4][end];
-        } else if(captured == 'K'){
-            zobristKey ^= zArray[0][5][end];
-        }
+    if (isWhite && captured != PIECE_EMPTY){
+		switch (captured) {
+		case PAWN:
+			zobristKey ^= zArray[1][0][end];
+			break;
+		case KNIGHT:
+			zobristKey ^= zArray[1][2][end];
+			break;
+		case BISHOP:
+			zobristKey ^= zArray[1][3][end];
+			break;
+		case ROOK:
+			zobristKey ^= zArray[1][1][end];
+			break;
+		case QUEEN:
+			zobristKey ^= zArray[1][4][end];
+			break;
+		case KING:
+			zobristKey ^= zArray[1][5][end];
+			break;
+		}        
+        
+    } else if (!isWhite && captured != PIECE_EMPTY) {
+		switch (captured) {
+		case PAWN:
+			zobristKey ^= zArray[0][0][end];
+			break;
+		case KNIGHT:
+			zobristKey ^= zArray[0][2][end];
+			break;
+		case BISHOP:
+			zobristKey ^= zArray[0][3][end];
+			break;
+		case ROOK:
+			zobristKey ^= zArray[0][1][end];
+			break;
+		case QUEEN:
+			zobristKey ^= zArray[0][4][end];
+			break;
+		case KING:
+			zobristKey ^= zArray[0][5][end];
+			break;
+		}                
     }
 
     //XOR zobristKey with zArray number at piece start end then end location
     //if piece is white..
     if(isWhite) {
-        if(piece == 'P'){
-            //if normal pawn move
-            if(moveKey.flag == '0'){
-                zobristKey ^= zArray[0][0][start];
-                zobristKey ^= zArray[0][0][end];
-             //if pawn promotion
-            } else {
-                zobristKey ^= zArray[0][0][start];
-                zobristKey ^= zArray[0][4][end];
-            }
-
-        } else if(piece == 'R'){
-            zobristKey ^= zArray[0][1][start];
-            zobristKey ^= zArray[0][1][end];
-        } else if(piece == 'N'){
-            zobristKey ^= zArray[0][2][start];
-            zobristKey ^= zArray[0][2][end];
-        } else if(piece == 'B'){
-            zobristKey ^= zArray[0][3][start];
-            zobristKey ^= zArray[0][3][end];
-        } else if(piece == 'Q'){
-            zobristKey ^= zArray[0][4][start];
-            zobristKey ^= zArray[0][4][end];
-        } else if(piece == 'K'){
-            zobristKey ^= zArray[0][5][start];
-            zobristKey ^= zArray[0][5][end];
-        }
+		switch (piece) {
+		case PAWN:
+			//if normal pawn move
+			if (moveKey.flag == '0') {
+				zobristKey ^= zArray[0][0][start];
+				zobristKey ^= zArray[0][0][end];				
+			}
+			else { //if pawn promotion
+				zobristKey ^= zArray[0][0][start];
+				zobristKey ^= zArray[0][4][end];
+			}
+			break;
+		case KNIGHT:
+			zobristKey ^= zArray[0][2][start];
+			zobristKey ^= zArray[0][2][end];
+			break;
+		case BISHOP:
+			zobristKey ^= zArray[0][3][start];
+			zobristKey ^= zArray[0][3][end];
+			break;
+		case ROOK:
+			zobristKey ^= zArray[0][1][start];
+			zobristKey ^= zArray[0][1][end];
+			break;
+		case QUEEN:
+			zobristKey ^= zArray[0][4][start];
+			zobristKey ^= zArray[0][4][end];
+			break;
+		case KING:
+			zobristKey ^= zArray[0][5][start];
+			zobristKey ^= zArray[0][5][end];
+			break;
+		}      
     //black
     } else {
-
-        if(piece == 'p'){
-            if(moveKey.flag == '0'){
-                zobristKey ^= zArray[1][0][start];
-                zobristKey ^= zArray[1][0][end];
-            } else {
-                zobristKey ^= zArray[1][0][start];
-                zobristKey ^= zArray[1][4][end];
-            }
-        } else if(piece == 'r'){
-            zobristKey ^= zArray[1][1][start];
-            zobristKey ^= zArray[1][1][end];
-        } else if(piece == 'n'){
-            zobristKey ^= zArray[1][2][start];
-            zobristKey ^= zArray[1][2][end];
-        } else if(piece == 'b'){
-            zobristKey ^= zArray[1][3][start];
-            zobristKey ^= zArray[1][3][end];
-        } else if(piece == 'q'){
-            zobristKey ^= zArray[1][4][start];
-            zobristKey ^= zArray[1][4][end];
-        } else if(piece == 'k'){
-            zobristKey ^= zArray[1][5][start];
-            zobristKey ^= zArray[1][5][end];
-        }
-
+		switch (piece) {
+		case PAWN:
+			if (moveKey.flag == '0') {
+				zobristKey ^= zArray[1][0][start];
+				zobristKey ^= zArray[1][0][end];
+			}
+			else {
+				zobristKey ^= zArray[1][0][start];
+				zobristKey ^= zArray[1][4][end];
+			}
+			break;
+		case KNIGHT:
+			zobristKey ^= zArray[1][2][start];
+			zobristKey ^= zArray[1][2][end];
+			break;
+		case BISHOP:
+			zobristKey ^= zArray[1][3][start];
+			zobristKey ^= zArray[1][3][end];
+			break;
+		case ROOK:
+			zobristKey ^= zArray[1][1][start];
+			zobristKey ^= zArray[1][1][end];
+			break;
+		case QUEEN:
+			zobristKey ^= zArray[1][4][start];
+			zobristKey ^= zArray[1][4][end];
+			break;
+		case KING:
+			zobristKey ^= zArray[1][5][start];
+			zobristKey ^= zArray[1][5][end];
+			break;
+		}     
     }
-
-
 }
 
 U64 ZobristH::getZobristHash(BitBoards BBBoard)

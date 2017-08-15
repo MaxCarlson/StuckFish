@@ -32,7 +32,10 @@ public:
 
     bool isAttacked(U64 pieceLoc, bool wOrB, bool isSearchKingCheck);
 
-    Move movegen_sort(int ply);
+	//static exhange eval
+	int SEE(const U64 &sq, bool isWhite);
+
+	Move movegen_sort(int ply);
 
     void reorderMoves(int ply, const HashEntry &entry);
 
@@ -83,12 +86,16 @@ public:
 
 
         void drawBBA();
-        void drawBB(U64 board);
+        void drawBB(U64 board);		
+
 private:
 
         //assigns a score to moves and adds them to the move array
         void movegen_push(char piece, char captured, char flag, U8 from, U8 to);
-        bool blind(const Move &move, int pieceVal, int captureVal);
+        bool blind(const Move &move, int pieceVal, int captureVal);	
+
+		//used in static exchange eval
+		std::vector<U64> getSmallestAttacker(const U64 & sq, bool isWhite);
 
         char whichPieceCaptured(U64 landing);
 

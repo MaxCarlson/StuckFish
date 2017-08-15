@@ -94,7 +94,7 @@ public:
 
 private:
     //removes cacptured piece from BB's
-    void removeCapturedPiece(char captured, U64 location);
+    void removeCapturedPiece(bool isWhite, char captured, U64 location);
 
     //rolls back a capture on move unmake
     void undoCapture(U64 location, char piece, bool isNotWhite);

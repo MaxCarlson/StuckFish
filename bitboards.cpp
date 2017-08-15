@@ -134,12 +134,15 @@ void BitBoards::makeMove(const Move &move, ZobristH &zobrist, bool isWhite)
     U64 pieceMaskE = 1LL << xyE;
 
     //find BB that contains correct piece, remove piece from it's starting pos
-    //on piece BB, add piece to string savedMove, if it's a capture add piece to be captured,
+
+	if ((EmptyTiles & BBWhitePieces) | (EmptyTiles & BBBlackPieces)) {
+		drawBBA();
+	}
 
     //white pieces
-    if(isWhite == true){
+    if(isWhite){
         switch(move.piece){
-        case 'P':
+        case PAWN:
             //remove piece from starting loc
             BBWhitePawns &= ~pieceMaskI;
             //remove piece from color BB
@@ -164,21 +167,7 @@ void BitBoards::makeMove(const Move &move, ZobristH &zobrist, bool isWhite)
             FullTiles |= pieceMaskE;
             break;
 
-        case 'R':
-            //remove piece, test/save capture
-            BBWhiteRooks &= ~pieceMaskI;
-            BBWhitePieces &= ~pieceMaskI;
-            FullTiles &= ~pieceMaskI;
-            //add piece
-            BBWhiteRooks |= pieceMaskE;
-            //add to color pieces then full tiles
-            BBWhitePieces |= pieceMaskE;
-            FullTiles |= pieceMaskE;
-            if(move.flag == A1+1) rookMoved[0] = true;
-            else if(move.flag == H1+1) rookMoved[1] = true;
-            break;
-
-        case 'N':
+        case KNIGHT:
             BBWhiteKnights &= ~pieceMaskI;
             BBWhitePieces &= ~pieceMaskI;
             FullTiles &= ~pieceMaskI;
@@ -189,7 +178,7 @@ void BitBoards::makeMove(const Move &move, ZobristH &zobrist, bool isWhite)
             FullTiles |= pieceMaskE;
             break;
 
-        case 'B':
+        case BISHOP:
             BBWhiteBishops &= ~pieceMaskI;
             BBWhitePieces &= ~pieceMaskI;
             FullTiles &= ~pieceMaskI;
@@ -199,8 +188,22 @@ void BitBoards::makeMove(const Move &move, ZobristH &zobrist, bool isWhite)
             BBWhitePieces |= pieceMaskE;
             FullTiles |= pieceMaskE;
             break;
+		
+		case ROOK:
+			//remove piece, test/save capture
+			BBWhiteRooks &= ~pieceMaskI;
+			BBWhitePieces &= ~pieceMaskI;
+			FullTiles &= ~pieceMaskI;
+			//add piece
+			BBWhiteRooks |= pieceMaskE;
+			//add to color pieces then full tiles
+			BBWhitePieces |= pieceMaskE;
+			FullTiles |= pieceMaskE;
+			if (move.flag == A1 + 1) rookMoved[0] = true;
+			else if (move.flag == H1 + 1) rookMoved[1] = true;
+			break;
 
-        case 'Q':
+        case QUEEN:
             BBWhiteQueens &= ~pieceMaskI;
             BBWhitePieces &= ~pieceMaskI;
             FullTiles &= ~pieceMaskI;
@@ -211,7 +214,7 @@ void BitBoards::makeMove(const Move &move, ZobristH &zobrist, bool isWhite)
             FullTiles |= pieceMaskE;
             break;
 
-        case 'K':
+        case KING:
             BBWhiteKing &= ~pieceMaskI;
             BBWhitePieces &= ~pieceMaskI;
             FullTiles &= ~pieceMaskI;
@@ -225,7 +228,7 @@ void BitBoards::makeMove(const Move &move, ZobristH &zobrist, bool isWhite)
     //black pieces
     } else {
         switch(move.piece){
-        case 'p':
+        case PAWN:
             BBBlackPawns &= ~pieceMaskI;
             BBBlackPieces &= ~pieceMaskI;
             FullTiles &= ~pieceMaskI;
@@ -246,21 +249,7 @@ void BitBoards::makeMove(const Move &move, ZobristH &zobrist, bool isWhite)
             FullTiles |= pieceMaskE;
             break;
 
-        case 'r':
-            BBBlackRooks &= ~pieceMaskI;
-            BBBlackPieces &= ~pieceMaskI;
-            FullTiles &= ~pieceMaskI;
-            //add piece
-            BBBlackRooks |= pieceMaskE;
-            //add to color pieces then full tiles
-            BBBlackPieces |= pieceMaskE;
-            FullTiles |= pieceMaskE;
-            if(move.flag == A8+1) rookMoved[2] = true;
-            else if(move.flag == H8+1) rookMoved[3] = true;
-
-            break;
-
-        case 'n':
+        case KNIGHT:
             BBBlackKnights &= ~pieceMaskI;
             BBBlackPieces &= ~pieceMaskI;
             FullTiles &= ~pieceMaskI;
@@ -271,7 +260,7 @@ void BitBoards::makeMove(const Move &move, ZobristH &zobrist, bool isWhite)
             FullTiles |= pieceMaskE;
             break;
 
-        case 'b':
+        case BISHOP:
             BBBlackBishops &= ~pieceMaskI;
             BBBlackPieces &= ~pieceMaskI;
             FullTiles &= ~pieceMaskI;
@@ -282,7 +271,21 @@ void BitBoards::makeMove(const Move &move, ZobristH &zobrist, bool isWhite)
             FullTiles |= pieceMaskE;
             break;
 
-        case 'q':
+		case ROOK:
+			BBBlackRooks &= ~pieceMaskI;
+			BBBlackPieces &= ~pieceMaskI;
+			FullTiles &= ~pieceMaskI;
+			//add piece
+			BBBlackRooks |= pieceMaskE;
+			//add to color pieces then full tiles
+			BBBlackPieces |= pieceMaskE;
+			FullTiles |= pieceMaskE;
+			if (move.flag == A8 + 1) rookMoved[2] = true;
+			else if (move.flag == H8 + 1) rookMoved[3] = true;
+
+			break;
+
+        case QUEEN:
             BBBlackQueens &= ~pieceMaskI;
             BBBlackPieces &= ~pieceMaskI;
             FullTiles &= ~pieceMaskI;
@@ -293,7 +296,7 @@ void BitBoards::makeMove(const Move &move, ZobristH &zobrist, bool isWhite)
             FullTiles |= pieceMaskE;
             break;
 
-        case 'k':
+        case KING:
             BBBlackKing &= ~pieceMaskI;
             BBBlackPieces &= ~pieceMaskI;
             FullTiles &= ~pieceMaskI;
@@ -307,7 +310,7 @@ void BitBoards::makeMove(const Move &move, ZobristH &zobrist, bool isWhite)
     }
 
     //remove captured piece from BB's
-    if(move.captured != '0') removeCapturedPiece(move.captured, pieceMaskE);
+    if(move.captured != PIECE_EMPTY) removeCapturedPiece(!isWhite, move.captured, pieceMaskE);
 
 
     //correct empty tiles to opposite of full tiles
@@ -338,7 +341,7 @@ void BitBoards::unmakeMove(const Move &moveKey, ZobristH &zobrist, bool isWhite)
 
     if(isWhite){
         switch(moveKey.piece){
-            case 'P':
+            case PAWN:
             //if move not a promotion
             if(moveKey.flag == '0'){
                 //remove piece from where it landed
@@ -357,37 +360,37 @@ void BitBoards::unmakeMove(const Move &moveKey, ZobristH &zobrist, bool isWhite)
             BBWhitePieces |= pieceMaskI;
             break;
 
-            case 'R':
-            BBWhiteRooks &= ~pieceMaskE;
-            BBWhiteRooks |= pieceMaskI;
-            BBWhitePieces &= ~pieceMaskE;
-            BBWhitePieces |= pieceMaskI;
-            if(moveKey.flag == A1+1) rookMoved[0] = false;
-            else if(moveKey.flag == H1+1) rookMoved[1] = false;
-            break;
-
-            case 'N':
+            case KNIGHT:
             BBWhiteKnights &= ~pieceMaskE;
             BBWhiteKnights |= pieceMaskI;
             BBWhitePieces &= ~pieceMaskE;
             BBWhitePieces |= pieceMaskI;
             break;
 
-            case 'B':
+            case BISHOP:
             BBWhiteBishops &= ~pieceMaskE;
             BBWhiteBishops |= pieceMaskI;
             BBWhitePieces &= ~pieceMaskE;
             BBWhitePieces |= pieceMaskI;
             break;
 
-            case 'Q':
+			case ROOK:
+			BBWhiteRooks &= ~pieceMaskE;
+			BBWhiteRooks |= pieceMaskI;
+			BBWhitePieces &= ~pieceMaskE;
+			BBWhitePieces |= pieceMaskI;
+			if (moveKey.flag == A1 + 1) rookMoved[0] = false;
+			else if (moveKey.flag == H1 + 1) rookMoved[1] = false;
+			break;
+
+            case QUEEN:
             BBWhiteQueens &= ~pieceMaskE;
             BBWhiteQueens |= pieceMaskI;
             BBWhitePieces &= ~pieceMaskE;
             BBWhitePieces |= pieceMaskI;
             break;
 
-            case 'K':
+            case KING:
             BBWhiteKing &= ~pieceMaskE;
             BBWhiteKing |= pieceMaskI;
             BBWhitePieces &= ~pieceMaskE;
@@ -396,7 +399,7 @@ void BitBoards::unmakeMove(const Move &moveKey, ZobristH &zobrist, bool isWhite)
         }
     } else {
         switch(moveKey.piece){
-            case 'p':
+            case PAWN:
             if(moveKey.flag == '0'){
                 //remove piece from where it landed
                 BBBlackPawns &= ~pieceMaskE;
@@ -413,7 +416,7 @@ void BitBoards::unmakeMove(const Move &moveKey, ZobristH &zobrist, bool isWhite)
             BBBlackPieces |= pieceMaskI;
             break;
 
-            case 'r':
+            case ROOK:
             BBBlackRooks &= ~pieceMaskE;
             BBBlackRooks |= pieceMaskI;
             BBBlackPieces &= ~pieceMaskE;
@@ -422,28 +425,28 @@ void BitBoards::unmakeMove(const Move &moveKey, ZobristH &zobrist, bool isWhite)
             else if(moveKey.flag == H8+1) rookMoved[3] = false;
             break;
 
-            case 'n':
+            case KNIGHT:
             BBBlackKnights &= ~pieceMaskE;
             BBBlackKnights |= pieceMaskI;
             BBBlackPieces &= ~pieceMaskE;
             BBBlackPieces |= pieceMaskI;
             break;
 
-            case 'b':
+            case BISHOP:
             BBBlackBishops &= ~pieceMaskE;
             BBBlackBishops |= pieceMaskI;
             BBBlackPieces &= ~pieceMaskE;
             BBBlackPieces |= pieceMaskI;
             break;
 
-            case 'q':
+            case QUEEN:
             BBBlackQueens &= ~pieceMaskE;
             BBBlackQueens |= pieceMaskI;
             BBBlackPieces &= ~pieceMaskE;
             BBBlackPieces |= pieceMaskI;
             break;
 
-            case 'k':
+            case KING:
             BBBlackKing &= ~pieceMaskE;
             BBBlackKing |= pieceMaskI;
             BBBlackPieces &= ~pieceMaskE;
@@ -457,7 +460,7 @@ void BitBoards::unmakeMove(const Move &moveKey, ZobristH &zobrist, bool isWhite)
     //if a piece has been captured ///Might have errors in calling unmake
     //even when a piece hasn't been captured
     if(isWhite){
-        if(moveKey.captured == '0'){
+        if(moveKey.captured == PIECE_EMPTY){
             FullTiles &= ~pieceMaskE;
             FullTiles |= pieceMaskI;
         } else{
@@ -465,7 +468,7 @@ void BitBoards::unmakeMove(const Move &moveKey, ZobristH &zobrist, bool isWhite)
             FullTiles |= pieceMaskI;
         }
     } else {
-        if(moveKey.captured == '0'){
+        if(moveKey.captured == PIECE_EMPTY){
             FullTiles &= ~pieceMaskE;
             FullTiles |= pieceMaskI;
         } else{
@@ -489,74 +492,72 @@ void BitBoards::undoCapture(U64 location, char piece, bool isNotWhite)
 
     if(isNotWhite){
         switch(piece){
-            case 'P':
+            case PAWN:
                 //restore piece to both piece board and color board
                 //no need to change FullTiles as captured piece was already there
                 BBWhitePawns |= location;
                 BBWhitePieces |= location;
 				//adjust side material balence
 				sideMaterial[0] += PAWN_VAL;
-                break;
-            case 'R':
-                BBWhiteRooks |= location;
-                BBWhitePieces |= location;
-				sideMaterial[0] += ROOK_VAL;
-                break;
-            case 'N':
+                break;            
+            case KNIGHT:
                 BBWhiteKnights |= location;
                 BBWhitePieces |= location;
 				sideMaterial[0] += KNIGHT_VAL;
                 break;
-            case 'B':
+            case BISHOP:
                 BBWhiteBishops |= location;
                 BBWhitePieces |= location;
 				sideMaterial[0] += BISHOP_VAL;
                 break;
-            case 'Q':
+			case ROOK:
+				BBWhiteRooks |= location;
+				BBWhitePieces |= location;
+				sideMaterial[0] += ROOK_VAL;
+				break;
+            case QUEEN:
                 BBWhiteQueens |= location;
                 BBWhitePieces |= location;
 				sideMaterial[0] += QUEEN_VAL;
                 break;
-            case 'K':
+            case KING:
                 BBWhiteKing |= location;
                 BBWhitePieces |= location;
 				sideMaterial[0] += KING_VAL;
                 break;
             default:
-
                 std::cout << "UNDO CAPTURE ERROR" << std::endl;
-
         }
     } else {
         switch(piece){
-            case 'p':
+            case PAWN:
                 //restore piece to both piece board and color board
                 //no need to change FullTiles as captured piece was already there
                 BBBlackPawns |= location;
                 BBBlackPieces |= location;
 				sideMaterial[1] += PAWN_VAL;
                 break;
-            case 'r':
-                BBBlackRooks |= location;
-                BBBlackPieces |= location;
-				sideMaterial[1] += ROOK_VAL;
-                break;
-            case 'n':
+            case KNIGHT:
                 BBBlackKnights |= location;
                 BBBlackPieces |= location;
 				sideMaterial[1] += KNIGHT_VAL;
                 break;
-            case 'b':
+            case BISHOP:
                 BBBlackBishops |= location;
                 BBBlackPieces |= location;
 				sideMaterial[1] += BISHOP_VAL;
                 break;
-            case 'q':
+			case ROOK:
+				BBBlackRooks |= location;
+				BBBlackPieces |= location;
+				sideMaterial[1] += ROOK_VAL;
+				break;
+            case QUEEN:
                 BBBlackQueens |= location;
                 BBBlackPieces |= location;
 				sideMaterial[1] += QUEEN_VAL;
                 break;
-            case 'k':
+            case KING:
                 BBBlackKing |= location;
                 BBBlackPieces |= location;
 				sideMaterial[1] += KING_VAL;
@@ -651,72 +652,78 @@ void BitBoards::drawBBA()
     std::cout << std::endl << std::endl;;
 }
 
-void BitBoards::removeCapturedPiece(char captured, U64 location)
+void BitBoards::removeCapturedPiece(bool isWhite, char captured, U64 location)
 {
-    switch(captured){
-    case 'P':
-        BBWhitePawns &= ~location;
-        BBWhitePieces &= ~location;
-		sideMaterial[0] -= PAWN_VAL;
-        break;
-    case 'N':
-        BBWhiteKnights &= ~location;
-        BBWhitePieces &= ~location;
-		sideMaterial[0] -= KNIGHT_VAL;
-        break;
-    case 'B':
-        BBWhiteBishops &= ~location;
-        BBWhitePieces &= ~location;
-		sideMaterial[0] -= BISHOP_VAL;
-        break;
-    case 'R':
-        BBWhiteRooks &= ~location;
-        BBWhitePieces &= ~location;
-		sideMaterial[0] -= ROOK_VAL;
-        break;
-    case 'Q':
-        BBWhiteQueens &= ~location;
-        BBWhitePieces &= ~location;
-		sideMaterial[0] -= QUEEN_VAL;
-        break;
-    case 'K':
-        BBWhiteKing &= ~location;
-        BBWhitePieces &= ~location;
-		sideMaterial[0] -= KING_VAL;
-        break;
-    case 'p':
-        BBBlackPawns &= ~location;
-        BBBlackPieces &= ~location;
-		sideMaterial[1] -= PAWN_VAL;
-        break;
-    case 'n':
-        BBBlackKnights &= ~location;
-        BBBlackPieces &= ~location;
-		sideMaterial[1] -= KNIGHT_VAL;
-        break;
-    case 'b':
-        BBBlackBishops &= ~location;
-        BBBlackPieces &= ~location;
-		sideMaterial[1] -= BISHOP_VAL;
-        break;
-    case 'r':
-        BBBlackRooks &= ~location;
-        BBBlackPieces &= ~location;
-		sideMaterial[1] -= ROOK_VAL;
-        break;
-    case 'q':
-        BBBlackQueens &= ~location;
-        BBBlackPieces &= ~location;
-		sideMaterial[1] -= QUEEN_VAL;
-        break;
-    case 'k':
-        BBBlackKing &= ~location;
-        BBBlackPieces &= ~location;
-		sideMaterial[1] -= KING_VAL;
-        break;
-    default:
-        std::cout << "Remove Captured Piece on make move ERROR" << std::endl;
-    }
+	if (isWhite) {
+		switch (captured) {
+		case PAWN:
+			BBWhitePawns &= ~location;
+			BBWhitePieces &= ~location;
+			sideMaterial[0] -= PAWN_VAL;
+			break;
+		case KNIGHT:
+			BBWhiteKnights &= ~location;
+			BBWhitePieces &= ~location;
+			sideMaterial[0] -= KNIGHT_VAL;
+			break;
+		case BISHOP:
+			BBWhiteBishops &= ~location;
+			BBWhitePieces &= ~location;
+			sideMaterial[0] -= BISHOP_VAL;
+			break;
+		case ROOK:
+			BBWhiteRooks &= ~location;
+			BBWhitePieces &= ~location;
+			sideMaterial[0] -= ROOK_VAL;
+			break;
+		case QUEEN:
+			BBWhiteQueens &= ~location;
+			BBWhitePieces &= ~location;
+			sideMaterial[0] -= QUEEN_VAL;
+			break;
+		case KING:
+			BBWhiteKing &= ~location;
+			BBWhitePieces &= ~location;
+			sideMaterial[0] -= KING_VAL;
+			break;
+		}
+	}
+	else {
+		switch(captured){
+		case PAWN:
+			BBBlackPawns &= ~location;
+			BBBlackPieces &= ~location;
+			sideMaterial[1] -= PAWN_VAL;
+			break;
+		case KNIGHT:
+			BBBlackKnights &= ~location;
+			BBBlackPieces &= ~location;
+			sideMaterial[1] -= KNIGHT_VAL;
+			break;
+		case BISHOP:
+			BBBlackBishops &= ~location;
+			BBBlackPieces &= ~location;
+			sideMaterial[1] -= BISHOP_VAL;
+			break;
+		case ROOK:
+			BBBlackRooks &= ~location;
+			BBBlackPieces &= ~location;
+			sideMaterial[1] -= ROOK_VAL;
+			break;
+		case QUEEN:
+			BBBlackQueens &= ~location;
+			BBBlackPieces &= ~location;
+			sideMaterial[1] -= QUEEN_VAL;
+			break;
+		case KING:
+			BBBlackKing &= ~location;
+			BBBlackPieces &= ~location;
+			sideMaterial[1] -= KING_VAL;
+			break;
+		default:
+			std::cout << "Remove Captured Piece on make move ERROR" << std::endl;
+		}
+	}
 }
 
 
