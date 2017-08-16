@@ -34,7 +34,7 @@ public:
     bool isAttacked(U64 pieceLoc, bool wOrB, bool isSearchKingCheck);
 
 	//static exhange eval
-	int SEE(const U64 &sq, int piece, bool isWhite);
+	int SEE(const U64 &fromSQ, const U64 &captureSQ, int piece, int captured, bool isWhite);
 
 	Move movegen_sort(int ply);
 

@@ -509,12 +509,15 @@ int Ai_Logic::quiescent(int alpha, int beta, bool isWhite, int ply, int quietDep
     {        
         Move newMove = gen_moves.movegen_sort(ply);
 
-		/* //also not fast enough yet, though more testing is needed
+		//also not fast enough yet, though more testing is needed
 		//delta pruning
 		if ((standingPat + SORT_VALUE[newMove.captured] + 200 < alpha)
-			&& (newBoard.sideMaterial[isWhite] - SORT_VALUE[newMove.captured] > 1300)
+			&& (newBoard.sideMaterial[!isWhite] - SORT_VALUE[newMove.captured] > 1300)
 			&& newMove.flag != 'Q') continue;
-		*/		
+			
+		U64 f = 1LL << newMove.from;
+		U64 t = 1LL << newMove.to;
+		if (newMove.flag != 81 && gen_moves.SEE(f, t, newMove.piece, newMove.captured, isWhite) < 0) continue; //or equal to zero add once bug is found
 
         newBoard.makeMove(newMove, zobrist, isWhite);
         gen_moves.grab_boards(newBoard, isWhite);

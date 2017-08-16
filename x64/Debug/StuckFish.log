@@ -1,9 +1,3 @@
-﻿  movegen.cpp
-  Generating Code...
-c:\users\c-60\desktop\cppprograms\stuckfish\movegen.cpp(628): error C4716: 'MoveGen::SEE': must return a value
-  Compiling...
-  zobristh.cpp
-  main.cpp
-  evaluatebb.cpp
-  ai_logic.cpp
-  Generating Code...
+﻿  ai_logic.cpp
+  StuckFish.vcxproj -> C:\Users\C-60\Desktop\cppPrograms\StuckFish\x64\Debug\StuckFish.exe
+  StuckFish.vcxproj -> C:\Users\C-60\Desktop\cppPrograms\StuckFish\x64\Debug\StuckFish.pdb (Partial PDB)
