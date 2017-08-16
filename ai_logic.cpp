@@ -292,7 +292,7 @@ int Ai_Logic::alphaBeta(U8 depth, int alpha, int beta, bool isWhite, U8 ply, boo
     if(FlagInCheck) goto moves_loop; //if in check, skip nulls, statics evals, razoring, etc
 
 	evaluateBB eval;
-	int static_eval = eval.evalBoard(isWhite, newBoard, zobrist); //newBoard.sideMaterial[!isWhite];  ?
+	int static_eval = eval.evalBoard(isWhite, newBoard, zobrist); //newBoard.sideMaterial[isWhite] - newBoard.sideMaterial[!isWhite];
 //eval pruning / static null move
     if(depth < 3 && !is_pv && abs(beta - 1) > -INF + 100){
 		//evaluateBB eval;
@@ -343,10 +343,10 @@ int Ai_Logic::alphaBeta(U8 depth, int alpha, int beta, bool isWhite, U8 ply, boo
 
 //jump to here if in check
 moves_loop:
-	bool genOnlyCaps = false;
-	if (f_prune)  genOnlyCaps = true;
+	//bool genOnlyCaps = false;
+	//if (f_prune)  genOnlyCaps = true;
 //generate psuedo legal moves (not just captures)
-    gen_moves.generatePsMoves(genOnlyCaps);
+    gen_moves.generatePsMoves(false);
 
     //add killers scores and hash moves scores to moves if there are any
     gen_moves.reorderMoves(ply, entry);
@@ -476,6 +476,7 @@ re_search:
         if(FlagInCheck) alpha = -INF + ply;
         else alpha = contempt(isWhite); 
     }
+	if (futileMoves && !raisedAlpha) alpha = static_eval;
 
     //add alpha eval to hash table don't save a real move
     addMoveTT(hashMove, depth, alpha, hashFlag);
@@ -537,7 +538,7 @@ int Ai_Logic::quiescent(int alpha, int beta, bool isWhite, int ply, int quietDep
 			&& newMove.flag != 'Q') continue;
 			
 		/*
-		U64 f = 1LL << newMove.from;
+		U64 f = 1LL << newMove.from; //SEE eval cutoff
 		U64 t = 1LL << newMove.to;
 		if (newMove.score <= 0) continue; //or equal to zero add once bug is found
 		*/

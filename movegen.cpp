@@ -371,7 +371,7 @@ void MoveGen::possibleN(U8 location, const U64 &friends, const U64 &enemys, cons
     char captured;
     while(j != 0){
         //store moves
-        int index = trailingZeros(j);
+		int index = trailingZeros(j); //msb(j);//
         captured = PIECE_EMPTY;
         U64 landing = 0LL;
         landing += 1LL << index;
@@ -397,7 +397,7 @@ void MoveGen::possibleB(U8 location,  const U64 &friends, const U64 &enemys, con
 
     char captured;
     while(j != 0){
-        int index = trailingZeros(j);
+		int index = trailingZeros(j); //msb(j);//
         captured = PIECE_EMPTY;
         U64 landing = 0LL;
         landing += 1LL << index;
@@ -436,7 +436,7 @@ void MoveGen::possibleR(U8 location,  const U64 &friends, const U64 &enemys, con
 
     char captured;
     while(j != 0){
-        int index = trailingZeros(j);
+		int index = trailingZeros(j); // msb(j);//
         captured = PIECE_EMPTY;
         U64 landing = 0LL;
         landing += 1LL << index;
@@ -466,7 +466,7 @@ void MoveGen::possibleQ(U8 location,  const U64 &friends, const U64 &enemys, con
 
     char captured;
     while(j != 0){
-        int index = trailingZeros(j);
+		int index =  trailingZeros(j);//msb(j); //
 
         captured = PIECE_EMPTY;
         U64 landing = 0LL;
@@ -507,7 +507,7 @@ void MoveGen::possibleK(U8 location,  const U64 &friends, const U64 &enemys, con
 
     char captured;
     while(j != 0){
-        int index = trailingZeros(j);
+		int index = trailingZeros(j);//msb(j); // 
         captured = PIECE_EMPTY;
         U64 landing = 0LL;
         landing += 1LL << index;
