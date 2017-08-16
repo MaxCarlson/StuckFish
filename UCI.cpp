@@ -12,13 +12,8 @@
 //master bitboard for turn
 BitBoards newBoard;
 
-//dummy zobrist object
-ZobristH zDummy;
-
 //master search obj
 Ai_Logic searchM;
-
-
 
 //is it whites turn?
 bool isWhite = true;
@@ -131,11 +126,17 @@ void UCI::updatePosition(std::istringstream& input)
 	Move m;
 	std::string token, fen;
 
+	//dummy zobrist object
+	ZobristH zDummy;
+	
+
 	input >> token;
 
 	if (token == "startpos")
 	{
 		newGame();
+		sd.twoFoldRep.clear();
+		zDummy.getZobristHash(newBoard);
 	}
 	else if (token == "fen")
 	{
@@ -148,6 +149,7 @@ void UCI::updatePosition(std::istringstream& input)
 		return;
 	}
 
+	int repCount = 0;
 	// Parse move list (if any)
 	while (input >> token)
 	{
@@ -157,6 +159,8 @@ void UCI::updatePosition(std::istringstream& input)
 			newBoard.makeMove(m, zDummy, isWhite); //test ~~/ position startpos moves c2c4 g8f6
 			turns += 1;
 
+			sd.twoFoldRep.push_back(zDummy.zobristKey);
+			repCount++;
 			isWhite = !isWhite;
 		}
 	}

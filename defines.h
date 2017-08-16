@@ -76,7 +76,9 @@ typedef long long S64;
 
 #define INF 10000
 #define INVALID 32767
-#define END_GAME_MAT 1300;
+#define END_GAME_MAT 1300
+#define DRAW_OPENING -10
+#define DRAW_ENDGAME 0
 
 #define CACHE_LINE_SIZE 64 //taken from stockfish
 #if defined(_MSC_VER) || defined(__INTEL_COMPILER)

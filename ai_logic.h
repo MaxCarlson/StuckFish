@@ -41,7 +41,11 @@ private:
     */
 
     //make ai prefer checkmate over stalemate
-    int contempt(); //need some way to check board material before implementing
+    int contempt(bool isWhite); //need some way to check board material before implementing
+
+	//repetition checker
+	bool isRepetition(const Move& m);
+	
 
 //heuristics
 

@@ -316,8 +316,6 @@ void BitBoards::makeMove(const Move &move, ZobristH &zobrist, bool isWhite)
     //correct empty tiles to opposite of full tiles
     EmptyTiles &= ~pieceMaskE;
     EmptyTiles |= pieceMaskI;
-    //EmptyTiles &= ~FullTiles
-    //drawBBA();
 
 
     if((EmptyTiles & BBWhitePieces) | (EmptyTiles & BBBlackPieces)){

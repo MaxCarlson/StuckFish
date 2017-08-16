@@ -28,14 +28,14 @@ searchDriver sd;
 //for quiet search
 MoveGen evalGenMoves;
 
+//master zobrist for turn
+ZobristH zobrist;
+
 //value to determine if time for search has run out
 bool timeOver;
 
 //master time manager
 TimeManager timeM;
-
-//master zobrist for turn
-ZobristH zobrist;
 
 Ai_Logic::Ai_Logic()
 {
@@ -159,7 +159,13 @@ int Ai_Logic::searchRoot(U8 depth, int alpha, int beta, bool isWhite, U8 ply)
     for(U8 i = 0; i < moveNum; ++i){
         //find best move generated
         Move newMove = gen_moves.movegen_sort(ply);
-        newBoard.makeMove(newMove, zobrist, isWhite);  /// !~!~!~!~!~!~!~!~!~! try SWITCHing from a move gen object haveing a local array to the psuedo movegen funcion
+        newBoard.makeMove(newMove, zobrist, isWhite);  
+
+		if (isRepetition(newMove)) { //if position from root move is a two fold repetition, discard that move
+			newBoard.unmakeMove(newMove, zobrist, isWhite);
+			gen_moves.grab_boards(newBoard, isWhite);
+			continue;
+		}											   /// !~!~!~!~!~!~!~!~!~! try SWITCHing from a move gen object haveing a local array to the psuedo movegen funcion
         gen_moves.grab_boards(newBoard, isWhite);      /// returning a vector or a pointer to an array that's stored in the search, so we can stop constructing movegen
                                                        /// objects and instead just have a local global for the duration of the search. sort could return the index of the best move
         //is move legal? if not skip it                ///and take the array or vector as a const refrence argument
@@ -267,6 +273,7 @@ int Ai_Logic::alphaBeta(U8 depth, int alpha, int beta, bool isWhite, U8 ply, boo
         score = quiescent(alpha, beta, isWhite, ply, queitSD);
         return score;
     }
+
 
     MoveGen gen_moves;
     //grab bitboards from newBoard object and store color and board to var
@@ -454,7 +461,7 @@ re_search:
 
     if(!legalMoves){
         if(FlagInCheck) alpha = -INF + ply;
-        //else alpha = contempt(); //NEED to add contempt, make program favor not draws
+        else alpha = contempt(isWhite); 
     }
 
     //add alpha eval to hash table don't save a real move
@@ -462,7 +469,7 @@ re_search:
 
     return alpha;
 }
-#include "bitboards.h"
+
 
 int Ai_Logic::quiescent(int alpha, int beta, bool isWhite, int ply, int quietDepth)
 {
@@ -509,15 +516,18 @@ int Ai_Logic::quiescent(int alpha, int beta, bool isWhite, int ply, int quietDep
     {        
         Move newMove = gen_moves.movegen_sort(ply);
 
+		
 		//also not fast enough yet, though more testing is needed
 		//delta pruning
 		if ((standingPat + SORT_VALUE[newMove.captured] + 200 < alpha)
-			&& (newBoard.sideMaterial[!isWhite] - SORT_VALUE[newMove.captured] > 1300)
+			&& (newBoard.sideMaterial[!isWhite] - SORT_VALUE[newMove.captured] > END_GAME_MAT)
 			&& newMove.flag != 'Q') continue;
 			
+		
 		U64 f = 1LL << newMove.from;
 		U64 t = 1LL << newMove.to;
 		if (newMove.flag != 81 && gen_moves.SEE(f, t, newMove.piece, newMove.captured, isWhite) < 0) continue; //or equal to zero add once bug is found
+		
 
         newBoard.makeMove(newMove, zobrist, isWhite);
         gen_moves.grab_boards(newBoard, isWhite);
@@ -558,10 +568,37 @@ int Ai_Logic::quiescent(int alpha, int beta, bool isWhite, int ply, int quietDep
     return alpha;
 }
 
-int Ai_Logic::contempt()
+int Ai_Logic::contempt(bool isWhite)
 {
     //need some way to check board material before implementing
+
+	int value = DRAW_OPENING;
+
+	//if my sides material is below endgame mat, use DRAW_ENDGAME val sideMat[0] is white
+	if (newBoard.sideMaterial[!isWhite] < END_GAME_MAT) {
+		value = DRAW_ENDGAME;
+	}
+
+	if (isWhite) return value;
+	else return -value;
+
 	return 0;
+}
+
+bool Ai_Logic::isRepetition(const Move& m)
+{
+	if (m.piece == PAWN) return false;
+	else if (m.flag == 'Q') return false;
+	//add in castling logic to quit early
+
+	int repCount = 0;
+	for (int i = 0; i < sd.twoFoldRep.size(); i++) {
+		if (zobrist.zobristKey == sd.twoFoldRep[i]) repCount++;
+	}
+
+	if (repCount >= 2) return true;
+
+	return false;
 }
 
 void Ai_Logic::addKiller(Move move, int ply)

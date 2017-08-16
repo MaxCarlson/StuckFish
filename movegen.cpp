@@ -1,5 +1,7 @@
 #include "movegen.h"
 
+#include <algorithm> 
+
 #include "hashentry.h"
 #include "bitboards.h"
 #include "slider_attacks.h"
@@ -618,7 +620,6 @@ bool MoveGen::blind(const Move &move, int pieceVal, int captureVal)
     return 0; //of other captures we know not
 }
 
-#include <algorithm> 
 int MoveGen::SEE(const U64 &fromSQ, const U64 &captureSQ, int piece, int captured, bool isWhite) {
 	int val = 0;
 

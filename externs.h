@@ -58,6 +58,7 @@ struct searchDriver{
 	long startTime;
 	long moveTime = 5000;
 	bool isWhite;
+	std::vector<U64> twoFoldRep;
 };
 extern searchDriver sd;
 
