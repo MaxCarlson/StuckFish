@@ -141,7 +141,7 @@ void UCI::updatePosition(std::istringstream& input)
 		newGame();
 
 		//create zobrist hash for startpos that is used to check repetitions
-		zDummy.getZobristHash(newBoard);
+		zobrist.getZobristHash(newBoard);
 	}
 	else if (token == "fen")
 	{
@@ -164,11 +164,11 @@ void UCI::updatePosition(std::istringstream& input)
 			m = strToMove(token);
 
 			//make move + increment turns
-			newBoard.makeMove(m, zDummy, isWhite);
+			newBoard.makeMove(m, zobrist, isWhite);
 			turns += 1;
 			
 			//push board position U64 to search driver.two fold repeitions
-			sd.twoFoldRep.push_back(zDummy.zobristKey);
+			sd.twoFoldRep.push_back(zobrist.zobristKey);
 			repCount++;
 			
 			isWhite = !isWhite;

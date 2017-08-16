@@ -112,8 +112,11 @@ Move Ai_Logic::iterativeDeep(int depth, bool isWhite)
             //if statement makes sure the move has been tried before storing it
             if(sd.PV[1].tried) bestMove = sd.PV[1];
 
+			//print data on search 
+			print(isWhite);
+
         }
-		print();
+		
         //increment distance to travel (same as depth at max depth)
 		sd.depth++;
     }
@@ -222,6 +225,7 @@ int Ai_Logic::alphaBeta(U8 depth, int alpha, int beta, bool isWhite, U8 ply, boo
 {
     bool FlagInCheck = false;
     bool raisedAlpha = false;
+	bool futileMoves = false;
     U8 R = 2;
     U8 reductionDepth;
     U8 newDepth;
@@ -288,7 +292,7 @@ int Ai_Logic::alphaBeta(U8 depth, int alpha, int beta, bool isWhite, U8 ply, boo
     if(FlagInCheck) goto moves_loop; //if in check, skip nulls, statics evals, razoring, etc
 
 	evaluateBB eval;
-	int static_eval = eval.evalBoard(isWhite, newBoard, zobrist);
+	int static_eval = eval.evalBoard(isWhite, newBoard, zobrist); //newBoard.sideMaterial[!isWhite];  ?
 //eval pruning / static null move
     if(depth < 3 && !is_pv && abs(beta - 1) > -INF + 100){
 		//evaluateBB eval;
@@ -327,7 +331,7 @@ int Ai_Logic::alphaBeta(U8 depth, int alpha, int beta, bool isWhite, U8 ply, boo
         }
     }
 
-	/*
+	///* //TOO slow
 //do we want to futility prune?
     int fmargin[8] = {0, 100, 150, 200, 250, 300, 400, 500};
     if(depth < 7 && !is_pv
@@ -335,12 +339,14 @@ int Ai_Logic::alphaBeta(U8 depth, int alpha, int beta, bool isWhite, U8 ply, boo
 		&& static_eval + fmargin[depth] <= alpha){
         f_prune = 1;
     }
-*/
+	//*/
 
 //jump to here if in check
 moves_loop:
+	bool genOnlyCaps = false;
+	if (f_prune)  genOnlyCaps = true;
 //generate psuedo legal moves (not just captures)
-    gen_moves.generatePsMoves(false);
+    gen_moves.generatePsMoves(genOnlyCaps);
 
     //add killers scores and hash moves scores to moves if there are any
     gen_moves.reorderMoves(ply, entry);
@@ -366,18 +372,20 @@ moves_loop:
         reductionDepth = 0;
         newDepth = depth - 1;
         sd.cutoffs[isWhite][newMove.from][newMove.to] -= 1;
-/*		
+		///*		
         //STILL TOO SLOW
-        //futility pruning ~~ is not a promotion, is not a capture, and does not give check, and we've tried one move already
-        if(f_prune && i > 0 && newMove.flag != 'Q'
-            && newMove.captured == 0 && legalMoves
+        //futility pruning ~~ is not a promotion or hashmove, is not a capture, and does not give check, and we've tried one move already
+        if(f_prune && i > 0 && newMove.score < SORT_HASH
+            && newMove.captured == PIECE_EMPTY && legalMoves
             && gen_moves.isAttacked(eking, !isWhite, true)){
 
             newBoard.unmakeMove(newMove, zobrist, isWhite);
 			gen_moves.grab_boards(newBoard, isWhite);
+			futileMoves = true; //flag so we know we skipped a move/not checkmate
             continue;
+			//break;
         }
-        */
+        //*/
 
         //late move reduction
         if(!is_pv && newDepth > 3
@@ -464,7 +472,7 @@ re_search:
         }
     }
 
-    if(!legalMoves){
+    if(!legalMoves && !futileMoves){
         if(FlagInCheck) alpha = -INF + ply;
         else alpha = contempt(isWhite); 
     }
@@ -521,17 +529,17 @@ int Ai_Logic::quiescent(int alpha, int beta, bool isWhite, int ply, int quietDep
     {        
         Move newMove = gen_moves.movegen_sort(ply);
 
-		/*
+		///*
 		//also not fast enough yet, though more testing is needed
 		//delta pruning
 		if ((standingPat + SORT_VALUE[newMove.captured] + 200 < alpha)
 			&& (newBoard.sideMaterial[!isWhite] - SORT_VALUE[newMove.captured] > END_GAME_MAT)
 			&& newMove.flag != 'Q') continue;
 			
-		
+		/*
 		U64 f = 1LL << newMove.from;
 		U64 t = 1LL << newMove.to;
-		if (newMove.flag != 81 && gen_moves.SEE(f, t, newMove.piece, newMove.captured, isWhite) < 0) continue; //or equal to zero add once bug is found
+		if (newMove.score <= 0) continue; //or equal to zero add once bug is found
 		*/
 
         newBoard.makeMove(newMove, zobrist, isWhite);
@@ -545,11 +553,6 @@ int Ai_Logic::quiescent(int alpha, int beta, bool isWhite, int ply, int quietDep
         }
 
         /*
-        // ~~~NEEDS WORK + Testing + stop pruning in end game
-        if(deltaPruning(tempMove, standingPat, isWhite, alpha, false, newBoard)){
-            continue; //uncomment to enable delta pruning!!!
-        }
-
         //bad capture pruning
         if(badCapture(tempMove, isWhite, newBoard) && tempMove[3] != 'Q'){
             continue;
@@ -603,7 +606,7 @@ bool Ai_Logic::isRepetition(const Move& m)
 
 	}
 
-	if (repCount >= 2) {
+	if (repCount >= 1) {
 		return true;
 	}
 
@@ -675,7 +678,7 @@ void Ai_Logic::checkInput()
 	}
 }
 
-void Ai_Logic::print()
+void Ai_Logic::print(bool isWhite)
 {
 	std::stringstream ss;
 	
@@ -683,7 +686,7 @@ void Ai_Logic::print()
 
 	if (sd.depth == 1) { //only eval board once a turn
 		evaluateBB ev;
-		ss << " score cp " << ev.evalBoard(true, newBoard, zobrist);
+		ss << " score cp " << ev.evalBoard(isWhite, newBoard, zobrist);
 	}
 
 	std::cout << ss.str() << std::endl;

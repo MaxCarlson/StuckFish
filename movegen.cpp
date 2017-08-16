@@ -552,13 +552,14 @@ void MoveGen::movegen_push(char piece, char captured, char flag, U8 from, U8 to)
         //captures of defended pieces or pieces we know nothing about ~~ better if lower still, by id
         else moveAr[moveCount].score = SORT_VALUE[captured] + idAr[piece]; // + SORT_CAPT/4 ???
 
+		/*
 		U64 toSQ = 1LL << to;
 		U64 fromSQ = 1LL << from;
-
 		//SEE TOO SLOW
-		//int score = SEE(fromSQ, toSQ, piece, captured, isWhite);
-		//if (score > 0) moveAr[moveCount].score = SORT_CAPT + score;//SORT_VALUE[captured] + idAr[piece];
-		//else moveAr[moveCount].score = -SORT_CAPT;
+		int score = SEE(fromSQ, toSQ, piece, captured, isWhite);
+		if (score > 0) moveAr[moveCount].score = SORT_CAPT + score;//SORT_VALUE[captured] + idAr[piece];
+		else moveAr[moveCount].score = score - 100;
+		*/
 
     }
 

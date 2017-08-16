@@ -1,13 +1,6 @@
-﻿  TimeManager.cpp
-  UCI.cpp
-  ai_logic.cpp
-ai_logic.cpp(341): warning C4533: initialization of 'eval' is skipped by 'goto moves_loop'
-  ai_logic.cpp(290): note: see declaration of 'eval'
-  ai_logic.cpp(341): note: see declaration of 'moves_loop'
-  bitboards.cpp
-  evaluatebb.cpp
-  main.cpp
-  movegen.cpp
-  zobristh.cpp
-  Generating Code...
-LINK : fatal error LNK1168: cannot open C:\Users\C-60\Desktop\cppPrograms\StuckFish\x64\Release\StuckFish.exe for writing
+﻿  ai_logic.cpp
+ai_logic.cpp(345): warning C4533: initialization of 'eval' is skipped by 'goto moves_loop'
+  ai_logic.cpp(294): note: see declaration of 'eval'
+  ai_logic.cpp(345): note: see declaration of 'moves_loop'
+  StuckFish.vcxproj -> C:\Users\C-60\Desktop\cppPrograms\StuckFish\x64\Release\StuckFish.exe
+  StuckFish.vcxproj -> C:\Users\C-60\Desktop\cppPrograms\StuckFish\x64\Release\StuckFish.pdb (Full PDB)
