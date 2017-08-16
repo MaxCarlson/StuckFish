@@ -91,7 +91,7 @@ Move Ai_Logic::iterativeDeep(int depth, bool isWhite)
     //iterative deepening loop starts at depth 1, iterates up till max depth or time cutoff
     while(sd.depth <= depth){
 
-		if (timeM.timeStopRoot()) break;
+		if (timeM.timeStopRoot() || timeOver) break;
 
         //main search
         bestScore = searchRoot(sd.depth, alpha, beta, isWhite, ply+1);
@@ -287,16 +287,18 @@ int Ai_Logic::alphaBeta(U8 depth, int alpha, int beta, bool isWhite, U8 ply, boo
 
     if(FlagInCheck) goto moves_loop; //if in check, skip nulls, statics evals, razoring, etc
 
+	evaluateBB eval;
+	int static_eval = eval.evalBoard(isWhite, newBoard, zobrist);
 //eval pruning / static null move
     if(depth < 3 && !is_pv && abs(beta - 1) > -INF + 100){
-        evaluateBB eval;
-        int static_eval = eval.evalBoard(isWhite, newBoard, zobrist);
+		//evaluateBB eval;
+		//int static_eval = eval.evalBoard(isWhite, newBoard, zobrist);
+  
         int eval_margin = 120 * depth;
         if(static_eval - eval_margin >= beta){
             return static_eval - eval_margin;
         }
     }
-
 
 //Null move heuristics, disabled if in PV, check, or depth is too low
     if(allowNull && !is_pv && depth > R){
@@ -314,21 +316,23 @@ int Ai_Logic::alphaBeta(U8 depth, int alpha, int beta, bool isWhite, U8 ply, boo
 
 //razoring if not PV and is close to leaf and has a low score drop directly into quiescence
     if(!is_pv && allowNull && depth <= 3){
-        evaluateBB eval;
+        //evaluateBB eval;
         int threshold = alpha - 300 - (depth - 1) * 60;        
-        if(eval.evalBoard(isWhite, newBoard, zobrist) < threshold){
+        //if(eval.evalBoard(isWhite, newBoard, zobrist) < threshold){
+		if(static_eval < threshold){
+
             score = quiescent(alpha, beta, isWhite, ply, queitSD);
 
             if(score < threshold) return alpha;
         }
     }
 
-/*
+	/*
 //do we want to futility prune?
-    int fmargin[4] = { 0, 200, 300, 500 };
-    if(depth <= 3 && !is_pv
-    && abs(alpha) < 9000
-    && eval.evalBoard(isWhite, newBoard, zobrist) + fmargin[depth] <= alpha){
+    int fmargin[8] = {0, 100, 150, 200, 250, 300, 400, 500};
+    if(depth < 7 && !is_pv
+		&& abs(alpha) < 9000
+		&& static_eval + fmargin[depth] <= alpha){
         f_prune = 1;
     }
 */
@@ -362,26 +366,28 @@ moves_loop:
         reductionDepth = 0;
         newDepth = depth - 1;
         sd.cutoffs[isWhite][newMove.from][newMove.to] -= 1;
-
-        /* STILL TOO SLOW
+/*		
+        //STILL TOO SLOW
         //futility pruning ~~ is not a promotion, is not a capture, and does not give check, and we've tried one move already
         if(f_prune && i > 0 && newMove.flag != 'Q'
-            && newMove.captured == '0' && legalMoves
-            && gen_moves.isAttacked(eking, !isWhite, false)){
+            && newMove.captured == 0 && legalMoves
+            && gen_moves.isAttacked(eking, !isWhite, true)){
+
             newBoard.unmakeMove(newMove, zobrist, isWhite);
+			gen_moves.grab_boards(newBoard, isWhite);
             continue;
         }
         */
 
-        //late move reduction, still in TESTING
+        //late move reduction
         if(!is_pv && newDepth > 3
-                && legalMoves > 3
-                && !gen_moves.isAttacked(eking, !isWhite, false)
-                && !FlagInCheck
-                && sd.cutoffs[isWhite][newMove.from][newMove.to] < 50
-                && (newMove.from != sd.killers[0][ply].from || newMove.to != sd.killers[0][ply].to)
-                && (newMove.from != sd.killers[1][ply].from || newMove.to != sd.killers[1][ply].to)
-                && newMove.captured == PIECE_EMPTY && newMove.flag != 'Q'){
+            && legalMoves > 3
+            && !gen_moves.isAttacked(eking, !isWhite, true)
+            && !FlagInCheck
+            && sd.cutoffs[isWhite][newMove.from][newMove.to] < 50
+            && (newMove.from != sd.killers[0][ply].from || newMove.to != sd.killers[0][ply].to)
+            && (newMove.from != sd.killers[1][ply].from || newMove.to != sd.killers[1][ply].to)
+            && newMove.captured == PIECE_EMPTY && newMove.flag != 'Q'){
 
 
             sd.cutoffs[isWhite][newMove.from][newMove.to] = 50;
