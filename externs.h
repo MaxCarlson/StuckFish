@@ -62,6 +62,9 @@ struct searchDriver{
 };
 extern searchDriver sd;
 
+//master zobrist for turn
+extern ZobristH zobrist;
+
 //time manager not in use yet
 /*
 struct structtime {

@@ -24,6 +24,9 @@ U64 zBlackMove;
 //test ~~ used to indicate a NULL move state
 U64 zNullMove;
 
+//master zobrist object
+ZobristH zobrist;
+
 //global com interface
 extern UCI com;
 UCI com;

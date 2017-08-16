@@ -28,8 +28,7 @@ searchDriver sd;
 //for quiet search
 MoveGen evalGenMoves;
 
-//master zobrist for turn
-ZobristH zobrist;
+
 
 //value to determine if time for search has run out
 bool timeOver;
@@ -516,7 +515,7 @@ int Ai_Logic::quiescent(int alpha, int beta, bool isWhite, int ply, int quietDep
     {        
         Move newMove = gen_moves.movegen_sort(ply);
 
-		
+		/*
 		//also not fast enough yet, though more testing is needed
 		//delta pruning
 		if ((standingPat + SORT_VALUE[newMove.captured] + 200 < alpha)
@@ -527,7 +526,7 @@ int Ai_Logic::quiescent(int alpha, int beta, bool isWhite, int ply, int quietDep
 		U64 f = 1LL << newMove.from;
 		U64 t = 1LL << newMove.to;
 		if (newMove.flag != 81 && gen_moves.SEE(f, t, newMove.piece, newMove.captured, isWhite) < 0) continue; //or equal to zero add once bug is found
-		
+		*/
 
         newBoard.makeMove(newMove, zobrist, isWhite);
         gen_moves.grab_boards(newBoard, isWhite);
@@ -592,11 +591,15 @@ bool Ai_Logic::isRepetition(const Move& m)
 	//add in castling logic to quit early
 
 	int repCount = 0;
-	for (int i = 0; i < sd.twoFoldRep.size(); i++) {
+
+	for (int i = 0; i < sd.twoFoldRep.size(); ++i) {
 		if (zobrist.zobristKey == sd.twoFoldRep[i]) repCount++;
+
 	}
 
-	if (repCount >= 2) return true;
+	if (repCount >= 2) {
+		return true;
+	}
 
 	return false;
 }
@@ -658,6 +661,8 @@ void Ai_Logic::addMoveTT(Move move, int depth, int eval, int flag)
 
 void Ai_Logic::checkInput()
 {
+	//test for a condition that does less checks
+	//way too many atm
 	if (!timeOver && (sd.nodes & 4095)) {
 		timeOver = timeM.timeStopSearch();
 

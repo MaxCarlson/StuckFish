@@ -116,7 +116,11 @@ void UCI::newGame()
 		rookMoved[i] = false;
 		castled[i] = false;
 	}
+
 	turns = 0;
+
+	//clear move repetitions
+	sd.twoFoldRep.clear();
 
 	isWhite = true;
 }
@@ -135,7 +139,8 @@ void UCI::updatePosition(std::istringstream& input)
 	if (token == "startpos")
 	{
 		newGame();
-		sd.twoFoldRep.clear();
+
+		//create zobrist hash for startpos that is used to check repetitions
 		zDummy.getZobristHash(newBoard);
 	}
 	else if (token == "fen")
@@ -155,12 +160,17 @@ void UCI::updatePosition(std::istringstream& input)
 	{
 		if (token != "moves")
 		{
+			//parse string from gui/command line and create move
 			m = strToMove(token);
-			newBoard.makeMove(m, zDummy, isWhite); //test ~~/ position startpos moves c2c4 g8f6
-			turns += 1;
 
+			//make move + increment turns
+			newBoard.makeMove(m, zDummy, isWhite);
+			turns += 1;
+			
+			//push board position U64 to search driver.two fold repeitions
 			sd.twoFoldRep.push_back(zDummy.zobristKey);
 			repCount++;
+			
 			isWhite = !isWhite;
 		}
 	}
@@ -170,8 +180,6 @@ void UCI::updatePosition(std::istringstream& input)
 void UCI::search()
 {	
 	Move m = searchM.search(isWhite);
-
-	;
 
 	std::cout << "bestmove " << moveToStr(m) << std::endl; //send move to std output for UCI GUI to pickup
 
@@ -257,6 +265,8 @@ Move UCI::strToMove(std::string& input)
 	else if (t & newBoard.BBWhiteQueens || t & newBoard.BBBlackQueens) m.captured = QUEEN;
 	else if (t & newBoard.BBWhiteKing || t & newBoard.BBBlackKing) m.captured = KING;
 	else m.captured = PIECE_EMPTY; //no capture
+
+	m.flag = '0';
 
 	if (input.length() == 5) {
 		if (input[4] == 'q') m.flag = 'Q';
