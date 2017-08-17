@@ -1061,7 +1061,7 @@ void MoveGen::reorderMoves(int ply, const HashEntry &entry)
         && moveAr[i].score < SORT_KILL - 1){
             moveAr[i].score = SORT_KILL - 1;
         }
-        if(moveAr[i].piece == sd.killers[ply][0].piece //maybe don't need piece varifier?
+        if(moveAr[i].piece == sd.killers[ply][0].piece //maybe don't need piece verifier?
         && moveAr[i].from == sd.killers[ply][0].from
         && moveAr[i].to == sd.killers[ply][0].to
         && moveAr[i].score < SORT_KILL){

@@ -84,12 +84,12 @@ Move Ai_Logic::iterativeDeep(int depth, bool isWhite)
     //best overall move as calced
     Move bestMove;
     int bestScore, alpha = -INF, beta = INF;
-	sd.depth = 1;
+	sd.depth = 0;
 
     //std::cout << zobrist.zobristKey << std::endl;
 
     //iterative deepening loop starts at depth 1, iterates up till max depth or time cutoff
-    while(sd.depth <= depth){
+    while(sd.depth++ <= depth){
 
 		if (timeM.timeStopRoot() || timeOver) break;
 
@@ -114,12 +114,11 @@ Move Ai_Logic::iterativeDeep(int depth, bool isWhite)
 
 			//print data on search 
 			print(isWhite, bestScore);
-			//std::cout << futileC << std::endl;
+			std::cout << futileC << std::endl;
 
         }
 		
         //increment distance to travel (same as depth at max depth)
-		sd.depth++;
     }
 
 
@@ -290,7 +289,8 @@ int Ai_Logic::alphaBeta(U8 depth, int alpha, int beta, bool isWhite, U8 ply, boo
     //are we in check?
     FlagInCheck = gen_moves.isAttacked(king, isWhite, true);
 
-    if(FlagInCheck) goto moves_loop; //if in check, skip nulls, statics evals, razoring, etc
+//if in check, skip nulls, statics evals, razoring, etc
+    if(FlagInCheck) goto moves_loop;
 
 	evaluateBB eval;
 	int static_eval = eval.evalBoard(isWhite, newBoard, zobrist); //newBoard.sideMaterial[isWhite] - newBoard.sideMaterial[!isWhite];
@@ -334,18 +334,18 @@ int Ai_Logic::alphaBeta(U8 depth, int alpha, int beta, bool isWhite, U8 ply, boo
 
 	///* //TOO slow
 //do we want to futility prune?
-    int fmargin[8] = {0, 100, 150, 200, 250, 300, 400, 500};
-    if(depth < 7 && !is_pv
+	int fmargin[4] = { 0, 200, 300, 500 };
+    //int fmargin[8] = {0, 100, 150, 200, 250, 300, 400, 500};
+    if(depth < 4 && !is_pv
 		&& abs(alpha) < 9000
 		&& static_eval + fmargin[depth] <= alpha){
         f_prune = 1;
     }
 	//*/
 
-//jump to here if in check
-moves_loop:
-	//bool genOnlyCaps = false;
-	//if (f_prune)  genOnlyCaps = true;
+
+moves_loop: //jump to here if in check
+
 //generate psuedo legal moves (not just captures)
     gen_moves.generatePsMoves(false);
 
@@ -374,7 +374,6 @@ moves_loop:
         newDepth = depth - 1;
         sd.cutoffs[isWhite][newMove.from][newMove.to] -= 1;
 		///*		
-        //STILL TOO SLOW
         //futility pruning ~~ is not a promotion or hashmove, is not a capture, and does not give check, and we've tried one move already
         if(f_prune && newMove.score < SORT_HASH
             && newMove.captured == PIECE_EMPTY && legalMoves
@@ -390,19 +389,22 @@ moves_loop:
         //*/
 
         //late move reduction
-        if(!is_pv && newDepth > 3
+        if(i > 1 && newDepth > 3
             && legalMoves > 3
             && !gen_moves.isAttacked(eking, !isWhite, true)
             && !FlagInCheck
             && sd.cutoffs[isWhite][newMove.from][newMove.to] < 50
             && (newMove.from != sd.killers[0][ply].from || newMove.to != sd.killers[0][ply].to)
             && (newMove.from != sd.killers[1][ply].from || newMove.to != sd.killers[1][ply].to)
-            && newMove.captured == PIECE_EMPTY && newMove.flag != 'Q'){
+            && newMove.captured == PIECE_EMPTY && newMove.flag != 'Q'
+			&& newMove.score < SORT_HASH){
 
 
             sd.cutoffs[isWhite][newMove.from][newMove.to] = 50;
             reductionDepth = 1;
-            if(legalMoves > 6) reductionDepth += 1;
+            if(legalMoves > 6) reductionDepth++;
+			if (legalMoves > 14) reductionDepth++; //maybe? need more lmr traits
+
             newDepth -= reductionDepth;
         }
 //jump back here if our LMR raises Alpha
@@ -424,7 +426,9 @@ re_search:
         //if a reduced search brings us above alpha, do a full non-reduced search
         if(reductionDepth && score > alpha){
             newDepth += reductionDepth;
-            reductionDepth = 0;
+			reductionDepth = 0;
+			//if(reductionDepth > 2) reductionDepth = 1; //test!!!
+            
             goto re_search;
         }
 
@@ -479,7 +483,8 @@ re_search:
         else alpha = contempt(isWhite); 
     }
 	if (futileMoves && !raisedAlpha && hashFlag != TT_BETA) {
-		alpha = static_eval;
+
+		if(!legalMoves) alpha = static_eval; //testing needed as well
 		hashFlag = TT_EXACT; //NEED TO TEST
 	}
 
@@ -612,7 +617,7 @@ bool Ai_Logic::isRepetition(const Move& m)
 
 	}
 
-	if (repCount >= 1) {
+	if (repCount >= 2) {
 		return true;
 	}
 

@@ -103,7 +103,7 @@ private:
         char whichPieceCaptured(U64 landing);
 
 
-        //psuedo legal move gen
+        //psuedo legal move gen for indvidual pieces
         void possibleWP(const U64 &wpawns, const U64 &blackking, bool capturesOnly);
         void possibleBP(const U64 &bpawns, const U64 &whiteking, bool capturesOnly);
         void possibleN(U8 location, const U64 &friends, const U64 &enemys, const U64 &oppositeking, const U64 &capturesOnly);
