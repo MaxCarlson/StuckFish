@@ -1,5 +1,2 @@
-﻿  ai_logic.cpp
-ai_logic.cpp(347): warning C4533: initialization of 'eval' is skipped by 'goto moves_loop'
-  ai_logic.cpp(295): note: see declaration of 'eval'
-  ai_logic.cpp(347): note: see declaration of 'moves_loop'
-LINK : fatal error LNK1168: cannot open C:\Users\C-60\Desktop\cppPrograms\StuckFish\x64\Release\StuckFish.exe for writing
+﻿  StuckFish.vcxproj -> C:\Users\C-60\Desktop\cppPrograms\StuckFish\x64\Release\StuckFish.exe
+  StuckFish.vcxproj -> C:\Users\C-60\Desktop\cppPrograms\StuckFish\x64\Release\StuckFish.pdb (Full PDB)

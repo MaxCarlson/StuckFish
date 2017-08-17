@@ -58,6 +58,7 @@ Move Ai_Logic::search(bool isWhite) {
 	//calc move time for us, send to search driver
 	timeM.calcMoveTime(isWhite);
 
+	/*
 	U64 king;
 	if (isWhite) king = newBoard.BBWhiteKing;
 	else king = newBoard.BBBlackKing;
@@ -70,6 +71,7 @@ Move Ai_Logic::search(bool isWhite) {
 		depth++; 
 		sd.moveTime += 2500; 
 	} 
+	*/
 
 	Move m = iterativeDeep(depth, isWhite);
 	
