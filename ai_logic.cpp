@@ -75,7 +75,7 @@ Move Ai_Logic::search(bool isWhite) {
 	
 	return m;
 }
-
+int futileC = 0;
 Move Ai_Logic::iterativeDeep(int depth, bool isWhite)
 {
 	//reset ply
@@ -113,7 +113,8 @@ Move Ai_Logic::iterativeDeep(int depth, bool isWhite)
             if(sd.PV[1].tried) bestMove = sd.PV[1];
 
 			//print data on search 
-			print(isWhite);
+			print(isWhite, bestScore);
+			//std::cout << futileC << std::endl;
 
         }
 		
@@ -224,10 +225,10 @@ int Ai_Logic::searchRoot(U8 depth, int alpha, int beta, bool isWhite, U8 ply)
 int Ai_Logic::alphaBeta(U8 depth, int alpha, int beta, bool isWhite, U8 ply, bool allowNull, bool is_pv)
 {
     bool FlagInCheck = false;
-    bool raisedAlpha = false;
-	bool futileMoves = false;
+    bool raisedAlpha = false; 
+	bool futileMoves = false; //have any moves been futile?
     U8 R = 2;
-    U8 reductionDepth;
+    U8 reductionDepth; //how much are we reducing depth in LMR?
     U8 newDepth;
     //U8 newDepth; //use with futility + other pruning later
     int queitSD = 25, f_prune = 0;
@@ -375,13 +376,14 @@ moves_loop:
 		///*		
         //STILL TOO SLOW
         //futility pruning ~~ is not a promotion or hashmove, is not a capture, and does not give check, and we've tried one move already
-        if(f_prune && i > 0 && newMove.score < SORT_HASH
+        if(f_prune && newMove.score < SORT_HASH
             && newMove.captured == PIECE_EMPTY && legalMoves
-            && gen_moves.isAttacked(eking, !isWhite, true)){
+            && !gen_moves.isAttacked(eking, !isWhite, true)){
 
             newBoard.unmakeMove(newMove, zobrist, isWhite);
 			gen_moves.grab_boards(newBoard, isWhite);
 			futileMoves = true; //flag so we know we skipped a move/not checkmate
+			futileC++;
             continue;
 			//break;
         }
@@ -403,7 +405,7 @@ moves_loop:
             if(legalMoves > 6) reductionDepth += 1;
             newDepth -= reductionDepth;
         }
-
+//jump back here if our LMR raises Alpha
 re_search:
 
         if(!raisedAlpha){
@@ -476,7 +478,10 @@ re_search:
         if(FlagInCheck) alpha = -INF + ply;
         else alpha = contempt(isWhite); 
     }
-	if (futileMoves && !raisedAlpha) alpha = static_eval;
+	if (futileMoves && !raisedAlpha && hashFlag != TT_BETA) {
+		alpha = static_eval;
+		hashFlag = TT_EXACT; //NEED TO TEST
+	}
 
     //add alpha eval to hash table don't save a real move
     addMoveTT(hashMove, depth, alpha, hashFlag);
@@ -679,17 +684,17 @@ void Ai_Logic::checkInput()
 	}
 }
 
-void Ai_Logic::print(bool isWhite)
+void Ai_Logic::print(bool isWhite, int bestScore)
 {
 	std::stringstream ss;
 	
-	ss << "info depth " << sd.depth << " nodes " << sd.nodes << " nps " << timeM.getNPS() ;
-
+	ss << "info depth " << sd.depth << " nodes " << sd.nodes << " nps " << timeM.getNPS() << " score cp " << bestScore;
+/*
 	if (sd.depth == 1) { //only eval board once a turn
 		evaluateBB ev;
 		ss << " score cp " << ev.evalBoard(isWhite, newBoard, zobrist);
 	}
-
+*/
 	std::cout << ss.str() << std::endl;
 }
 

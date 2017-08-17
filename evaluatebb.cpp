@@ -522,29 +522,34 @@ void evaluateBB::getPieceMaterial(int location)
 
 void evaluateBB::generateKingZones(bool isWhite)
 {
-    U64 king;
-    if(isWhite){
-        king = evalMoveGen.BBWhiteKing;
-    } else {
-        king = evalMoveGen.BBBlackKing;
-    }
-    MoveGen *m;
-    //draw 8 tile zone around king to psuedo king BB ~~ needs to be eleven tile eventually
-    king |= evalMoveGen.northOne(king);
-    king |= evalMoveGen.noEaOne(king);
-    king |= evalMoveGen.eastOne(king);
-    king |= evalMoveGen.soEaOne(king);
-    king |= evalMoveGen.southOne(king);
-    king |= evalMoveGen.soWeOne(king);
-    king |= evalMoveGen.westOne(king);
-    king |= evalMoveGen.noWeOne(king);
+	//draw zone around king all 8 tiles around him, plus three in front -- north = front for white, south black
+    U64 kZone;
+    if(isWhite) kZone = evalMoveGen.BBWhiteKing;
+    else kZone = evalMoveGen.BBBlackKing;
+    
+	int location = msb(kZone);
 
-    if(isWhite){
-        wKingZ = king;
-    } else {
-        bKingZ = king;
-    }
+	if (location > 9) {
+		kZone |= evalMoveGen.KING_SPAN << (location - 9);
 
+	}
+	else {
+		kZone |= evalMoveGen.KING_SPAN >> (9 - location);
+	}
+
+	if (isWhite) kZone |= kZone >> 8;
+	else kZone |= kZone << 8;
+
+	if (location % 8 < 4) {
+		kZone &= ~evalMoveGen.FILE_GH;
+
+	}
+	else {
+		kZone &= ~evalMoveGen.FILE_AB;
+	}
+
+    if(isWhite) wKingZ = kZone;
+    else bKingZ = kZone;
 }
 
 int evaluateBB::wKingShield()

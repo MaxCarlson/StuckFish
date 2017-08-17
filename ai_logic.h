@@ -63,7 +63,7 @@ private:
 	void checkInput();
 
 	//prints data to console/gui
-	void print(bool isWhite);
+	void print(bool isWhite, int bestScore);
 
 
 
