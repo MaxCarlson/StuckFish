@@ -98,8 +98,9 @@ struct evalVect{
 int evaluateBB::evalBoard(bool isWhite, const BitBoards& BBBoard, const ZobristH& zobristE)
 {
     //transposition hash for board evals
-    int hash = (int)(zobristE.zobristKey % 5021983);
-    HashEntry entry = transpositionEval[hash];    
+    //int hash = (int)(zobristE.zobristKey % 5021983);
+	int hash = zobristE.zobristKey & 5021982;
+    HashEntry entry = transpositionEval[hash];   
     //if we get a hash-table hit, return the evaluation
     if(entry.zobrist == zobristE.zobristKey){
         if(isWhite){
@@ -530,22 +531,22 @@ void evaluateBB::generateKingZones(bool isWhite)
 	int location = msb(kZone);
 
 	if (location > 9) {
-		kZone |= evalMoveGen.KING_SPAN << (location - 9);
+		kZone |= KING_SPAN << (location - 9);
 
 	}
 	else {
-		kZone |= evalMoveGen.KING_SPAN >> (9 - location);
+		kZone |= KING_SPAN >> (9 - location);
 	}
 
 	if (isWhite) kZone |= kZone >> 8;
 	else kZone |= kZone << 8;
 
 	if (location % 8 < 4) {
-		kZone &= ~evalMoveGen.FILE_GH;
+		kZone &= ~FILE_GH;
 
 	}
 	else {
-		kZone &= ~evalMoveGen.FILE_AB;
+		kZone &= ~FILE_AB;
 	}
 
     if(isWhite) wKingZ = kZone;
@@ -619,7 +620,7 @@ int evaluateBB::getPawnScore()
 {
     //get zobristE/bitboard of current pawn positions
     U64 pt = evalMoveGen.BBWhitePawns | evalMoveGen.BBBlackPawns;
-    int hash = (int)(pt % 400000);
+    int hash = pt & 399999;
     //probe pawn hash table using bit-wise OR of white pawns and black pawns as zobrist key
     if(transpositionPawn[hash].zobrist == pt){
         return transpositionPawn[hash].eval;
@@ -774,15 +775,15 @@ void evaluateBB::evalKnight(bool isWhite, int location)
     U64 moves;
 
     if(location > 18){
-        moves = evalMoveGen.KNIGHT_SPAN<<(location-18);
+        moves = KNIGHT_SPAN<<(location-18);
     } else {
-        moves = evalMoveGen.KNIGHT_SPAN>>(18-location);
+        moves = KNIGHT_SPAN>>(18-location);
     }
 
     if(location % 8 < 4){
-        moves &= ~evalMoveGen.FILE_GH & ~friends & ~eking;
+        moves &= ~FILE_GH & ~friends & ~eking;
     } else {
-        moves &= ~evalMoveGen.FILE_AB & ~friends & ~eking;
+        moves &= ~FILE_AB & ~friends & ~eking;
     }
 
     U64 j = moves & ~(moves-1);
@@ -867,7 +868,7 @@ void evaluateBB::evalRook(bool isWhite, int location)
     rook += 1LL << location;
 
     int x = location % 8;
-    currentFile = evalMoveGen.FileABB << x;
+    currentFile = FileABB << x;
 
     if(isWhite){
         friends = evalMoveGen.BBWhitePieces;

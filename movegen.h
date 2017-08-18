@@ -19,19 +19,21 @@ class MoveGen
 public:
     MoveGen();
 
-    //array of move objects by ply then number of moves
-    Move moveAr[256];
+	//array of move objects 
+	Move moveAr[256];
+	Move *moves;
 
     bool isWhite;
-    int moveCount = 0;
+	//number of moves generated this node
+    int moveCount;
 
     void generatePsMoves(bool capturesOnly);
-    void clearMove(int ply, int numMoves);
-    void constructBoards();
+
     void grab_boards(const BitBoards &BBBoard, bool wOrB);
         void updateBoards(const Move &move, const BitBoards &board);
 
     bool isAttacked(U64 pieceLoc, bool wOrB, bool isSearchKingCheck);
+	
 
 	//static exhange eval
 	int SEE(const U64 &fromSQ, const U64 &captureSQ, int piece, int captured, bool isWhite);
@@ -58,7 +60,7 @@ public:
         U64 BBBlackQueens;
         U64 BBBlackKing;
 
-        int trailingZeros(U64 i);
+        int trailingZeros(const U64 i) const;
         U64 ReverseBits(U64 input);
         U64 noWeOne(U64 b);
         U64 soWeOne(U64 b);
@@ -68,23 +70,6 @@ public:
         U64 eastOne(U64 b);
         U64 southOne(U64 b);
         U64 northOne(U64 b);
-
-        //Bitboard of all king movements that can then be shifted
-        const U64 KING_SPAN=460039L;
-        //board for knight moves that can be shifted
-        const U64 KNIGHT_SPAN=43234889994L;
-        const U64 FileABB = 0x0101010101010101ULL;
-        const U64 FileBBB = FileABB << 1;
-        const U64 FileCBB = FileABB << 2;
-        const U64 FileDBB = FileABB << 3;
-        const U64 FileEBB = FileABB << 4;
-        const U64 FileFBB = FileABB << 5;
-        const U64 FileGBB = FileABB << 6;
-        const U64 FileHBB = FileABB << 7;
-        //files for keeping knight moves from wrapping
-        const U64 FILE_AB=FileABB + FileBBB;
-        const U64 FILE_GH=FileGBB + FileHBB;
-
 
         void drawBBA();
         void drawBB(U64 board);		
@@ -116,5 +101,22 @@ private:
         //void undoCapture(U64 location, char piece, char whiteOrBlack);
 
 };
+
+inline int MoveGen::trailingZeros(const U64 i) const {
+	
+	//find the first one and number of zeros after it
+	if (i == 0) return 64;
+	U64 x = i;
+	U64 y;
+	int n = 63;
+	y = x << 32; if (y != 0) { n -= 32; x = y; }
+	y = x << 16; if (y != 0) { n -= 16; x = y; }
+	y = x << 8; if (y != 0) { n -= 8; x = y; }
+	y = x << 4; if (y != 0) { n -= 4; x = y; }
+	y = x << 2; if (y != 0) { n -= 2; x = y; }
+	return (int)(n - ((x << 1) >> 63));
+	
+	//return msb(i); replace all with this ?
+}
 
 #endif // MOVEGEN_H

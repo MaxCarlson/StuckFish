@@ -80,6 +80,22 @@ struct structtime {
 extern structtime chronos;
 */
 
+//Bitboard of all king movements that can then be shifted
+extern const U64 KING_SPAN;
+//board for knight moves that can be shifted
+extern const U64 KNIGHT_SPAN;
+extern const U64 FileABB;
+extern const U64 FileBBB;
+extern const U64 FileCBB;
+extern const U64 FileDBB;
+extern const U64 FileEBB;
+extern const U64 FileFBB;
+extern const U64 FileGBB;
+extern const U64 FileHBB;
+//files for keeping knight moves from wrapping
+extern const U64 FILE_AB;
+extern const U64 FILE_GH;
+
 //UCI input varibles for "go"
 extern int wtime; //time left on whites clock
 extern int btime; //black clock

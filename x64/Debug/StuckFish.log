@@ -1,11 +1,18 @@
-﻿  ai_logic.cpp
-c:\users\c-60\desktop\cppprograms\stuckfish\ai_logic.cpp(368): warning C4533: initialization of 'eval' is skipped by 'goto moves_loop'
-  c:\users\c-60\desktop\cppprograms\stuckfish\ai_logic.cpp(316): note: see declaration of 'eval'
-  c:\users\c-60\desktop\cppprograms\stuckfish\ai_logic.cpp(368): note: see declaration of 'moves_loop'
+﻿  zobristh.cpp
   UCI.cpp
-c:\users\c-60\desktop\cppprograms\stuckfish\uci.cpp(66): error C3861: 'setoption': identifier not found
   TranspositionT.cpp
-  Generating Code...
-  Compiling...
+  TimeManager.cpp
+  slider_attacks.cpp
+  movegen.cpp
+  move.cpp
   main.cpp
+  hashentry.cpp
+  evaluatebb.cpp
+  bitboards.cpp
+  ai_logic.cpp
+c:\users\c-60\desktop\cppprograms\stuckfish\ai_logic.cpp(363): warning C4533: initialization of 'eval' is skipped by 'goto moves_loop'
+  c:\users\c-60\desktop\cppprograms\stuckfish\ai_logic.cpp(311): note: see declaration of 'eval'
+  c:\users\c-60\desktop\cppprograms\stuckfish\ai_logic.cpp(363): note: see declaration of 'moves_loop'
   Generating Code...
+  StuckFish.vcxproj -> C:\Users\C-60\Desktop\cppPrograms\StuckFish\x64\Debug\StuckFish.exe
+  StuckFish.vcxproj -> C:\Users\C-60\Desktop\cppPrograms\StuckFish\x64\Debug\StuckFish.pdb (Partial PDB)

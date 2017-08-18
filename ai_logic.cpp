@@ -151,15 +151,11 @@ int Ai_Logic::searchRoot(U8 depth, int alpha, int beta, bool isWhite, U8 ply)
     //who's our king?
     U64 king;
     if(isWhite) king = newBoard.BBWhiteKing;
-    else king = newBoard.BBBlackKing;
-    //are we in check?
-    flagInCheck = gen_moves.isAttacked(king, isWhite, true);
-    U8 moveNum = gen_moves.moveCount;
+    else king = newBoard.BBBlackKing;	
 
-    if(flagInCheck) ++depth;
+    int moveNum = gen_moves.moveCount;
 
-    Move bestMove;
-    for(U8 i = 0; i < moveNum; ++i){
+    for(int i = 0; i < moveNum; ++i){
         //find best move generated
         Move newMove = gen_moves.movegen_sort(ply);
         newBoard.makeMove(newMove, zobrist, isWhite);  
@@ -168,7 +164,7 @@ int Ai_Logic::searchRoot(U8 depth, int alpha, int beta, bool isWhite, U8 ply)
 			newBoard.unmakeMove(newMove, zobrist, isWhite);
 			gen_moves.grab_boards(newBoard, isWhite);
 			continue;
-		}											   /// !~!~!~!~!~!~!~!~!~! try SWITCHing from a move gen object haveing a local array to the psuedo movegen funcion
+		}											   /// !~!~!~!~!~!~!~!~!~! try SWITCHing from a move gen object having a local array to the psuedo movegen funcion
         gen_moves.grab_boards(newBoard, isWhite);      /// returning a vector or a pointer to an array that's stored in the search, so we can stop constructing movegen
                                                        /// objects and instead just have a local global for the duration of the search. sort could return the index of the best move
         //is move legal? if not skip it                ///and take the array or vector as a const refrence argument
@@ -213,7 +209,6 @@ int Ai_Logic::searchRoot(U8 depth, int alpha, int beta, bool isWhite, U8 ply)
             }
 			
             alpha = score;
-            bestMove = newMove;
 			hashFlag = TT_ALPHA;
         }
 
@@ -310,8 +305,8 @@ int Ai_Logic::alphaBeta(U8 depth, int alpha, int beta, bool isWhite, U8 ply, boo
     //are we in check?
     FlagInCheck = gen_moves.isAttacked(king, isWhite, true);
 
-//if in check or in reduced should we extend search, skip nulls, statics evals, razoring, etc
-    if(FlagInCheck ||sd.excludedMove) goto moves_loop;
+//if in check, or in reduced search extension, skip nulls, statics evals, razoring, etc to moves_loop:
+    if(FlagInCheck || sd.excludedMove) goto moves_loop;
 
 	evaluateBB eval;
 	int static_eval = eval.evalBoard(isWhite, newBoard, zobrist); //newBoard.sideMaterial[isWhite] - newBoard.sideMaterial[!isWhite];
@@ -365,13 +360,14 @@ int Ai_Logic::alphaBeta(U8 depth, int alpha, int beta, bool isWhite, U8 ply, boo
 	//*/
 
 
-moves_loop: //jump to here if in check
-
+moves_loop: //jump to here if in check or in a search extension
+/*
 	singularExtension = depth >= 7
 		&& !sd.excludedMove
 		&& ttMove && ttValue != INVALID
 		&& ttentry->flag == TT_BETA
 		&& ttentry->depth >= depth - 3;
+*/
 
 //generate psuedo legal moves (not just captures)
     gen_moves.generatePsMoves(false);
@@ -382,9 +378,9 @@ moves_loop: //jump to here if in check
     int hashFlag = TT_ALPHA, movesNum = gen_moves.moveCount, legalMoves = 0;
 
     Move hashMove; //move to store alpha in and pass to TTable
-    for(U8 i = 0; i < movesNum; ++i){
+    for(int i = 0; i < movesNum; ++i){
         //grab best scoring move
-        Move newMove = gen_moves.movegen_sort(ply);
+		Move newMove = gen_moves.movegen_sort(ply); //huge speed decrease if not Move newMove is instatiated above loop!!??
 
 		//if (sd.excludedMove && newMove.score >= SORT_HASH) continue;
 
@@ -402,7 +398,7 @@ moves_loop: //jump to here if in check
         reductionDepth = 0;
         newDepth = depth - 1;
         sd.cutoffs[isWhite][newMove.from][newMove.to] -= 1;
-
+/*
 		if (singularExtension && newMove.score >= SORT_HASH) {
 			int rBeta = std::max(ttValue - 2 * depth, -mateValue);
 			int d = depth / 2;
@@ -413,7 +409,7 @@ moves_loop: //jump to here if in check
 				newDepth++;
 			}
 		}		
-
+*/
 		///*		
         //futility pruning ~~ is not a promotion or hashmove, is not a capture, and does not give check, and we've tried one move already
         if(f_prune && newMove.score < SORT_HASH
@@ -485,17 +481,17 @@ re_search:
 		if (timeOver) return 0;
 
         if(score > alpha){            
-            hashMove = newMove;
             sd.cutoffs[isWhite][newMove.from][newMove.to] += 6;
 			//store the principal variation
 			sd.PV[ply] = newMove;
+			hashMove = newMove;
 
             //if move causes a beta cutoff stop searching current branch
             if(score >= beta){
 
                 if(newMove.captured == PIECE_EMPTY && newMove.flag != 'Q'){
                     //add move to killers
-                    addKiller(hashMove, ply);
+                    addKiller(newMove, ply);
 
                     //add score to historys
                     sd.history[isWhite][newMove.from][newMove.to] += depth * depth;
@@ -548,9 +544,6 @@ int Ai_Logic::quiescent(int alpha, int beta, bool isWhite, int ply, int quietDep
     //iterative deeping timer stuff
 	sd.nodes++;
 
-    //create unqiue hash from zobrist key
-    //int hash = (int)(zobrist.zobristKey % 15485843);
-    //HashEntry entry = transpositionT[hash];
 	HashEntry *entry = NULL;
 
     evaluateBB eval;

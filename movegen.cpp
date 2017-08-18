@@ -23,8 +23,21 @@ const U64 rank3 = rank4 << 8;
 const U64 rank2 = rank3 << 8;
 const U64 rank1 = rank2 << 8;
 
-
-
+//Bitboard of all king movements that can then be shifted
+const U64 KING_SPAN = 460039L;
+//board for knight moves that can be shifted
+const U64 KNIGHT_SPAN = 43234889994L;
+const U64 FileABB = 0x0101010101010101ULL;
+const U64 FileBBB = FileABB << 1;
+const U64 FileCBB = FileABB << 2;
+const U64 FileDBB = FileABB << 3;
+const U64 FileEBB = FileABB << 4;
+const U64 FileFBB = FileABB << 5;
+const U64 FileGBB = FileABB << 6;
+const U64 FileHBB = FileABB << 7;
+//files for keeping knight moves from wrapping
+const U64 FILE_AB = FileABB + FileBBB;
+const U64 FILE_GH = FileGBB + FileHBB;
 
 static const U64 RankMasks8[8] =/*from rank8 to rank1 ?*/
 {
@@ -44,13 +57,15 @@ static const U64 FileMasks8[8] =/*from fileA to FileH*/
 const int SORT_VALUE[7] = { 0, 100, 325, 335, 500, 975, 0 };
 
 
-MoveGen::MoveGen()
+MoveGen::MoveGen() 
 {
-
+	//memset(&moveAr, 0, sizeof(moveAr)); //~~SLOWER than before
+	
 }
 
 void MoveGen::generatePsMoves(bool capturesOnly)
 {
+
     //counts total moves generated
     moveCount = 0;
     U64 friends, enemys, pawns, knights, rooks, bishops, queens, king, eking;
@@ -67,7 +82,7 @@ void MoveGen::generatePsMoves(bool capturesOnly)
         king = BBWhiteKing;
         eking = BBBlackKing;
         //generate pawn moves
-        possibleWP(pawns, eking, capturesOnly);
+        possibleWP(pawns, eking, capturesOnly);   //ADD function to calc attack board so we can generate caslting moves ~!~!~!~!~!~!~!~!~!~!~!
 
     } else {
         friends = BBBlackPieces;
@@ -534,6 +549,7 @@ void MoveGen::movegen_push(char piece, char captured, char flag, U8 from, U8 to)
     moveAr[moveCount].captured = captured;
     moveAr[moveCount].flag = flag;
     moveAr[moveCount].score = 0;
+
 
     /**************************************************************************
     * Quiet moves are sorted by history score.                                *
@@ -1101,20 +1117,7 @@ char MoveGen::whichPieceCaptured(U64 landing)
     return '0';
 }
 
-int MoveGen::trailingZeros(U64 i)
-{
-    //find the first one and number of zeros after it
-    if (i == 0) return 64;
-    U64 x = i;
-    U64 y;
-    int n = 63;
-    y = x << 32; if (y != 0) { n -= 32; x = y; }
-    y = x << 16; if (y != 0) { n -= 16; x = y; }
-    y = x <<  8; if (y != 0) { n -=  8; x = y; }
-    y = x <<  4; if (y != 0) { n -=  4; x = y; }
-    y = x <<  2; if (y != 0) { n -=  2; x = y; }
-    return (int) ( n - ((x << 1) >> 63));
-}
+
 
 U64 MoveGen::ReverseBits(U64 input)
 {

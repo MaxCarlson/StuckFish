@@ -15,21 +15,6 @@ public:
 	int score;
     U8 flag;
     bool tried;
-
-    /*
-    char id;
-    char from;
-    char to;
-    U8 piece_from;
-    U8 piece_to;
-    U8 piece_cap;
-    char flags;
-    char castle;
-    char ply;
-    char ep;
-    int score;
-    */
-
 };
 
 #endif // MOVE_H
