@@ -1,6 +1,12 @@
-﻿  ai_logic.cpp
+﻿  UCI.cpp
+  ai_logic.cpp
 ai_logic.cpp(368): warning C4533: initialization of 'eval' is skipped by 'goto moves_loop'
   ai_logic.cpp(316): note: see declaration of 'eval'
   ai_logic.cpp(368): note: see declaration of 'moves_loop'
+  bitboards.cpp
+  evaluatebb.cpp
+  main.cpp
+  zobristh.cpp
+  Generating Code...
   StuckFish.vcxproj -> C:\Users\C-60\Desktop\cppPrograms\StuckFish\x64\Release\StuckFish.exe
   StuckFish.vcxproj -> C:\Users\C-60\Desktop\cppPrograms\StuckFish\x64\Release\StuckFish.pdb (Full PDB)

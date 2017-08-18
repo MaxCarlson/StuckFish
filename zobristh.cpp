@@ -69,7 +69,7 @@ void ZobristH::UpdateNull()
     zobristKey ^= zNullMove;
 }
 
-void ZobristH::UpdateKey(int start, int end, Move moveKey, bool isWhite)
+void ZobristH::UpdateKey(int start, int end, const Move& moveKey, bool isWhite)
 {
     //gather piece, capture, and w or b info from movekey
     //normal move
@@ -78,48 +78,11 @@ void ZobristH::UpdateKey(int start, int end, Move moveKey, bool isWhite)
 
     //if a piece was captured XOR that location with randomkey at array location end
     if (isWhite && captured != PIECE_EMPTY){
-		switch (captured) {
-		case PAWN:
-			zobristKey ^= zArray[1][0][end];
-			break;
-		case KNIGHT:
-			zobristKey ^= zArray[1][2][end];
-			break;
-		case BISHOP:
-			zobristKey ^= zArray[1][3][end];
-			break;
-		case ROOK:
-			zobristKey ^= zArray[1][1][end];
-			break;
-		case QUEEN:
-			zobristKey ^= zArray[1][4][end];
-			break;
-		case KING:
-			zobristKey ^= zArray[1][5][end];
-			break;
-		}        
-        
+			zobristKey ^= zArray[1][piece - 1][end];   
+
     } else if (!isWhite && captured != PIECE_EMPTY) {
-		switch (captured) {
-		case PAWN:
-			zobristKey ^= zArray[0][0][end];
-			break;
-		case KNIGHT:
-			zobristKey ^= zArray[0][2][end];
-			break;
-		case BISHOP:
-			zobristKey ^= zArray[0][3][end];
-			break;
-		case ROOK:
-			zobristKey ^= zArray[0][1][end];
-			break;
-		case QUEEN:
-			zobristKey ^= zArray[0][4][end];
-			break;
-		case KING:
-			zobristKey ^= zArray[0][5][end];
-			break;
-		}                
+			zobristKey ^= zArray[0][piece - 1][end];
+            
     }
 
     //XOR zobristKey with zArray number at piece start end then end location
@@ -134,28 +97,12 @@ void ZobristH::UpdateKey(int start, int end, Move moveKey, bool isWhite)
 			}
 			else { //if pawn promotion
 				zobristKey ^= zArray[0][0][start];
-				zobristKey ^= zArray[0][4][end];
+				zobristKey ^= zArray[0][4][end]; //only handles queen promotions atm
 			}
 			break;
-		case KNIGHT:
-			zobristKey ^= zArray[0][2][start];
-			zobristKey ^= zArray[0][2][end];
-			break;
-		case BISHOP:
-			zobristKey ^= zArray[0][3][start];
-			zobristKey ^= zArray[0][3][end];
-			break;
-		case ROOK:
-			zobristKey ^= zArray[0][1][start];
-			zobristKey ^= zArray[0][1][end];
-			break;
-		case QUEEN:
-			zobristKey ^= zArray[0][4][start];
-			zobristKey ^= zArray[0][4][end];
-			break;
-		case KING:
-			zobristKey ^= zArray[0][5][start];
-			zobristKey ^= zArray[0][5][end];
+		default: //default for rest of pieces, castling handled down below
+			zobristKey ^= zArray[0][piece - 1][start];
+			zobristKey ^= zArray[0][piece - 1][end];
 			break;
 		}      
     //black
@@ -171,28 +118,15 @@ void ZobristH::UpdateKey(int start, int end, Move moveKey, bool isWhite)
 				zobristKey ^= zArray[1][4][end];
 			}
 			break;
-		case KNIGHT:
-			zobristKey ^= zArray[1][2][start];
-			zobristKey ^= zArray[1][2][end];
+		default:
+			zobristKey ^= zArray[1][piece - 1][start];
+			zobristKey ^= zArray[1][piece - 1][end];
 			break;
-		case BISHOP:
-			zobristKey ^= zArray[1][3][start];
-			zobristKey ^= zArray[1][3][end];
-			break;
-		case ROOK:
-			zobristKey ^= zArray[1][1][start];
-			zobristKey ^= zArray[1][1][end];
-			break;
-		case QUEEN:
-			zobristKey ^= zArray[1][4][start];
-			zobristKey ^= zArray[1][4][end];
-			break;
-		case KING:
-			zobristKey ^= zArray[1][5][start];
-			zobristKey ^= zArray[1][5][end];
-			break;
+
 		}     
     }
+	//need caslting code
+
 }
 
 U64 ZobristH::getZobristHash(BitBoards BBBoard)
@@ -218,18 +152,18 @@ U64 ZobristH::getZobristHash(BitBoards BBBoard)
             returnZKey ^= zArray[1][0][square];
         }
         //white pieces
-        else if(((BBBoard.BBWhiteRooks >> square) & 1) == 1)
+        else if(((BBBoard.BBWhiteKnights >> square) & 1) == 1)
         {
             returnZKey ^= zArray[0][1][square];
         }
-        else if(((BBBoard.BBWhiteKnights >> square) & 1) == 1)
+        else if(((BBBoard.BBWhiteBishops >> square) & 1) == 1)
         {
             returnZKey ^= zArray[0][2][square];
         }
-        else if(((BBBoard.BBWhiteBishops >> square) & 1) == 1)
-        {
-            returnZKey ^= zArray[0][3][square];
-        }
+		else if (((BBBoard.BBWhiteRooks >> square) & 1) == 1)
+		{
+			returnZKey ^= zArray[0][3][square];
+		}
         else if(((BBBoard.BBWhiteQueens >> square) & 1) == 1)
         {
             returnZKey ^= zArray[0][4][square];
@@ -239,19 +173,19 @@ U64 ZobristH::getZobristHash(BitBoards BBBoard)
             returnZKey ^= zArray[0][5][square];
         }
 
-        //black pieces
-        else if(((BBBoard.BBBlackRooks >> square) & 1) == 1)
+        //black pieces       
+        else if(((BBBoard.BBBlackKnights >> square) & 1) == 1)
         {
             returnZKey ^= zArray[1][1][square];
         }
-        else if(((BBBoard.BBBlackKnights >> square) & 1) == 1)
+        else if(((BBBoard.BBBlackBishops >> square) & 1) == 1)
         {
             returnZKey ^= zArray[1][2][square];
         }
-        else if(((BBBoard.BBBlackBishops >> square) & 1) == 1)
-        {
-            returnZKey ^= zArray[1][3][square];
-        }
+		else if (((BBBoard.BBBlackRooks >> square) & 1) == 1)
+		{
+			returnZKey ^= zArray[1][3][square];
+		}
         else if(((BBBoard.BBBlackQueens >> square) & 1) == 1)
         {
             returnZKey ^= zArray[1][4][square];
@@ -305,18 +239,18 @@ U64 ZobristH::debugKey(bool isWhite, BitBoards BBBoard)
             returnZKey ^= zArray[1][0][square];
         }
         //white pieces
-        else if(((BBBoard.BBWhiteRooks >> square) & 1) == 1)
+        else if(((BBBoard.BBWhiteKnights >> square) & 1) == 1)
         {
             returnZKey ^= zArray[0][1][square];
         }
-        else if(((BBBoard.BBWhiteKnights >> square) & 1) == 1)
+        else if(((BBBoard.BBWhiteBishops >> square) & 1) == 1)
         {
             returnZKey ^= zArray[0][2][square];
         }
-        else if(((BBBoard.BBWhiteBishops >> square) & 1) == 1)
-        {
-            returnZKey ^= zArray[0][3][square];
-        }
+		else if (((BBBoard.BBWhiteRooks >> square) & 1) == 1)
+		{
+			returnZKey ^= zArray[0][3][square];
+		}
         else if(((BBBoard.BBWhiteQueens >> square) & 1) == 1)
         {
             returnZKey ^= zArray[0][4][square];
@@ -327,18 +261,18 @@ U64 ZobristH::debugKey(bool isWhite, BitBoards BBBoard)
         }
 
         //black pieces
-        else if(((BBBoard.BBBlackRooks >> square) & 1) == 1)
+        else if(((BBBoard.BBBlackKnights >> square) & 1) == 1)
         {
             returnZKey ^= zArray[1][1][square];
         }
-        else if(((BBBoard.BBBlackKnights >> square) & 1) == 1)
+        else if(((BBBoard.BBBlackBishops >> square) & 1) == 1)
         {
             returnZKey ^= zArray[1][2][square];
         }
-        else if(((BBBoard.BBBlackBishops >> square) & 1) == 1)
-        {
-            returnZKey ^= zArray[1][3][square];
-        }
+		else if (((BBBoard.BBBlackRooks >> square) & 1) == 1)
+		{
+			returnZKey ^= zArray[1][3][square];
+		}
         else if(((BBBoard.BBBlackQueens >> square) & 1) == 1)
         {
             returnZKey ^= zArray[1][4][square];

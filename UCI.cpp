@@ -48,13 +48,12 @@ void UCI::uciLoop()
 		token.clear(); // getline() could return empty or blank line
 
 		is >> std::skipws >> token;
-		//	std::cout << token << std::endl;
 
 		if (token == "uci")
 		{
 			std::cout << "id name " << ENGINE_NAME << std::endl;
 			std::cout << "id author Maxwell Carlson" << std::endl;
-			//printOptions();
+			printOptions();
 			std::cout << "uciok" << std::endl;
 		}
 		else if (token == "isready")
@@ -63,7 +62,7 @@ void UCI::uciLoop()
 		}
 
 		else if (token == "setoption") {
-			//setoption(is);
+			setOption(is);
 		}
 		else if (token == "color") {
 
@@ -73,6 +72,7 @@ void UCI::uciLoop()
 		{
 			newGame(); //add function to reset TTables ? plus / only
 			searchM.clearHistorys();
+			TT.clearTable(); //need to clear other TTables too at somepoint
 		}
 
 		else if (token == "position") {
@@ -177,6 +177,30 @@ void UCI::updatePosition(std::istringstream& input)
 		}
 	}
 
+}
+
+void UCI::printOptions()
+{
+	//tell GUI we can change that transposition table size
+	std::cout << "option name Hash" << std::endl;
+
+	//other options ....
+}
+
+void UCI::setOption(std::istringstream & input)
+{
+	std::string token;
+
+	input >> token;
+
+	if (token == "name") {
+		while (input >> token) {
+			if (token == "hashsize") {
+				input >> token;
+			}
+		}
+	}
+	
 }
 
 void UCI::search()

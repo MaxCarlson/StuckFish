@@ -25,6 +25,9 @@ public:
 	//resize TT to a size in megabytes
 	void resize(size_t mbSize);
 
+	//clear the table completely
+	void clearTable();
+
 private:	
 	size_t clusterCount;
 	TTCluster* table;
@@ -37,6 +40,7 @@ extern TranspositionT TT;
 
 
 inline HashEntry* TranspositionT::first_entry(const U64 key) const {
-
+	//return a pointer to the first entry in the cluster,
+	//indexed by key bitwise & number of total clusters - 1 in TTable
 	return &table[(size_t)key & (clusterCount - 1)].entry[0];
 }

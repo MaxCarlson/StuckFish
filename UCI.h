@@ -13,6 +13,9 @@ public:
 	void newGame();
 	void updatePosition(std::istringstream & input);
 
+	void printOptions();
+	void setOption(std::istringstream & input);
+
 	void search();
 
 	std::string moveToStr(const Move & m);

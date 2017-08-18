@@ -310,8 +310,8 @@ int Ai_Logic::alphaBeta(U8 depth, int alpha, int beta, bool isWhite, U8 ply, boo
     //are we in check?
     FlagInCheck = gen_moves.isAttacked(king, isWhite, true);
 
-//if in check, skip nulls, statics evals, razoring, etc
-    if(FlagInCheck) goto moves_loop;
+//if in check or in reduced should we extend search, skip nulls, statics evals, razoring, etc
+    if(FlagInCheck ||sd.excludedMove) goto moves_loop;
 
 	evaluateBB eval;
 	int static_eval = eval.evalBoard(isWhite, newBoard, zobrist); //newBoard.sideMaterial[isWhite] - newBoard.sideMaterial[!isWhite];
@@ -368,6 +368,7 @@ int Ai_Logic::alphaBeta(U8 depth, int alpha, int beta, bool isWhite, U8 ply, boo
 moves_loop: //jump to here if in check
 
 	singularExtension = depth >= 7
+		&& !sd.excludedMove
 		&& ttMove && ttValue != INVALID
 		&& ttentry->flag == TT_BETA
 		&& ttentry->depth >= depth - 3;
@@ -384,6 +385,8 @@ moves_loop: //jump to here if in check
     for(U8 i = 0; i < movesNum; ++i){
         //grab best scoring move
         Move newMove = gen_moves.movegen_sort(ply);
+
+		//if (sd.excludedMove && newMove.score >= SORT_HASH) continue;
 
         //make move on BB's store data to string so move can be undone
         newBoard.makeMove(newMove, zobrist, isWhite);
@@ -403,7 +406,9 @@ moves_loop: //jump to here if in check
 		if (singularExtension && newMove.score >= SORT_HASH) {
 			int rBeta = std::max(ttValue - 2 * depth, -mateValue);
 			int d = depth / 2;
-			int s = -alphaBeta(newDepth, -beta, -alpha, !isWhite, ply + 1, DO_NULL, NO_PV);
+			sd.excludedMove = true;
+			int s = -alphaBeta(d, rBeta - 1, rBeta, isWhite, ply, DO_NULL, NO_PV);
+			sd.excludedMove = false;
 			if (s < rBeta) {
 				newDepth++;
 			}
@@ -525,8 +530,11 @@ re_search:
 		hashFlag = TT_EXACT; //NEED TO TEST
 	}
 
-    //save info + move to transposition table ///MAYBE add an if(legalMoves) check? will have to test
-	TT.save(hashMove, zobrist.zobristKey, depth, alpha, hashFlag);
+	if (!sd.excludedMove) { //only write to TTable if we're not in partial search
+		//save info + move to transposition table ///MAYBE add an if(legalMoves) check? will have to test
+		TT.save(hashMove, zobrist.zobristKey, depth, alpha, hashFlag);
+	}
+
 
     return alpha;
 }

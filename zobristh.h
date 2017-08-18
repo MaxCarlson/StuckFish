@@ -31,7 +31,7 @@ public:
     U64 getZobristHash(BitBoards BBBoard);
 
     //Update zobrist key by XOR ing rand numbers in zArray
-    void UpdateKey(int start, int end, Move moveKey, bool isWhite);
+    void UpdateKey(int start, int end, const Move& moveKey, bool isWhite);
     void UpdateColor();
     void UpdateNull();
 
