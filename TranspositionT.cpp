@@ -42,7 +42,6 @@ const HashEntry * TranspositionT::probe(const U64 key) const
 		}
 	}
 
-
 	return NULL;
 }
 
@@ -56,14 +55,21 @@ void TranspositionT::save(Move& m, const U64 zkey, U8 depth, S16 eval, U8 flag)
 
 		if (!tte->zobrist || tte->zobrist == zkey) {
 
-			if (!m.tried) {
-				m = tte->move;
-			}
+			if (!m.tried) m = tte->move; //if there's no move in new entry, don't overwrite existing move
+			
 			replace = tte;
 			break;
 		}
-	}
-	
 
+		if (tte->depth <= depth) replace = tte;	//needs refinement!!!
+
+	}
+
+	//save replace
+	replace->depth = depth;
+	replace->eval = eval;
+	replace->flag = flag;
+	replace->move = m;
+	replace->zobrist = zkey;
 }
 

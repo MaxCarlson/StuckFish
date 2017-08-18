@@ -3,7 +3,6 @@
 
 #include <intrin.h>
 
-
 #define ENGINE_NAME "StuckFish 0.1"
 
 enum esqare {
@@ -53,6 +52,7 @@ enum etimef {
 	FINFINITE = 128
 };
 */
+
 
 typedef unsigned char U8;
 typedef char S8;

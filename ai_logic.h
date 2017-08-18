@@ -56,7 +56,7 @@ private:
 
 //transposition table functions
     //add best move to TT
-    void addMoveTT(Move move, int depth, int eval, int flag);
+    //void addMoveTT(Move move, int depth, int eval, int flag);
 
 	//checks whether time is out through time manaager,
 	//will later check for input as well

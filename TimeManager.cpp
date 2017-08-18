@@ -1,5 +1,7 @@
 #include "TimeManager.h"
 
+#include <iostream>
+
 #include "defines.h"
 #include "externs.h"
 
@@ -109,7 +111,7 @@ bool TimeManager::timeStopSearch()
 	
 	return false;
 }
-#include <iostream>
+
 int TimeManager::getNPS()
 {
 	std::cout << (double)(gettime() - sd.startTime) / 1000 << std::endl;

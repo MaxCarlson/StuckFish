@@ -8,6 +8,7 @@
 #include "bitboards.h"
 #include "zobristh.h"
 #include "ai_logic.h"
+#include "TranspositionT.h"
 
 //master bitboard for turn
 BitBoards newBoard;
@@ -27,6 +28,7 @@ int movestogo;
 
 UCI::UCI()
 {
+	TT.resize(1024); //change later to be an input option for TT!!!!!
 }
 
 void UCI::uciLoop()

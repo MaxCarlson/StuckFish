@@ -38,7 +38,7 @@ public:
 
 	Move movegen_sort(int ply);
 
-    void reorderMoves(int ply, const HashEntry &entry);
+    void reorderMoves(int ply, const HashEntry *entry);
 
     //bitboards
         U64 FullTiles;

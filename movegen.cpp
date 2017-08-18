@@ -1050,7 +1050,7 @@ Move MoveGen::movegen_sort(int ply)
     return moveAr[high];
 }
 
-void MoveGen::reorderMoves(int ply, const HashEntry &entry)
+void MoveGen::reorderMoves(int ply, const HashEntry *entry)
 {
 
     for(int i = 0; i < moveCount; ++i){
@@ -1068,9 +1068,9 @@ void MoveGen::reorderMoves(int ply, const HashEntry &entry)
             moveAr[i].score = SORT_KILL;
         }
 
-        if(moveAr[i].from == entry.move.from
-        && moveAr[i].to == entry.move.to
-        && moveAr[i].piece == entry.move.piece){
+        if( entry && moveAr[i].from == entry->move.from
+        && moveAr[i].to == entry->move.to
+        && moveAr[i].piece == entry->move.piece){
             moveAr[i].score = SORT_HASH;
         }
 

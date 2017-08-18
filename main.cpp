@@ -31,9 +31,7 @@ ZobristH zobrist;
 extern UCI com;
 UCI com;
 
-//transposition table array
-HashEntry transpositionT[15485843]; //add megabye size conrtorl later
-//TTable of evals
+//TTable of evals //UPDATE TO NEW TT SCHEME
 HashEntry transpositionEval[5021983];
 //pawn config hash table
 HashEntry transpositionPawn[400000];

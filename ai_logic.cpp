@@ -13,6 +13,7 @@
 #include "zobristh.h"
 #include "hashentry.h"
 #include "TimeManager.h"
+#include "TranspositionT.h"
 
 #define DO_NULL    true //allow null moves or not
 #define NO_NULL    false
@@ -27,8 +28,6 @@ searchDriver sd;
 //constructed once so as to pass to eval where constructing was slow
 //for quiet search
 MoveGen evalGenMoves;
-
-
 
 //value to determine if time for search has run out
 bool timeOver;
@@ -116,8 +115,7 @@ Move Ai_Logic::iterativeDeep(int depth, bool isWhite)
 
 			//print data on search 
 			print(isWhite, bestScore);
-			std::cout << futileC << std::endl;
-
+			//std::cout << futileC << std::endl;
         }
 		
         //increment distance to travel (same as depth at max depth)
@@ -141,6 +139,7 @@ int Ai_Logic::searchRoot(U8 depth, int alpha, int beta, bool isWhite, U8 ply)
     int score = 0;
     int best = -INF;
     int legalMoves = 0;
+	int hashFlag = TT_ALPHA;
 
 	sd.nodes++;
 
@@ -209,17 +208,19 @@ int Ai_Logic::searchRoot(U8 depth, int alpha, int beta, bool isWhite, U8 ply)
 			sd.PV[ply] = newMove;
 
             if(score > beta){
-                addMoveTT(newMove, depth, score, TT_BETA);
-                return beta;
+				hashFlag = TT_BETA;
+				break;
             }
 			
             alpha = score;
             bestMove = newMove;
-            addMoveTT(bestMove, depth, score, TT_ALPHA);
+			hashFlag = TT_ALPHA;
         }
 
     }
-    addMoveTT(bestMove, depth, score, TT_EXACT);
+	//save info and move to TT
+	TT.save(sd.PV[ply], zobrist.zobristKey, depth, score, hashFlag);
+
     return alpha;
 }
 
@@ -228,6 +229,7 @@ int Ai_Logic::alphaBeta(U8 depth, int alpha, int beta, bool isWhite, U8 ply, boo
     bool FlagInCheck = false;
     bool raisedAlpha = false; 
 	bool futileMoves = false; //have any moves been futile?
+	bool singularExtension = false;
     U8 R = 2;
     U8 reductionDepth; //how much are we reducing depth in LMR?
     U8 newDepth;
@@ -236,7 +238,7 @@ int Ai_Logic::alphaBeta(U8 depth, int alpha, int beta, bool isWhite, U8 ply, boo
     int  mateValue = INF - ply; // used for mate distance pruning
 	sd.nodes++;
 
-	//checks if time over is true every 8095 nodes
+	//checks if time over is true everytime ( nodes & 4095 ) = true ///NEED METHOD THAT CHECKS MUCH LESS
 	checkInput();
 
 	//mate distance pruning, prevents looking for mates longer than one we've already found
@@ -244,33 +246,50 @@ int Ai_Logic::alphaBeta(U8 depth, int alpha, int beta, bool isWhite, U8 ply, boo
 	if (beta > mateValue - 1) beta = mateValue - 1;
 	if (alpha >= beta) return alpha;
 
-    //grab unqiue hash of board from zobrist key
-    int hash = (int)(zobrist.zobristKey % 15485843);
-    HashEntry entry = transpositionT[hash];
+	const  HashEntry *ttentry;
+	bool ttMove;
+	int ttValue;
 
-    //if the depth of the stored evaluation is greater and the zobrist key matches
-    //don't return eval on root node
-    if(entry.depth >= depth && entry.zobrist == zobrist.zobristKey){
-
-		//in pv nodes only return with exact hash hit
-		if(!is_pv || (entry.eval > alpha && entry.eval < beta)){
-        //return either the eval, the beta, or the alpha depending on flag
-			switch (entry.flag) {
+	ttentry = TT.probe(zobrist.zobristKey);
+	ttMove = ttentry ? ttentry->move.flag : false; //is there a move stored in transposition table?
+	ttValue = ttentry ? ttentry->eval : INVALID; //if there is a TT entry, grab its value
+/*
+	if (ttentry && ttentry->depth >= depth) {
+		hashHits++;
+		if (!is_pv || (ttentry->eval > alpha && ttentry->eval < beta)) {
+			switch (ttentry->flag) {
 			case TT_ALPHA:
-				if (entry.eval <= alpha) {
+				if (ttentry->eval <= alpha) {
+					alphas++;
 					return alpha;
 				}
 				break;
 			case TT_BETA:
-				if (entry.eval >= beta) {
+				if (ttentry->eval >= beta) {
+					betas++;
 					return beta;
 				}
 				break;
 			case TT_EXACT:
-				return entry.eval;
+				exacts++;
+				return ttentry->eval;
 			}
-        }
-    }
+		}
+	}
+*/
+
+///*
+	if (ttentry
+		&& ttentry->depth >= depth
+		&& (is_pv ? ttentry->flag == TT_EXACT
+			: ttValue >= beta ? ttentry->flag == TT_BETA
+			: ttentry->flag == TT_ALPHA)
+		) {
+
+		return ttValue;
+	}
+//*/
+
 
     int score;
     if(depth < 1 || timeOver){
@@ -348,11 +367,16 @@ int Ai_Logic::alphaBeta(U8 depth, int alpha, int beta, bool isWhite, U8 ply, boo
 
 moves_loop: //jump to here if in check
 
+	singularExtension = depth >= 7
+		&& ttMove && ttValue != INVALID
+		&& ttentry->flag == TT_BETA
+		&& ttentry->depth >= depth - 3;
+
 //generate psuedo legal moves (not just captures)
     gen_moves.generatePsMoves(false);
 
     //add killers scores and hash moves scores to moves if there are any
-    gen_moves.reorderMoves(ply, entry);
+    gen_moves.reorderMoves(ply, ttentry);
 
     int hashFlag = TT_ALPHA, movesNum = gen_moves.moveCount, legalMoves = 0;
 
@@ -375,6 +399,17 @@ moves_loop: //jump to here if in check
         reductionDepth = 0;
         newDepth = depth - 1;
         sd.cutoffs[isWhite][newMove.from][newMove.to] -= 1;
+
+		if (singularExtension && newMove.score >= SORT_HASH) {
+			int rBeta = std::max(ttValue - 2 * depth, -mateValue);
+			int d = depth / 2;
+			int s = -alphaBeta(newDepth, -beta, -alpha, !isWhite, ply + 1, DO_NULL, NO_PV);
+			if (s < rBeta) {
+				newDepth++;
+			}
+		}
+
+
 		///*		
         //futility pruning ~~ is not a promotion or hashmove, is not a capture, and does not give check, and we've tried one move already
         if(f_prune && newMove.score < SORT_HASH
@@ -480,7 +515,7 @@ re_search:
         }
     }
 
-    if(!legalMoves && !futileMoves){
+    if(!legalMoves){
         if(FlagInCheck) alpha = -INF + ply;
         else alpha = contempt(isWhite); 
     }
@@ -490,8 +525,8 @@ re_search:
 		hashFlag = TT_EXACT; //NEED TO TEST
 	}
 
-    //add alpha eval to hash table don't save a real move
-    addMoveTT(hashMove, depth, alpha, hashFlag);
+    //save info + move to transposition table ///MAYBE add an if(legalMoves) check? will have to test
+	TT.save(hashMove, zobrist.zobristKey, depth, alpha, hashFlag);
 
     return alpha;
 }
@@ -503,8 +538,9 @@ int Ai_Logic::quiescent(int alpha, int beta, bool isWhite, int ply, int quietDep
 	sd.nodes++;
 
     //create unqiue hash from zobrist key
-    int hash = (int)(zobrist.zobristKey % 15485843);
-    HashEntry entry = transpositionT[hash];
+    //int hash = (int)(zobrist.zobristKey % 15485843);
+    //HashEntry entry = transpositionT[hash];
+	HashEntry *entry = NULL;
 
     evaluateBB eval;
     //evaluate board position
@@ -663,22 +699,6 @@ void Ai_Logic::clearHistorys()
 				sd.cutoffs[cl][i][j] = 100;
 			}
 	sd.nodes = 0;
-}
-
-void Ai_Logic::addMoveTT(Move move, int depth, int eval, int flag)
-{
-    //get hash of current zobrist key
-    int hash = (int)(zobrist.zobristKey % 15485843);
-    //if the depth of the current move is greater than the one it's replacing or if it's older than
-    if(depth >= transpositionT[hash].depth){
-        //add position to the table
-        transpositionT[hash].zobrist = zobrist.zobristKey;
-        transpositionT[hash].depth = depth;
-        transpositionT[hash].eval = eval;
-        transpositionT[hash].flag = flag;
-        transpositionT[hash].move = move;
-    }
-
 }
 
 void Ai_Logic::checkInput()
