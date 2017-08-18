@@ -412,8 +412,7 @@ moves_loop: //jump to here if in check
 			if (s < rBeta) {
 				newDepth++;
 			}
-		}
-
+		}		
 
 		///*		
         //futility pruning ~~ is not a promotion or hashmove, is not a capture, and does not give check, and we've tried one move already
@@ -449,8 +448,12 @@ moves_loop: //jump to here if in check
 
             newDepth -= reductionDepth;
         }
+		//load the (most likely) next entry in the TTable into cache near cpu
+		_mm_prefetch((char *)TT.first_entry(zobrist.fetchKey(newMove, isWhite)), _MM_HINT_NTA);
+
 //jump back here if our LMR raises Alpha
 re_search:
+		
 
         if(!raisedAlpha){
             //we're in princiapl variation search or full window search

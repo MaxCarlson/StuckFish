@@ -30,6 +30,9 @@ public:
     //U64 getZobristHash(BitBoards *BBBoard);
     U64 getZobristHash(BitBoards BBBoard);
 
+	//used for prefetching a transposition entry
+	U64 fetchKey(const Move& m, bool isWhite);
+
     //Update zobrist key by XOR ing rand numbers in zArray
     void UpdateKey(int start, int end, const Move& moveKey, bool isWhite);
     void UpdateColor();

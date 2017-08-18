@@ -129,6 +129,25 @@ void ZobristH::UpdateKey(int start, int end, const Move& moveKey, bool isWhite)
 
 }
 
+U64 ZobristH::fetchKey(const Move & m, bool isWhite)
+{
+	//get an idea of what most keys will be after moves..
+	//so we can prefetch that info
+	int color = 0;
+	U64 key = zobristKey;
+
+	if (!isWhite) color = 1;
+
+	key ^= zArray[color][m.piece - 1][m.from];
+	key ^= zArray[color][m.piece - 1][m.to];
+
+	if(m.captured) key ^= zArray[!color][m.captured - 1][m.to]; //update if there's a capture
+
+	key ^= zBlackMove; //update color
+
+	return key; //return key estimate
+}
+
 U64 ZobristH::getZobristHash(BitBoards BBBoard)
 {
     U64 returnZKey = 0LL;
@@ -201,6 +220,8 @@ U64 ZobristH::getZobristHash(BitBoards BBBoard)
 
     return returnZKey;
 }
+
+
 
 void ZobristH::testDistibution()
 {
