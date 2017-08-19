@@ -562,7 +562,7 @@ int Ai_Logic::quiescent(int alpha, int beta, bool isWhite, int ply, int quietDep
 
     if(standingPat >= beta){
 
-		if (!ttentry) TT.save(zobrist.zobristKey, DEPTH_QS, standingPat, TT_BETA); //save to TT if there's no entry
+		if (!ttentry) TT.save(zobrist.zobristKey, DEPTH_QS, standingPat, TT_BETA); //save to TT if there's no entry MAJOR PROBLEMS WITH THIS 
 
 		return beta;
     }
@@ -579,7 +579,7 @@ int Ai_Logic::quiescent(int alpha, int beta, bool isWhite, int ply, int quietDep
 
     int score;
     //set hash flag equal to alpha Flag
-    int hashFlag = 1, moveNum = gen_moves.moveCount;
+    int hashFlag = TT_ALPHA, moveNum = gen_moves.moveCount;
 
 
     U64 king;
@@ -626,14 +626,19 @@ int Ai_Logic::quiescent(int alpha, int beta, bool isWhite, int ply, int quietDep
         gen_moves.grab_boards(newBoard, isWhite);
 
         if(score > alpha){
-            if(score >= beta){
 
-                return beta;
+            if(score >= beta){
+				hashFlag = TT_BETA;
+				alpha = beta;
+				break;
             }
 
-           alpha = score;
+			hashFlag = TT_EXACT;
+            alpha = score;
         }
     }
+
+	TT.save(hashMove, zobrist.zobristKey, DEPTH_QS, alpha, hashFlag);
 
     return alpha;
 }
