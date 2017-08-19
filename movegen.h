@@ -17,11 +17,11 @@ class HashEntry;
 class MoveGen
 {
 public:
-    MoveGen();
+    //MoveGen();
 
 	//array of move objects 
 	Move moveAr[256];
-	Move *moves;
+	//std::vector<Move> moveAr;
 
     bool isWhite;
 	//number of moves generated this node

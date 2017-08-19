@@ -35,6 +35,8 @@ bool timeOver;
 //master time manager
 TimeManager timeM;
 
+int futileC = 0; //count of futile moves
+
 Ai_Logic::Ai_Logic()
 {
 
@@ -76,7 +78,7 @@ Move Ai_Logic::search(bool isWhite) {
 	
 	return m;
 }
-int futileC = 0;
+
 Move Ai_Logic::iterativeDeep(int depth, bool isWhite)
 {
 	//reset ply

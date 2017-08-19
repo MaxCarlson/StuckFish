@@ -19,6 +19,7 @@ public:
 private:
     //gets rudimentry value of piece + square table value
     void getPieceMaterial(int location);
+	void evalPieces();
 
 
     //generate zone around king ///Up for debate as to how large zone should be, currently encompasses 8 tiles directly around king

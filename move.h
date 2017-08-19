@@ -6,7 +6,7 @@
 class Move
 {
 public:
-    Move();
+    const Move();
 
     U8 from;
     U8 to;
@@ -16,5 +16,10 @@ public:
     U8 flag;
     bool tried;
 };
+
+inline Move::Move()
+{
+	tried = false;
+}
 
 #endif // MOVE_H

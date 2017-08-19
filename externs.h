@@ -57,7 +57,7 @@ struct searchDriver{
 	long startTime;
 	long moveTime = 5000;
 	bool isWhite;
-	std::vector<U64> twoFoldRep;
+	std::vector<U64> twoFoldRep; //stores zobrist keys of all positions encountered thus far
 	bool excludedMove = false;
 };
 extern searchDriver sd;

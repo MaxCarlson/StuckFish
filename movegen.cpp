@@ -56,13 +56,12 @@ static const U64 FileMasks8[8] =/*from fileA to FileH*/
 *************************************************/
 const int SORT_VALUE[7] = { 0, 100, 325, 335, 500, 975, 0 };
 
-
+/*
 MoveGen::MoveGen() 
 {
 	//memset(&moveAr, 0, sizeof(moveAr)); //~~SLOWER than before
-	
 }
-
+*/
 void MoveGen::generatePsMoves(bool capturesOnly)
 {
 

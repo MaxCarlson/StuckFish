@@ -148,11 +148,8 @@ int evaluateBB::evalBoard(bool isWhite, const BitBoards& BBBoard, const ZobristH
     generateKingZones(false);
 
 
-    //loop through all pieces and gather numbers, mobility, king attacks..
-    //and add piece square table + material value too endGScore and midGScore
-    for(U8 i = 0; i < 64; i++){
-        getPieceMaterial(i);
-    }
+	//evaluate all pieces and positions and store info
+	evalPieces();
 
     //need to add end game piece square tables
     midGScore = ev.pieceMaterial[WHITE] - ev.pieceMaterial[BLACK];
@@ -174,7 +171,7 @@ int evaluateBB::evalBoard(bool isWhite, const BitBoards& BBBoard, const ZobristH
     midGScore += (ev.kingShield[WHITE] - ev.kingShield[BLACK]);
 
 
-    //adjusting meterial value of pieces bonus for bishop, small penalty for others
+    //adjusting material value of pieces bonus for bishop, small penalty for others
     if(ev.bishopCount[WHITE] > 1) ev.adjustMaterial[WHITE] += BISHOP_PAIR;
     if(ev.bishopCount[BLACK] > 1) ev.adjustMaterial[BLACK] -= BISHOP_PAIR;
     if(ev.knightCount[WHITE] > 1) ev.adjustMaterial[WHITE] -= KNIGHT_PAIR;
@@ -479,11 +476,6 @@ void evaluateBB::getPieceMaterial(int location)
 
         } else if(pieceLocation & evalMoveGen.BBWhiteKing){
 
-            //If both sides have no queens use king end game board
-           // if((evalMoveGen.BBWhiteQueens | evalMoveGen.BBBlackQueens) & full){
-            //    ev.pieceMaterial[WHITE] += 20000 + wKingEndSqT[location];
-            //}
-            //if end game conditions fail use mid game king board
             ev.pieceMaterial[WHITE] += wKingMidSqT[location]; ///NEEED to add better mid/end psqT stuff
 
         }
@@ -513,12 +505,131 @@ void evaluateBB::getPieceMaterial(int location)
             ev.pieceMaterial[BLACK] += 975 + bQueenSqT[location];
 
         } else if(pieceLocation & evalMoveGen.BBBlackKing){
-           // if((evalMoveGen.BBBlackQueens | evalMoveGen.BBWhiteQueens) & full){
-            //    ev.pieceMaterial[BLACK] += 20000 + bKingEndSqT[location];
-           // }
-         ev.pieceMaterial[BLACK] += bKingMidSqT[location];
+
+			ev.pieceMaterial[BLACK] += bKingMidSqT[location];
         }
     }
+}
+
+void evaluateBB::evalPieces() //DOESN'T WORK IN RELEASE CONFIG
+{
+	//evaluate all pieces and store relvent info to struct ev
+	U64  wpawns, wknights, wrooks, wbishops, wqueens, wking, bpawns, bknights, brooks, bbishops, bqueens, bking;
+
+	//white
+	wpawns = evalMoveGen.BBWhitePawns;
+	wknights = evalMoveGen.BBWhiteKnights;
+	wbishops = evalMoveGen.BBWhiteBishops;
+	wrooks = evalMoveGen.BBWhiteRooks;
+	wqueens = evalMoveGen.BBWhiteQueens;
+	wking = evalMoveGen.BBWhiteKing;
+	//black
+	bpawns = evalMoveGen.BBBlackPawns;
+	bknights = evalMoveGen.BBBlackKnights;
+	bbishops = evalMoveGen.BBBlackBishops;
+	brooks = evalMoveGen.BBBlackRooks;
+	bqueens = evalMoveGen.BBBlackQueens;
+	bking = evalMoveGen.BBBlackKing;
+
+
+	U64 i;
+
+	//pawns
+	while (wpawns) {
+		int x = msb(wpawns);
+		ev.pawnCount[WHITE] ++;
+		ev.pieceMaterial[WHITE] += 100;
+		i = 1LL << x;
+		wpawns &= ~i;
+	}
+	while (bpawns) {
+		int x = msb(bpawns);
+		ev.pawnCount[BLACK] ++;
+		ev.pieceMaterial[BLACK] += 100;
+		i = 1LL << x;
+		bpawns &= ~i;
+	}
+	//knights
+	while (wknights) {
+		int x = msb(wknights);
+		ev.knightCount[WHITE] ++;
+		evalKnight(true, x);
+		ev.pieceMaterial[WHITE] += 325 + wKnightsSqT[x];
+		i = 1LL << x;
+		wknights &= ~i;
+	}
+	while (bknights) {
+		int x = msb(bknights);
+		ev.knightCount[BLACK] ++;
+		evalKnight(false, x);
+		ev.pieceMaterial[BLACK] += 325 + bKnightSqT[x]; 
+		i = 1LL << x;
+		bknights &= ~i;
+	}
+	//bishops
+	while (wbishops) {
+		int x = msb(wbishops);
+		ev.bishopCount[WHITE] ++;
+		evalBishop(true, x);
+		ev.pieceMaterial[WHITE] += 335 + wBishopsSqT[x];
+		i = 1LL << x;
+		wbishops &= ~i;
+	}
+	while (bbishops) {
+		int x = msb(bbishops);
+		ev.bishopCount[BLACK] ++;
+		evalBishop(false, x);
+		ev.pieceMaterial[BLACK] += 335 + bBishopsSqT[x];
+		i = 1LL << x;
+		bbishops &= ~i;
+	}
+	//rooks
+	while (wrooks) {
+		int x = msb(wrooks);
+		ev.rookCount[WHITE] ++;
+		evalRook(true, x);
+		ev.pieceMaterial[WHITE] += 500 + wRooksSqT[x];
+		i = 1LL << x;
+		wrooks &= ~i;
+	}
+	while (brooks) {
+		int x = msb(brooks);
+		ev.rookCount[BLACK] ++;
+		evalRook(false, x);
+		ev.pieceMaterial[BLACK] += 500 + bRookSqT[x];
+		i = 1LL << x;
+		brooks &= ~i;
+	}
+	//queens
+	while (wqueens) {
+		int x = msb(wqueens);
+		evalQueen(true, x);
+		ev.queenCount[WHITE] ++;
+		ev.pieceMaterial[WHITE] += 975 + wQueensSqt[x];
+		i = 1LL << x;
+		wqueens &= ~i;
+	}
+	while (bqueens) {
+		int x = msb(bqueens);
+		evalQueen(false, x);
+		ev.queenCount[BLACK] ++;
+		ev.pieceMaterial[BLACK] += 975 + bQueenSqT[x];
+		i = 1LL << x;
+		bqueens &= ~i;
+	}
+	//kings
+	while (wking) {
+		int x = msb(wking);
+		ev.pieceMaterial[WHITE] += wKingMidSqT[x];
+		i = 1LL << x;
+		wking &= ~i;
+	}
+	while (bking) {
+		int x = msb(bking);
+		ev.pieceMaterial[BLACK] += bKingMidSqT[x];
+		i = 1LL << x;
+		bking &= ~i;
+	}
 }
 
 void evaluateBB::generateKingZones(bool isWhite)
