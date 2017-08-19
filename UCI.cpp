@@ -29,6 +29,7 @@ int movestogo;
 UCI::UCI()
 {
 	TT.resize(1024); //change later to be an input option for TT!!!!!
+	//TT.resizePawnT(128); //play with sizes for speed
 }
 
 void UCI::uciLoop()

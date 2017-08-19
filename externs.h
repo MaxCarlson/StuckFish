@@ -59,6 +59,7 @@ struct searchDriver{
 	bool isWhite;
 	std::vector<U64> twoFoldRep; //stores zobrist keys of all positions encountered thus far
 	bool excludedMove = false;
+	bool skipEarlyPruning = false;
 };
 extern searchDriver sd;
 

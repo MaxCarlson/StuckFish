@@ -35,10 +35,6 @@ private:
 
     //Quiescent search ~~ search positions farther if there are captures on horizon
     int quiescent(int alpha, int beta, bool isWhite, int ply, int quietDepth);
-    //if a capture cannot increase alpha, don't bother searching it
-    /*
-    bool deltaPruning(std::string move, int eval, bool isWhite, int alpha, bool isEndGame, BitBoards *BBBoard);
-    */
 
     //make ai prefer checkmate over stalemate
     int contempt(bool isWhite); //need some way to check board material before implementing

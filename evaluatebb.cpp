@@ -4,6 +4,7 @@
 #include "bitboards.h"
 #include "hashentry.h"
 #include "zobristh.h"
+#include "TranspositionT.h"
 
 
 const U64 RankMasks8[8] =/*from rank8 to rank1 ?*/
@@ -59,15 +60,16 @@ static const int SafetyTable[100] = {
  500, 500, 500, 500, 500, 500, 500, 500, 500, 500
 };
 
-
+const int pieceVal[7] = { 0, 100, 325, 335, 500, 975, 0 };
 /*
 piece values
+  NP= 0
   P = 100
-  N = 320
-  B = 330
+  N = 325
+  B = 335
   R = 500
-  Q = 900
-  K = 9000
+  Q = 975
+  K = 0
 */
 
 evaluateBB::evaluateBB()
@@ -167,6 +169,8 @@ int evaluateBB::evalBoard(bool isWhite, const BitBoards& BBBoard, const ZobristH
 
     ev.kingShield[WHITE] = wKingShield();
     ev.kingShield[BLACK] = bKingShield();
+	blockedPieces(WHITE, BBBoard);
+	blockedPieces(BLACK, BBBoard);
 
     midGScore += (ev.kingShield[WHITE] - ev.kingShield[BLACK]);
 
@@ -206,6 +210,7 @@ int evaluateBB::evalBoard(bool isWhite, const BitBoards& BBBoard, const ZobristH
 
     //add phase independent scoring
 
+	result += (ev.blockages[WHITE] - ev.blockages[BLACK]);
     result += (ev.adjustMaterial[WHITE] - ev.adjustMaterial[BLACK]);
 
     /********************************************************************
@@ -219,13 +224,38 @@ int evaluateBB::evalBoard(bool isWhite, const BitBoards& BBBoard, const ZobristH
     result -= SafetyTable[ev.attWeight[BLACK]];
 
     //NEED low material adjustment scoring here
+	int strong, weak;
+	if (result > 0) {
+		strong = WHITE;
+		weak = BLACK;
+	}
+	else {
+		strong = BLACK;
+		weak = WHITE;
+	}
+
+	if (ev.pawnCount[strong] == 0 ){ 
+
+		if (ev.pieceMaterial[strong] < 400) return 0;
+
+		if (ev.pawnCount[weak] == 0 && ev.pieceMaterial[strong] == 2*pieceVal[KNIGHT])  return 0;//two knights
+
+		if (ev.pieceMaterial[strong] == pieceVal[ROOK] && ev.pieceMaterial[weak] == pieceVal[BISHOP]) result /= 2;
+
+		if (ev.pieceMaterial[strong] == pieceVal[ROOK] + pieceVal[BISHOP]
+			&& ev.pieceMaterial[weak] == pieceVal[ROOK]) result /= 2;
+
+		if (ev.pieceMaterial[strong] == pieceVal[ROOK] + pieceVal[KNIGHT]
+			&& ev.pieceMaterial[weak] == pieceVal[ROOK]) result /= 2;
+	}
+
 
     //switch score for color
     if(!isWhite) result = -result;
 
     //save to TT eval table
     saveTT(isWhite, result, hash, zobristE);
-
+	
     return result;
 }
 
@@ -729,6 +759,7 @@ int evaluateBB::bKingShield()
 
 int evaluateBB::getPawnScore()
 {
+	
     //get zobristE/bitboard of current pawn positions
     U64 pt = evalMoveGen.BBWhitePawns | evalMoveGen.BBBlackPawns;
     int hash = pt & 399999;
@@ -736,6 +767,11 @@ int evaluateBB::getPawnScore()
     if(transpositionPawn[hash].zobrist == pt){
         return transpositionPawn[hash].eval;
     }
+
+	//U64 pt = evalMoveGen.BBWhitePawns | evalMoveGen.BBBlackPawns;
+	//const PawnEntry *ttpawnentry;
+	//ttpawnentry = TT.probePawnT(pt);
+	//if (ttpawnentry) return ttpawnentry->eval;
 
     //if we don't get a hash hit, search through all pawns on board and return score
     int score = 0;
@@ -752,6 +788,8 @@ int evaluateBB::getPawnScore()
     //store entry to pawn hash table
     transpositionPawn[hash].eval = score;
     transpositionPawn[hash].zobrist = pt;
+
+	//TT.savePawnEntry(pt, score);
 
     return score;
 }
@@ -1092,24 +1130,24 @@ void evaluateBB::evalQueen(bool isWhite, int location)
 
 void evaluateBB::blockedPieces(int side, const BitBoards &BBBoard)
 {
-    U64 pawn, epawn, knight, bishop, king;
+    U64 pawn, epawn, knight, bishop, rook, king;
     U64 empty = BBBoard.EmptyTiles;
     U64 emptyLoc = 1LL;
-    int oppo;
+    int oppo = !side;
     if(side == WHITE){
         pawn = BBBoard.BBWhitePawns;
         epawn = BBBoard.BBBlackPawns;
         knight = BBBoard.BBWhiteKnights;
         bishop = BBBoard.BBWhiteBishops;
+		rook = BBBoard.BBWhiteRooks;
         king = BBBoard.BBWhiteKing;
-        oppo = 1;
     } else {
         pawn = BBBoard.BBBlackPawns;
         epawn = BBBoard.BBWhitePawns;
         knight = BBBoard.BBBlackKnights;
         bishop = BBBoard.BBBlackBishops;
+		rook = BBBoard.BBBlackRooks;
         king = BBBoard.BBBlackKing;
-        oppo = 0;
     }
 
     //central pawn block bishop blocked
@@ -1123,12 +1161,73 @@ void evaluateBB::blockedPieces(int side, const BitBoards &BBBoard)
             && emptyLoc << flip(side, E3))
         ev.blockages[side] -= 24;
 
-    //blocked knights
+    //trapped knights
     if(isPiece(knight, flip(side, A8))
             && isPiece(epawn, flip(oppo, A7))
             || isPiece(epawn, flip(oppo, C7)))
         ev.blockages[side] -= 150;
-    //NOT DONE
+
+	//trapped knights
+	if (isPiece(knight, flip(side, H8))
+		&& isPiece(epawn, flip(oppo, H7))
+		|| isPiece(epawn, flip(oppo, F7)))
+		ev.blockages[side] -= 150;
+
+	if (isPiece(knight, flip(side, A7))
+		&& isPiece(epawn, flip(oppo, A6))
+		&& isPiece(epawn, flip(oppo, B7)))
+		ev.blockages[side] -= 150;
+
+	if (isPiece(knight, flip(side, H7))
+		&& isPiece(epawn, flip(oppo, H6))
+		&& isPiece(epawn, flip(oppo, G7)))
+		ev.blockages[side] -= 150;
+    
+	//knight blocking queenside pawn
+	if (isPiece(knight, flip(side, C3))
+		&& isPiece(knight, flip(side, C2))
+		&& isPiece(knight, flip(side, D4))
+		&& !isPiece(knight, flip(side, E4)))
+		ev.blockages[side] -= 5;
+
+	//trapped bishop
+	if(isPiece(bishop, flip(side, A7))
+		&& isPiece(epawn, flip(oppo, B6)))
+		ev.blockages[side] -= 150;
+
+	if (isPiece(bishop, flip(side, H7))
+		&& isPiece(epawn, flip(oppo, G6)))
+		ev.blockages[side] -= 150;
+
+	if (isPiece(bishop, flip(side, B8))
+		&& isPiece(epawn, flip(oppo, C7)))
+		ev.blockages[side] -= 150;
+
+	if (isPiece(bishop, flip(side, G8))
+		&& isPiece(epawn, flip(oppo, F7)))
+		ev.blockages[side] -= 150;
+
+	if (isPiece(bishop, flip(side, A6))
+		&& isPiece(epawn, flip(oppo, B5)))
+		ev.blockages[side] -= 50;
+
+	if (isPiece(bishop, flip(side, H6))
+		&& isPiece(epawn, flip(oppo, G5)))
+		ev.blockages[side] -= 50;
+
+	// bishop on initial square supporting castled king
+	//if(isPiece(bishop, flip(side, F1))
+		//&& isPiece(king, flip(side, B1)))
+		//need positional themes
+
+	//uncastled king blocking own rook
+	if((isPiece(king, flip(side, F1)) || isPiece(king, flip(side, G1)))
+		&& (isPiece(rook, flip(side, H1)) || isPiece(rook, flip(side, G1))))
+			ev.blockages[side] -= 24;
+
+	if ((isPiece(king, flip(side, C1)) || isPiece(king, flip(side, B1)))
+		&& (isPiece(rook, flip(side, A1)) || isPiece(rook, flip(side, B1))))
+		ev.blockages[side] -= 24;
 }
 
 bool evaluateBB::isPiece(const U64 &piece, U8 sq)

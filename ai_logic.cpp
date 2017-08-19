@@ -250,30 +250,6 @@ int Ai_Logic::alphaBeta(U8 depth, int alpha, int beta, bool isWhite, U8 ply, boo
 	ttentry = TT.probe(zobrist.zobristKey);
 	ttMove = ttentry ? ttentry->move.flag : false; //is there a move stored in transposition table?
 	ttValue = ttentry ? ttentry->eval : INVALID; //if there is a TT entry, grab its value
-/*
-	if (ttentry && ttentry->depth >= depth) {
-		hashHits++;
-		if (!is_pv || (ttentry->eval > alpha && ttentry->eval < beta)) {
-			switch (ttentry->flag) {
-			case TT_ALPHA:
-				if (ttentry->eval <= alpha) {
-					alphas++;
-					return alpha;
-				}
-				break;
-			case TT_BETA:
-				if (ttentry->eval >= beta) {
-					betas++;
-					return beta;
-				}
-				break;
-			case TT_EXACT:
-				exacts++;
-				return ttentry->eval;
-			}
-		}
-	}
-*/
 
 ///*
 	if (ttentry
@@ -308,7 +284,7 @@ int Ai_Logic::alphaBeta(U8 depth, int alpha, int beta, bool isWhite, U8 ply, boo
     FlagInCheck = gen_moves.isAttacked(king, isWhite, true);
 
 //if in check, or in reduced search extension, skip nulls, statics evals, razoring, etc to moves_loop:
-    if(FlagInCheck || sd.excludedMove) goto moves_loop;
+    if(FlagInCheck || sd.excludedMove || sd.skipEarlyPruning) goto moves_loop;
 
 	evaluateBB eval;
 	int static_eval = eval.evalBoard(isWhite, newBoard, zobrist); //newBoard.sideMaterial[isWhite] - newBoard.sideMaterial[!isWhite];
@@ -360,8 +336,19 @@ int Ai_Logic::alphaBeta(U8 depth, int alpha, int beta, bool isWhite, U8 ply, boo
         f_prune = 1;
     }
 	//*/
+///*
+	if (depth >= 6 && !ttMove
+		&& (is_pv || static_eval + 256 >= beta)) {
+		int d = (int)(3 * depth / 4 - 2);
+		sd.skipEarlyPruning = true;
+		alphaBeta(d, alpha, beta, isWhite, ply, allowNull, is_pv);
+		sd.skipEarlyPruning = false;
 
+		ttentry = TT.probe(zobrist.zobristKey);
+		
+	}
 
+//*/
 moves_loop: //jump to here if in check or in a search extension
 /*
 	singularExtension = depth >= 7
@@ -525,6 +512,7 @@ re_search:
         if(FlagInCheck) alpha = -INF + ply;
         else alpha = contempt(isWhite); 
     }
+
 	if (futileMoves && !raisedAlpha && hashFlag != TT_BETA) {
 
 		if(!legalMoves) alpha = static_eval; //testing needed as well
@@ -539,7 +527,6 @@ re_search:
 
     return alpha;
 }
-
 
 int Ai_Logic::quiescent(int alpha, int beta, bool isWhite, int ply, int quietDepth)
 {

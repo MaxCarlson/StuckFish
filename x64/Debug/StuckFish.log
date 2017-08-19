@@ -1,3 +1,15 @@
 ﻿  evaluatebb.cpp
-  StuckFish.vcxproj -> C:\Users\C-60\Desktop\cppPrograms\StuckFish\x64\Debug\StuckFish.exe
-  StuckFish.vcxproj -> C:\Users\C-60\Desktop\cppPrograms\StuckFish\x64\Debug\StuckFish.pdb (Partial PDB)
+c:\users\c-60\desktop\cppprograms\stuckfish\evaluatebb.cpp(239): error C2059: syntax error: 'if'
+c:\users\c-60\desktop\cppprograms\stuckfish\evaluatebb.cpp(248): error C2059: syntax error: 'if'
+c:\users\c-60\desktop\cppprograms\stuckfish\evaluatebb.cpp(251): error C2065: 'isWhite': undeclared identifier
+c:\users\c-60\desktop\cppprograms\stuckfish\evaluatebb.cpp(251): error C2065: 'result': undeclared identifier
+c:\users\c-60\desktop\cppprograms\stuckfish\evaluatebb.cpp(251): error C2065: 'hash': undeclared identifier
+c:\users\c-60\desktop\cppprograms\stuckfish\evaluatebb.cpp(251): error C2065: 'zobristE': undeclared identifier
+c:\users\c-60\desktop\cppprograms\stuckfish\evaluatebb.cpp(251): error C4430: missing type specifier - int assumed. Note: C++ does not support default-int
+c:\users\c-60\desktop\cppprograms\stuckfish\evaluatebb.cpp(251): error C2440: 'initializing': cannot convert from 'initializer list' to 'int'
+  c:\users\c-60\desktop\cppprograms\stuckfish\evaluatebb.cpp(251): note: The initializer contains too many elements
+c:\users\c-60\desktop\cppprograms\stuckfish\evaluatebb.cpp(253): error C2059: syntax error: 'return'
+c:\users\c-60\desktop\cppprograms\stuckfish\evaluatebb.cpp(254): error C2059: syntax error: '}'
+c:\users\c-60\desktop\cppprograms\stuckfish\evaluatebb.cpp(254): error C2143: syntax error: missing ';' before '}'
+c:\users\c-60\desktop\cppprograms\stuckfish\evaluatebb.cpp(257): error C2143: syntax error: missing ';' before '{'
+c:\users\c-60\desktop\cppprograms\stuckfish\evaluatebb.cpp(257): error C2447: '{': missing function header (old-style formal list?)

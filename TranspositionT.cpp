@@ -3,6 +3,7 @@
 #include <iostream>
 
 TranspositionT TT; //global transposition table
+TranspositionT TTPawn; //global pawn TTable
 
 TranspositionT::TranspositionT()
 {
@@ -80,3 +81,66 @@ void TranspositionT::save(Move& m, const U64 zkey, U8 depth, S16 eval, U8 flag)
 	replace->zobrist = zkey;
 }
 
+/* //pawn hash table?? Not good at the moment
+void TranspositionT::resizePawnT(size_t mbSize)
+{
+	//create transposition table array of the same size as mbSize in megabytes
+	size_t newClusterCount = size_t(1) << msb((mbSize * 1024 * 1024) / sizeof(TTClusterPawn));
+
+	if (newClusterCount == pawnClusterCount)
+		return;
+
+	pawnClusterCount = newClusterCount;
+
+	free(pawnMem);
+
+	pawnMem = calloc(pawnClusterCount * sizeof(TTClusterPawn) + CACHE_LINE_SIZE - 1, 1);
+
+	if (!pawnMem)
+	{
+		std::cerr << "Failed to allocate " << mbSize
+			<< "MB for pawn transposition table." << std::endl;
+		exit(EXIT_FAILURE);
+	}
+
+	pawnTable = (TTClusterPawn*)((uintptr_t(pawnMem) + CACHE_LINE_SIZE - 1) & ~(CACHE_LINE_SIZE - 1));
+}
+
+void TranspositionT::clearPawnTable()
+{
+	std::memset(pawnTable, 0, pawnClusterCount * sizeof(TTClusterPawn));
+}
+
+const PawnEntry * TranspositionT::probePawnT(const U64 key) const
+{
+	PawnEntry *tte = first_entry_pawn(key);
+
+	//is there an entry with the same key inside the cluster?
+	for (unsigned i = 0; i < TTClusterSizePawn; ++i, ++tte) {
+		if (tte->pawnKey == key) {
+
+			return tte;
+		}
+	}
+
+	return NULL;
+}
+
+void TranspositionT::savePawnEntry(const U64 key, int eval)
+{
+	PawnEntry *tte, *replace;
+
+	tte = replace = first_entry_pawn(key);
+
+	for (unsigned i = 0; i < TTClusterSizePawn; ++i, ++tte) {
+
+		if (!tte->pawnKey || tte->pawnKey == key) {
+
+			replace = tte;
+			break;
+		}
+	}
+	replace->eval = eval;
+	replace->pawnKey = key;
+}
+*/
