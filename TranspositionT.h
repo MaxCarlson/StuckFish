@@ -41,6 +41,7 @@ public:
 
 	//save TT entry
 	void save(Move& m, const U64 zkey, U8 depth, S16 eval, U8 flag);
+	void save(const U64 zkey, U8 depth, S16 eval, U8 flag);
 	//save pawn entry
 	//void savePawnEntry(const U64 key, int eval);
 

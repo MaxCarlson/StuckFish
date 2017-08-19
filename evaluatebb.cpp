@@ -223,7 +223,7 @@ int evaluateBB::evalBoard(bool isWhite, const BitBoards& BBBoard, const ZobristH
     result += SafetyTable[ev.attWeight[WHITE]];
     result -= SafetyTable[ev.attWeight[BLACK]];
 
-    //NEED low material adjustment scoring here
+    //low material adjustment scoring here
 	int strong, weak;
 	if (result > 0) {
 		strong = WHITE;
@@ -234,7 +234,7 @@ int evaluateBB::evalBoard(bool isWhite, const BitBoards& BBBoard, const ZobristH
 		weak = WHITE;
 	}
 
-	if (ev.pawnCount[strong] == 0 ){ 
+	if (ev.pawnCount[strong] == 0 ){ // NEED more intensive filters for low material
 
 		if (ev.pieceMaterial[strong] < 400) return 0;
 

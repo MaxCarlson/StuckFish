@@ -81,6 +81,31 @@ void TranspositionT::save(Move& m, const U64 zkey, U8 depth, S16 eval, U8 flag)
 	replace->zobrist = zkey;
 }
 
+void TranspositionT::save(const U64 zkey, U8 depth, S16 eval, U8 flag) //save for when there is no move
+{
+	HashEntry *tte, *replace;
+
+	tte = replace = first_entry(zkey);
+
+	for (unsigned i = 0; i < TTClusterSize; ++i, ++tte) {
+
+		if (!tte->zobrist || tte->zobrist == zkey) {
+
+			replace = tte;
+			break;
+		}
+
+		if (tte->depth <= depth) replace = tte;	//needs refinement!!!
+
+	}
+
+	//save replace
+	replace->depth = depth;
+	replace->eval = eval;
+	replace->flag = flag;
+	replace->zobrist = zkey;
+}
+
 /* //pawn hash table?? Not good at the moment
 void TranspositionT::resizePawnT(size_t mbSize)
 {

@@ -34,7 +34,7 @@ private:
     int alphaBeta(U8 depth, int alpha, int beta, bool isWhite, U8 ply, bool allowNull, bool is_pv);
 
     //Quiescent search ~~ search positions farther if there are captures on horizon
-    int quiescent(int alpha, int beta, bool isWhite, int ply, int quietDepth);
+    int quiescent(int alpha, int beta, bool isWhite, int ply, int quietDepth, bool is_pv);
 
     //make ai prefer checkmate over stalemate
     int contempt(bool isWhite); //need some way to check board material before implementing

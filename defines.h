@@ -63,6 +63,7 @@ typedef int S32;
 typedef unsigned long long U64;
 typedef long long S64;
 
+#define MOVE_NONE Move n
 
 #define TT_ALPHA 1
 #define TT_BETA 2
@@ -79,6 +80,9 @@ typedef long long S64;
 #define END_GAME_MAT 1300
 #define DRAW_OPENING -10
 #define DRAW_ENDGAME 0
+
+#define DEPTH_QS -1
+#define DEPTH_QS_NO_CHECK -2 //add qs checks at somepoint
 
 #define CACHE_LINE_SIZE 64 //taken from stockfish
 #if defined(_MSC_VER) || defined(__INTEL_COMPILER)
