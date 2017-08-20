@@ -1,6 +1,6 @@
 ﻿  ai_logic.cpp
-ai_logic.cpp(355): warning C4533: initialization of 'eval' is skipped by 'goto moves_loop'
-  ai_logic.cpp(292): note: see declaration of 'eval'
-  ai_logic.cpp(355): note: see declaration of 'moves_loop'
+ai_logic.cpp(356): warning C4533: initialization of 'eval' is skipped by 'goto moves_loop'
+  ai_logic.cpp(293): note: see declaration of 'eval'
+  ai_logic.cpp(356): note: see declaration of 'moves_loop'
   StuckFish.vcxproj -> C:\Users\C-60\Desktop\cppPrograms\StuckFish\x64\Release\StuckFish.exe
   StuckFish.vcxproj -> C:\Users\C-60\Desktop\cppPrograms\StuckFish\x64\Release\StuckFish.pdb (Full PDB)

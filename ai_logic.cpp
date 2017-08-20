@@ -40,6 +40,7 @@ int futileC = 0; //count of futile moves
 int valueFromTT(int val, int ply);
 int valueToTT(int val, int ply);
 
+
 Ai_Logic::Ai_Logic()
 {
 
@@ -244,10 +245,10 @@ int Ai_Logic::alphaBeta(int depth, int alpha, int beta, bool isWhite, int ply, b
 	//mate distance pruning, prevents looking for mates longer than one we've already found
 	// NEED to add is draw detection
 	alpha = std::max(mated_in(ply), alpha);
-	beta = std::min(mate_in(ply), beta);
+	beta = std::min(mate_in(ply+1), beta);
 	if (alpha >= beta) return alpha;
 
-	const  HashEntry *ttentry;
+	const HashEntry *ttentry;
 	bool ttMove;
 	int ttValue;
 
@@ -274,7 +275,6 @@ int Ai_Logic::alphaBeta(int depth, int alpha, int beta, bool isWhite, int ply, b
         score = quiescent(alpha, beta, isWhite, ply, queitSD, is_pv);
         return score;
     }
-
 
     MoveGen gen_moves;
     //grab bitboards from newBoard object and store color and board to var
@@ -534,22 +534,21 @@ re_search:
 
 int Ai_Logic::quiescent(int alpha, int beta, bool isWhite, int ply, int quietDepth, bool is_pv)
 {
-    //iterative deeping timer stuff
+    //node count, sepperate q count needed?
 	sd.nodes++;
 
 	const HashEntry *ttentry;
 	bool ttMove;
 	int ttValue;
 	int oldAlpha, bestScore, score;
-	score = bestScore = -INF;
 
-	if (is_pv) oldAlpha = alpha;
-///*
+	//if (is_pv) oldAlpha = alpha;
+
 	ttentry = TT.probe(zobrist.zobristKey);
 	ttMove = ttentry ? ttentry->move.flag : false; //is there a move stored in transposition table?
 	ttValue = ttentry ? valueFromTT(ttentry->eval, ply) : INVALID; //if there is a TT entry, grab its value
 
-												 ///*
+///*
 	if (ttentry
 		&& ttentry->depth >= DEPTH_QS
 		&& (is_pv ? ttentry->flag == TT_EXACT
@@ -605,11 +604,7 @@ int Ai_Logic::quiescent(int alpha, int beta, bool isWhite, int ply, int quietDep
 			&& (newBoard.sideMaterial[!isWhite] - SORT_VALUE[newMove.captured] > END_GAME_MAT)
 			&& newMove.flag != 'Q') continue;
 			
-		/*
-		U64 f = 1LL << newMove.from; //SEE eval cutoff
-		U64 t = 1LL << newMove.to;
-		if (newMove.score <= 0) continue; //or equal to zero add once bug is found
-		*/
+		//need SEE continue to not search losing captures
 
         newBoard.makeMove(newMove, zobrist, isWhite);
         gen_moves.grab_boards(newBoard, isWhite);
@@ -631,19 +626,22 @@ int Ai_Logic::quiescent(int alpha, int beta, bool isWhite, int ply, int quietDep
 
         newBoard.unmakeMove(newMove, zobrist, isWhite);
         gen_moves.grab_boards(newBoard, isWhite);
-/*
+///*
         if(score > alpha){
 
             if(score >= beta){
 				hashFlag = TT_BETA;
+				hashMove = newMove;
 				alpha = beta;
 				break;
             }
 
 			hashFlag = TT_EXACT;
             alpha = score;
+			hashMove = newMove;
         }
-		*/
+//*/
+		/*
 		if (score > bestScore) {
 			bestScore = score;
 
@@ -660,12 +658,13 @@ int Ai_Logic::quiescent(int alpha, int beta, bool isWhite, int ply, int quietDep
 				}
 			}
 		}
+		*/
 
     }
 
-	if (is_pv && score > oldAlpha) hashFlag = TT_EXACT;
+	//if (is_pv && standingPat > oldAlpha) hashFlag = TT_EXACT;
 
-	TT.save(hashMove, zobrist.zobristKey, DEPTH_QS, valueToTT(bestScore, ply), hashFlag);
+	TT.save(hashMove, zobrist.zobristKey, DEPTH_QS, valueToTT(alpha, ply), hashFlag);
 
     return alpha;
 }

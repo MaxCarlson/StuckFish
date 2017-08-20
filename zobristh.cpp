@@ -73,15 +73,15 @@ void ZobristH::UpdateKey(int start, int end, const Move& moveKey, bool isWhite)
 {
     //gather piece, capture, and w or b info from movekey
     //normal move
-    char piece = moveKey.piece;
-    char captured = moveKey.captured;
+    int piece = moveKey.piece;
+    int captured = moveKey.captured;
 
     //if a piece was captured XOR that location with randomkey at array location end
     if (isWhite && captured != PIECE_EMPTY){
-			zobristKey ^= zArray[1][piece - 1][end];   
+			zobristKey ^= zArray[1][captured - 1][end];   
 
     } else if (!isWhite && captured != PIECE_EMPTY) {
-			zobristKey ^= zArray[0][piece - 1][end];
+			zobristKey ^= zArray[0][captured - 1][end];
             
     }
 
@@ -125,6 +125,7 @@ void ZobristH::UpdateKey(int start, int end, const Move& moveKey, bool isWhite)
 
 		}     
     }
+
 	//need caslting code
 
 }
