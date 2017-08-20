@@ -28,10 +28,10 @@ public:
 
 private:
     //root of search ~~ experimental
-    int searchRoot(U8 depth, int alpha, int beta, bool isWhite, U8 ply);
+    int searchRoot(int depth, int alpha, int beta, bool isWhite, int ply);
 
     //minmax with alpha beta, the main component of our search
-    int alphaBeta(U8 depth, int alpha, int beta, bool isWhite, U8 ply, bool allowNull, bool is_pv);
+    int alphaBeta(int depth, int alpha, int beta, bool isWhite, int ply, bool allowNull, bool is_pv);
 
     //Quiescent search ~~ search positions farther if there are captures on horizon
     int quiescent(int alpha, int beta, bool isWhite, int ply, int quietDepth, bool is_pv);
@@ -43,10 +43,11 @@ private:
 	bool isRepetition(const Move& m);
 	
 
-//heuristics
+//helpers
 
     void addKiller(Move move, int ply);
     void ageHistorys();
+	
 
 	
 

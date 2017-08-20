@@ -37,6 +37,9 @@ TimeManager timeM;
 
 int futileC = 0; //count of futile moves
 
+int valueFromTT(int val, int ply);
+int valueToTT(int val, int ply);
+
 Ai_Logic::Ai_Logic()
 {
 
@@ -45,7 +48,7 @@ Ai_Logic::Ai_Logic()
 Move Ai_Logic::search(bool isWhite) {
 	
 	//max depth
-	int depth = 32;
+	int depth = MAX_PLY;
 
 	//generate accurate zobrist key based on bitboards
 	zobrist.getZobristHash(newBoard);
@@ -135,7 +138,7 @@ Move Ai_Logic::iterativeDeep(int depth, bool isWhite)
     return bestMove;
 }
 
-int Ai_Logic::searchRoot(U8 depth, int alpha, int beta, bool isWhite, U8 ply)
+int Ai_Logic::searchRoot(int depth, int alpha, int beta, bool isWhite, int ply)
 {
     bool flagInCheck;
     int score = 0;
@@ -216,20 +219,20 @@ int Ai_Logic::searchRoot(U8 depth, int alpha, int beta, bool isWhite, U8 ply)
 
     }
 	//save info and move to TT
-	TT.save(sd.PV[ply], zobrist.zobristKey, depth, score, hashFlag);
+	TT.save(sd.PV[ply], zobrist.zobristKey, depth, valueToTT(score, ply), hashFlag);
 
     return alpha;
 }
 
-int Ai_Logic::alphaBeta(U8 depth, int alpha, int beta, bool isWhite, U8 ply, bool allowNull, bool is_pv)
+int Ai_Logic::alphaBeta(int depth, int alpha, int beta, bool isWhite, int ply, bool allowNull, bool is_pv)
 {
     bool FlagInCheck = false;
     bool raisedAlpha = false; 
 	bool futileMoves = false; //have any moves been futile?
 	bool singularExtension = false;
-    U8 R = 2;
-    U8 reductionDepth; //how much are we reducing depth in LMR?
-    U8 newDepth;
+	int R = 2;
+	int reductionDepth; //how much are we reducing depth in LMR?
+	int newDepth;
     //U8 newDepth; //use with futility + other pruning later
     int queitSD = 25, f_prune = 0;
     int  mateValue = INF - ply; // used for mate distance pruning
@@ -239,8 +242,9 @@ int Ai_Logic::alphaBeta(U8 depth, int alpha, int beta, bool isWhite, U8 ply, boo
 	checkInput();
 
 	//mate distance pruning, prevents looking for mates longer than one we've already found
-	if (alpha < -mateValue) alpha = -mateValue;
-	if (beta > mateValue - 1) beta = mateValue - 1;
+	// NEED to add is draw detection
+	alpha = std::max(mated_in(ply), alpha);
+	beta = std::min(mate_in(ply), beta);
 	if (alpha >= beta) return alpha;
 
 	const  HashEntry *ttentry;
@@ -249,7 +253,7 @@ int Ai_Logic::alphaBeta(U8 depth, int alpha, int beta, bool isWhite, U8 ply, boo
 
 	ttentry = TT.probe(zobrist.zobristKey);
 	ttMove = ttentry ? ttentry->move.flag : false; //is there a move stored in transposition table?
-	ttValue = ttentry ? ttentry->eval : INVALID; //if there is a TT entry, grab its value
+	ttValue = ttentry ? valueFromTT(ttentry->eval, ply) : INVALID; //if there is a TT entry, grab its value
 
 ///*
 	if (ttentry
@@ -509,7 +513,7 @@ re_search:
     }
 
     if(!legalMoves){
-        if(FlagInCheck) alpha = -INF + ply;
+        if(FlagInCheck) alpha = mated_in(ply);
         else alpha = contempt(isWhite); 
     }
 
@@ -521,7 +525,7 @@ re_search:
 
 	if (!sd.excludedMove) { //only write to TTable if we're not in partial search
 		//save info + move to transposition table ///MAYBE add an if(legalMoves) check? will have to test
-		TT.save(hashMove, zobrist.zobristKey, depth, alpha, hashFlag);
+		TT.save(hashMove, zobrist.zobristKey, depth, valueToTT(alpha, ply), hashFlag);
 	}
 
 
@@ -536,10 +540,14 @@ int Ai_Logic::quiescent(int alpha, int beta, bool isWhite, int ply, int quietDep
 	const HashEntry *ttentry;
 	bool ttMove;
 	int ttValue;
+	int oldAlpha, bestScore, score;
+	score = bestScore = -INF;
 
+	if (is_pv) oldAlpha = alpha;
+///*
 	ttentry = TT.probe(zobrist.zobristKey);
 	ttMove = ttentry ? ttentry->move.flag : false; //is there a move stored in transposition table?
-	ttValue = ttentry ? ttentry->eval : INVALID; //if there is a TT entry, grab its value
+	ttValue = ttentry ? valueFromTT(ttentry->eval, ply) : INVALID; //if there is a TT entry, grab its value
 
 												 ///*
 	if (ttentry
@@ -551,7 +559,7 @@ int Ai_Logic::quiescent(int alpha, int beta, bool isWhite, int ply, int quietDep
 
 		return ttValue;
 	}
-
+//*/
     evaluateBB eval;
     //evaluate board position
     int standingPat = eval.evalBoard(isWhite, newBoard, zobrist);
@@ -562,7 +570,7 @@ int Ai_Logic::quiescent(int alpha, int beta, bool isWhite, int ply, int quietDep
 
     if(standingPat >= beta){
 
-		if (!ttentry) TT.save(zobrist.zobristKey, DEPTH_QS, standingPat, TT_BETA); //save to TT if there's no entry MAJOR PROBLEMS WITH THIS 
+		if (!ttentry) TT.save(zobrist.zobristKey, DEPTH_QS, valueToTT(standingPat, ply), TT_BETA); //save to TT if there's no entry MAJOR PROBLEMS WITH THIS 
 
 		return beta;
     }
@@ -577,7 +585,6 @@ int Ai_Logic::quiescent(int alpha, int beta, bool isWhite, int ply, int quietDep
     gen_moves.generatePsMoves(true);
     gen_moves.reorderMoves(ply, ttentry);
 
-    int score;
     //set hash flag equal to alpha Flag
     int hashFlag = TT_ALPHA, moveNum = gen_moves.moveCount;
 
@@ -624,7 +631,7 @@ int Ai_Logic::quiescent(int alpha, int beta, bool isWhite, int ply, int quietDep
 
         newBoard.unmakeMove(newMove, zobrist, isWhite);
         gen_moves.grab_boards(newBoard, isWhite);
-
+/*
         if(score > alpha){
 
             if(score >= beta){
@@ -636,9 +643,29 @@ int Ai_Logic::quiescent(int alpha, int beta, bool isWhite, int ply, int quietDep
 			hashFlag = TT_EXACT;
             alpha = score;
         }
+		*/
+		if (score > bestScore) {
+			bestScore = score;
+
+			if (score > alpha) {
+				if (is_pv && score < beta) {
+					alpha = score;
+					hashMove = newMove;
+					hashFlag = TT_ALPHA;
+				}
+				else {
+
+					TT.save(hashMove, zobrist.zobristKey, DEPTH_QS, valueToTT(score, ply), TT_BETA);
+					return score;
+				}
+			}
+		}
+
     }
 
-	TT.save(hashMove, zobrist.zobristKey, DEPTH_QS, alpha, hashFlag);
+	if (is_pv && score > oldAlpha) hashFlag = TT_EXACT;
+
+	TT.save(hashMove, zobrist.zobristKey, DEPTH_QS, valueToTT(bestScore, ply), hashFlag);
 
     return alpha;
 }
@@ -707,6 +734,24 @@ void Ai_Logic::ageHistorys()
 	sd.nodes = 0;
 }
 
+
+int valueToTT(int val, int ply)
+{
+	//for adjusting value from "plys to mate from root", to "ply to mate from current ply". - taken from stockfish
+	//if value is is a mate value or a mated value, adjust those values to the current ply then return
+	//else return the value
+	return val >= VALUE_MATE_IN_MAX_PLY ? val + ply
+		: val <= VALUE_MATED_IN_MAX_PLY ? val - ply : val;
+}
+
+int valueFromTT(int val, int ply)
+{
+	//does the opposite of valueToTT, adjusts mate score from TTable to the appropriate score and the current ply
+	return  val == 0 ? 0
+		: val >= VALUE_MATE_IN_MAX_PLY ? val - ply
+		: val <= VALUE_MATED_IN_MAX_PLY ? val + ply : val;
+}
+
 void Ai_Logic::clearHistorys()
 {
 	//used to decrease value after a search
@@ -742,83 +787,4 @@ void Ai_Logic::print(bool isWhite, int bestScore)
 */
 	std::cout << ss.str() << std::endl;
 }
-
-/*
-bool Ai_Logic::deltaPruning(std::string move, int eval, bool isWhite, int alpha, bool isEndGame, MoveGen *newBoard)
-{
-    //if is end game, search all nodes
-    if(isEndGame){
-        return false;
-    }
-
-    U64 epawns, eknights, ebishops, erooks, equeens;
-    //set enemy bitboards
-    if(isWhite){
-        //enemies
-        epawns = newBoard.BBBlackPawns;
-        eknights = newBoard.BBBlackKnights;
-        ebishops = newBoard.BBBlackBishops;
-        erooks = newBoard.BBBlackRooks;
-        equeens = newBoard.BBBlackQueens;
-    } else {
-        epawns = newBoard.BBWhitePawns;
-        eknights = newBoard.BBWhiteKnights;
-        ebishops = newBoard.BBWhiteBishops;
-        erooks = newBoard.BBWhiteRooks;
-        equeens = newBoard.BBWhiteQueens;
-    }
-
-
-
-    U64 pieceMaskE = 0LL;
-    int x, y, xyE;
-    int score = 0, Delta = 200;
-    //normal captures
-    if(move[3] != 'Q'){
-        x = move[2]-0; y = move[3]-0;
-
-    } else {
-        //pawn promotions
-        score = 800;
-        //forward non capture
-        if(move[2] == 'F'){
-            x = move[0];
-        //capture
-        } else {
-            x = move[2]-0;
-        }
-
-        if(isWhite){
-            y = 0;
-        } else {
-            y = 7;
-        }
-    }
-
-    xyE = y*8+x;
-    //create mask of move end position
-    pieceMaskE += 1LL << xyE;
-
-    //find whice piece is captured
-    if(pieceMaskE & epawns){
-        score += 100;
-    } else if(pieceMaskE & eknights){
-        score += 320;
-    } else if(pieceMaskE & ebishops){
-        score += 330;
-    } else if(pieceMaskE & erooks){
-        score += 500;
-    } else if(pieceMaskE & equeens){
-        score += 900;
-    }
-
-    //if score plus safety margin is less then alpha, don't bother searching node
-    if(eval + score + Delta < alpha){
-        return true;
-    }
-
-    return false;
-
-}
-*/
 
