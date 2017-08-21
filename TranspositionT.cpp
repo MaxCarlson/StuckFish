@@ -5,9 +5,6 @@
 TranspositionT TT; //global transposition table
 TranspositionT TTPawn; //global pawn TTable
 
-TranspositionT::TranspositionT()
-{
-}
 
 void TranspositionT::resize(size_t mbSize)
 {

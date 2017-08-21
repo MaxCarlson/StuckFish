@@ -38,7 +38,8 @@ public:
 	//static exhange eval
 	int SEE(const U64 &fromSQ, const U64 &captureSQ, int piece, int captured, bool isWhite);
 
-	Move movegen_sort(int ply);
+	//grab the best scoring move and return it
+	inline Move movegen_sort(int ply, Move * moveAr) const;
 
     void reorderMoves(int ply, const HashEntry *entry);
 
@@ -118,5 +119,24 @@ inline int MoveGen::trailingZeros(const U64 i) const {
 	
 	//return msb(i); replace all with this ?
 }
+
+inline Move MoveGen::movegen_sort(int ply, Move * moveAr) const
+{
+	int best = -INF;
+	int high = 0;
+	//find best scoring move
+	for (int i = 0; i < moveCount; ++i) {
+		if (moveAr[i].score > best && !moveAr[i].tried) {
+			high = i;
+			best = moveAr[i].score;
+		}
+	}
+	//mark best scoring move tried since we're about to try it
+	//~~~ change later if we don't always try move on return
+	moveAr[high].tried = true;
+
+	return moveAr[high];
+}
+
 
 #endif // MOVEGEN_H

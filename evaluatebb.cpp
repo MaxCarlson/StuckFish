@@ -92,10 +92,6 @@ struct evalVect {
 	int queenCount[2];
 } ev; //object to hold values incase we want to print
 
-evaluateBB::evaluateBB()
-{
-
-}
 
 int evaluateBB::evalBoard(bool isWhite, const BitBoards& BBBoard, const ZobristH& zobristE)
 {
@@ -498,99 +494,75 @@ void evaluateBB::evalPieces() //DOESN'T WORK IN RELEASE CONFIG
 
 	//pawns
 	while (wpawns) {
-		int x = msb(wpawns); //replace all with pop_lsb!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		pop_lsb(&wpawns); //pawns and pawn sqtables are evaluated in pawn_eval
 		ev.pawnCount[WHITE] ++;
 		ev.pieceMaterial[WHITE] += 100;
-		i = 1LL << x;
-		wpawns &= ~i;
 	}
 	while (bpawns) {
-		int x = msb(bpawns);
+		pop_lsb(&bpawns);
 		ev.pawnCount[BLACK] ++;
 		ev.pieceMaterial[BLACK] += 100;
-		i = 1LL << x;
-		bpawns &= ~i;
 	}
 	//knights
 	while (wknights) {
-		int x = msb(wknights);
+		int x = pop_lsb(&wknights);
 		ev.knightCount[WHITE] ++;
 		evalKnight(true, x);
 		ev.pieceMaterial[WHITE] += 325 + wKnightsSqT[x];
-		i = 1LL << x;
-		wknights &= ~i;
 	}
 	while (bknights) {
-		int x = msb(bknights);
+		int x = pop_lsb(&bknights);
 		ev.knightCount[BLACK] ++;
 		evalKnight(false, x);
 		ev.pieceMaterial[BLACK] += 325 + bKnightSqT[x]; 
-		i = 1LL << x;
-		bknights &= ~i;
 	}
 	//bishops
 	while (wbishops) {
-		int x = msb(wbishops);
+		int x = pop_lsb(&wbishops);
 		ev.bishopCount[WHITE] ++;
 		evalBishop(true, x);
 		ev.pieceMaterial[WHITE] += 335 + wBishopsSqT[x];
-		i = 1LL << x;
-		wbishops &= ~i;
 	}
 	while (bbishops) {
-		int x = msb(bbishops);
+		int x = pop_lsb(&bbishops);
 		ev.bishopCount[BLACK] ++;
 		evalBishop(false, x);
 		ev.pieceMaterial[BLACK] += 335 + bBishopsSqT[x];
-		i = 1LL << x;
-		bbishops &= ~i;
 	}
 	//rooks
 	while (wrooks) {
-		int x = msb(wrooks);
+		int x = pop_lsb(&wrooks);
 		ev.rookCount[WHITE] ++;
 		evalRook(true, x);
 		ev.pieceMaterial[WHITE] += 500 + wRooksSqT[x];
-		i = 1LL << x;
-		wrooks &= ~i;
 	}
 	while (brooks) {
-		int x = msb(brooks);
+		int x = pop_lsb(&brooks);
 		ev.rookCount[BLACK] ++;
 		evalRook(false, x);
 		ev.pieceMaterial[BLACK] += 500 + bRookSqT[x];
-		i = 1LL << x;
-		brooks &= ~i;
 	}
 	//queens
 	while (wqueens) {
-		int x = msb(wqueens);
+		int x = pop_lsb(&wqueens);
 		evalQueen(true, x);
 		ev.queenCount[WHITE] ++;
 		ev.pieceMaterial[WHITE] += 975 + wQueensSqt[x];
-		i = 1LL << x;
-		wqueens &= ~i;
 	}
 	while (bqueens) {
-		int x = msb(bqueens);
+		int x = pop_lsb(&bqueens);
 		evalQueen(false, x);
 		ev.queenCount[BLACK] ++;
 		ev.pieceMaterial[BLACK] += 975 + bQueenSqT[x];
-		i = 1LL << x;
-		bqueens &= ~i;
 	}
 	//kings
 	while (wking) {
-		int x = msb(wking);
+		int x = pop_lsb(&wking);
 		ev.pieceMaterial[WHITE] += wKingMidSqT[x];
-		i = 1LL << x;
-		wking &= ~i;
 	}
 	while (bking) {
-		int x = msb(bking);
+		int x = pop_lsb(&bking);
 		ev.pieceMaterial[BLACK] += bKingMidSqT[x];
-		i = 1LL << x;
-		bking &= ~i;
 	}
 }
 

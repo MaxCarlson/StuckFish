@@ -37,14 +37,10 @@ TimeManager timeM;
 
 int futileC = 0; //count of futile moves
 
-int valueFromTT(int val, int ply);
-int valueToTT(int val, int ply);
+//mate values are measured in distance from root, so need to be converted to and from TT
+inline int valueFromTT(int val, int ply); 
+inline int valueToTT(int val, int ply); 
 
-
-Ai_Logic::Ai_Logic()
-{
-
-}
 
 Move Ai_Logic::search(bool isWhite) {
 	
@@ -62,21 +58,6 @@ Move Ai_Logic::search(bool isWhite) {
 
 	//calc move time for us, send to search driver
 	timeM.calcMoveTime(isWhite);
-
-	/*
-	U64 king;
-	if (isWhite) king = newBoard.BBWhiteKing;
-	else king = newBoard.BBBlackKing;
-	MoveGen checkcheck;
-	checkcheck.grab_boards(newBoard, isWhite);
-	//are we in check?
-	bool flagInCheck = checkcheck.isAttacked(king, isWhite, false);
-
-	if (flagInCheck) { //extend depth and time if in check ///add more complex methods of time managment
-		depth++; 
-		sd.moveTime += 2500; 
-	} 
-	*/
 
 	Move m = iterativeDeep(depth, isWhite);
 	
@@ -163,7 +144,7 @@ int Ai_Logic::searchRoot(int depth, int alpha, int beta, bool isWhite, int ply)
 
     for(int i = 0; i < moveNum; ++i){
         //find best move generated
-        Move newMove = gen_moves.movegen_sort(ply);
+        Move newMove = gen_moves.movegen_sort(ply, &gen_moves.moveAr[0]);
         newBoard.makeMove(newMove, zobrist, isWhite);  
 
 		if (isRepetition(newMove)) { //if position from root move is a two fold repetition, discard that move
@@ -374,7 +355,7 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
     Move hashMove; //move to store alpha in and pass to TTable
     for(int i = 0; i < movesNum; ++i){
         //grab best scoring move
-		Move newMove = gen_moves.movegen_sort(ply); //huge speed decrease if not Move newMove is instatiated above loop!!??
+		Move newMove = gen_moves.movegen_sort(ply, &gen_moves.moveAr[0]); //huge speed decrease if not Move newMove is instatiated above loop!!??
 
 		//if (sd.excludedMove && newMove.score >= SORT_HASH) continue;
 
@@ -595,7 +576,7 @@ int Ai_Logic::quiescent(int alpha, int beta, bool isWhite, int ply, int quietDep
 
     for(int i = 0; i < moveNum; ++i)
     {        
-        Move newMove = gen_moves.movegen_sort(ply);
+        Move newMove = gen_moves.movegen_sort(ply, &gen_moves.moveAr[0]);
 
 		///*
 		//also not fast enough yet, though more testing is needed

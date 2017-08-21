@@ -26,7 +26,6 @@ struct TTClusterPawn { //32 bytes ?? possibly should change to 4 entrys, 64 byte
 class TranspositionT
 {
 public:
-	TranspositionT();
 	~TranspositionT() { free(mem); };
 
 	//probes TTable for a hit

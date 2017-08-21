@@ -20,10 +20,6 @@ std::string boardArr[8][8] = {
 };
 
 
-BitBoards::BitBoards()
-{
-
-}
 
 void BitBoards::constructBoards()
 {

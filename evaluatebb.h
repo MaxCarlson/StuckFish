@@ -10,7 +10,6 @@ class MoveGen;
 class evaluateBB
 {
 public:
-    evaluateBB();
 
     //forms total evaluation for baord state
     int evalBoard(bool isWhite, const BitBoards &BBBoard, const ZobristH &zobristE);

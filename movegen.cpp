@@ -81,7 +81,7 @@ void MoveGen::generatePsMoves(bool capturesOnly)
         king = BBWhiteKing;
         eking = BBBlackKing;
         //generate pawn moves
-        possibleWP(pawns, eking, capturesOnly);   //ADD function to calc attack board so we can generate caslting moves ~!~!~!~!~!~!~!~!~!~!~!
+        possibleWP(pawns, eking, capturesOnly);   //ADD function to calc attack board or grab it from previous isAttacked in search, so we can generate caslting moves ~!~!~!~!~!~!~!~!~!~!~!
 
     } else {
         friends = BBBlackPieces;
@@ -103,17 +103,30 @@ void MoveGen::generatePsMoves(bool capturesOnly)
     //if we only want to generate captures
     if(capturesOnly) capsOnly = enemys;
 
-    //loop through board an generate ps legal moves for our side
-    U64 piece = 0LL;
-    for(U8 i = 0; i < 64; i++){
-        piece = 0LL;
-        piece += 1LL << i;
-        if(knights & piece) possibleN(i, friends, enemys, eking, capsOnly);
-        else if(bishops & piece) possibleB(i, friends, enemys, eking, capsOnly);
-        else if(rooks & piece) possibleR(i, friends, enemys, eking, capsOnly);
-        else if(queens & piece) possibleQ(i, friends, enemys, eking, capsOnly);
-        else if(king & piece) possibleK(i, friends, enemys, eking, capsOnly);
-    }
+	//while there is a piece on the board, grab that pieces location and pop it from the board
+	//then generate moves for a piece on that location, and push those moves the the move array
+	while (knights) {
+		int loc = pop_lsb(&knights);
+		possibleN(loc, friends, enemys, eking, capsOnly);
+	}
+	while (bishops) {
+		int loc = pop_lsb(&bishops);
+		possibleB(loc, friends, enemys, eking, capsOnly);
+	}
+	while (rooks) {
+		int loc = pop_lsb(&rooks);
+		possibleR(loc, friends, enemys, eking, capsOnly);
+	}
+	while (queens) {
+		int loc = pop_lsb(&queens);
+		possibleQ(loc, friends, enemys, eking, capsOnly);
+	}
+	while (king) {
+		int loc = pop_lsb(&king);
+		possibleK(loc, friends, enemys, eking, capsOnly);
+	}
+
+
     return;
 }
 
@@ -1033,24 +1046,6 @@ void MoveGen::unmakeCaptureSEE(const Move & m, bool isWhite)
 	
 }
 
-Move MoveGen::movegen_sort(int ply)
-{
-    int best = -INF;
-    int high = 0;
-    //find best scoring move
-    for(U8 i = 0; i < moveCount; ++i){
-        if(moveAr[i].score > best && !moveAr[i].tried){
-            high = i;
-            best = moveAr[i].score;
-        }
-    }
-    //mark best scoring move tried since we're about to try it
-    //~~~ change later if we don't always try move on return
-    moveAr[high].tried = true;
-
-    return moveAr[high];
-}
-
 void MoveGen::reorderMoves(int ply, const HashEntry *entry)
 {
 
@@ -1102,8 +1097,6 @@ char MoveGen::whichPieceCaptured(U64 landing)
     return '0';
 }
 
-
-
 U64 MoveGen::ReverseBits(U64 input)
 {
     //literally reverse bits in U64's
@@ -1116,7 +1109,6 @@ U64 MoveGen::ReverseBits(U64 input)
     }
     return output;
 }
-
 
 void MoveGen::grab_boards(const BitBoards &BBBoard, bool wOrB)
 {
@@ -1190,7 +1182,7 @@ bool MoveGen::isAttacked(U64 pieceLoc, bool wOrB, bool isSearchKingCheck)
     if(attacks & pieceLoc) return true;
 
     //int is piece/square attacked location on board
-    int location = trailingZeros(pieceLoc);
+    int location = lsb(pieceLoc);
 
 //very similar to move generation code just ending with generated bitboards of attacks
     //knight attacks

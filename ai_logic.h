@@ -15,7 +15,6 @@ class Move;
 class Ai_Logic
 {
 public:
-    Ai_Logic();
 
 	Move search(bool isWhite);
 

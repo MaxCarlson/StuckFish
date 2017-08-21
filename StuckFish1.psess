@@ -65,6 +65,11 @@
       </PostinstrumentEvent>
     </Binary>
   </Binaries>
+  <Reports>
+    <Report>
+      <Path>StuckFish170820.vspx</Path>
+    </Report>
+  </Reports>
   <Launches>
     <Binary>
       <Path>x64\Release\StuckFish.exe</Path>
