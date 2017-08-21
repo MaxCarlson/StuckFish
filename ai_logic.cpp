@@ -72,25 +72,29 @@ Move Ai_Logic::iterativeDeep(int depth, bool isWhite)
     //best overall move as calced
     Move bestMove;
     int bestScore, alpha = -INF, beta = INF;
+	int delta = 8;
 	sd.depth = 0;
 
     //std::cout << zobrist.zobristKey << std::endl;
 
     //iterative deepening loop starts at depth 1, iterates up till max depth or time cutoff
-    while(sd.depth++ <= depth){
+    while(sd.depth <= depth){
 
 		if (timeM.timeStopRoot() || timeOver) break;
 
         //main search
         bestScore = searchRoot(sd.depth, alpha, beta, isWhite, ply+1);
 /*
-        if(bestScore <= alpha || bestScore >= beta){
-            alpha = -INF;
-            beta = INF;
-            continue;
-        }
-        alpha = bestScore - ASP;
-        beta = bestScore + ASP;
+        if(bestScore <= alpha){ //ISSUES WITH ASPIRATION WINDOWS
+			alpha = std::max(bestScore - delta, -INF);			
+		}
+		else if (bestScore >= beta) {
+			beta = std::min(bestScore + delta, INF);
+		}
+
+		if (bestScore <= alpha || bestScore >= beta) continue;
+
+		delta += 3 * delta / 8;
 */
         //if the search is not cutoff
         if(!timeOver){
@@ -104,7 +108,7 @@ Move Ai_Logic::iterativeDeep(int depth, bool isWhite)
 			print(isWhite, bestScore);
 			//std::cout << futileC << std::endl;
         }
-		
+		sd.depth++;
         //increment distance to travel (same as depth at max depth)
     }
 
@@ -200,6 +204,7 @@ int Ai_Logic::searchRoot(int depth, int alpha, int beta, bool isWhite, int ply)
         }
 
     }
+
 	//save info and move to TT
 	TT.save(sd.PV[ply], zobrist.zobristKey, depth, valueToTT(score, ply), hashFlag);
 

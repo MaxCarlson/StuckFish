@@ -1,18 +1,3 @@
-﻿  zobristh.cpp
-  UCI.cpp
-  TranspositionT.cpp
-  TimeManager.cpp
-  slider_attacks.cpp
-  movegen.cpp
-  move.cpp
-  main.cpp
-  hashentry.cpp
-  evaluatebb.cpp
-  bitboards.cpp
-  ai_logic.cpp
-c:\users\c-60\desktop\cppprograms\stuckfish\ai_logic.cpp(357): warning C4533: initialization of 'eval' is skipped by 'goto moves_loop'
-  c:\users\c-60\desktop\cppprograms\stuckfish\ai_logic.cpp(293): note: see declaration of 'eval'
-  c:\users\c-60\desktop\cppprograms\stuckfish\ai_logic.cpp(357): note: see declaration of 'moves_loop'
-  Generating Code...
+﻿  ai_logic.cpp
   StuckFish.vcxproj -> C:\Users\C-60\Desktop\cppPrograms\StuckFish\x64\Debug\StuckFish.exe
   StuckFish.vcxproj -> C:\Users\C-60\Desktop\cppPrograms\StuckFish\x64\Debug\StuckFish.pdb (Partial PDB)

@@ -635,415 +635,92 @@ bool MoveGen::blind(const Move &move, int pieceVal, int captureVal)
     return 0; //of other captures we know not
 }
 
-int MoveGen::SEE(const U64 &fromSQ, const U64 &captureSQ, int piece, int captured, bool isWhite) {
-	int val = 0;
-
-	std::vector<U64> def = getSmallestAttacker(captureSQ, isWhite); 
-	U64 defenders = def[0];
-	//location of defending piece
-	int defLoc = def[1];
-	//drawBBA();
-	//drawBB(fromSQ);
-	//drawBB(captureSQ);
-	//drawBB(defenders);
-
-	if ((EmptyTiles & BBWhitePieces) | (EmptyTiles & BBBlackPieces)) {
-		drawBBA();
-	}
-
-	if (piece) {
-		//isolate one defender
-		defenders = 1LL << trailingZeros(defenders);
-		//replace later
-		int c;
-		
-		Move m = makeCaptureSEE(fromSQ, captureSQ, captured, isWhite);
-																		
-		val = std::max(0, SORT_VALUE[captured] - SEE(defenders, captureSQ, defLoc, m.piece, !isWhite)); // std::max(0, )
-
-		unmakeCaptureSEE(m, isWhite);
-	}
-
-	return val;
-}
-
-std::vector<U64> MoveGen::getSmallestAttacker(const U64 &sq, bool isWhite) {
-	U64 attacks = 0LL, pawns, knights, rooks, bishops, queens, king;
-	std::vector<U64> att;
-
-	if (isWhite) {
-		pawns = BBBlackPawns;
-		knights = BBBlackKnights;
-		bishops = BBBlackBishops;
-		rooks = BBBlackRooks;
-		queens = BBBlackQueens;
-		king = BBBlackKing;
-		//pawns
-		//capture right
-		attacks = noEaOne(sq);
-		//capture left
-		attacks |= noWeOne(sq);
-	}
-	else {
-		pawns = BBWhitePawns;
-		knights = BBWhiteKnights;
-		bishops = BBWhiteBishops;
-		rooks = BBWhiteRooks;
-		queens = BBWhiteQueens;
-		king = BBWhiteKing;
-		
-		//capture right
-		attacks = soEaOne(sq);
-		//capture left
-		attacks |= soWeOne(sq);
-	}
-
-	//pawn/s defend/s
-	if (attacks & pawns) {
-		att.push_back(attacks & pawns);
-		att.push_back(PAWN);
-		return att;
-	}
-
-	//int is piece/square attacked location on board
-	int location = trailingZeros(sq);
-
-	//very similar to move generation code just ending with generated bitboards of attacks
-	//knight attacks
-	if (location > 18) {
-		attacks = KNIGHT_SPAN << (location - 18);
-	}
-	else {
-		attacks = KNIGHT_SPAN >> (18 - location);
-	}
-
-	if (location % 8 < 4) {
-		attacks &= ~FILE_GH;
-	}
-	else {
-		attacks &= ~FILE_AB;
-	}
-
-	if (attacks & knights) {
-		att.push_back(attacks & knights);
-		att.push_back(KNIGHT);
-		return att;
-	}
-
-	
-	attacks = slider_attacks.BishopAttacks(FullTiles, location);
-	//bishop/s defend/s
-	if (attacks & bishops) {
-		att.push_back(attacks & bishops);
-		att.push_back(BISHOP);
-		return att;
-	}
-	
-	attacks = slider_attacks.RookAttacks(FullTiles, location);
-	//rook/s defend/s
-	if (attacks & rooks) {
-		att.push_back(attacks & rooks);
-		att.push_back(ROOK);
-		return att;
-	}
-	
-	attacks = slider_attacks.QueenAttacks(FullTiles, location);
-
-	//queen/s defend/s
-	if (attacks & queens) {
-		att.push_back(attacks & queens);
-		att.push_back(QUEEN);
-		return att;
-	}
-
-	if (location > 9) {
-		attacks = KING_SPAN << (location - 9);
-	}
-	else {
-		attacks = KING_SPAN >> (9 - location);
-	}
-	if (location % 8 < 4) {
-		attacks &= ~FILE_GH;
-
-	}
-	else {
-		attacks &= ~FILE_AB;
-	}
-
-	//king defend/s
-	if (attacks & king) {
-		att.push_back(attacks & king);
-		att.push_back(KING);
-		return att;
-	}
-
-	//no defenders
-	att.push_back(0LL);
-	att.push_back(PIECE_EMPTY);
-	return att;
-}
-
-Move MoveGen::makeCaptureSEE(const U64 & from, const U64 & to, int captured, bool isWhite)
-{	
-	Move m;
-	m.from = trailingZeros(from);
-	m.to = trailingZeros(to);
-	m.captured = captured;
-
-	if (isWhite) {
-		//move capturing piece and record piece in move
-		if (from & BBWhitePawns) {
-			BBWhitePawns &= ~from;
-			BBWhitePawns |= to;
-			m.piece = PAWN;
-
-		}
-		else if (from & BBWhiteKnights) {
-			BBWhiteKnights &= ~from;
-			BBWhiteKnights |= to;
-			m.piece = KNIGHT;
-
-		}
-		else if (from & BBWhiteBishops) {
-			BBWhiteBishops &= ~from;
-			BBWhiteBishops |= to;
-			m.piece = BISHOP;
-
-		}
-		else if (from & BBWhiteRooks) {
-			BBWhiteRooks &= ~from;
-			BBWhiteRooks |= to;
-			m.piece = ROOK;
-
-		}
-		else if (from & BBWhiteQueens) {
-			BBWhiteQueens &= ~from;
-			BBWhiteQueens |= to;
-			m.piece = QUEEN;
-
-		}
-		else if (from & BBWhiteKing) {
-			BBWhiteKing &= ~from;
-			BBWhiteKing |= to;
-			m.piece = KING;
-		}
-		BBWhitePieces &= ~from;
-		BBWhitePieces |= to;
-		//remove captured piece
-		switch (captured) {
-		case PAWN:
-			BBBlackPawns &= ~to;
-			break;
-		case KNIGHT:
-			BBBlackKnights &= ~to;
-			break;
-		case BISHOP:
-			BBBlackBishops &= ~to;
-			break;
-		case ROOK:
-			BBBlackRooks &= ~to;
-			break;
-		case QUEEN:
-			BBBlackQueens &= ~to;
-			break;
-		case KING:
-			BBBlackKing &= ~to;
-			break;
-		}
-		BBBlackPieces &= ~to;	
-	}
-	else {
-		if (from & BBBlackPawns) {
-			BBBlackPawns &= ~from;
-			BBBlackPawns |= to;
-			m.piece = PAWN;
-
-		}
-		else if (from & BBBlackKnights) {
-			BBBlackKnights &= ~from;
-			BBBlackKnights |= to;
-			m.piece = KNIGHT;
-
-		}
-		else if (from & BBBlackBishops) {
-			BBBlackBishops &= ~from;
-			BBBlackBishops |= to;
-			m.piece = BISHOP;
-
-		}
-		else if (from & BBBlackRooks) {
-			BBBlackRooks &= ~from;
-			BBBlackRooks |= to;
-			m.piece = ROOK;
-
-		}
-		else if (from & BBBlackQueens) {
-			BBBlackQueens &= ~from;
-			BBBlackQueens |= to;
-			m.piece = QUEEN;
-
-		}
-		else if (from & BBBlackKing) {
-			BBBlackKing &= ~from;
-			BBBlackKing |= to;
-			m.piece = KING;
-		}
-		BBBlackPieces &= ~from;
-		BBBlackPieces |= to;
-
-		switch (captured) {
-		case PAWN:
-			BBWhitePawns &= ~to;
-			break;
-		case KNIGHT:
-			BBWhiteKnights &= ~to;
-			break;
-		case BISHOP:
-			BBWhiteBishops &= ~to;
-			break;
-		case ROOK:
-			BBWhiteRooks &= ~to;
-			break;
-		case QUEEN:
-			BBWhiteQueens &= ~to;
-			break;
-		case KING:
-			BBWhiteKing &= ~to;
-			break;
-		}
-		BBWhitePieces &= ~to;
-
-	}
-	FullTiles &= ~from;
-	EmptyTiles = ~FullTiles;
-
-	if ((EmptyTiles & BBWhitePieces) | (EmptyTiles & BBBlackPieces)) {
-		drawBBA();
-	}
-
-	return m;
-}
-
-void MoveGen::unmakeCaptureSEE(const Move & m, bool isWhite)
+int MoveGen::SEE(const Move& m, const BitBoards& b, bool isWhite)
 {
+	U64 attackers, occupied, stmAttackers;
+	int swapList[32], index = 0; //play with val for speed?
 
-	U64 from = 1LL << m.from;
-	U64 to = 1LL << m.to;
+	//early return, SEE can't be a losing capture
+	if (SORT_VALUE[m.piece] <= SORT_VALUE[m.captured]) return INF;
 
-	if (isWhite) {
-		//reverse caputred piece bitboards
-		switch (m.captured) {
-		case PAWN:
-			BBBlackPawns |= to;
-			break;
-		case KNIGHT:
-			BBBlackKnights |= to;
-			break;
-		case BISHOP:
-			BBBlackBishops |= to;
-			break;
-		case ROOK:
-			BBBlackRooks |= to;
-			break;
-		case QUEEN:
-			BBBlackQueens |= to;
-			break;
-		case KING:
-			BBBlackKing |= to;
-			break;
-		}
-		BBBlackPieces |= to;
-		//reverse capturing piece bitboards
-		switch (m.piece) {
-		case PAWN:
-			BBWhitePawns |= from;
-			BBWhitePawns &= ~to;
-			break;
-		case KNIGHT:
-			BBWhiteKnights |= from;
-			BBWhiteKnights &= ~to;
-			break;
-		case BISHOP:
-			BBWhiteBishops |= from;
-			BBWhiteBishops &= ~to;
-			break;
-		case ROOK:
-			BBWhiteRooks |= from;
-			BBWhiteRooks &= ~to;
-			break;
-		case QUEEN:
-			BBWhiteQueens |= from;
-			BBWhiteQueens &= ~to;
-			break;
-		case KING:
-			BBWhiteKing |= from;
-			BBWhiteKing &= ~to;
-			break;
-		}
-		BBWhitePieces |= from;
-		BBWhitePieces &= ~to;
-		
+	int from = 1LL << m.from;
+	int to = 1LL << m.to;
+	swapList[0] = SORT_VALUE[m.piece];
+	occupied = FullTiles ^ from;
+
+	//need castling and enpassant logic once implmented
+
+	//finds all attackers to the square
+	attackers = attackersTo(m.to, b, occupied);
+
+	//if there are no attacking pieces, return
+	if (isWhite && !(attackers & b.BBBlackPieces)) return swapList[0];
+	else if (!isWhite && !(attackers & b.BBWhitePieces))  return swapList[0];
+
+	int captured = m.captured;
+
+	do {
+		if (index > 31) break;
+
+		//add entry to swap list
+		swapList[index] = -swapList[index - 1] + SORT_VALUE[captured];
+
+
+
+		index++;
+	} while (stmAttackers);
+	
+
+}
+//returns a bitboard of all attackers of sq locations
+U64 MoveGen::attackersTo(int sq, const BitBoards& b, const U64 occ) const
+{
+	U64 attackers = 0LL, loc = 1LL << sq, kingA;
+
+	//knights
+	if (sq > 18) {
+		attackers = KNIGHT_SPAN << (sq - 18);
 	}
 	else {
-		switch (m.captured) {
-		case PAWN:
-			BBWhitePawns |= to;
-			break;
-		case KNIGHT:
-			BBWhiteKnights |= to;
-			break;
-		case BISHOP:
-			BBWhiteBishops |= to;
-			break;
-		case ROOK:
-			BBWhiteRooks |= to;
-			break;
-		case QUEEN:
-			BBWhiteQueens |= to;
-			break;
-		case KING:
-			BBWhiteKing |= to;
-			break;
-		}
-		BBWhitePieces |= to;
-		switch (m.piece) {
-		case PAWN:
-			BBBlackPawns |= from;
-			BBBlackPawns &= ~to;
-			break;
-		case KNIGHT:
-			BBBlackKnights |= from;
-			BBBlackKnights &= ~to;
-			break;
-		case BISHOP:
-			BBBlackBishops |= from;
-			BBBlackBishops &= ~to;
-			break;
-		case ROOK:
-			BBBlackRooks |= from;
-			BBBlackRooks &= ~to;
-			break;
-		case QUEEN:
-			BBBlackQueens |= from;
-			BBBlackQueens &= ~to;
-			break;
-		case KING:
-			BBBlackKing |= from;
-			BBBlackKing &= ~to;
-			break;
-		}
-		BBBlackPieces |= from;
-		BBBlackPieces &= ~to;
+		attackers = KNIGHT_SPAN >> (18 - sq);
 	}
 
-	//undo capture on full/empty boards
-	FullTiles |= from;
-	EmptyTiles &= ~FullTiles;
-
-	if ((EmptyTiles & BBWhitePieces) | (EmptyTiles & BBBlackPieces)) {
-		drawBBA();
+	if (sq % 8 < 4) {
+		attackers &= ~FILE_GH;
 	}
-	
+	else {
+		attackers &= ~FILE_AB;
+	}
+	attackers &= b.BBWhiteKnights | b.BBBlackKnights;
+
+	//pawns
+	attackers |= (b.BBWhitePawns << 9) & notHFile & b.BBBlackPawns;
+	attackers |= (b.BBWhitePawns << 7) & notAFile & b.BBBlackPawns;
+	attackers |= (b.BBBlackPawns >> 9) & notAFile & b.BBWhitePawns;
+	attackers |= (b.BBBlackPawns >> 7) & notAFile & b.BBWhitePawns;
+
+	//bishop and queens
+	attackers |= slider_attacks.BishopAttacks(occ, sq) & (b.BBBlackBishops | b.BBWhiteBishops | b.BBBlackQueens | b.BBWhiteQueens);
+
+	//rooks and queens
+	attackers |= slider_attacks.RookAttacks(occ, sq) & (b.BBBlackRooks | b.BBWhiteRooks | b.BBBlackQueens | b.BBWhiteQueens);
+
+	if (sq > 9) {
+		kingA = KING_SPAN << (sq - 9);
+	}
+	else {
+		kingA = KING_SPAN >> (9 - sq);
+	}
+	if (sq % 8 < 4) {
+		kingA &= ~FILE_GH;
+
+	}
+	else {
+		kingA &= ~FILE_AB;
+	}
+	attackers = kingA & (b.BBWhiteKing | b.BBBlackKing);
+		
+	return attackers;
 }
 
 void MoveGen::reorderMoves(int ply, const HashEntry *entry)

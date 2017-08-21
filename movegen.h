@@ -36,7 +36,7 @@ public:
 	
 
 	//static exhange eval
-	int SEE(const U64 &fromSQ, const U64 &captureSQ, int piece, int captured, bool isWhite);
+	int SEE(const Move& m, const BitBoards& b, bool isWhite);
 
 	//grab the best scoring move and return it
 	inline Move movegen_sort(int ply, Move * moveAr) const;
@@ -82,9 +82,7 @@ private:
         bool blind(const Move &move, int pieceVal, int captureVal);	
 
 		//used in static exchange eval
-		std::vector<U64> getSmallestAttacker(const U64 & sq, bool isWhite);
-		Move makeCaptureSEE(const U64 & from, const U64 & to, int captured, bool isWhite);
-		void unmakeCaptureSEE(const Move &m, bool isWhite);
+		U64 attackersTo(int sq, const BitBoards& b, const U64 occ) const;
 
         char whichPieceCaptured(U64 landing);
 
