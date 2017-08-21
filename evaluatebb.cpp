@@ -72,30 +72,30 @@ piece values
   K = 0
 */
 
+struct evalVect {
+	int gamePhase;
+	int pieceMaterial[2];
+	int midGMobility[2];
+	int endGMobility[2];
+	int attCount[2];
+	int attWeight[2];
+	int mgTropism[2]; // still need to add
+	int egTropism[2]; // still need to add
+	int kingShield[2];
+	int adjustMaterial[2];
+	int blockages[2]; // still need to add
+	int pawnCount[2];
+	int pawnMaterial[2];
+	int knightCount[2];
+	int bishopCount[2];
+	int rookCount[2];
+	int queenCount[2];
+} ev; //object to hold values incase we want to print
+
 evaluateBB::evaluateBB()
 {
 
 }
-
-struct evalVect{
-    int gamePhase;
-    int pieceMaterial[2];
-    int midGMobility[2];
-    int endGMobility[2];
-    int attCount[2];
-    int attWeight[2];
-    int mgTropism[2]; // still need to add
-    int egTropism[2]; // still need to add
-    int kingShield[2];
-    int adjustMaterial[2];
-    int blockages[2]; // still need to add
-    int pawnCount[2];
-    int pawnMaterial[2];
-    int knightCount[2];
-    int bishopCount[2];
-    int rookCount[2];
-    int queenCount[2];
-} ev; //object to hold values incase we want to print
 
 int evaluateBB::evalBoard(bool isWhite, const BitBoards& BBBoard, const ZobristH& zobristE)
 {
@@ -473,74 +473,6 @@ int passed_pawn_pcsq[2][64] = { {
 }
 };
 
-void evaluateBB::getPieceMaterial(int location)
-{
-    //create an empty board then shift a 1 over to the current i location
-    U64 pieceLocation = 1LL << location;
-
-    //white pieces
-    if(evalMoveGen.BBWhitePieces & pieceLocation){
-        if(pieceLocation & evalMoveGen.BBWhitePawns){
-            ev.pawnCount[WHITE] ++;
-            ev.pieceMaterial[WHITE] += 100; //eval pawns sepperatly
-
-        } else if(pieceLocation & evalMoveGen.BBWhiteRooks){
-            ev.rookCount[WHITE] ++;
-            evalRook(true, location);
-            ev.pieceMaterial[WHITE] += 500 + wRooksSqT[location];
-
-        } else if(pieceLocation & evalMoveGen.BBWhiteKnights){
-            ev.knightCount[WHITE] ++;
-            evalKnight(true, location);
-            ev.pieceMaterial[WHITE] += 325 + wKnightsSqT[location];
-
-        } else if(pieceLocation & evalMoveGen.BBWhiteBishops){
-            ev.bishopCount[WHITE] ++;
-            evalBishop(true, location);
-            ev.pieceMaterial[WHITE] += 335 + wBishopsSqT[location];
-
-        } else if(pieceLocation & evalMoveGen.BBWhiteQueens){
-            evalQueen(true, location);
-            ev.queenCount[WHITE] ++;
-            ev.pieceMaterial[WHITE] += 975 + wQueensSqt[location];
-
-        } else if(pieceLocation & evalMoveGen.BBWhiteKing){
-
-            ev.pieceMaterial[WHITE] += wKingMidSqT[location]; ///NEEED to add better mid/end psqT stuff
-
-        }
-    } else if (evalMoveGen.BBBlackPieces & pieceLocation) {
-        if(pieceLocation & evalMoveGen.BBBlackPawns ){
-            ev.pawnCount[BLACK] ++;
-            ev.pieceMaterial[BLACK] += 100;
-
-        } else if(pieceLocation & evalMoveGen.BBBlackRooks){
-            ev.rookCount[BLACK] ++;
-            evalRook(false, location);
-            ev.pieceMaterial[BLACK] += 500 + bRookSqT[location];
-
-        } else if(pieceLocation & evalMoveGen.BBBlackKnights){
-            ev.knightCount[BLACK] ++;
-            evalKnight(false, location);
-            ev.pieceMaterial[BLACK] += 325 + bKnightSqT[location];
-
-        } else if(pieceLocation & evalMoveGen.BBBlackBishops){
-            ev.bishopCount[BLACK] ++;
-            evalBishop(false, location);
-            ev.pieceMaterial[BLACK] += 335 + bBishopsSqT[location];
-
-        } else if(pieceLocation & evalMoveGen.BBBlackQueens){
-            evalQueen(false, location);
-            ev.queenCount[BLACK] ++;
-            ev.pieceMaterial[BLACK] += 975 + bQueenSqT[location];
-
-        } else if(pieceLocation & evalMoveGen.BBBlackKing){
-
-			ev.pieceMaterial[BLACK] += bKingMidSqT[location];
-        }
-    }
-}
-
 void evaluateBB::evalPieces() //DOESN'T WORK IN RELEASE CONFIG
 {
 	//evaluate all pieces and store relvent info to struct ev
@@ -566,7 +498,7 @@ void evaluateBB::evalPieces() //DOESN'T WORK IN RELEASE CONFIG
 
 	//pawns
 	while (wpawns) {
-		int x = msb(wpawns);
+		int x = msb(wpawns); //replace all with pop_lsb!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 		ev.pawnCount[WHITE] ++;
 		ev.pieceMaterial[WHITE] += 100;
 		i = 1LL << x;
@@ -763,6 +695,7 @@ int evaluateBB::getPawnScore()
     //get zobristE/bitboard of current pawn positions
     U64 pt = evalMoveGen.BBWhitePawns | evalMoveGen.BBBlackPawns;
     int hash = pt & 399999;
+
     //probe pawn hash table using bit-wise OR of white pawns and black pawns as zobrist key
     if(transpositionPawn[hash].zobrist == pt){
         return transpositionPawn[hash].eval;
@@ -774,16 +707,19 @@ int evaluateBB::getPawnScore()
 	//if (ttpawnentry) return ttpawnentry->eval;
 
     //if we don't get a hash hit, search through all pawns on board and return score
-    int score = 0;
-    U64 pieceLocation;
-    for(int i = 0; i < 64; i++){
-        pieceLocation = 1LL << i;
-        if(pieceLocation & evalMoveGen.BBWhitePawns){
-            score += pawnEval(true, i);
-        } else if (pieceLocation & evalMoveGen.BBBlackPawns){
-            score -= pawnEval(false, i);
-        }
-    }
+	U64 wPawns = evalMoveGen.BBWhitePawns;
+	U64 bPawns = evalMoveGen.BBBlackPawns;
+
+	int score = 0;
+	while (wPawns) {
+		int loc = pop_lsb(&wPawns);
+		score += pawnEval(true, loc);
+	}
+
+	while (bPawns) {
+		int loc = pop_lsb(&bPawns);
+		score -= pawnEval(false, loc);
+	}
 
     //store entry to pawn hash table
     transpositionPawn[hash].eval = score;
@@ -829,7 +765,7 @@ int evaluateBB::pawnEval(bool isWhite, int location)
 
     opawns &= ~ pawn; //remove this pawn from his friendly pawn BB so as not to count himself in doubling
 
-    if(doubledPassMask & opawns) result -= 10; //real value for doubled pawns is -twenty, because this method counts them twice it's set at half real
+    if(doubledPassMask & opawns) result -= 10; //real value for doubled pawns is -20, because this method counts them twice it's set at half real
 
     if(isWhite){
         for(int i = 7; i > rank-1; i--) {
@@ -906,8 +842,8 @@ void evaluateBB::evalKnight(bool isWhite, int location)
     int kAttks = 0, mob = 0, side;
     ev.gamePhase += 1;
 
-    U64 knight = 0LL, friends, eking, kingZone;
-    knight += 1LL << location;
+    U64 friends, eking, kingZone;
+
     if(isWhite){
         friends = evalMoveGen.BBWhitePieces;
         eking = evalMoveGen.BBBlackKing;
@@ -935,17 +871,14 @@ void evaluateBB::evalKnight(bool isWhite, int location)
         moves &= ~FILE_AB & ~friends & ~eking;
     }
 
-    U64 j = moves & ~(moves-1);
-
-    while(j != 0){
+    while(moves){
         //for each move not on friends increment mobility
         ++mob;
+		U64 loc = 1LL << pop_lsb(&moves);
 
-        if(j & kingZone){
+        if(loc & kingZone){
             ++kAttks; //this knight is attacking zone around enemy king
         }
-        moves &= ~j;
-        j = moves & ~(moves-1);
     }
 
     //Evaluate mobility. We try to do it in such a way zero represent average mob
@@ -965,8 +898,8 @@ void evaluateBB::evalBishop(bool isWhite, int location)
     int kAttks = 0, mob = 0, side;
     ev.gamePhase += 1;
 
-    U64 bishop = 0LL, friends, eking, kingZone;
-    bishop += 1LL << location;
+    U64 friends, eking, kingZone;
+
     if(isWhite){
         friends = evalMoveGen.BBWhitePieces;
         eking = evalMoveGen.BBBlackKing;
@@ -979,19 +912,16 @@ void evaluateBB::evalBishop(bool isWhite, int location)
         side = 1;
     }
 
-    //U64 moves = evalMoveGen.DAndAntiDMoves(location) & ~friends & ~eking;
     U64 moves = slider_attacks.BishopAttacks(evalMoveGen.FullTiles, location);
     moves &= ~friends & ~ eking;
 
-    U64 j = moves & ~ (moves-1);
-    while(j != 0){
+    while(moves){
         ++mob; //increment bishop mobility
+		U64 loc = 1LL << pop_lsb(&moves);
 
-        if(j & kingZone){
+        if(loc & kingZone){
             ++kAttks; //this bishop is attacking zone around enemy king
         }
-        moves &= ~j;
-        j = moves & ~(moves-1);
     }
 
     //Evaluate mobility. We try to do it in such a way zero represent average mob
@@ -1013,8 +943,7 @@ void evaluateBB::evalRook(bool isWhite, int location)
     int kAttks = 0, mob = 0, side;
     ev.gamePhase += 2;
 
-    U64 rook = 0LL, friends, eking, kingZone, currentFile, opawns, epawns;
-    rook += 1LL << location;
+    U64 friends, eking, kingZone, currentFile, opawns, epawns;
 
     int x = location % 8;
     currentFile = FileABB << x;
@@ -1040,10 +969,12 @@ void evaluateBB::evalRook(bool isWhite, int location)
 //open and half open file detection add bonus to mobility score of side
     if(currentFile & opawns){
         ownBlockingPawns = true;
+
+		if (currentFile & epawns) {
+			oppBlockingPawns = true;
+		}
     }
-    if (currentFile & epawns){
-        oppBlockingPawns = true;
-    }
+
 
     if(!ownBlockingPawns){
         if(!oppBlockingPawns){
@@ -1059,15 +990,13 @@ void evaluateBB::evalRook(bool isWhite, int location)
     U64 moves = slider_attacks.RookAttacks(evalMoveGen.FullTiles, location);
     moves &= ~friends & ~ eking;
 
-    U64 j = moves & ~ (moves-1);
-    while(j != 0){
+    while(moves){
         ++mob; //increment bishop mobility
+		U64 loc = pop_lsb(&moves);
 
-        if(j & kingZone){
+        if(loc & kingZone){
             ++kAttks; //this bishop is attacking zone around enemy king
         }
-        moves &= ~j;
-        j = moves & ~(moves-1);
     }
 
     //Evaluate mobility. We try to do it in such a way zero represent average mob
@@ -1086,8 +1015,8 @@ void evaluateBB::evalQueen(bool isWhite, int location)
     ev.gamePhase += 4;
     int kAttks = 0, mob = 0, side;
 
-    U64 queen = 0LL, friends, eking, kingZone;
-    queen += 1LL << location;
+    U64 friends, eking, kingZone;
+
     if(isWhite){
         friends = evalMoveGen.BBWhitePieces;
         eking = evalMoveGen.BBBlackKing;
@@ -1104,15 +1033,13 @@ void evaluateBB::evalQueen(bool isWhite, int location)
     U64 moves = slider_attacks.QueenAttacks(evalMoveGen.FullTiles, location);
     moves &= ~friends & ~ eking;
 
-    U64 j = moves & ~ (moves-1);
-    while(j != 0){
+    while(moves){
         ++mob; //increment bishop mobility
+		int loc = 1LL << pop_lsb(&moves);
 
-        if(j & kingZone){
+        if(loc & kingZone){
             ++kAttks; //this bishop is attacking zone around enemy king
         }
-        moves &= ~j;
-        j = moves & ~(moves-1);
     }
 
     //Evaluate mobility. We try to do it in such a way zero represent average mob

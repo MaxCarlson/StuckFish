@@ -27,8 +27,7 @@ public:
     void zobristFill();
 
     //get zorbist key by XOR ing all pieces random numbers with Zkey
-    //U64 getZobristHash(BitBoards *BBBoard);
-    U64 getZobristHash(BitBoards BBBoard);
+    U64 getZobristHash(const BitBoards& BBBoard);
 
 	//used for prefetching a transposition entry
 	U64 fetchKey(const Move& m, bool isWhite);
@@ -43,7 +42,7 @@ public:
     void testDistibution();
 
     //used for checking if keys match when generated from scratch ~~ without changing master key
-    U64 debugKey(bool isWhite, BitBoards BBBoard);
+    U64 debugKey(bool isWhite, const BitBoards& BBBoard);
 
 };
 

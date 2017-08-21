@@ -381,48 +381,45 @@ void MoveGen::possibleN(U8 location, const U64 &friends, const U64 &enemys, cons
         moves &= ~FILE_AB & ~friends & ~oppositeking & capturesOnly;
     }
 
-    U64 j = moves & ~(moves-1);
+    //U64 j = moves & ~(moves-1);
     char captured;
-    while(j != 0){
+    while(moves){
         //store moves
-		int index = trailingZeros(j); //msb(j);//
+		int index = pop_lsb(&moves);
+
         captured = PIECE_EMPTY;
-        U64 landing = 0LL;
-        landing += 1LL << index;
+        U64 landing = 1LL << index;
+
         if(landing & enemys){
             captured = whichPieceCaptured(landing);
         }
 
         movegen_push(piece, captured, '0', location, index);
-
-        moves &= ~j;
-        j = moves & ~(moves-1);
     }
 }
 
 void MoveGen::possibleB(U8 location,  const U64 &friends, const U64 &enemys, const U64 &oppositeking, const U64 &capturesOnly)
 {
-    char piece = BISHOP;
+    int piece = BISHOP;
 
     U64 moves = slider_attacks.BishopAttacks(FullTiles, location);
     moves &= ~friends & capturesOnly & ~oppositeking;
 
-    U64 j = moves & ~ (moves-1);
+    //U64 j = moves & ~ (moves-1);
 
     char captured;
-    while(j != 0){
-		int index = trailingZeros(j); //msb(j);//
+    while(moves){
+		int index = pop_lsb(&moves);
+
         captured = PIECE_EMPTY;
-        U64 landing = 0LL;
-        landing += 1LL << index;
+        U64 landing = 1LL << index;
+
         if(landing & enemys){
             captured = whichPieceCaptured(landing);
         }
 
         movegen_push(piece, captured, '0', location, index);
 
-        moves &= ~j;
-        j = moves & ~(moves-1);
     }
 }
 
@@ -440,28 +437,23 @@ void MoveGen::possibleR(U8 location,  const U64 &friends, const U64 &enemys, con
 	else {
 		if (location == A8 && !rookMoved[2]) flag = A8 + 1;
 		else if (location == H8 && !rookMoved[3]) flag = H8 + 1;
-	}
-    
+	}  
 
     U64 moves = slider_attacks.RookAttacks(FullTiles, location);
     moves &= ~friends & capturesOnly & ~oppositeking;
 
-    U64 j = moves & ~ (moves-1);
-
     char captured;
-    while(j != 0){
-		int index = trailingZeros(j); // msb(j);//
+    while(moves){
+		int index = pop_lsb(&moves);
         captured = PIECE_EMPTY;
-        U64 landing = 0LL;
-        landing += 1LL << index;
+        //U64 landing = 0LL;
+        U64 landing = 1LL << index;
         if(landing & enemys){
             captured = whichPieceCaptured(landing);
         }
 
         movegen_push(piece, captured, flag, location, index);
 
-        moves &= ~j;
-        j = moves & ~(moves-1);
     }
 
 }
@@ -476,24 +468,18 @@ void MoveGen::possibleQ(U8 location,  const U64 &friends, const U64 &enemys, con
     //and against friends and a full board if normal move gen, or enemy board if captures only
     moves &= ~friends & capturesOnly & ~oppositeking;
 
-    U64 j = moves & ~ (moves-1);
-
     char captured;
-    while(j != 0){
-		int index =  trailingZeros(j);//msb(j); //
+    while(moves){
+		int index = pop_lsb(&moves);
 
         captured = PIECE_EMPTY;
-        U64 landing = 0LL;
-        landing += 1LL << index;
+        U64 landing = 1LL << index;
 
         if(landing & enemys){
             captured = whichPieceCaptured(landing);
         }
 
         movegen_push(piece, captured, '0', location, index);
-
-        moves &= ~j;
-        j = moves & ~(moves-1);
     }
 
 }

@@ -133,16 +133,23 @@ enum Value { //taken from stockfish
 
 //CACHE_LINE_ALIGNMENT
 
-inline int lsb(unsigned long long b) {
+FORCE_INLINE int lsb(unsigned long long b) {
 	unsigned long idx;
 	_BitScanForward64(&idx, b);
 	return (int)idx;
 }
 
-inline int msb(unsigned long long b) {
+FORCE_INLINE int msb(unsigned long long b) {
 	unsigned long idx;
 	_BitScanReverse64(&idx, b);
 	return (int)idx;
+}
+
+//finds and pops the least significant bit from the board, pass it a refrence
+FORCE_INLINE int pop_lsb(unsigned long long* b) {
+	const int s = lsb(*b);
+	*b &= *b - 1;
+	return s;
 }
 
 inline int mate_in(int ply) {
@@ -152,6 +159,7 @@ inline int mate_in(int ply) {
 inline int mated_in(int ply) {
 	return -VALUE_MATE + ply;
 }
+
 
 
 

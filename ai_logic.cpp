@@ -330,7 +330,7 @@ int Ai_Logic::alphaBeta(int depth, int alpha, int beta, bool isWhite, int ply, b
         }
     }
 
-	///* //TOO slow
+	///* //Still a bit slow?
 //do we want to futility prune?
 	int fmargin[4] = { 0, 200, 300, 500 };
     //int fmargin[8] = {0, 100, 150, 200, 250, 300, 400, 500};
@@ -340,12 +340,13 @@ int Ai_Logic::alphaBeta(int depth, int alpha, int beta, bool isWhite, int ply, b
         f_prune = 1;
     }
 	//*/
-///*
+///*  //Internal iterative deepening search same ply to a shallow depth..
+	//and see if we can get a TT entry to speed up search
 	if (depth >= 6 && !ttMove
-		&& (is_pv || static_eval + 256 >= beta)) {
+		&& (is_pv || static_eval + 100 >= beta)) {
 		int d = (int)(3 * depth / 4 - 2);
 		sd.skipEarlyPruning = true;
-		alphaBeta(d, alpha, beta, isWhite, ply, allowNull, is_pv);
+		alphaBeta(d, alpha, beta, isWhite, ply, NO_NULL, is_pv);
 		sd.skipEarlyPruning = false;
 
 		ttentry = TT.probe(zobrist.zobristKey);
@@ -353,7 +354,7 @@ int Ai_Logic::alphaBeta(int depth, int alpha, int beta, bool isWhite, int ply, b
 	}
 
 //*/
-moves_loop: //jump to here if in check or in a search extension
+moves_loop: //jump to here if in check or in a search extension or skip early pruning is true
 /*
 	singularExtension = depth >= 7
 		&& !sd.excludedMove
@@ -414,31 +415,30 @@ moves_loop: //jump to here if in check or in a search extension
 			futileMoves = true; //flag so we know we skipped a move/not checkmate
 			futileC++;
             continue;
-			//break;
         }
         //*/
 
         //late move reduction
-        if(i > 1 && newDepth > 3
+        if(newDepth > 3
             && legalMoves > 3
-            && !gen_moves.isAttacked(eking, !isWhite, true)
-            && !FlagInCheck
-            && sd.cutoffs[isWhite][newMove.from][newMove.to] < 50
+			&& !FlagInCheck
+			&& sd.cutoffs[isWhite][newMove.from][newMove.to] < 50
+			&& newMove.captured == PIECE_EMPTY && newMove.flag != 'Q'            
             && (newMove.from != sd.killers[0][ply].from || newMove.to != sd.killers[0][ply].to)
             && (newMove.from != sd.killers[1][ply].from || newMove.to != sd.killers[1][ply].to)
-            && newMove.captured == PIECE_EMPTY && newMove.flag != 'Q'
+			&& !gen_moves.isAttacked(eking, !isWhite, true)
 			&& newMove.score < SORT_HASH){
 
 
             sd.cutoffs[isWhite][newMove.from][newMove.to] = 50;
             reductionDepth = 1;
-            if(legalMoves > 6) reductionDepth++;
+            if (legalMoves > 6) reductionDepth++;
 			if (legalMoves > 14) reductionDepth++; //maybe? need more lmr traits
 
             newDepth -= reductionDepth;
         }
 		//load the (most likely) next entry in the TTable into cache near cpu
-		_mm_prefetch((char *)TT.first_entry(zobrist.fetchKey(newMove, isWhite)), _MM_HINT_NTA);
+		_mm_prefetch((char *)TT.first_entry(zobrist.fetchKey(newMove, !isWhite)), _MM_HINT_NTA);
 
 //jump back here if our LMR raises Alpha
 re_search:
@@ -542,7 +542,7 @@ int Ai_Logic::quiescent(int alpha, int beta, bool isWhite, int ply, int quietDep
 	int ttValue;
 	int oldAlpha, bestScore, score;
 
-	//if (is_pv) oldAlpha = alpha;
+	//if (is_pv) oldAlpha = alpha; //??Need?
 
 	ttentry = TT.probe(zobrist.zobristKey);
 	ttMove = ttentry ? ttentry->move.flag : false; //is there a move stored in transposition table?
@@ -671,7 +671,8 @@ int Ai_Logic::quiescent(int alpha, int beta, bool isWhite, int ply, int quietDep
 
 int Ai_Logic::contempt(bool isWhite)
 {
-    //need some way to check board material before implementing
+	//used to make engine prefer checkmate over stalemate, escpecially if not in end game
+    //NEED TO TEST VARIABLES MIGHT NOT BE ACCURATE
 
 	int value = DRAW_OPENING;
 

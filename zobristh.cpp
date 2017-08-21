@@ -149,7 +149,7 @@ U64 ZobristH::fetchKey(const Move & m, bool isWhite)
 	return key; //return key estimate
 }
 
-U64 ZobristH::getZobristHash(BitBoards BBBoard)
+U64 ZobristH::getZobristHash(const BitBoards& BBBoard)
 {
     U64 returnZKey = 0LL;
     for (int square = 0; square < 64; square++){
@@ -244,7 +244,7 @@ void ZobristH::testDistibution()
 
 }
 
-U64 ZobristH::debugKey(bool isWhite, BitBoards BBBoard)
+U64 ZobristH::debugKey(bool isWhite, const BitBoards& BBBoard)
 {
     U64 returnZKey = 0LL;
     for (int square = 0; square < 64; square++){

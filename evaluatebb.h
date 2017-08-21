@@ -18,7 +18,6 @@ public:
 
 private:
     //gets rudimentry value of piece + square table value
-    void getPieceMaterial(int location);
 	void evalPieces();
 
 

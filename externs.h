@@ -50,8 +50,8 @@ struct searchDriver{
     //color, piece loc from, piece loc to
     int history[2][64][64] = {{{0}}};
     int cutoffs[2][64][64] = {{{0}}};
-    Move killers[35][2];
-	Move PV[32];
+    Move killers[45][2];
+	Move PV[45];
 	int nodes = 0;
 	int depth = 0;
 	long startTime;
