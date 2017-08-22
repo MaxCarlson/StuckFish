@@ -109,7 +109,7 @@ Move Ai_Logic::iterativeDeep(int depth, bool isWhite)
 			//std::cout << futileC << std::endl;
         }
 		sd.depth++;
-        //increment distance to travel (same as depth at max depth)
+        //increment depth 
     }
 
 
@@ -534,7 +534,7 @@ int Ai_Logic::quiescent(int alpha, int beta, bool isWhite, int ply, int quietDep
 	ttMove = ttentry ? ttentry->move.flag : false; //is there a move stored in transposition table?
 	ttValue = ttentry ? valueFromTT(ttentry->eval, ply) : INVALID; //if there is a TT entry, grab its value
 
-///*
+/*
 	if (ttentry
 		&& ttentry->depth >= DEPTH_QS
 		&& (is_pv ? ttentry->flag == TT_EXACT
@@ -544,7 +544,7 @@ int Ai_Logic::quiescent(int alpha, int beta, bool isWhite, int ply, int quietDep
 
 		return ttValue;
 	}
-//*/
+*/
     evaluateBB eval;
     //evaluate board position
     int standingPat = eval.evalBoard(isWhite, newBoard, zobrist);
@@ -555,7 +555,7 @@ int Ai_Logic::quiescent(int alpha, int beta, bool isWhite, int ply, int quietDep
 
     if(standingPat >= beta){
 
-		if (!ttentry) TT.save(zobrist.zobristKey, DEPTH_QS, valueToTT(standingPat, ply), TT_BETA); //save to TT if there's no entry MAJOR PROBLEMS WITH THIS 
+		//if (!ttentry) TT.save(zobrist.zobristKey, DEPTH_QS, valueToTT(standingPat, ply), TT_BETA); //save to TT if there's no entry MAJOR PROBLEMS WITH THIS 
 
 		return beta;
     }
@@ -591,6 +591,7 @@ int Ai_Logic::quiescent(int alpha, int beta, bool isWhite, int ply, int quietDep
 			&& newMove.flag != 'Q') continue;
 			
 		//need SEE continue to not search losing captures
+		if (gen_moves.SEE(newMove, newBoard, isWhite) < 0) continue;
 
         newBoard.makeMove(newMove, zobrist, isWhite);
         gen_moves.grab_boards(newBoard, isWhite);
@@ -602,12 +603,7 @@ int Ai_Logic::quiescent(int alpha, int beta, bool isWhite, int ply, int quietDep
             continue;
         }
 
-        /*
-        //bad capture pruning
-        if(badCapture(tempMove, isWhite, newBoard) && tempMove[3] != 'Q'){
-            continue;
-        }
-        */
+
         score = -quiescent(-beta, -alpha, !isWhite, ply+1, quietDepth-1, is_pv);
 
         newBoard.unmakeMove(newMove, zobrist, isWhite);
@@ -650,7 +646,7 @@ int Ai_Logic::quiescent(int alpha, int beta, bool isWhite, int ply, int quietDep
 
 	//if (is_pv && standingPat > oldAlpha) hashFlag = TT_EXACT;
 
-	TT.save(hashMove, zobrist.zobristKey, DEPTH_QS, valueToTT(alpha, ply), hashFlag);
+	//TT.save(hashMove, zobrist.zobristKey, DEPTH_QS, valueToTT(alpha, ply), hashFlag);
 
     return alpha;
 }

@@ -72,8 +72,8 @@ public:
         U64 southOne(U64 b);
         U64 northOne(U64 b);
 
-        void drawBBA();
-        void drawBB(U64 board);		
+        void drawBBA() const;
+        void drawBB(U64 board) const;		
 
 private:
 
@@ -83,6 +83,7 @@ private:
 
 		//used in static exchange eval
 		U64 attackersTo(int sq, const BitBoards& b, const U64 occ) const;
+		FORCE_INLINE int min_attacker(bool isWhite, const BitBoards & b, const int &to, const U64 &stmAttackers, U64 &occupied, U64 &attackers);
 
         char whichPieceCaptured(U64 landing);
 

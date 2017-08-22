@@ -638,44 +638,80 @@ bool MoveGen::blind(const Move &move, int pieceVal, int captureVal)
 int MoveGen::SEE(const Move& m, const BitBoards& b, bool isWhite)
 {
 	U64 attackers, occupied, stmAttackers;
-	int swapList[32], index = 0; //play with val for speed?
+	int swapList[32], index = 1; //play with val for speed?
 
 	//early return, SEE can't be a losing capture
 	if (SORT_VALUE[m.piece] <= SORT_VALUE[m.captured]) return INF;
 
-	int from = 1LL << m.from;
-	int to = 1LL << m.to;
-	swapList[0] = SORT_VALUE[m.piece];
-	occupied = FullTiles ^ from;
+	//int from = 1LL << m.from; //remove these?
+	//int to = 1LL << m.to;
+
+	swapList[0] = SORT_VALUE[m.captured];
+	occupied = FullTiles ^ (1LL << m.from); //use m.from?????
 
 	//need castling and enpassant logic once implmented
 
 	//finds all attackers to the square
-	attackers = attackersTo(m.to, b, occupied);
+	attackers = attackersTo(m.to, b, occupied) & occupied;
+
+	//drawBBA();
+	//drawBB(occupied);
+	//drawBB(attackers);
 
 	//if there are no attacking pieces, return
 	if (isWhite && !(attackers & b.BBBlackPieces)) return swapList[0];
 	else if (!isWhite && !(attackers & b.BBWhitePieces))  return swapList[0];
 
-	int captured = m.captured;
 
+
+	//switch sides
+	isWhite = !isWhite;
+	if(isWhite) stmAttackers = attackers & b.BBWhitePieces; 
+	else  stmAttackers = attackers & b.BBBlackPieces;
+
+	if (!stmAttackers) return swapList[0];
+
+	//drawBB(stmAttackers);
+	
+	int captured = m.piece; //if there are attackers, our piece being moved will be captured
+
+	//loop through and add pieces that can capture on the square to swapList
 	do {
 		if (index > 31) break;
 
 		//add entry to swap list
 		swapList[index] = -swapList[index - 1] + SORT_VALUE[captured];
 
+		captured = min_attacker(isWhite, b, m.to, stmAttackers, occupied, attackers);
 
+		if (captured == KING) {
+			if (stmAttackers == attackers) {
+				index++;
+			}
+			break;
+		}
+
+		isWhite = !isWhite;
+
+		if (isWhite) stmAttackers = attackers & b.BBWhitePieces;
+		else stmAttackers = attackers & b.BBBlackPieces;
 
 		index++;
 	} while (stmAttackers);
 	
+	//negamax through swap list finding best possible outcome for starting side to move
+	while (--index) {
+		swapList[index - 1] = std::min(-swapList[index], swapList[index - 1]);
+	}
 
+	return swapList[0];
 }
 //returns a bitboard of all attackers of sq locations
 U64 MoveGen::attackersTo(int sq, const BitBoards& b, const U64 occ) const
 {
 	U64 attackers = 0LL, loc = 1LL << sq, kingA;
+
+	//drawBB(occ);
 
 	//knights
 	if (sq > 18) {
@@ -693,17 +729,23 @@ U64 MoveGen::attackersTo(int sq, const BitBoards& b, const U64 occ) const
 	}
 	attackers &= b.BBWhiteKnights | b.BBBlackKnights;
 
+	//drawBB(attackers);
+
 	//pawns
-	attackers |= (b.BBWhitePawns << 9) & notHFile & b.BBBlackPawns;
-	attackers |= (b.BBWhitePawns << 7) & notAFile & b.BBBlackPawns;
-	attackers |= (b.BBBlackPawns >> 9) & notAFile & b.BBWhitePawns;
-	attackers |= (b.BBBlackPawns >> 7) & notAFile & b.BBWhitePawns;
+	attackers |= (loc << 9) & notHFile & b.BBWhitePawns;
+	attackers |= (loc << 7) & notAFile & b.BBWhitePawns;
+	//drawBB(attackers);
+	attackers |= (loc >> 9) & notHFile & b.BBBlackPawns;
+	attackers |= (loc >> 7) &  notAFile & b.BBBlackPawns;
+	//drawBB(attackers);
 
 	//bishop and queens
 	attackers |= slider_attacks.BishopAttacks(occ, sq) & (b.BBBlackBishops | b.BBWhiteBishops | b.BBBlackQueens | b.BBWhiteQueens);
+	//drawBB(attackers);
 
 	//rooks and queens
 	attackers |= slider_attacks.RookAttacks(occ, sq) & (b.BBBlackRooks | b.BBWhiteRooks | b.BBBlackQueens | b.BBWhiteQueens);
+	//drawBB(attackers);
 
 	if (sq > 9) {
 		kingA = KING_SPAN << (sq - 9);
@@ -718,9 +760,76 @@ U64 MoveGen::attackersTo(int sq, const BitBoards& b, const U64 occ) const
 	else {
 		kingA &= ~FILE_AB;
 	}
-	attackers = kingA & (b.BBWhiteKing | b.BBBlackKing);
+	attackers |= kingA & (b.BBWhiteKing | b.BBBlackKing);
 		
 	return attackers;
+}
+
+FORCE_INLINE int MoveGen::min_attacker(bool isWhite, const BitBoards & b, const int & to, const U64 & stmAttackers, U64 & occupied, U64 & attackers)
+{
+	U64 pawns, knights, rooks, bishops, queens, king, loc;
+
+	if (isWhite) { //NEED TO CHANGE BITBOARDS TO HOLD ARRAY OF PIECE BOARDS INSTEAD OF INDIVIDUAL BOARDS
+		pawns = b.BBWhitePawns;
+		knights = b.BBWhiteKnights;
+		bishops = b.BBWhiteBishops;
+		rooks = b.BBWhiteRooks;
+		queens = b.BBWhiteQueens;
+		king = b.BBWhiteKing;
+	}
+	else {
+		pawns = b.BBBlackPawns;
+		knights = b.BBBlackKnights;
+		bishops = b.BBBlackBishops;
+		rooks = b.BBBlackRooks;
+		queens = b.BBBlackQueens;
+		king = b.BBBlackKing;
+	}
+
+	//drawBB(stmAttackers);
+
+	int piece;
+	//find smallest attacker
+	if (pawns & stmAttackers) { 
+		piece = PAWN; loc = pawns & stmAttackers;
+	}
+	else if (knights & stmAttackers) { 
+		piece = KNIGHT; loc = knights & stmAttackers;
+	}
+	else if (bishops & stmAttackers) { 
+		piece = BISHOP; loc = bishops & stmAttackers;
+	}
+	else if (rooks & stmAttackers) { 
+		piece = ROOK; loc = rooks & stmAttackers;
+	}
+	else if (queens & stmAttackers) { 
+		piece = QUEEN; loc = queens & stmAttackers;
+	}
+	else if (king & stmAttackers) { 
+		piece = KING; loc = king & stmAttackers;
+	}
+	else { //early cutoff if no stm attackers
+		return PIECE_EMPTY;
+	}
+
+	//remove piece from occupied board
+	occupied ^= loc & ~(loc - 1);
+	//drawBB(occupied);
+
+	//find xray attackers behind piece once it's been removed and add to attackers
+	if (piece == PAWN || piece == BISHOP || piece == QUEEN) {                       //ADD BY TYPE BOARD REPRESENTATION TO BITBOARDS
+		attackers |= slider_attacks.BishopAttacks(occupied, to) & (b.BBBlackBishops | b.BBWhiteBishops | b.BBBlackQueens | b.BBWhiteQueens);
+	}
+
+	if (piece == ROOK || piece == QUEEN) {
+		attackers |= slider_attacks.RookAttacks(occupied, to) & (b.BBBlackRooks | b.BBWhiteRooks| b.BBBlackQueens | b.BBWhiteQueens);
+	}
+	//drawBB(attackers);
+	attackers &= occupied;
+	//drawBB(attackers);
+
+
+	return piece;
 }
 
 void MoveGen::reorderMoves(int ply, const HashEntry *entry)
@@ -911,7 +1020,7 @@ bool MoveGen::isAttacked(U64 pieceLoc, bool wOrB, bool isSearchKingCheck)
 return false;
 }
 
-void MoveGen::drawBBA()
+void MoveGen::drawBBA() const
 {
     char flips[8] = {'8', '7', '6', '5', '4', '3', '2', '1'};
     char flipsL[8] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'};
@@ -978,7 +1087,7 @@ void MoveGen::drawBBA()
     std::cout << std::endl << std::endl;;
 }
 
-void MoveGen::drawBB(U64 board)
+void MoveGen::drawBB(U64 board) const
 {
     for(int i = 0; i < 64; i++){
         if(board & (1ULL << i)){
