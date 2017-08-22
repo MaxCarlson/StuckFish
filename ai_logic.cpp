@@ -73,7 +73,7 @@ Move Ai_Logic::iterativeDeep(int depth, bool isWhite)
     Move bestMove;
     int bestScore, alpha = -INF, beta = INF;
 	int delta = 8;
-	sd.depth = 0;
+	sd.depth = 1;
 
     //std::cout << zobrist.zobristKey << std::endl;
 
@@ -206,7 +206,8 @@ int Ai_Logic::searchRoot(int depth, int alpha, int beta, bool isWhite, int ply)
     }
 
 	//save info and move to TT
-	TT.save(sd.PV[ply], zobrist.zobristKey, depth, valueToTT(score, ply), hashFlag);
+	TT.save(sd.PV[ply], zobrist.zobristKey, depth, valueToTT(alpha, ply), hashFlag);
+	//TT.save(sd.PV[ply], zobrist.zobristKey, depth, alpha, hashFlag);
 
     return alpha;
 }
@@ -222,7 +223,7 @@ int Ai_Logic::alphaBeta(int depth, int alpha, int beta, bool isWhite, int ply, b
 	int newDepth;
     //U8 newDepth; //use with futility + other pruning later
     int queitSD = 25, f_prune = 0;
-    int  mateValue = INF - ply; // used for mate distance pruning
+    //int  mateValue = INF - ply; // used for mate distance pruning
 	sd.nodes++;
 
 	//checks if time over is true everytime ( nodes & 4095 ) = true ///NEED METHOD THAT CHECKS MUCH LESS
@@ -241,6 +242,7 @@ int Ai_Logic::alphaBeta(int depth, int alpha, int beta, bool isWhite, int ply, b
 	ttentry = TT.probe(zobrist.zobristKey);
 	ttMove = ttentry ? ttentry->move.flag : false; //is there a move stored in transposition table?
 	ttValue = ttentry ? valueFromTT(ttentry->eval, ply) : INVALID; //if there is a TT entry, grab its value
+	//ttValue = ttentry ? ttentry->eval : INVALID;
 
 ///*
 	if (ttentry
@@ -512,6 +514,7 @@ re_search:
 	if (!sd.excludedMove) { //only write to TTable if we're not in partial search
 		//save info + move to transposition table ///MAYBE add an if(legalMoves) check? will have to test
 		TT.save(hashMove, zobrist.zobristKey, depth, valueToTT(alpha, ply), hashFlag);
+		//TT.save(hashMove, zobrist.zobristKey, depth, alpha, hashFlag);
 	}
 
 
@@ -556,7 +559,6 @@ int Ai_Logic::quiescent(int alpha, int beta, bool isWhite, int ply, int quietDep
     if(standingPat >= beta){
 
 		//if (!ttentry) TT.save(zobrist.zobristKey, DEPTH_QS, valueToTT(standingPat, ply), TT_BETA); //save to TT if there's no entry MAJOR PROBLEMS WITH THIS 
-
 		return beta;
     }
 

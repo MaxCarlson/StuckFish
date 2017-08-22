@@ -469,7 +469,7 @@ int passed_pawn_pcsq[2][64] = { {
 }
 };
 
-void evaluateBB::evalPieces() //DOESN'T WORK IN RELEASE CONFIG
+void evaluateBB::evalPieces() 
 {
 	//evaluate all pieces and store relvent info to struct ev
 	U64  wpawns, wknights, wrooks, wbishops, wqueens, wking, bpawns, bknights, brooks, bbishops, bqueens, bking;
@@ -488,9 +488,6 @@ void evaluateBB::evalPieces() //DOESN'T WORK IN RELEASE CONFIG
 	brooks = evalMoveGen.BBBlackRooks;
 	bqueens = evalMoveGen.BBBlackQueens;
 	bking = evalMoveGen.BBBlackKing;
-
-
-	U64 i;
 
 	//pawns
 	while (wpawns) {
@@ -885,7 +882,7 @@ void evaluateBB::evalBishop(bool isWhite, int location)
     }
 
     U64 moves = slider_attacks.BishopAttacks(evalMoveGen.FullTiles, location);
-    moves &= ~friends & ~ eking;
+    moves &= ~friends & ~eking;
 
     while(moves){
         ++mob; //increment bishop mobility
@@ -940,13 +937,11 @@ void evaluateBB::evalRook(bool isWhite, int location)
 
 //open and half open file detection add bonus to mobility score of side
     if(currentFile & opawns){
-        ownBlockingPawns = true;
-
-		if (currentFile & epawns) {
-			oppBlockingPawns = true;
-		}
+        ownBlockingPawns = true;		
     }
-
+	if (currentFile & epawns) { //move inside if above???
+		oppBlockingPawns = true;
+	}
 
     if(!ownBlockingPawns){
         if(!oppBlockingPawns){
@@ -963,11 +958,11 @@ void evaluateBB::evalRook(bool isWhite, int location)
     moves &= ~friends & ~ eking;
 
     while(moves){
-        ++mob; //increment bishop mobility
-		U64 loc = pop_lsb(&moves);
+        ++mob; //increment rook mobility
+		U64 loc = 1LL << pop_lsb(&moves);
 
         if(loc & kingZone){
-            ++kAttks; //this bishop is attacking zone around enemy king
+            ++kAttks; //this rook is attacking zone around enemy king
         }
     }
 
@@ -1003,14 +998,14 @@ void evaluateBB::evalQueen(bool isWhite, int location)
 
 //similar to move gen, increment mobility and king attacks
     U64 moves = slider_attacks.QueenAttacks(evalMoveGen.FullTiles, location);
-    moves &= ~friends & ~ eking;
+    moves &= ~friends & ~eking;
 
     while(moves){
-        ++mob; //increment bishop mobility
+        ++mob; //increment queen mobility
 		int loc = 1LL << pop_lsb(&moves);
 
         if(loc & kingZone){
-            ++kAttks; //this bishop is attacking zone around enemy king
+            ++kAttks; //this queen is attacking zone around enemy king
         }
     }
 
