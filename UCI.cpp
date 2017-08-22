@@ -74,6 +74,7 @@ void UCI::uciLoop()
 			newGame(); //add function to reset TTables ? plus / only
 			searchM.clearHistorys();
 			TT.clearTable(); //need to clear other TTables too at somepoint
+			searchM.initSearch();
 		}
 
 		else if (token == "position") {

@@ -15,6 +15,8 @@ class Move;
 class Ai_Logic
 {
 public:
+	//initialze values called at program start
+	void initSearch();
 
 	Move search(bool isWhite);
 

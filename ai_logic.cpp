@@ -41,6 +41,36 @@ int futileC = 0; //count of futile moves
 inline int valueFromTT(int val, int ply); 
 inline int valueToTT(int val, int ply); 
 
+//reduction tables: pv, is node improving?, depth, move number
+int reductions[2][2][64][64];
+//futile move count arrays
+int futileMoveCounts[2][32];
+
+void Ai_Logic::initSearch()
+{
+	//values taken from stock fish, playing with numbers still
+	int hd, d, mc; //half depth, depth, move count
+	for (hd = 1; hd < 64; ++hd) for (mc = 1; mc < 64; ++mc) {
+
+		double    pvReduciton = 0.00 + log(double(hd)) * log(double(mc)) / 3.00;
+		double nonPVReduction = 0.30 + log(double(hd)) * log(double(mc)) / 2.25;
+
+		reductions[1][1][hd][mc] = S8(pvReduciton >= 1.0 ? pvReduciton + 0.5 : 0);
+		reductions[0][1][hd][mc] = S8(nonPVReduction >= 1.0 ? nonPVReduction + 0.5 : 0);
+
+		reductions[1][0][hd][mc] = reductions[1][1][hd][mc];
+		reductions[0][0][hd][mc] = reductions[0][1][hd][mc];
+
+		if (reductions[0][0][hd][mc] >= 2)
+			reductions[0][0][hd][mc] += 1;
+	}
+
+	for (d = 0; d < 32; ++d)
+	{
+		futileMoveCounts[0][d] = int(2.4 + 0.222 * pow(d * 2 + 0.00, 1.8));
+		futileMoveCounts[1][d] = int(3.0 + 0.300 * pow(d * 2 + 0.98, 1.8));
+	}
+}
 
 Move Ai_Logic::search(bool isWhite) {
 	
@@ -207,7 +237,6 @@ int Ai_Logic::searchRoot(int depth, int alpha, int beta, bool isWhite, int ply)
 
 	//save info and move to TT
 	TT.save(sd.PV[ply], zobrist.zobristKey, depth, valueToTT(alpha, ply), hashFlag);
-	//TT.save(sd.PV[ply], zobrist.zobristKey, depth, alpha, hashFlag);
 
     return alpha;
 }
@@ -242,9 +271,9 @@ int Ai_Logic::alphaBeta(int depth, int alpha, int beta, bool isWhite, int ply, b
 	ttentry = TT.probe(zobrist.zobristKey);
 	ttMove = ttentry ? ttentry->move.flag : false; //is there a move stored in transposition table?
 	ttValue = ttentry ? valueFromTT(ttentry->eval, ply) : INVALID; //if there is a TT entry, grab its value
-	//ttValue = ttentry ? ttentry->eval : INVALID;
 
-///*
+	//is the a TT entry? If so, are we in PV? If in PV only accept and exact entry with a depth >= our depth, 
+	//accept all if the entry has a equal or greater depth compared to our depth.
 	if (ttentry
 		&& ttentry->depth >= depth
 		&& (is_pv ? ttentry->flag == TT_EXACT
@@ -254,7 +283,6 @@ int Ai_Logic::alphaBeta(int depth, int alpha, int beta, bool isWhite, int ply, b
 
 		return ttValue;
 	}
-//*/
 
 
     int score;
@@ -366,6 +394,9 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 
 		//if (sd.excludedMove && newMove.score >= SORT_HASH) continue;
 
+		//don't search moves with negative SEE at low depths
+		if (depth < 4 && gen_moves.SEE(newMove, newBoard, isWhite) < 0) continue; //NEED to test how useful this is
+
         //make move on BB's store data to string so move can be undone
         newBoard.makeMove(newMove, zobrist, isWhite);
         gen_moves.grab_boards(newBoard, isWhite);
@@ -406,6 +437,8 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
         }
         //*/
 
+		
+
         //late move reduction
         if(newDepth > 3
             && legalMoves > 3
@@ -419,12 +452,18 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 
 
             sd.cutoffs[isWhite][newMove.from][newMove.to] = 50;
+			/*
             reductionDepth = 1;
+			
             if (legalMoves > 6) reductionDepth++;
 			if (legalMoves > 14) reductionDepth++; //maybe? need more lmr traits
+			*/
+
+			reductionDepth = reductions[is_pv][0][depth][i];
 
             newDepth -= reductionDepth;
         }
+
 		//load the (most likely) next entry in the TTable into cache near cpu
 		_mm_prefetch((char *)TT.first_entry(zobrist.fetchKey(newMove, !isWhite)), _MM_HINT_NTA);
 
@@ -505,6 +544,7 @@ re_search:
         else alpha = contempt(isWhite); 
     }
 
+
 	if (futileMoves && !raisedAlpha && hashFlag != TT_BETA) {
 
 		if(!legalMoves) alpha = static_eval; //testing needed as well
@@ -512,9 +552,8 @@ re_search:
 	}
 
 	if (!sd.excludedMove) { //only write to TTable if we're not in partial search
-		//save info + move to transposition table ///MAYBE add an if(legalMoves) check? will have to test
+		//save info + move to transposition table 
 		TT.save(hashMove, zobrist.zobristKey, depth, valueToTT(alpha, ply), hashFlag);
-		//TT.save(hashMove, zobrist.zobristKey, depth, alpha, hashFlag);
 	}
 
 
@@ -537,7 +576,7 @@ int Ai_Logic::quiescent(int alpha, int beta, bool isWhite, int ply, int quietDep
 	ttMove = ttentry ? ttentry->move.flag : false; //is there a move stored in transposition table?
 	ttValue = ttentry ? valueFromTT(ttentry->eval, ply) : INVALID; //if there is a TT entry, grab its value
 
-/*
+
 	if (ttentry
 		&& ttentry->depth >= DEPTH_QS
 		&& (is_pv ? ttentry->flag == TT_EXACT
@@ -547,7 +586,7 @@ int Ai_Logic::quiescent(int alpha, int beta, bool isWhite, int ply, int quietDep
 
 		return ttValue;
 	}
-*/
+
     evaluateBB eval;
     //evaluate board position
     int standingPat = eval.evalBoard(isWhite, newBoard, zobrist);
@@ -558,7 +597,7 @@ int Ai_Logic::quiescent(int alpha, int beta, bool isWhite, int ply, int quietDep
 
     if(standingPat >= beta){
 
-		//if (!ttentry) TT.save(zobrist.zobristKey, DEPTH_QS, valueToTT(standingPat, ply), TT_BETA); //save to TT if there's no entry MAJOR PROBLEMS WITH THIS 
+		if (!ttentry) TT.save(zobrist.zobristKey, DEPTH_QS, valueToTT(standingPat, ply), TT_BETA); //save to TT if there's no entry MAJOR PROBLEMS WITH THIS 
 		return beta;
     }
 
@@ -592,8 +631,8 @@ int Ai_Logic::quiescent(int alpha, int beta, bool isWhite, int ply, int quietDep
 			&& (newBoard.sideMaterial[!isWhite] - SORT_VALUE[newMove.captured] > END_GAME_MAT)
 			&& newMove.flag != 'Q') continue;
 			
-		//need SEE continue to not search losing captures
-		if (gen_moves.SEE(newMove, newBoard, isWhite) < 0) continue;
+		//Don't search losing capture moves if not in PV
+		if (!is_pv && gen_moves.SEE(newMove, newBoard, isWhite) < 0) continue;
 
         newBoard.makeMove(newMove, zobrist, isWhite);
         gen_moves.grab_boards(newBoard, isWhite);
@@ -648,7 +687,7 @@ int Ai_Logic::quiescent(int alpha, int beta, bool isWhite, int ply, int quietDep
 
 	//if (is_pv && standingPat > oldAlpha) hashFlag = TT_EXACT;
 
-	//TT.save(hashMove, zobrist.zobristKey, DEPTH_QS, valueToTT(alpha, ply), hashFlag);
+	TT.save(hashMove, zobrist.zobristKey, DEPTH_QS, valueToTT(alpha, ply), hashFlag);
 
     return alpha;
 }

@@ -45,6 +45,11 @@ extern U64 zNullMove;
 extern HashEntry transpositionEval[5021983];
 extern HashEntry transpositionPawn[400000];
 
+//reduction tables: pv, is node improving?, depth, move number
+extern int reductions[2][2][64][64];
+//futile move count arrays
+extern int futileMoveCounts[2][32];
+
 //holds search info, killers, historys, PV, etc
 struct searchDriver{
     //color, piece loc from, piece loc to
