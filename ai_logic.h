@@ -4,13 +4,25 @@
 #include <stack>
 #include <thread>
 #include "move.h"
-//#include "hashentry.h"
 #include "slider_attacks.h"
+
 class ZobristH;
 class BitBoards;
 class evaluateBB;
 class HashEntry;
 class Move;
+
+//holds info about past and current searches, passed to search
+struct searchStack {
+	int ply;
+	//Move currentMove;
+	Move killers[2];
+	Move ttMove;
+	bool excludedMove = false;
+	int reduction;
+	int staticEval;
+	bool skipNull = false;
+};
 
 class Ai_Logic
 {
@@ -30,10 +42,10 @@ public:
 private:
 	
 	//root of search ~~ experimental
-	int searchRoot(int depth, int alpha, int beta, bool isWhite, int ply);
+	int searchRoot(int depth, int alpha, int beta, searchStack *ss, bool isWhite);
 
 	//minmax with alpha beta, the main component of our search
-	int alphaBeta(int depth, int alpha, int beta, bool isWhite, int ply, bool allowNull, bool is_pv);
+	int alphaBeta(int depth, int alpha, int beta, searchStack *ss, bool isWhite, bool allowNull, bool is_pv);
 
 	//Quiescent search ~~ search positions farther if there are captures on horizon
 	int quiescent(int alpha, int beta, bool isWhite, int ply, int quietDepth, bool is_pv);

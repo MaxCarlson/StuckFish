@@ -124,7 +124,7 @@ void UCI::newGame()
 	turns = 0;
 
 	//clear move repetitions
-	sd.twoFoldRep.clear();
+	h.twoFoldRep.clear();
 
 	isWhite = true;
 }
@@ -172,7 +172,7 @@ void UCI::updatePosition(std::istringstream& input)
 			turns += 1;
 			
 			//push board position U64 to search driver.two fold repeitions
-			sd.twoFoldRep.push_back(zobrist.zobristKey);
+			h.twoFoldRep.push_back(zobrist.zobristKey);
 			repCount++;
 			
 			isWhite = !isWhite;

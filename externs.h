@@ -52,39 +52,29 @@ extern int futileMoveCounts[2][32];
 
 //holds search info, killers, historys, PV, etc
 struct searchDriver{
-    //color, piece loc from, piece loc to
-    int history[2][64][64] = {{{0}}};
-    int cutoffs[2][64][64] = {{{0}}};
+    
     Move killers[45][2];
 	Move PV[45];
 	int nodes = 0;
 	int depth = 0;
 	long startTime;
-	long moveTime = 5000;
+	long moveTime = 2500;
 	bool isWhite;
-	std::vector<U64> twoFoldRep; //stores zobrist keys of all positions encountered thus far
 	bool excludedMove = false;
 	bool skipEarlyPruning = false;
 };
 extern searchDriver sd;
 
+struct Historys { //holds history info for search
+				  //color, piece loc from, piece loc to
+	int history[2][64][64] = { { { 0 } } };
+	int cutoffs[2][64][64] = { { { 0 } } };
+	std::vector<U64> twoFoldRep; //stores zobrist keys of all positions encountered thus far
+};
+extern Historys h;
+
 //master zobrist for turn
 extern ZobristH zobrist;
-
-//time manager not in use yet
-/*
-struct structtime {
-	int time[2];
-	int inc[2];
-	int movestogo;
-	int depth;
-	int nodes;
-	int mate;
-	int movetime;
-	U8 flags;
-};
-extern structtime chronos;
-*/
 
 //Bitboard of all king movements that can then be shifted
 extern const U64 KING_SPAN;
