@@ -170,6 +170,8 @@ int Ai_Logic::searchRoot(int depth, int alpha, int beta, searchStack *ss, bool i
     int legalMoves = 0;
 	int hashFlag = TT_ALPHA;
 
+	const HashEntry* ttentry = TT.probe(zobrist.zobristKey);
+
 	sd.nodes++;
 	ss->ply = 1;
 	(ss + 1)->skipNull = false;
@@ -178,6 +180,7 @@ int Ai_Logic::searchRoot(int depth, int alpha, int beta, searchStack *ss, bool i
     //grab bitboards from newBoard object and store color and board to var
     gen_moves.grab_boards(newBoard, isWhite);
     gen_moves.generatePsMoves(false);
+	gen_moves.reorderMoves(ss, ttentry);
 
     //who's our king?
     U64 king;
@@ -677,7 +680,7 @@ int Ai_Logic::quiescent(int alpha, int beta, bool isWhite, searchStack *ss, int 
 
         newBoard.unmakeMove(newMove, zobrist, isWhite);
         gen_moves.grab_boards(newBoard, isWhite);
-///*
+
         if(score > alpha){
 
             if(score >= beta){
@@ -748,8 +751,6 @@ void Ai_Logic::addKiller(Move move, searchStack *ss)
         }
         //save primary killer
 		ss->killers[0] = move;
-		//ss->killers[0].tried = true;
-		//ss->killers[1].tried = false;
     }
 }
 

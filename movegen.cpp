@@ -833,26 +833,20 @@ void MoveGen::reorderMoves(searchStack *ss, const HashEntry *entry)
 
     for(int i = 0; i < moveCount; ++i){
         //add killer moves score to move if there is a from - to match in killers
-		if (moveAr[i].piece == ss->killers[0].piece //maybe don't need piece verifier?
-			&& moveAr[i].from == ss->killers[0].from
-			&& moveAr[i].to == ss->killers[0].to
+		if (moveAr[i] == ss->killers[0] //operator == overloaded in move.h
 			&& moveAr[i].score < SORT_KILL) {
 			moveAr[i].score = SORT_KILL;
 		}
 
-        if(moveAr[i].piece == ss->killers[1].piece
-        && moveAr[i].from == ss->killers[1].from
-        && moveAr[i].to == ss->killers[1].to
+        if(moveAr[i] == ss->killers[1]
         && moveAr[i].score < SORT_KILL - 1){
             moveAr[i].score = SORT_KILL - 1;
         }
 
-        if( entry && moveAr[i].from == entry->move.from
-        && moveAr[i].to == entry->move.to
-        && moveAr[i].piece == entry->move.piece){
+        if( entry && moveAr[i] == entry->move){
             moveAr[i].score = SORT_HASH;
         }
-
+		
 
     }
 }

@@ -22,4 +22,9 @@ inline Move::Move()
 	tried = false;
 }
 
+FORCE_INLINE bool operator ==(const Move& m, const Move& m1) {
+	return ((m.from == m1.from) && (m.to == m1.to)
+		&& (m.piece == m1.piece));
+}
+
 #endif // MOVE_H

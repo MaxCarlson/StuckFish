@@ -152,6 +152,7 @@ FORCE_INLINE int pop_lsb(unsigned long long* b) {
 	return s;
 }
 
+
 inline int mate_in(int ply) {
 	return VALUE_MATE - ply;
 }
