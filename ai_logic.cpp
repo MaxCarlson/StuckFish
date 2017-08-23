@@ -269,6 +269,8 @@ int Ai_Logic::alphaBeta(int depth, int alpha, int beta, searchStack *ss, bool is
     //U8 newDepth; //use with futility + other pruning later
     int queitSD = 25, f_prune = 0;
     //int  mateValue = INF - ply; // used for mate distance pruning
+	Move queits[64];
+	int quietsC = 0;
 	sd.nodes++;
 	ss->ply = (ss - 1)->ply + 1; //increment ply
 	ss->reduction = 0; 
@@ -436,7 +438,7 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
         reductionDepth = 0;
         newDepth = depth - 1;
         h.cutoffs[isWhite][newMove.from][newMove.to] -= 1;
-		captureOrPromotion = (newMove.captured != PIECE_EMPTY) || (newMove.flag == 'Q'); 
+		captureOrPromotion = (newMove.captured != PIECE_EMPTY || newMove.flag == 'Q'); 
 		givesCheck = gen_moves.isAttacked(eking, !isWhite, true);
 /*
 		if (singularExtension && newMove.score >= SORT_HASH) {
@@ -494,7 +496,7 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
             h.cutoffs[isWhite][newMove.from][newMove.to] = 50; //NEEEEEEEEEED to test, makes it about 50% faster from start node with it commented out
 
 			ss->reduction = reductions[is_pv][improving][depth][i]; //i = number of moves method might not be better than previous one below, need to add more methods of reducing reduction in perilous situations
-			///*
+			
 			//reduce reductions for moves that escape capture
 			if (ss->reduction) {
 				newBoard.unmakeMove(newMove, zobrist, isWhite);
@@ -505,7 +507,7 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 				}
 				newBoard.makeMove(newMove, zobrist, isWhite);
 			}
-			//*/
+			
 			int d1 = std::max(newDepth - ss->reduction, 1);
 
 			int val = -alphaBeta(d1, -(alpha + 1), -alpha, ss + 1, !isWhite, DO_NULL, NO_PV);
@@ -552,6 +554,11 @@ re_search:
             goto re_search;
         }
 
+		//store queit moves so we can decrease their value later
+		if (!captureOrPromotion && quietsC < 64) {
+			queits[quietsC] = newMove;
+			quietsC++;
+		}
 
         //undo move on BB's
         newBoard.unmakeMove(newMove, zobrist, isWhite);
@@ -568,9 +575,9 @@ re_search:
             //if move causes a beta cutoff stop searching current branch
             if(score >= beta){
 
-                if(newMove.captured == PIECE_EMPTY && newMove.flag != 'Q'){ 
+                if(!captureOrPromotion){ 
                     //add move to killers
-                    addKiller(newMove, ss);
+                    //addKiller(newMove, ss);
 
                     //add score to historys
                     h.history[isWhite][newMove.from][newMove.to] += depth * depth;
@@ -601,7 +608,11 @@ re_search:
     if(!legalMoves){
         if(FlagInCheck) alpha = mated_in(ss->ply);
         else alpha = contempt(isWhite); 
-    }
+
+	}
+	else if (alpha >= beta && !FlagInCheck && hashMove.captured == PIECE_EMPTY && hashMove.flag != 'Q') {
+		updateStats(hashMove, ss, depth, queits, quietsC, isWhite);
+	}
 
 
 	if (futileMoves && !raisedAlpha && hashFlag != TT_BETA) {
@@ -767,6 +778,26 @@ bool Ai_Logic::isRepetition(const Move& m)
 	}
 
 	return false;
+}
+
+void Ai_Logic::updateStats(Move move, searchStack * ss, int depth, Move * quiets, int qCount, bool isWhite)
+{	
+	//update Killers for ply
+	//make sure killer is different
+	if (move.from != ss->killers[0].from
+		&& move.to != ss->killers[0].to) {
+		//save primary killer to secondary slot
+		ss->killers[1] = ss->killers[0];
+	}
+	//save primary killer
+	ss->killers[0] = move;
+
+	//update historys, increasing the cutoffs, decreasing every other moves score
+	int val = 4 * depth * depth;
+	h.history[isWhite][move.from][move.to] += val; //CHange to index by ply? or index just by piece type and to location>? TEST
+	while (--qCount) {
+		h.history[isWhite][quiets[qCount].from][quiets[qCount].to] -= val; //need to change to insure no overflow
+	}
 }
 
 void Ai_Logic::addKiller(Move move, searchStack *ss)

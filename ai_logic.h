@@ -58,6 +58,7 @@ private:
 	
 
 //helpers
+	void updateStats(Move move, searchStack *ss, int depth, Move * quiets, int qCount, bool isWhite);
 
     void addKiller(Move move, searchStack *ss);
     void ageHistorys();
