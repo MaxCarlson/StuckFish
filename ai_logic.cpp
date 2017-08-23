@@ -260,6 +260,8 @@ int Ai_Logic::alphaBeta(int depth, int alpha, int beta, searchStack *ss, bool is
     bool raisedAlpha = false; 
 	bool futileMoves = false; //have any moves been futile?
 	bool singularExtension = false;
+	bool captureOrPromotion = false;
+	bool givesCheck = false;
 	int R = 2;
 	int reductionDepth; //how much are we reducing depth in LMR?
 	int newDepth;
@@ -268,7 +270,7 @@ int Ai_Logic::alphaBeta(int depth, int alpha, int beta, searchStack *ss, bool is
     //int  mateValue = INF - ply; // used for mate distance pruning
 	sd.nodes++;
 	ss->ply = (ss - 1)->ply + 1; //increment ply
-	ss->reduction = 0;
+	ss->reduction = 0; 
 	(ss + 1)->skipNull = false;
 	//(ss+1)->excludedMove = false; //dont need?
 
@@ -286,7 +288,7 @@ int Ai_Logic::alphaBeta(int depth, int alpha, int beta, searchStack *ss, bool is
 	int ttValue;
 
 	ttentry = TT.probe(zobrist.zobristKey);
-	ttMove = ttentry ? ttentry->move.flag : false; //is there a move stored in transposition table?
+	ttMove = ttentry ? ttentry->move.tried : false; //is there a move stored in transposition table?
 	ttValue = ttentry ? valueFromTT(ttentry->eval, ss->ply) : INVALID; //if there is a TT entry, grab its value
 
 	//is the a TT entry? If so, are we in PV? If in PV only accept and exact entry with a depth >= our depth, 
@@ -416,7 +418,7 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 		//if (sd.excludedMove && newMove.score >= SORT_HASH) continue;
 
 		//don't search moves with negative SEE at low depths
-		if (depth < 4 && gen_moves.SEE(newMove, newBoard, isWhite) < 0) continue; //NEED to test how useful this is
+		if (depth < 4 && gen_moves.SEE(newMove, newBoard, isWhite, true) < 0) continue; //NEED to possible add a flag to not check capturing moves?
 
         //make move on BB's store data to string so move can be undone
         newBoard.makeMove(newMove, zobrist, isWhite);
@@ -432,6 +434,8 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
         reductionDepth = 0;
         newDepth = depth - 1;
         h.cutoffs[isWhite][newMove.from][newMove.to] -= 1;
+		captureOrPromotion = (newMove.captured != PIECE_EMPTY) || (newMove.flag == 'Q'); 
+		givesCheck = gen_moves.isAttacked(eking, !isWhite, true);
 /*
 		if (singularExtension && newMove.score >= SORT_HASH) {
 			int rBeta = std::max(ttValue - 2 * depth, -mateValue);
@@ -447,9 +451,8 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 		///*		
         //futility pruning ~~ is not a promotion or hashmove, is not a capture, and does not give check, and we've tried one move already
         if(f_prune && newMove.score < SORT_HASH
-            && newMove.captured == PIECE_EMPTY && legalMoves
-            && !gen_moves.isAttacked(eking, !isWhite, true)
-			&& newMove.flag != 'Q'){
+            && !captureOrPromotion && legalMoves
+            && !givesCheck){
 
             newBoard.unmakeMove(newMove, zobrist, isWhite);
 			gen_moves.grab_boards(newBoard, isWhite);
@@ -461,8 +464,9 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 		/* //new futility pruning
 		if (depth < 10
 			&& newMove.score < SORT_HASH
-			&& newMove.captured == PIECE_EMPTY && legalMoves
-			&& !gen_moves.isAttacked(eking, !isWhite, true)
+			&& !captureOrPormotion 
+			&& legalMoves
+			&& !givesCheck
 			&& newMove.flag != 'Q'
 			&& i >= futileMoveCounts[improving][depth]) {
 
@@ -478,17 +482,29 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
         if(newDepth > 3
             && legalMoves > 3
 			&& !FlagInCheck
-			&& h.cutoffs[isWhite][newMove.from][newMove.to] < 50
-			&& newMove.captured == PIECE_EMPTY && newMove.flag != 'Q'            
+			&& !captureOrPromotion
+			&& !givesCheck
+			&& h.cutoffs[isWhite][newMove.from][newMove.to] < 50 //test with commented out!			           
             && (newMove.from != ss->killers[0].from || newMove.to != ss->killers[0].to)
             && (newMove.from != ss->killers[1].from || newMove.to != ss->killers[1].to)
-			&& !gen_moves.isAttacked(eking, !isWhite, true)
-			&& newMove.score < SORT_HASH){
-
+			&& newMove.score < SORT_HASH){ //comment out? should already be tested by having on move already
 
             h.cutoffs[isWhite][newMove.from][newMove.to] = 50;
 
-			ss->reduction = reductions[is_pv][improving][depth][i]; //i = number of moves
+			ss->reduction = reductions[is_pv][improving][depth][i]; //i = number of moves method might not be better than previous one below, need to add more methods of reducing reduction in perilous situations
+			///*
+			//reduce reductions for moves that escape capture
+			if (ss->reduction) {
+				newBoard.unmakeMove(newMove, zobrist, isWhite);
+				Move n; n.from = newMove.to; n.to = newMove.from; n.piece = newMove.piece;
+				//gen_moves.grab_boards(newBoard, isWhite);
+				if (gen_moves.SEE(n, newBoard, isWhite, false) < 0) {
+					ss->reduction = std::max(1, ss->reduction - 2); //play with reduction value
+				}
+				newBoard.makeMove(newMove, zobrist, isWhite);
+				//gen_moves.grab_boards(newBoard, isWhite);
+			}
+			//*/
 
         }
 
@@ -539,7 +555,7 @@ re_search:
             //if move causes a beta cutoff stop searching current branch
             if(score >= beta){
 
-                if(newMove.captured == PIECE_EMPTY && newMove.flag != 'Q'){
+                if(newMove.captured == PIECE_EMPTY && newMove.flag != 'Q'){ 
                     //add move to killers
                     addKiller(newMove, ss);
 
@@ -663,7 +679,7 @@ int Ai_Logic::quiescent(int alpha, int beta, bool isWhite, searchStack *ss, int 
 			&& newMove.flag != 'Q') continue;
 			
 		//Don't search losing capture moves if not in PV
-		if (!is_pv && gen_moves.SEE(newMove, newBoard, isWhite) < 0) continue;
+		if (!is_pv && gen_moves.SEE(newMove, newBoard, isWhite, true) < 0) continue;
 
         newBoard.makeMove(newMove, zobrist, isWhite);
         gen_moves.grab_boards(newBoard, isWhite);

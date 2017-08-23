@@ -36,7 +36,7 @@ public:
 	
 
 	//static exhange eval
-	int SEE(const Move& m, const BitBoards& b, bool isWhite);
+	int SEE(const Move& m, const BitBoards& b, bool isWhite, bool isCapture);
 
 	//grab the best scoring move and return it
 	inline Move movegen_sort(int ply, Move * moveAr) const;
@@ -61,8 +61,7 @@ public:
         U64 BBBlackQueens;
         U64 BBBlackKing;
 
-        int trailingZeros(const U64 i) const;
-        U64 ReverseBits(U64 input);
+        
         U64 noWeOne(U64 b);
         U64 soWeOne(U64 b);
         U64 westOne(U64 b);
@@ -102,22 +101,7 @@ private:
 
 };
 
-inline int MoveGen::trailingZeros(const U64 i) const {
-	
-	//find the first one and number of zeros after it
-	if (i == 0) return 64;
-	U64 x = i;
-	U64 y;
-	int n = 63;
-	y = x << 32; if (y != 0) { n -= 32; x = y; }
-	y = x << 16; if (y != 0) { n -= 16; x = y; }
-	y = x << 8; if (y != 0) { n -= 8; x = y; }
-	y = x << 4; if (y != 0) { n -= 4; x = y; }
-	y = x << 2; if (y != 0) { n -= 2; x = y; }
-	return (int)(n - ((x << 1) >> 63));
-	
-	//return msb(i); replace all with this ?
-}
+
 
 inline Move MoveGen::movegen_sort(int ply, Move * moveAr) const
 {

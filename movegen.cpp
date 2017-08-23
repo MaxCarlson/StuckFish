@@ -137,117 +137,89 @@ void MoveGen::possibleWP(const U64 &wpawns, const U64 &blackking, bool capturesO
     char captured;
 
     //forward one
-    U64 PAWN_MOVES = northOne(wpawns) & EmptyTiles;
-    U64 i = PAWN_MOVES &~ (PAWN_MOVES-1);
+    U64 moves = northOne(wpawns) & EmptyTiles;
 
     if(!capturesOnly){
-        while(i != 0){
-            int index = trailingZeros(i);
+        while(moves){
+            int index = pop_lsb(&moves);
 
             movegen_push(piece, PIECE_EMPTY, '0', index+8, index);
-
-            PAWN_MOVES &= ~i;
-            i= PAWN_MOVES & ~(PAWN_MOVES-1);
         }
 
 
         //forward two
-        PAWN_MOVES = (wpawns>>16) & EmptyTiles &(EmptyTiles>>8) & rank4;
-        i = PAWN_MOVES &~ (PAWN_MOVES-1);
+        moves = (wpawns>>16) & EmptyTiles &(EmptyTiles>>8) & rank4;
 
-        while(i != 0){
-            int index = trailingZeros(i);
+        while(moves){
+            int index = pop_lsb(&moves);
 
             movegen_push(piece, PIECE_EMPTY, '0', index+16, index);
-
-            PAWN_MOVES &= ~i;
-            i= PAWN_MOVES & ~(PAWN_MOVES-1);
         }        
     }
 
     //capture right
-    PAWN_MOVES = noEaOne(wpawns) & BBBlackPieces & ~blackking & ~rank8;
-    i = PAWN_MOVES &~ (PAWN_MOVES-1);
+    moves = noEaOne(wpawns) & BBBlackPieces & ~blackking & ~rank8;
 
-    while(i != 0){
-        int index = trailingZeros(i);
+    while(moves){
+        int index = pop_lsb(&moves);
 
         U64 landing = 0LL;
         landing += 1LL << index;
         captured = whichPieceCaptured(landing);
 
         movegen_push(piece, captured, '0', index+7, index);
-
-        PAWN_MOVES &= ~i;
-        i= PAWN_MOVES & ~(PAWN_MOVES-1);
     }
 
 
     //capture left
-    PAWN_MOVES = noWeOne(wpawns) & BBBlackPieces & ~blackking & ~rank8;
-    i = PAWN_MOVES &~ (PAWN_MOVES-1);
+    moves = noWeOne(wpawns) & BBBlackPieces & ~blackking & ~rank8;
 
-    while(i != 0){
-        int index = trailingZeros(i);
+    while(moves){
+        int index = pop_lsb(&moves);
 
         U64 landing = 0LL;
         landing += 1LL << index;
         captured = whichPieceCaptured(landing);
 
         movegen_push(piece,captured, '0', index+9, index);
-
-        PAWN_MOVES &= ~i;
-        i= PAWN_MOVES & ~(PAWN_MOVES-1);
     }
 
 //Pawn promotions
     //moving forward one
-    PAWN_MOVES = northOne(wpawns) & EmptyTiles & rank8;
-    i = PAWN_MOVES &~ (PAWN_MOVES-1);
+    moves = northOne(wpawns) & EmptyTiles & rank8;
 
-    while(i != 0){
-        int index = trailingZeros(i);
+    while(moves){
+        int index = pop_lsb(&moves);
 
         movegen_push(piece, PIECE_EMPTY, 'Q', index+8, index);
-
-        PAWN_MOVES &= ~i;
-        i= PAWN_MOVES & ~(PAWN_MOVES-1);
     }
 
 //pawn capture promotions
     //capture right
-    PAWN_MOVES = noEaOne(wpawns) & BBBlackPieces & ~blackking & rank8;
-    i = PAWN_MOVES &~ (PAWN_MOVES-1);
+    moves = noEaOne(wpawns) & BBBlackPieces & ~blackking & rank8;
 
-    while(i != 0){
-        int index = trailingZeros(i);
+    while(moves){
+        int index = pop_lsb(&moves);
 
         U64 landing = 0LL;
         landing += 1LL << index;
         captured = whichPieceCaptured(landing);
 
         movegen_push(piece, captured, 'Q', index+7, index);
-
-        PAWN_MOVES &= ~i;
-        i= PAWN_MOVES & ~(PAWN_MOVES-1);
     }
 
 
     //capture left
-    PAWN_MOVES = noWeOne(wpawns) & BBBlackPieces & ~blackking & rank8;
-    i = PAWN_MOVES &~ (PAWN_MOVES-1);
+    moves = noWeOne(wpawns) & BBBlackPieces & ~blackking & rank8;
 
-    while(i != 0){
-        int index = trailingZeros(i);
+    while(moves){
+        int index = pop_lsb(&moves);
 
         U64 landing = 0LL;
         landing += 1LL << index;
         captured = whichPieceCaptured(landing);
 
         movegen_push(piece, captured, 'Q', index+9, index);
-
-        PAWN_MOVES &= ~i;
-        i = PAWN_MOVES & ~(PAWN_MOVES-1);
     }
 
 }
@@ -256,118 +228,88 @@ void MoveGen::possibleBP(const U64 &bpawns, const U64 &whiteking, bool capturesO
 {
     char piece = PAWN;
     char captured;
-    U64 PAWN_MOVES, i;
+    U64 moves;
 
 
     if(!capturesOnly){
         //forward one
-        PAWN_MOVES = southOne(bpawns) & EmptyTiles;
-        i = PAWN_MOVES &~ (PAWN_MOVES-1);
+        moves = southOne(bpawns) & EmptyTiles;
 
-        while(i != 0){
-            int index = trailingZeros(i);
+        while(moves){
+            int index = pop_lsb(&moves);
 
             movegen_push(piece, PIECE_EMPTY, '0', index-8, index);
-
-            PAWN_MOVES &= ~i;
-            i= PAWN_MOVES & ~(PAWN_MOVES-1);
-
         }
 
         //forward two
-        PAWN_MOVES = (bpawns<<16) & EmptyTiles &(EmptyTiles<<8) & rank5;
-        i = PAWN_MOVES &~ (PAWN_MOVES-1);
+        moves = (bpawns<<16) & EmptyTiles &(EmptyTiles<<8) & rank5;
 
-        while(i != 0){
-            int index = trailingZeros(i);
+        while(moves){
+            int index = pop_lsb(&moves);
 
             movegen_push(piece, PIECE_EMPTY, '0', index-16, index);
-
-            PAWN_MOVES &= ~i;
-            i= PAWN_MOVES & ~(PAWN_MOVES-1);
-
         }
     }
 
     //capture right
-    PAWN_MOVES = soEaOne(bpawns) & BBWhitePieces & ~whiteking & ~rank1;
-    i = PAWN_MOVES &~ (PAWN_MOVES-1);
+    moves = soEaOne(bpawns) & BBWhitePieces & ~whiteking & ~rank1;
 
-    while(i != 0){
-        int index = trailingZeros(i);
+    while(moves){
+        int index = pop_lsb(&moves);
         U64 landing = 0LL;
         landing += 1LL << index;
         captured = whichPieceCaptured(landing);
 
         movegen_push(piece, captured, '0', index-9, index);
-
-        PAWN_MOVES &= ~i;
-        i= PAWN_MOVES & ~(PAWN_MOVES-1);
     }
 
 
     //capture left
-    PAWN_MOVES = soWeOne(bpawns) & BBWhitePieces & ~whiteking & ~rank1;
-    i = PAWN_MOVES &~ (PAWN_MOVES-1);
+    moves = soWeOne(bpawns) & BBWhitePieces & ~whiteking & ~rank1;
 
-    while(i != 0){
-        int index = trailingZeros(i);
+    while(moves){
+        int index = pop_lsb(&moves);
         U64 landing = 0LL;
         landing += 1LL << index;
         captured = whichPieceCaptured(landing);
 
         movegen_push(piece, captured, '0', index-7, index);
-
-        PAWN_MOVES &= ~i;
-        i= PAWN_MOVES & ~(PAWN_MOVES-1);
     }
 
 //promotions
     //forward promotions
-    PAWN_MOVES = southOne(bpawns) & EmptyTiles & rank1;
-    i = PAWN_MOVES &~ (PAWN_MOVES-1);
+    moves = southOne(bpawns) & EmptyTiles & rank1;
 
-    while(i != 0){
-        int index = trailingZeros(i);
+    while(moves){
+        int index = pop_lsb(&moves);
 
         movegen_push(piece, PIECE_EMPTY, 'Q', index-8, index);
-
-        PAWN_MOVES &= ~i;
-        i= PAWN_MOVES & ~(PAWN_MOVES-1);
     }
 
 //capture promotions
     //capture right
-    PAWN_MOVES = soEaOne(bpawns) & BBWhitePieces & ~whiteking & rank1;
-    i = PAWN_MOVES &~ (PAWN_MOVES-1);
+    moves = soEaOne(bpawns) & BBWhitePieces & ~whiteking & rank1;
 
-    while(i != 0){
-        int index = trailingZeros(i);
+    while(moves){
+        int index = pop_lsb(&moves);
         U64 landing = 0LL;
         landing += 1LL << index;
         captured = whichPieceCaptured(landing);
 
         movegen_push(piece, captured, 'Q', index-9, index);
-
-        PAWN_MOVES &= ~i;
-        i= PAWN_MOVES & ~(PAWN_MOVES-1);
     }
 
 
     //capture left
-    PAWN_MOVES = soWeOne(bpawns) & BBWhitePieces & ~whiteking & rank1;
-    i = PAWN_MOVES &~ (PAWN_MOVES-1);
+    moves = soWeOne(bpawns) & BBWhitePieces & ~whiteking & rank1;
 
-    while(i != 0){
-        int index = trailingZeros(i);
+    while(moves){
+        int index = pop_lsb(&moves);
         U64 landing = 0LL;
         landing += 1LL << index;
         captured = whichPieceCaptured(landing);
 
         movegen_push(piece, captured, 'Q', index-7, index);
-
-        PAWN_MOVES &= ~i;
-        i= PAWN_MOVES & ~(PAWN_MOVES-1);
     }
 
 }
@@ -516,14 +458,13 @@ void MoveGen::possibleK(U8 location,  const U64 &friends, const U64 &enemys, con
         moves &= ~FILE_AB & ~friends & capturesOnly& ~oppositeking;
     }
 
-    U64 j = moves &~(moves-1);
+
 
     char captured;
-    while(j != 0){
-		int index = trailingZeros(j);//msb(j); // 
+    while(moves){
+		int index = pop_lsb(&moves);
         captured = PIECE_EMPTY;
-        U64 landing = 0LL;
-        landing += 1LL << index;
+        U64 landing = 1LL << index;
 
         if(landing & enemys){
             captured = whichPieceCaptured(landing);
@@ -531,8 +472,6 @@ void MoveGen::possibleK(U8 location,  const U64 &friends, const U64 &enemys, con
 
         movegen_push(piece, captured, '0', location, index);
 
-        moves &= ~j;
-        j = moves &~ (moves-1);
     }
 
 }
@@ -631,34 +570,28 @@ bool MoveGen::blind(const Move &move, int pieceVal, int captureVal)
     return 0; //of other captures we know not
 }
 
-int MoveGen::SEE(const Move& m, const BitBoards& b, bool isWhite)
+int MoveGen::SEE(const Move& m, const BitBoards& b, bool isWhite, bool isCapture)
 {
 	U64 attackers, occupied, stmAttackers;
-	int swapList[32], index = 1; //play with val for speed?
+	int swapList[32], index = 1; //play with swap val for speed?
 
 	//early return, SEE can't be a losing capture
-	if (SORT_VALUE[m.piece] <= SORT_VALUE[m.captured]) return INF;
-
-	//int from = 1LL << m.from; //remove these?
-	//int to = 1LL << m.to;
+	//is capture flag is used for when we're checking to see if the move is escaping capture
+	//we don't want an early return if that's the case
+	if (SORT_VALUE[m.piece] <= SORT_VALUE[m.captured] && isCapture) return INF;
 
 	swapList[0] = SORT_VALUE[m.captured];
-	occupied = FullTiles ^ (1LL << m.from); //use m.from?????
+
+	occupied = b.FullTiles ^ (1LL << m.from); //remove capturing piece from occupied bb 
 
 	//need castling and enpassant logic once implmented
 
 	//finds all attackers to the square
 	attackers = attackersTo(m.to, b, occupied) & occupied;
 
-	//drawBBA();
-	//drawBB(occupied);
-	//drawBB(attackers);
-
 	//if there are no attacking pieces, return
 	if (isWhite && !(attackers & b.BBBlackPieces)) return swapList[0];
 	else if (!isWhite && !(attackers & b.BBWhitePieces))  return swapList[0];
-
-
 
 	//switch sides
 	isWhite = !isWhite;
@@ -666,8 +599,6 @@ int MoveGen::SEE(const Move& m, const BitBoards& b, bool isWhite)
 	else  stmAttackers = attackers & b.BBBlackPieces;
 
 	if (!stmAttackers) return swapList[0];
-
-	//drawBB(stmAttackers);
 	
 	int captured = m.piece; //if there are attackers, our piece being moved will be captured
 
@@ -874,18 +805,6 @@ char MoveGen::whichPieceCaptured(U64 landing)
     return '0';
 }
 
-U64 MoveGen::ReverseBits(U64 input)
-{
-    //literally reverse bits in U64's
-    U64 output = input;
-    for (int i = sizeof(input) * 8-1; i; --i)
-    {
-        output <<= 1;
-        input  >>= 1;
-        output |=  input & 1;
-    }
-    return output;
-}
 
 void MoveGen::grab_boards(const BitBoards &BBBoard, bool wOrB)
 {
