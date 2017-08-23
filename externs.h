@@ -52,9 +52,8 @@ extern int futileMoveCounts[2][32];
 
 //holds search info, killers, historys, PV, etc
 struct searchDriver{
-    
-    Move killers[45][2];
-	Move PV[45];
+
+	Move PV[130];
 	int nodes = 0;
 	int depth = 0;
 	long startTime;

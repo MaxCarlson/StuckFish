@@ -48,7 +48,7 @@ private:
 	int alphaBeta(int depth, int alpha, int beta, searchStack *ss, bool isWhite, bool allowNull, bool is_pv);
 
 	//Quiescent search ~~ search positions farther if there are captures on horizon
-	int quiescent(int alpha, int beta, bool isWhite, int ply, int quietDepth, bool is_pv);
+	int quiescent(int alpha, int beta, bool isWhite, searchStack *ss, int quietDepth, bool is_pv);
 
     //make ai prefer checkmate over stalemate
     int contempt(bool isWhite); //need some way to check board material before implementing
@@ -59,7 +59,7 @@ private:
 
 //helpers
 
-    void addKiller(Move move, int ply);
+    void addKiller(Move move, searchStack *ss);
     void ageHistorys();
 	
 

@@ -6,7 +6,7 @@
 #include "bitboards.h"
 #include "slider_attacks.h"
 #include "externs.h"
-
+#include "ai_logic.h"
 
 //totally full bitboard
 const U64 full  = 0xffffffffffffffffULL;
@@ -828,22 +828,23 @@ FORCE_INLINE int MoveGen::min_attacker(bool isWhite, const BitBoards & b, const 
 	return piece;
 }
 
-void MoveGen::reorderMoves(int ply, const HashEntry *entry)
+void MoveGen::reorderMoves(searchStack *ss, const HashEntry *entry)
 {
 
     for(int i = 0; i < moveCount; ++i){
         //add killer moves score to move if there is a from - to match in killers
-        if(moveAr[i].piece == sd.killers[ply][1].piece
-        && moveAr[i].from == sd.killers[ply][1].from
-        && moveAr[i].to == sd.killers[ply][1].to
+		if (moveAr[i].piece == ss->killers[0].piece //maybe don't need piece verifier?
+			&& moveAr[i].from == ss->killers[0].from
+			&& moveAr[i].to == ss->killers[0].to
+			&& moveAr[i].score < SORT_KILL) {
+			moveAr[i].score = SORT_KILL;
+		}
+
+        if(moveAr[i].piece == ss->killers[1].piece
+        && moveAr[i].from == ss->killers[1].from
+        && moveAr[i].to == ss->killers[1].to
         && moveAr[i].score < SORT_KILL - 1){
             moveAr[i].score = SORT_KILL - 1;
-        }
-        if(moveAr[i].piece == sd.killers[ply][0].piece //maybe don't need piece verifier?
-        && moveAr[i].from == sd.killers[ply][0].from
-        && moveAr[i].to == sd.killers[ply][0].to
-        && moveAr[i].score < SORT_KILL){
-            moveAr[i].score = SORT_KILL;
         }
 
         if( entry && moveAr[i].from == entry->move.from

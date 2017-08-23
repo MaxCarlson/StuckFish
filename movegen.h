@@ -12,7 +12,7 @@ typedef unsigned long long  U64; // supported by MSC 13.00+ and C99
 class BitBoards;
 class Historys;
 class HashEntry;
-
+class searchStack;
 
 class MoveGen
 {
@@ -41,7 +41,7 @@ public:
 	//grab the best scoring move and return it
 	inline Move movegen_sort(int ply, Move * moveAr) const;
 
-    void reorderMoves(int ply, const HashEntry *entry);
+    void reorderMoves(searchStack *ss, const HashEntry *entry);
 
     //bitboards
         U64 FullTiles;

@@ -58,8 +58,8 @@ void Ai_Logic::initSearch()
 		double    pvReduciton = 0.00 + log(double(hd)) * log(double(mc)) / 3.00;
 		double nonPVReduction = 0.30 + log(double(hd)) * log(double(mc)) / 2.25;
 
-		reductions[1][1][hd][mc] = S8(pvReduciton >= 1.0 ? pvReduciton + 0.5 : 0);
-		reductions[0][1][hd][mc] = S8(nonPVReduction >= 1.0 ? nonPVReduction + 0.5 : 0);
+		reductions[1][1][hd][mc] = int8_t(pvReduciton >= 1.0 ? pvReduciton + 0.5 : 0);
+		reductions[0][1][hd][mc] = int8_t(nonPVReduction >= 1.0 ? nonPVReduction + 0.5 : 0);
 
 		reductions[1][0][hd][mc] = reductions[1][1][hd][mc];
 		reductions[0][0][hd][mc] = reductions[0][1][hd][mc];
@@ -121,7 +121,7 @@ Move Ai_Logic::iterativeDeep(int depth, bool isWhite)
 		if (timeM.timeStopRoot() || timeOver) break;
 
         //main search
-        bestScore = searchRoot(sd.depth, alpha, beta, ss, isWhite, ply+1);
+        bestScore = searchRoot(sd.depth, alpha, beta, ss, isWhite);
 /*
         if(bestScore <= alpha){ //ISSUES WITH ASPIRATION WINDOWS
 			alpha = std::max(bestScore - delta, -INF);			
@@ -302,7 +302,7 @@ int Ai_Logic::alphaBeta(int depth, int alpha, int beta, searchStack *ss, bool is
     int score;
     if(depth < 1 || timeOver){
         //run capture search to max depth of queitSD
-        score = quiescent(alpha, beta, isWhite, ss->ply, queitSD, is_pv);
+        score = quiescent(alpha, beta, isWhite, ss, queitSD, is_pv);
         return score;
     }
 
@@ -354,7 +354,7 @@ int Ai_Logic::alphaBeta(int depth, int alpha, int beta, searchStack *ss, bool is
         //if(eval.evalBoard(isWhite, newBoard, zobrist) < threshold){
 		if(ss->staticEval < threshold){
 
-            score = quiescent(alpha, beta, isWhite, queitSD, is_pv);
+            score = quiescent(alpha, beta, isWhite, ss, queitSD, is_pv);
 
             if(score < threshold) return alpha;
         }
@@ -397,9 +397,13 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
     gen_moves.generatePsMoves(false);
 
     //add killers scores and hash moves scores to moves if there are any
-    gen_moves.reorderMoves(ss->ply, ttentry);
+    gen_moves.reorderMoves(ss, ttentry);
 
     int hashFlag = TT_ALPHA, movesNum = gen_moves.moveCount, legalMoves = 0;
+
+	bool improving = ss->staticEval >= (ss - 2)->staticEval
+		|| ss->staticEval == 0
+		|| (ss - 2)->staticEval == 0;
 
     Move hashMove; //move to store alpha in and pass to TTable
     for(int i = 0; i < movesNum; ++i){
@@ -452,11 +456,12 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
         }
         //*/
 		/* //new futility pruning
-		if (newMove.score < SORT_HASH
+		if (depth < 10
+			&& newMove.score < SORT_HASH
 			&& newMove.captured == PIECE_EMPTY && legalMoves
 			&& !gen_moves.isAttacked(eking, !isWhite, true)
 			&& newMove.flag != 'Q'
-			&& i >= futileMoveCounts[1][depth]) {
+			&& i >= futileMoveCounts[improving][depth]) {
 
 			newBoard.unmakeMove(newMove, zobrist, isWhite);
 			gen_moves.grab_boards(newBoard, isWhite);
@@ -472,24 +477,19 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 			&& !FlagInCheck
 			&& h.cutoffs[isWhite][newMove.from][newMove.to] < 50
 			&& newMove.captured == PIECE_EMPTY && newMove.flag != 'Q'            
-            && (newMove.from != sd.killers[0][ss->ply].from || newMove.to != sd.killers[0][ss->ply].to)
-            && (newMove.from != sd.killers[1][ss->ply].from || newMove.to != sd.killers[1][ss->ply].to)
+            && (newMove.from != ss->killers[0].from || newMove.to != ss->killers[0].to)
+            && (newMove.from != ss->killers[1].from || newMove.to != ss->killers[1].to)
 			&& !gen_moves.isAttacked(eking, !isWhite, true)
 			&& newMove.score < SORT_HASH){
 
 
             h.cutoffs[isWhite][newMove.from][newMove.to] = 50;
-			///*
-            reductionDepth = 1;
-			
-            if (legalMoves > 6) reductionDepth++;
-			if (legalMoves > 14) reductionDepth++; //maybe? need more lmr traits
-			//*/
 
-			//reductionDepth = reductions[is_pv][0][depth][i]; //NEED TO add improving
+			ss->reduction = reductions[is_pv][improving][depth][i]; //i = number of moves
 
-            newDepth -= reductionDepth;
         }
+
+		newDepth -= ss->reduction;
 
 		//load the (most likely) next entry in the TTable into cache near cpu
 		_mm_prefetch((char *)TT.first_entry(zobrist.fetchKey(newMove, !isWhite)), _MM_HINT_NTA);
@@ -538,7 +538,7 @@ re_search:
 
                 if(newMove.captured == PIECE_EMPTY && newMove.flag != 'Q'){
                     //add move to killers
-                    addKiller(newMove, ss->ply);
+                    addKiller(newMove, ss);
 
                     //add score to historys
                     h.history[isWhite][newMove.from][newMove.to] += depth * depth;
@@ -587,7 +587,7 @@ re_search:
     return alpha;
 }
 
-int Ai_Logic::quiescent(int alpha, int beta, bool isWhite, int ply, int quietDepth, bool is_pv)
+int Ai_Logic::quiescent(int alpha, int beta, bool isWhite, searchStack *ss, int quietDepth, bool is_pv)
 {
     //node count, sepperate q count needed?
 	sd.nodes++;
@@ -596,12 +596,13 @@ int Ai_Logic::quiescent(int alpha, int beta, bool isWhite, int ply, int quietDep
 	bool ttMove;
 	int ttValue;
 	int oldAlpha, bestScore, score;
+	ss->ply = (ss - 1)->ply + 1;
 
 	//if (is_pv) oldAlpha = alpha; //??Need?
 
 	ttentry = TT.probe(zobrist.zobristKey);
 	ttMove = ttentry ? ttentry->move.flag : false; //is there a move stored in transposition table?
-	ttValue = ttentry ? valueFromTT(ttentry->eval, ply) : INVALID; //if there is a TT entry, grab its value
+	ttValue = ttentry ? valueFromTT(ttentry->eval, ss->ply) : INVALID; //if there is a TT entry, grab its value
 
 /*
 	if (ttentry
@@ -636,7 +637,7 @@ int Ai_Logic::quiescent(int alpha, int beta, bool isWhite, int ply, int quietDep
     MoveGen gen_moves;
     gen_moves.grab_boards(newBoard, isWhite);
     gen_moves.generatePsMoves(true);
-    gen_moves.reorderMoves(ply, ttentry);
+    gen_moves.reorderMoves(ss, ttentry);
 
     //set hash flag equal to alpha Flag
     int hashFlag = TT_ALPHA, moveNum = gen_moves.moveCount;
@@ -649,7 +650,7 @@ int Ai_Logic::quiescent(int alpha, int beta, bool isWhite, int ply, int quietDep
 
     for(int i = 0; i < moveNum; ++i)
     {        
-        Move newMove = gen_moves.movegen_sort(ply, &gen_moves.moveAr[0]);
+        Move newMove = gen_moves.movegen_sort(ss->ply, &gen_moves.moveAr[0]);
 
 		///*
 		//also not fast enough yet, though more testing is needed
@@ -672,7 +673,7 @@ int Ai_Logic::quiescent(int alpha, int beta, bool isWhite, int ply, int quietDep
         }
 
 
-        score = -quiescent(-beta, -alpha, !isWhite, ply+1, quietDepth-1, is_pv);
+        score = -quiescent(-beta, -alpha, !isWhite, ss, quietDepth-1, is_pv);
 
         newBoard.unmakeMove(newMove, zobrist, isWhite);
         gen_moves.grab_boards(newBoard, isWhite);
@@ -736,18 +737,19 @@ bool Ai_Logic::isRepetition(const Move& m)
 	return false;
 }
 
-void Ai_Logic::addKiller(Move move, int ply)
+void Ai_Logic::addKiller(Move move, searchStack *ss)
 {
     if(move.captured == PIECE_EMPTY){ //if move isn't a capture save it as a killer
         //make sure killer is different
-        if(move.from != sd.killers[ply][0].from
-          && move.to != sd.killers[ply][0].to){
+        if(move.from != ss->killers[0].from
+          && move.to != ss->killers[0].to){
             //save primary killer to secondary slot
-            sd.killers[ply][1] = sd.killers[ply][0];
+			ss->killers[1] = ss->killers[0];
         }
         //save primary killer
-        sd.killers[ply][0] = move;
-        sd.killers[ply][0].tried = false;
+		ss->killers[0] = move;
+		//ss->killers[0].tried = true;
+		//ss->killers[1].tried = false;
     }
 }
 
