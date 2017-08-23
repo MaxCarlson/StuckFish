@@ -258,6 +258,7 @@ int Ai_Logic::alphaBeta(int depth, int alpha, int beta, searchStack *ss, bool is
 {
     bool FlagInCheck = false;
     bool raisedAlpha = false; 
+	bool doFullDepthSearch = false;
 	bool futileMoves = false; //have any moves been futile?
 	bool singularExtension = false;
 	bool captureOrPromotion = false;
@@ -406,6 +407,7 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 
     int hashFlag = TT_ALPHA, movesNum = gen_moves.moveCount, legalMoves = 0;
 
+	//has this current node variation improved our static_eval ?
 	bool improving = ss->staticEval >= (ss - 2)->staticEval
 		|| ss->staticEval == 0
 		|| (ss - 2)->staticEval == 0;
@@ -484,12 +486,12 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 			&& !FlagInCheck
 			&& !captureOrPromotion
 			&& !givesCheck
-			&& h.cutoffs[isWhite][newMove.from][newMove.to] < 50 //test with commented out!			           
+			//&& h.cutoffs[isWhite][newMove.from][newMove.to] < 50 //test with commented out!			           
             && (newMove.from != ss->killers[0].from || newMove.to != ss->killers[0].to)
             && (newMove.from != ss->killers[1].from || newMove.to != ss->killers[1].to)
 			&& newMove.score < SORT_HASH){ //comment out? should already be tested by having on move already
 
-            h.cutoffs[isWhite][newMove.from][newMove.to] = 50;
+            h.cutoffs[isWhite][newMove.from][newMove.to] = 50; //NEEEEEEEEEED to test, makes it about 50% faster from start node with it commented out
 
 			ss->reduction = reductions[is_pv][improving][depth][i]; //i = number of moves method might not be better than previous one below, need to add more methods of reducing reduction in perilous situations
 			///*
@@ -497,15 +499,27 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 			if (ss->reduction) {
 				newBoard.unmakeMove(newMove, zobrist, isWhite);
 				Move n; n.from = newMove.to; n.to = newMove.from; n.piece = newMove.piece;
-				//gen_moves.grab_boards(newBoard, isWhite);
+
 				if (gen_moves.SEE(n, newBoard, isWhite, false) < 0) {
 					ss->reduction = std::max(1, ss->reduction - 2); //play with reduction value
 				}
 				newBoard.makeMove(newMove, zobrist, isWhite);
-				//gen_moves.grab_boards(newBoard, isWhite);
 			}
 			//*/
+			int d1 = std::max(newDepth - ss->reduction, 1);
 
+			int val = -alphaBeta(d1, -(alpha + 1), -alpha, ss + 1, !isWhite, DO_NULL, NO_PV);
+
+			//if reduction is very high, and we fail high above, re-search with a lower reduction
+			if (val > alpha && ss->reduction >= 4) {
+
+				int d2 = std::max(newDepth - 2, 1);
+				val = -alphaBeta(d2, -(alpha + 1), -alpha, ss + 1, !isWhite, DO_NULL, NO_PV);
+			}
+			//if we still fail high, do a full depth search
+			if (val > alpha && ss->reduction != 0) {
+				ss->reduction = 0;
+			}
         }
 
 		newDepth -= ss->reduction;
@@ -531,10 +545,9 @@ re_search:
         }
 
         //if a reduced search brings us above alpha, do a full non-reduced search
-        if(reductionDepth && score > alpha){
-            newDepth += reductionDepth;
-			reductionDepth = 0;
-			//if(reductionDepth > 2) reductionDepth = 1; //test!!!
+        if(ss->reduction && score > alpha){
+            newDepth += ss->reduction;
+			ss->reduction = 0;
             
             goto re_search;
         }
