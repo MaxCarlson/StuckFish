@@ -7,6 +7,7 @@ typedef unsigned long long  U64; // supported by MSC 13.00+ and C99
 #include <vector>
 #include <string>
 #include <unordered_map>
+#include <algorithm>
 #include "move.h"
 #include "slider_attacks.h"
 
@@ -64,13 +65,33 @@ struct searchDriver{
 };
 extern searchDriver sd;
 
-struct Historys { //holds history info for search
-				  //color, piece loc from, piece loc to
+struct Historys { //holds history info for search 
+
+	//color, piece  from, piece loc to
 	int history[2][64][64] = { { { 0 } } };
+
+	//TEST THIS FOR SPEED/ELO below
+	int hist[2][7][64] = { { { 0 } } }; //color, piece, square to
+
 	int cutoffs[2][64][64] = { { { 0 } } };
+
+	//holds info about gain move made in static eval from last turn, use in futility
+	int gains[2][7][64] = { { { 0 } } }; //color, piece type, to square ////TRY same method as history for storing instead??????
+
 	std::vector<U64> twoFoldRep; //stores zobrist keys of all positions encountered thus far
+
+	void updateHist(Move m, int v, bool isWhite) {
+		if (abs(history[isWhite][m.from][m.to]) < SORT_KILL) {
+			history[isWhite][m.from][m.to] += v;
+		}
+	}
+
+	void updateGain(Move m, int v, bool isWhite) { //overflow prevention
+		gains[isWhite][m.piece][m.to] = std::max(v, gains[isWhite][m.piece][m.to] - 1);
+	}
+
 };
-extern Historys h;
+extern Historys history;
 
 //master zobrist for turn
 extern ZobristH zobrist;

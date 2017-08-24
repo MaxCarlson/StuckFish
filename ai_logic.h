@@ -18,7 +18,9 @@ struct searchStack {
 	//Move currentMove;
 	Move killers[2];
 	Move ttMove;
-	bool excludedMove = false;
+	Move currentMove;
+	Move excludedMove;
+
 	int reduction;
 	int staticEval;
 	bool skipNull = false;

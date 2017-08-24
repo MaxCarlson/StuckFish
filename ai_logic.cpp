@@ -47,7 +47,7 @@ int reductions[2][2][64][64];
 int futileMoveCounts[2][32];
 
 //holds history and cutoff info for search, global
-Historys h;
+Historys history;
 
 void Ai_Logic::initSearch()
 {
@@ -169,6 +169,8 @@ int Ai_Logic::searchRoot(int depth, int alpha, int beta, searchStack *ss, bool i
     int best = -INF;
     int legalMoves = 0;
 	int hashFlag = TT_ALPHA;
+	Move quiets[64];
+	int quietsCount = 0;
 
 	const HashEntry* ttentry = TT.probe(zobrist.zobristKey);
 
@@ -186,6 +188,7 @@ int Ai_Logic::searchRoot(int depth, int alpha, int beta, searchStack *ss, bool i
     U64 king;
     if(isWhite) king = newBoard.BBWhiteKing;
     else king = newBoard.BBBlackKing;	
+	flagInCheck = gen_moves.isAttacked(king, isWhite, true);
 
     int moveNum = gen_moves.moveCount;
 
@@ -200,7 +203,7 @@ int Ai_Logic::searchRoot(int depth, int alpha, int beta, searchStack *ss, bool i
 			continue;
 		}											   /// !~!~!~!~!~!~!~!~!~! try SWITCHing from a move gen object having a local array to the psuedo movegen funcion
         gen_moves.grab_boards(newBoard, isWhite);      /// returning a vector or a pointer to an array that's stored in the search, so we can stop constructing movegen
-                                                       /// objects and instead just have a local global for the duration of the search. sort could return the index of the best move
+                                                       /// objects and instead just have a local global for the duration of the searchistory. sort could return the index of the best move
         //is move legal? if not skip it                ///and take the array or vector as a const refrence argument
         if(gen_moves.isAttacked(king, isWhite, true)){
             newBoard.unmakeMove(newMove, zobrist, isWhite);
@@ -208,7 +211,7 @@ int Ai_Logic::searchRoot(int depth, int alpha, int beta, searchStack *ss, bool i
             continue;
         }
         legalMoves ++;
-        h.cutoffs[isWhite][newMove.from][newMove.to] -= 1;
+        history.cutoffs[isWhite][newMove.from][newMove.to] -= 1;
 
         //PV search at root
         if(best == -INF){
@@ -229,6 +232,11 @@ int Ai_Logic::searchRoot(int depth, int alpha, int beta, searchStack *ss, bool i
         newBoard.unmakeMove(newMove, zobrist, isWhite);
         gen_moves.grab_boards(newBoard, isWhite);
 
+		if (newMove.captured == PIECE_EMPTY && newMove.flag != 'Q' && quietsCount < 64) {
+			quiets[quietsCount] = newMove;
+			quietsCount++;
+		}
+
 		if (timeOver) break;
 
         if(score > best) best = score;
@@ -239,6 +247,7 @@ int Ai_Logic::searchRoot(int depth, int alpha, int beta, searchStack *ss, bool i
 
             if(score > beta){
 				hashFlag = TT_BETA;
+				alpha = beta;
 				break;
             }
 			
@@ -251,6 +260,10 @@ int Ai_Logic::searchRoot(int depth, int alpha, int beta, searchStack *ss, bool i
 	//save info and move to TT
 	TT.save(sd.PV[ss->ply], zobrist.zobristKey, depth, valueToTT(alpha, ss->ply), hashFlag);
 
+	if (alpha >= beta && !flagInCheck && sd.PV[1].captured == PIECE_EMPTY && sd.PV[1].flag != 'Q') {
+		updateStats(sd.PV[1], ss, depth, quiets, quietsCount, isWhite);
+	}
+	
     return alpha;
 }
 
@@ -264,8 +277,8 @@ int Ai_Logic::alphaBeta(int depth, int alpha, int beta, searchStack *ss, bool is
 	bool captureOrPromotion = false;
 	bool givesCheck = false;
 	int R = 2;
-	int reductionDepth; //how much are we reducing depth in LMR?
 	int newDepth;
+	int predictedDepth = 0;
     //U8 newDepth; //use with futility + other pruning later
     int queitSD = 25, f_prune = 0;
     //int  mateValue = INF - ply; // used for mate distance pruning
@@ -329,7 +342,15 @@ int Ai_Logic::alphaBeta(int depth, int alpha, int beta, searchStack *ss, bool is
     if(FlagInCheck || sd.excludedMove || sd.skipEarlyPruning) goto moves_loop;
 
 	evaluateBB eval;
-	ss->staticEval = eval.evalBoard(isWhite, newBoard, zobrist); //newBoard.sideMaterial[isWhite] - newBoard.sideMaterial[!isWhite];
+	ss->staticEval = eval.evalBoard(isWhite, newBoard, zobrist);
+
+	if ((ss - 1)->currentMove.captured == PIECE_EMPTY
+		&& (ss - 1)->currentMove.flag != 'Q'
+		&& ss->staticEval != 0 && (ss - 1)->staticEval != 0) {
+
+		history.updateGain((ss - 1)->currentMove, -(ss - 1)->staticEval - ss->staticEval, isWhite);
+	}
+
 //eval pruning / static null move
     if(depth < 3 && !is_pv && abs(beta - 1) > -INF + 100){
 		//evaluateBB eval;
@@ -435,9 +456,9 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
             continue;
         }
         legalMoves ++;
-        reductionDepth = 0;
         newDepth = depth - 1;
-        h.cutoffs[isWhite][newMove.from][newMove.to] -= 1;
+		predictedDepth = reductions[is_pv][improving][depth][i];
+        history.cutoffs[isWhite][newMove.from][newMove.to] -= 1;
 		captureOrPromotion = (newMove.captured != PIECE_EMPTY || newMove.flag == 'Q'); 
 		givesCheck = gen_moves.isAttacked(eking, !isWhite, true);
 /*
@@ -488,12 +509,12 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 			&& !FlagInCheck
 			&& !captureOrPromotion
 			&& !givesCheck
-			//&& h.cutoffs[isWhite][newMove.from][newMove.to] < 50 //test with commented out!			           
+			//&& history.cutoffs[isWhite][newMove.from][newMove.to] < 50 //test with commented out!			           
             && (newMove.from != ss->killers[0].from || newMove.to != ss->killers[0].to)
             && (newMove.from != ss->killers[1].from || newMove.to != ss->killers[1].to)
 			&& newMove.score < SORT_HASH){ //comment out? should already be tested by having on move already
 
-            h.cutoffs[isWhite][newMove.from][newMove.to] = 50; //NEEEEEEEEEED to test, makes it about 50% faster from start node with it commented out
+            history.cutoffs[isWhite][newMove.from][newMove.to] = 50; //NEEEEEEEEEED to test, makes it about 50% faster from start node with it commented out
 
 			ss->reduction = reductions[is_pv][improving][depth][i]; //i = number of moves method might not be better than previous one below, need to add more methods of reducing reduction in perilous situations
 			
@@ -567,30 +588,13 @@ re_search:
 		if (timeOver) return 0;
 
         if(score > alpha){            
-            h.cutoffs[isWhite][newMove.from][newMove.to] += 6;
+            history.cutoffs[isWhite][newMove.from][newMove.to] += 6;
 			//store the principal variation
 			sd.PV[ss->ply] = newMove;
 			hashMove = newMove;
 
             //if move causes a beta cutoff stop searching current branch
             if(score >= beta){
-
-                if(!captureOrPromotion){ 
-                    //add move to killers
-                    //addKiller(newMove, ss);
-
-                    //add score to historys
-                    h.history[isWhite][newMove.from][newMove.to] += depth * depth;
-                    //don't want historys to overflow if search is really big
-                    if(h.history[isWhite][newMove.from][newMove.to] > SORT_KILL){
-                        for(int i = 0; i < 64; i++){
-                            for(int i = 0; i < 64; i++){
-                                h.history[isWhite][newMove.from][newMove.to] /= 2;
-                            }
-                        }
-                    }
-
-                }
                 hashFlag = TT_BETA;
                 //stop search and return beta
                 alpha = beta;
@@ -621,7 +625,7 @@ re_search:
 		hashFlag = TT_EXACT; //NEED TO TEST
 	}
 
-	if (!ss->excludedMove) { //only write to TTable if we're not in partial search
+	if (!ss->excludedMove.tried) { //only write to TTable if we're not in partial search
 		//save info + move to transposition table 
 		TT.save(hashMove, zobrist.zobristKey, depth, valueToTT(alpha, ss->ply), hashFlag);
 	}
@@ -768,8 +772,8 @@ bool Ai_Logic::isRepetition(const Move& m)
 
 	int repCount = 0;
 
-	for (int i = 0; i < h.twoFoldRep.size(); ++i) {
-		if (zobrist.zobristKey == h.twoFoldRep[i]) repCount++;
+	for (int i = 0; i < history.twoFoldRep.size(); ++i) {
+		if (zobrist.zobristKey == history.twoFoldRep[i]) repCount++;
 
 	}
 
@@ -782,6 +786,7 @@ bool Ai_Logic::isRepetition(const Move& m)
 
 void Ai_Logic::updateStats(Move move, searchStack * ss, int depth, Move * quiets, int qCount, bool isWhite)
 {	
+	static const int limit = SORT_KILL;
 	//update Killers for ply
 	//make sure killer is different
 	if (move.from != ss->killers[0].from
@@ -792,11 +797,12 @@ void Ai_Logic::updateStats(Move move, searchStack * ss, int depth, Move * quiets
 	//save primary killer
 	ss->killers[0] = move;
 
-	//update historys, increasing the cutoffs, decreasing every other moves score
+	//update historys, increasing the cutoffs score, decreasing every other moves score
 	int val = 4 * depth * depth;
-	h.history[isWhite][move.from][move.to] += val; //CHange to index by ply? or index just by piece type and to location>? TEST
+	history.updateHist(move, val, isWhite); //CHange to index by ply? or index just by piece type and to location>? TEST
+
 	while (--qCount) {
-		h.history[isWhite][quiets[qCount].from][quiets[qCount].to] -= val; //need to change to insure no overflow
+		history.updateHist(quiets[qCount], -val, isWhite);
 	}
 }
 
@@ -820,8 +826,8 @@ void Ai_Logic::ageHistorys()
     for (int cl = 0; cl < 2; cl++)
         for (int i = 0; i < 64; i++)
             for (int j = 0; j < 64; j++) {
-                h.history[cl][i][j] = h.history[cl][i][j] / 8;
-                h.cutoffs[cl][i][j] = 100;
+                history.history[cl][i][j] = history.history[cl][i][j] / 8;
+                history.cutoffs[cl][i][j] = 100;
             }
 	sd.nodes = 0;
 }
@@ -850,8 +856,8 @@ void Ai_Logic::clearHistorys()
 	for (int cl = 0; cl < 2; cl++)
 		for (int i = 0; i < 64; i++)
 			for (int j = 0; j < 64; j++) {
-				h.history[cl][i][j] = h.history[cl][i][j] = 0;
-				h.cutoffs[cl][i][j] = 100;
+				history.history[cl][i][j] = history.history[cl][i][j] = 0;
+				history.cutoffs[cl][i][j] = 100;
 			}
 	sd.nodes = 0;
 }
