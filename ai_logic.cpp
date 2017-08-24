@@ -86,7 +86,7 @@ Move Ai_Logic::search(bool isWhite) {
 	//update color only applied on black turn
 	if (!isWhite) zobrist.UpdateColor();
 
-	//decrease history values after a search
+	//decrease history values and clear gains stats after a search
 	ageHistorys();
 
 	//calc move time for us, send to search driver
@@ -442,9 +442,6 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 
 		//if (sd.excludedMove && newMove.score >= SORT_HASH) continue;
 
-		//don't search moves with negative SEE at low depths
-		if (depth < 4 && gen_moves.SEE(newMove, newBoard, isWhite, true) < 0) continue; //NEED to possible add a flag to not check capturing moves?
-
         //make move on BB's store data to string so move can be undone
         newBoard.makeMove(newMove, zobrist, isWhite);
         gen_moves.grab_boards(newBoard, isWhite);
@@ -457,10 +454,10 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
         }
         legalMoves ++;
         newDepth = depth - 1;
-		predictedDepth = reductions[is_pv][improving][depth][i];
         history.cutoffs[isWhite][newMove.from][newMove.to] -= 1;
 		captureOrPromotion = (newMove.captured != PIECE_EMPTY || newMove.flag == 'Q'); 
 		givesCheck = gen_moves.isAttacked(eking, !isWhite, true);
+
 /*
 		if (singularExtension && newMove.score >= SORT_HASH) {
 			int rBeta = std::max(ttValue - 2 * depth, -mateValue);
@@ -473,7 +470,50 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 			}
 		}		
 */
-		///*		
+
+///* //new futility pruning
+		if (!is_pv
+			&& newMove.score < SORT_HASH
+			&& !captureOrPromotion
+			&& !FlagInCheck
+			&& !givesCheck
+			&& alpha > VALUE_MATED_IN_MAX_PLY) {
+
+			bool shouldSkip = false;
+								//replace i with legal moves???
+			if (depth < 13 && i >= futileMoveCounts[improving][depth]) {
+				shouldSkip = true;
+			}
+
+			predictedDepth = reductions[is_pv][improving][depth][i];
+
+			int futileVal;
+			if (predictedDepth < 7) {
+				futileVal = ss->staticEval + history.gains[isWhite][newMove.piece][newMove.to] + depth * 100 + 64;
+
+				if (futileVal <= alpha) {
+					alpha = futileVal;
+					shouldSkip = true;
+				}
+			}
+
+			if (depth < 4 && gen_moves.SEE(newMove, newBoard, isWhite, true) < 0) shouldSkip = true;
+
+			if (shouldSkip) {
+				newBoard.unmakeMove(newMove, zobrist, isWhite);
+				gen_moves.grab_boards(newBoard, isWhite);
+				futileMoves = true; //flag so we know we skipped a move/not checkmate
+				futileC++;
+				continue;
+			}
+		}
+		//*/
+
+		//don't search moves with negative SEE at low depths
+		 //NEED to possible add a flag to not check capturing moves?
+
+
+		/*		
         //futility pruning ~~ is not a promotion or hashmove, is not a capture, and does not give check, and we've tried one move already
         if(f_prune && newMove.score < SORT_HASH
             && !captureOrPromotion && legalMoves
@@ -485,23 +525,7 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 			futileC++;
             continue;
         }
-        //*/
-		/* //new futility pruning
-		if (depth < 10
-			&& newMove.score < SORT_HASH
-			&& !captureOrPormotion 
-			&& legalMoves
-			&& !givesCheck
-			&& newMove.flag != 'Q'
-			&& i >= futileMoveCounts[improving][depth]) {
-
-			newBoard.unmakeMove(newMove, zobrist, isWhite);
-			gen_moves.grab_boards(newBoard, isWhite);
-			futileMoves = true; //flag so we know we skipped a move/not checkmate
-			futileC++;
-			continue;
-		}
-		*/
+        */
 
         //late move reduction
         if(newDepth > 3
@@ -806,20 +830,6 @@ void Ai_Logic::updateStats(Move move, searchStack * ss, int depth, Move * quiets
 	}
 }
 
-void Ai_Logic::addKiller(Move move, searchStack *ss)
-{
-    if(move.captured == PIECE_EMPTY){ //if move isn't a capture save it as a killer
-        //make sure killer is different
-        if(move.from != ss->killers[0].from
-          && move.to != ss->killers[0].to){
-            //save primary killer to secondary slot
-			ss->killers[1] = ss->killers[0];
-        }
-        //save primary killer
-		ss->killers[0] = move;
-    }
-}
-
 void Ai_Logic::ageHistorys()
 {
     //used to decrease value after a search
@@ -830,8 +840,14 @@ void Ai_Logic::ageHistorys()
                 history.cutoffs[cl][i][j] = 100;
             }
 	sd.nodes = 0;
-}
 
+	//clears gains stats
+	for (int cl = 0; cl < 2; cl++)
+		for (int i = 0; i < 7; i++)
+			for (int j = 0; j < 64; j++) {
+				history.cutoffs[cl][i][j] = 0;
+			}
+}
 
 int valueToTT(int val, int ply)
 {

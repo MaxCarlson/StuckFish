@@ -105,7 +105,7 @@ typedef long long S64;
 #define VALUE_MATE 32000
 #define INF 32001
 #define VALUE_MATE_IN_MAX_PLY 31872
-#define VALUE_MATED_IN_MAX_PLY -38172
+#define VALUE_MATED_IN_MAX_PLY -31872
 
 #define INVALID 32767
 

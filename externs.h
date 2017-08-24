@@ -86,7 +86,7 @@ struct Historys { //holds history info for search
 		}
 	}
 
-	void updateGain(Move m, int v, bool isWhite) { //overflow prevention
+	void updateGain(Move m, int v, bool isWhite) { 
 		gains[isWhite][m.piece][m.to] = std::max(v, gains[isWhite][m.piece][m.to] - 1);
 	}
 
