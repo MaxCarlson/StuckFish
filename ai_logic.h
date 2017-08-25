@@ -32,7 +32,7 @@ public:
 	//initialze values called at program start
 	void initSearch();
 
-	Move search(bool isWhite);
+	Move search(BitBoards& newBoard, bool isWhite);
 
     //iterative deepening
     Move iterativeDeep(int depth, bool isWhite);
@@ -44,13 +44,13 @@ public:
 private:
 	
 	//root of search ~~ experimental
-	int searchRoot(int depth, int alpha, int beta, searchStack *ss, bool isWhite);
+	int searchRoot(BitBoards& newBoard, int depth, int alpha, int beta, searchStack *ss, bool isWhite);
 
 	//minmax with alpha beta, the main component of our search
-	int alphaBeta(int depth, int alpha, int beta, searchStack *ss, bool isWhite, bool allowNull, bool is_pv);
+	int alphaBeta(BitBoards& newBoard, int depth, int alpha, int beta, searchStack *ss, bool isWhite, bool allowNull, bool is_pv);
 
 	//Quiescent search ~~ search positions farther if there are captures on horizon
-	int quiescent(int alpha, int beta, bool isWhite, searchStack *ss, int quietDepth, bool is_pv);
+	int quiescent(BitBoards& newBoard, int alpha, int beta, bool isWhite, searchStack *ss, int quietDepth, bool is_pv);
 
     //make ai prefer checkmate over stalemate
     int contempt(bool isWhite); //need some way to check board material before implementing

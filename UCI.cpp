@@ -207,7 +207,7 @@ void UCI::setOption(std::istringstream & input)
 
 void UCI::search()
 {	
-	Move m = searchM.search(isWhite);
+	Move m = searchM.search(newBoard, isWhite);
 
 	std::cout << "bestmove " << moveToStr(m) << std::endl; //send move to std output for UCI GUI to pickup
 

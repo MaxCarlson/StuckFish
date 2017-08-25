@@ -73,7 +73,7 @@ void Ai_Logic::initSearch()
 	}
 }
 
-Move Ai_Logic::search(bool isWhite) {
+Move Ai_Logic::search(BitBoards& newBoard, bool isWhite) {
 	
 	//max depth
 	int depth = MAX_PLY;
@@ -119,7 +119,7 @@ Move Ai_Logic::iterativeDeep(int depth, bool isWhite)
 		if (timeM.timeStopRoot() || timeOver) break;
 
         //main search
-        bestScore = searchRoot(sd.depth, alpha, beta, ss, isWhite);
+        bestScore = searchRoot(newBoard, sd.depth, alpha, beta, ss, isWhite);
 /*
         if(bestScore <= alpha){ //ISSUES WITH ASPIRATION WINDOWS
 			alpha = std::max(bestScore - delta, -INF);			
@@ -159,7 +159,7 @@ Move Ai_Logic::iterativeDeep(int depth, bool isWhite)
     return bestMove;
 }
 
-int Ai_Logic::searchRoot(int depth, int alpha, int beta, searchStack *ss, bool isWhite)
+int Ai_Logic::searchRoot(BitBoards& newBoard, int depth, int alpha, int beta, searchStack *ss, bool isWhite)
 {
     bool flagInCheck;
     int score = 0;
@@ -213,15 +213,15 @@ int Ai_Logic::searchRoot(int depth, int alpha, int beta, searchStack *ss, bool i
         //PV search at root
         if(best == -INF){
             //full window PV search
-            score = -alphaBeta(depth-1, -beta, -alpha, ss+1, !isWhite, DO_NULL, IS_PV);
+            score = -alphaBeta(newBoard, depth-1, -beta, -alpha, ss+1, !isWhite, DO_NULL, IS_PV);
 
        } else {
             //zero window search
-            score = -alphaBeta(depth-1, -alpha -1, -alpha, ss + 1, !isWhite, DO_NULL, NO_PV);
+            score = -alphaBeta(newBoard, depth-1, -alpha -1, -alpha, ss + 1, !isWhite, DO_NULL, NO_PV);
 
             //if we've gained a new alpha we need to do a full window search
             if(score > alpha){
-                score = -alphaBeta(depth-1, -beta, -alpha, ss + 1, !isWhite, DO_NULL, IS_PV);
+                score = -alphaBeta(newBoard, depth-1, -beta, -alpha, ss + 1, !isWhite, DO_NULL, IS_PV);
             }
         }
 
@@ -264,7 +264,7 @@ int Ai_Logic::searchRoot(int depth, int alpha, int beta, searchStack *ss, bool i
     return alpha;
 }
 
-int Ai_Logic::alphaBeta(int depth, int alpha, int beta, searchStack *ss, bool isWhite, bool allowNull, bool is_pv)
+int Ai_Logic::alphaBeta(BitBoards& newBoard, int depth, int alpha, int beta, searchStack *ss, bool isWhite, bool allowNull, bool is_pv)
 {
     bool FlagInCheck = false;
     bool raisedAlpha = false; 
@@ -318,7 +318,7 @@ int Ai_Logic::alphaBeta(int depth, int alpha, int beta, searchStack *ss, bool is
     int score;
     if(depth < 1 || timeOver){
         //run capture search to max depth of queitSD
-        score = quiescent(alpha, beta, isWhite, ss, queitSD, is_pv);
+        score = quiescent(newBoard, alpha, beta, isWhite, ss, queitSD, is_pv);
         return score;
     }
 
@@ -362,7 +362,7 @@ int Ai_Logic::alphaBeta(int depth, int alpha, int beta, searchStack *ss, bool is
         if(depth > 6) R = 3;
         zobrist.UpdateColor();
 
-        score = -alphaBeta(depth -R -1, -beta, -beta +1, ss+1, !isWhite, NO_NULL, NO_PV);
+        score = -alphaBeta(newBoard, depth -R -1, -beta, -beta +1, ss+1, !isWhite, NO_NULL, NO_PV);
         zobrist.UpdateColor();
         //if after getting a free move the score is too good, prune this branch
         if(score >= beta){
@@ -378,7 +378,7 @@ int Ai_Logic::alphaBeta(int depth, int alpha, int beta, searchStack *ss, bool is
         //if(eval.evalBoard(isWhite, newBoard, zobrist) < threshold){
 		if(ss->staticEval < threshold){
 
-            score = quiescent(alpha, beta, isWhite, ss, queitSD, is_pv);
+            score = quiescent(newBoard, alpha, beta, isWhite, ss, queitSD, is_pv);
 
             if(score < threshold) return alpha;
         }
@@ -394,13 +394,15 @@ int Ai_Logic::alphaBeta(int depth, int alpha, int beta, searchStack *ss, bool is
         f_prune = 1;
     }
 	*/
+
+
 ///*  //Internal iterative deepening search same ply to a shallow depth..
 	//and see if we can get a TT entry to speed up search
 	if (depth >= 6 && !ttMove
 		&& (is_pv || ss->staticEval + 100 >= beta)) {
 		int d = (int)(3 * depth / 4 - 2);
 		sd.skipEarlyPruning = true;
-		alphaBeta(d, alpha, beta, ss, isWhite, NO_NULL, is_pv);
+		alphaBeta(newBoard, d, alpha, beta, ss, isWhite, NO_NULL, is_pv);
 		sd.skipEarlyPruning = false;
 
 		ttentry = TT.probe(zobrist.zobristKey);
@@ -465,7 +467,7 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 					}
 				}
 		*/
-		///*
+		/*
 		 //new futility pruning really looks like it's pruning way to much right now, maybe adjust futile move counts until we have better move ordering!!!!
 		if (!is_pv
 			&& newMove.score < SORT_HASH
@@ -476,27 +478,27 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 			&& bestScore > VALUE_MATED_IN_MAX_PLY) {
 
 			bool shouldSkip = false;
-			/*
+			
 			if (depth < 10 && legalMoves >= futileMoveCounts[improving][depth]) {
 				shouldSkip = true;
 			}
-			*/
-			///*
+			
+			
 			predictedDepth = newDepth - reductions[is_pv][improving][depth][legalMoves];
 
 			int futileVal;
 			if (!shouldSkip && predictedDepth < 6) {
 				//int a = history.gains[isWhite][newMove.piece][newMove.to];
-				if (predictedDepth < 0) predictedDepth = 0;
+				//if (predictedDepth < 0) predictedDepth = 0;
 				//use predicted depth? Need to play with numbers!!
-				futileVal = ss->staticEval + (newDepth * 100) + 75; //+ history.gains[isWhite][newMove.piece][newMove.to]
+				futileVal = ss->staticEval + history.gains[isWhite][newMove.piece][newMove.to] + (predictedDepth * 200) + 150; //
 
 				if (futileVal <= alpha) {
 					bestScore = std::max(futileVal, bestScore);
 					shouldSkip = true;
 				}
 			}
-			//*/
+			
 			//don't search moves with negative SEE at low depths
 			//if (!shouldSkip && depth < 4 && gen_moves.SEE(newMove, newBoard, isWhite, true) < 0) shouldSkip = true;
 
@@ -507,7 +509,7 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 				continue;
 			}
 		}
-		//*/		
+		*/		
 
 				/*
 				//futility pruning ~~ is not a promotion or hashmove, is not a capture, and does not give check, and we've tried one move already
@@ -551,13 +553,13 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 
 			int d1 = std::max(newDepth - ss->reduction, 1);
 
-			int val = -alphaBeta(d1, -(alpha + 1), -alpha, ss + 1, !isWhite, DO_NULL, NO_PV);
+			int val = -alphaBeta(newBoard, d1, -(alpha + 1), -alpha, ss + 1, !isWhite, DO_NULL, NO_PV);
 
 			//if reduction is very high, and we fail high above, re-search with a lower reduction
 			if (val > alpha && ss->reduction >= 4) {
 
 				int d2 = std::max(newDepth - 2, 1);
-				val = -alphaBeta(d2, -(alpha + 1), -alpha, ss + 1, !isWhite, DO_NULL, NO_PV);
+				val = -alphaBeta(newBoard, d2, -(alpha + 1), -alpha, ss + 1, !isWhite, DO_NULL, NO_PV);
 			}
 			//if we still fail high, do a full depth search
 			if (val > alpha && ss->reduction != 0) {
@@ -578,15 +580,15 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 
 		if (!raisedAlpha) {
 			//we're in princiapl variation search or full window search
-			score = -alphaBeta(newDepth, -beta, -alpha, ss + 1, !isWhite, DO_NULL, is_pv);
+			score = -alphaBeta(newBoard, newDepth, -beta, -alpha, ss + 1, !isWhite, DO_NULL, is_pv);
 		}
 		else {
 			//zero window search
-			score = -alphaBeta(newDepth, -alpha - 1, -alpha, ss + 1, !isWhite, DO_NULL, NO_PV);
+			score = -alphaBeta(newBoard, newDepth, -alpha - 1, -alpha, ss + 1, !isWhite, DO_NULL, NO_PV);
 			//if our zero window search failed, do a full window search
 			if (score > alpha) {
 				//PV search after failed zero window
-				score = -alphaBeta(newDepth, -beta, -alpha, ss + 1, !isWhite, DO_NULL, IS_PV);
+				score = -alphaBeta(newBoard, newDepth, -beta, -alpha, ss + 1, !isWhite, DO_NULL, IS_PV);
 			}
 		}
 
@@ -662,7 +664,7 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
     return alpha;
 }
 
-int Ai_Logic::quiescent(int alpha, int beta, bool isWhite, searchStack *ss, int quietDepth, bool is_pv)
+int Ai_Logic::quiescent(BitBoards& newBoard, int alpha, int beta, bool isWhite, searchStack *ss, int quietDepth, bool is_pv)
 {
     //node count, sepperate q count needed?
 	sd.nodes++;
@@ -748,7 +750,7 @@ int Ai_Logic::quiescent(int alpha, int beta, bool isWhite, searchStack *ss, int 
         }
 
 
-        score = -quiescent(-beta, -alpha, !isWhite, ss, quietDepth-1, is_pv);
+        score = -quiescent(newBoard, -beta, -alpha, !isWhite, ss, quietDepth-1, is_pv);
 
         newBoard.unmakeMove(newMove, zobrist, isWhite);
         gen_moves.grab_boards(newBoard, isWhite);
