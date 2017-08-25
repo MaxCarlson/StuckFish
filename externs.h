@@ -20,7 +20,7 @@ class MoveGen;
 extern const int SORT_VALUE[7];
 
 //master bitboard for turn
-extern BitBoards newBoard;
+//extern BitBoards newBoard;
 
 //magics object
 extern SliderAttacks slider_attacks;

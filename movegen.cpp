@@ -491,7 +491,7 @@ void MoveGen::movegen_push(char piece, char captured, char flag, U8 from, U8 to)
     /**************************************************************************
     * Quiet moves are sorted by history score.                                *
     **************************************************************************/
-    moveAr[moveCount].score = history.history[isWhite][from][to];
+    moveAr[moveCount].score = history.history[isWhite][from][to]; //find a way to pass historys here instead of using global???
 
     //scoring capture moves
     if(captured != PIECE_EMPTY){
@@ -751,7 +751,7 @@ FORCE_INLINE int MoveGen::min_attacker(bool isWhite, const BitBoards & b, const 
 	if (piece == ROOK || piece == QUEEN) {
 		attackers |= slider_attacks.RookAttacks(occupied, to) & (b.BBBlackRooks | b.BBWhiteRooks| b.BBBlackQueens | b.BBWhiteQueens);
 	}
-	//drawBB(attackers);
+	//add new attackers to board
 	attackers &= occupied;
 	//drawBB(attackers);
 
@@ -782,7 +782,7 @@ void MoveGen::reorderMoves(searchStack *ss, const HashEntry *entry)
     }
 }
 
-char MoveGen::whichPieceCaptured(U64 landing)
+int MoveGen::whichPieceCaptured(U64 landing)
 {
     if(isWhite){
         if(landing & BBBlackPawns) return PAWN;
@@ -805,7 +805,6 @@ char MoveGen::whichPieceCaptured(U64 landing)
     return '0';
 }
 
-
 void MoveGen::grab_boards(const BitBoards &BBBoard, bool wOrB)
 {
     isWhite = wOrB;
@@ -827,11 +826,6 @@ void MoveGen::grab_boards(const BitBoards &BBBoard, bool wOrB)
     BBBlackRooks = BBBoard.BBBlackRooks;
     BBBlackQueens = BBBoard.BBBlackQueens;
     BBBlackKing = BBBoard.BBBlackKing;
-}
-
-void MoveGen::updateBoards(const Move &move, const BitBoards &board)
-{
-
 }
 
 bool MoveGen::isAttacked(U64 pieceLoc, bool wOrB, bool isSearchKingCheck)

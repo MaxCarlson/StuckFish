@@ -27,10 +27,6 @@ U64 zNullMove;
 //master zobrist object
 ZobristH zobrist;
 
-//global com interface
-extern UCI com;
-UCI com;
-
 //TTable of evals //UPDATE TO NEW TT SCHEME
 HashEntry transpositionEval[5021983];
 //pawn config hash table
@@ -52,6 +48,7 @@ int main(int argc, char *argv[])
     //Fill slider arrays and magic index arrays
     slider_attacks.Initialize();
 
+	UCI com;
 	//communicate with UCI compatible GUI
 	com.uciLoop();
 	 

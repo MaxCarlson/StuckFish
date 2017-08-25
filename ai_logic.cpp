@@ -90,12 +90,12 @@ Move Ai_Logic::search(BitBoards& newBoard, bool isWhite) {
 	//calc move time for us, send to search driver
 	timeM.calcMoveTime(isWhite);
 
-	Move m = iterativeDeep(depth, isWhite);
+	Move m = iterativeDeep(newBoard, depth, isWhite);
 	
 	return m;
 }
 
-Move Ai_Logic::iterativeDeep(int depth, bool isWhite)
+Move Ai_Logic::iterativeDeep(BitBoards& newBoard, int depth, bool isWhite)
 {
 	//reset ply
     int ply = 0;
@@ -398,6 +398,7 @@ int Ai_Logic::alphaBeta(BitBoards& newBoard, int depth, int alpha, int beta, sea
 
 ///*  //Internal iterative deepening search same ply to a shallow depth..
 	//and see if we can get a TT entry to speed up search
+
 	if (depth >= 6 && !ttMove
 		&& (is_pv || ss->staticEval + 100 >= beta)) {
 		int d = (int)(3 * depth / 4 - 2);
@@ -456,16 +457,16 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 		givesCheck = gen_moves.isAttacked(eking, !isWhite, true);
 
 		/*
-				if (singularExtension && newMove.score >= SORT_HASH) {
-					int rBeta = std::max(ttValue - 2 * depth, -mateValue);
-					int d = depth / 2;
-					sd.excludedMove = true;
-					int s = -alphaBeta(d, rBeta - 1, rBeta, isWhite, ply, DO_NULL, NO_PV);
-					sd.excludedMove = false;
-					if (s < rBeta) {
-						newDepth++;
-					}
-				}
+		if (singularExtension && newMove.score >= SORT_HASH) {
+			int rBeta = std::max(ttValue - 2 * depth, -mateValue);
+			int d = depth / 2;
+			sd.excludedMove = true;
+			int s = -alphaBeta(d, rBeta - 1, rBeta, isWhite, ply, DO_NULL, NO_PV);
+			sd.excludedMove = false;
+			if (s < rBeta) {
+				newDepth++;
+			}
+		}
 		*/
 		/*
 		 //new futility pruning really looks like it's pruning way to much right now, maybe adjust futile move counts until we have better move ordering!!!!
@@ -641,7 +642,7 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 		//if there are no legal moves and we are in check it's checkmate this node
         if(FlagInCheck) alpha = mated_in(ss->ply);
 		//else it's a draw, return draw score - prefering mate to draw
-        else alpha = contempt(isWhite); 
+        else alpha = contempt(newBoard, isWhite); 
 
 	}
 	else if (alpha >= beta && !FlagInCheck && hashMove.captured == PIECE_EMPTY && hashMove.flag != 'Q') {
@@ -651,7 +652,7 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 
 	if (futileMoves && !raisedAlpha && hashFlag != TT_BETA) {
 
-		//if(!legalMoves) alpha = ss->staticEval; //testing needed as well
+		if(!legalMoves) alpha = ss->staticEval; //testing needed as well
 		hashFlag = TT_EXACT; //NEED TO TEST
 	}
 
@@ -776,7 +777,7 @@ int Ai_Logic::quiescent(BitBoards& newBoard, int alpha, int beta, bool isWhite, 
     return alpha;
 }
 
-int Ai_Logic::contempt(bool isWhite)
+int Ai_Logic::contempt(const BitBoards& newBoard, bool isWhite)
 {
 	//used to make engine prefer checkmate over stalemate, escpecially if not in end game
     //NEED TO TEST VARIABLES MIGHT NOT BE ACCURATE
@@ -823,6 +824,7 @@ void Ai_Logic::updateStats(Move move, searchStack * ss, int depth, Move * quiets
 		//save primary killer to secondary slot
 		ss->killers[1] = ss->killers[0];
 	}
+
 	//save primary killer
 	ss->killers[0] = move;
 
@@ -830,32 +832,12 @@ void Ai_Logic::updateStats(Move move, searchStack * ss, int depth, Move * quiets
 	int val = 4 * depth * depth;
 	history.updateHist(move, val, isWhite); //CHange to index by ply? or index just by piece type and to location>? TEST
 
-	while (qCount) {
-		qCount--;
+	while (--qCount) {
 		history.updateHist(quiets[qCount], -val, isWhite);
 	}
 }
 
-void Ai_Logic::ageHistorys()
-{
-    //used to decrease value after a search
-    for (int cl = 0; cl < 2; cl++)
-        for (int i = 0; i < 64; i++)
-            for (int j = 0; j < 64; j++) {
-                history.history[cl][i][j] = history.history[cl][i][j] / 8;
-                history.cutoffs[cl][i][j] = 100;
-            }
-	sd.nodes = 0;
-
-	//clears gains stats
-	for (int cl = 0; cl < 2; cl++)
-		for (int i = 0; i < 7; i++)
-			for (int j = 0; j < 64; j++) {
-				history.cutoffs[cl][i][j] = 0;
-			}
-}
-
-int valueToTT(int val, int ply)
+inline int valueToTT(int val, int ply) 
 {
 	//for adjusting value from "plys to mate from root", to "ply to mate from current ply". - taken from stockfish
 	//if value is is a mate value or a mated value, adjust those values to the current ply then return
@@ -864,12 +846,31 @@ int valueToTT(int val, int ply)
 		: val <= VALUE_MATED_IN_MAX_PLY ? val - ply : val;
 }
 
-int valueFromTT(int val, int ply)
+inline int valueFromTT(int val, int ply) 
 {
 	//does the opposite of valueToTT, adjusts mate score from TTable to the appropriate score and the current ply
 	return  val == 0 ? 0
 		: val >= VALUE_MATE_IN_MAX_PLY ? val - ply
 		: val <= VALUE_MATED_IN_MAX_PLY ? val + ply : val;
+}
+
+void Ai_Logic::ageHistorys()
+{
+	//used to decrease value after a search
+	for (int cl = 0; cl < 2; cl++)
+		for (int i = 0; i < 64; i++)
+			for (int j = 0; j < 64; j++) {
+				history.history[cl][i][j] = history.history[cl][i][j] / 8;
+				history.cutoffs[cl][i][j] = 100;
+			}
+	sd.nodes = 0;
+
+	//clears gains stats
+	for (int cl = 0; cl < 2; cl++)
+		for (int i = 0; i < 7; i++)
+			for (int j = 0; j < 64; j++) {
+				history.cutoffs[cl][i][j] = 0;
+			}
 }
 
 void Ai_Logic::clearHistorys()
@@ -882,6 +883,13 @@ void Ai_Logic::clearHistorys()
 				history.cutoffs[cl][i][j] = 100;
 			}
 	sd.nodes = 0;
+
+	//clears gains stats
+	for (int cl = 0; cl < 2; cl++)
+		for (int i = 0; i < 7; i++)
+			for (int j = 0; j < 64; j++) {
+				history.cutoffs[cl][i][j] = 0;
+			}
 }
 
 void Ai_Logic::checkInput()

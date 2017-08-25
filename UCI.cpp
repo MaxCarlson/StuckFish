@@ -10,9 +10,6 @@
 #include "ai_logic.h"
 #include "TranspositionT.h"
 
-//master bitboard for turn
-BitBoards newBoard;
-
 //master search obj
 Ai_Logic searchM;
 
@@ -36,6 +33,9 @@ void UCI::uciLoop()
 {
 	std::string line;
 	std::string token;
+
+	//master bitboard for turn
+	BitBoards newBoard;
 
 	// Make sure that the outputs are sent straight away to the GUI
 	std::cout.setf(std::ios::unitbuf);
@@ -71,14 +71,14 @@ void UCI::uciLoop()
 		}
 		else if (token == "ucinewgame")
 		{
-			newGame(); //add function to reset TTables ? plus / only
+			newGame(newBoard); //add function to reset TTables ? plus / only
 			searchM.clearHistorys();
 			TT.clearTable(); //need to clear other TTables too at somepoint
 			searchM.initSearch();
 		}
 
 		else if (token == "position") {
-			updatePosition(is);
+			updatePosition(newBoard, is);
 		}
 		else if (token == "print"){
 			newBoard.drawBBA();
@@ -97,7 +97,7 @@ void UCI::uciLoop()
 				else if (token == "movestogo") is >> movestogo;
 			}
 
-			std::thread thr(&UCI::search, this); 
+			std::thread thr(&UCI::search, this, newBoard); 
 			thr.join(); //search on new thread
 			
 		}
@@ -112,24 +112,7 @@ void UCI::uciLoop()
 	}
 }
 
-void UCI::newGame()
-{
-	newBoard.constructBoards();
-
-	for (int i = 0; i < 4; i++) {
-		rookMoved[i] = false;
-		castled[i] = false;
-	}
-
-	turns = 0;
-
-	//clear move repetitions
-	history.twoFoldRep.clear();
-
-	isWhite = true;
-}
-
-void UCI::updatePosition(std::istringstream& input)
+void UCI::updatePosition(BitBoards& newBoard, std::istringstream& input)
 {
 	Move m;
 	std::string token, fen;
@@ -142,7 +125,7 @@ void UCI::updatePosition(std::istringstream& input)
 
 	if (token == "startpos")
 	{
-		newGame();
+		newGame(newBoard);
 
 		//create zobrist hash for startpos that is used to check repetitions
 		zobrist.getZobristHash(newBoard);
@@ -165,7 +148,7 @@ void UCI::updatePosition(std::istringstream& input)
 		if (token != "moves")
 		{
 			//parse string from gui/command line and create move
-			m = strToMove(token);
+			m = strToMove(newBoard, token);
 
 			//make move + increment turns
 			newBoard.makeMove(m, zobrist, isWhite);
@@ -179,6 +162,23 @@ void UCI::updatePosition(std::istringstream& input)
 		}
 	}
 
+}
+
+void UCI::newGame(BitBoards& newBoard)
+{
+	newBoard.constructBoards();
+
+	for (int i = 0; i < 4; i++) {
+		rookMoved[i] = false;
+		castled[i] = false;
+	}
+
+	turns = 0;
+
+	//clear move repetitions
+	history.twoFoldRep.clear();
+
+	isWhite = true;
 }
 
 void UCI::printOptions()
@@ -205,7 +205,7 @@ void UCI::setOption(std::istringstream & input)
 	
 }
 
-void UCI::search()
+void UCI::search(BitBoards& newBoard)
 {	
 	Move m = searchM.search(newBoard, isWhite);
 
@@ -238,7 +238,7 @@ std::string UCI::moveToStr(const Move& m)
 	return ss.str();
 }
 
-Move UCI::strToMove(std::string& input) 
+Move UCI::strToMove(BitBoards& newBoard, std::string& input)
 {
 	Move m;
 	int flipsN[9] = {0, 7, 6, 5, 4, 3, 2, 1, 0};

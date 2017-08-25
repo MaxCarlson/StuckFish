@@ -35,7 +35,7 @@ public:
 	Move search(BitBoards& newBoard, bool isWhite);
 
     //iterative deepening
-    Move iterativeDeep(int depth, bool isWhite);
+    Move iterativeDeep(BitBoards& newBoard, int depth, bool isWhite);
 
 	//clear historys, for new games
 	void clearHistorys();
@@ -53,7 +53,7 @@ private:
 	int quiescent(BitBoards& newBoard, int alpha, int beta, bool isWhite, searchStack *ss, int quietDepth, bool is_pv);
 
     //make ai prefer checkmate over stalemate
-    int contempt(bool isWhite); //need some way to check board material before implementing
+    int contempt(const BitBoards& newBoard, bool isWhite); //need some way to check board material before implementing
 
 	//repetition checker
 	bool isRepetition(const Move& m);

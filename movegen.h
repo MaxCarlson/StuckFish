@@ -29,8 +29,8 @@ public:
 
     void generatePsMoves(bool capturesOnly);
 
+	//grab bitboard changes after a move, or any change in search. Need to get rid of eventually and just pass constRef to everything
     void grab_boards(const BitBoards &BBBoard, bool wOrB);
-        void updateBoards(const Move &move, const BitBoards &board);
 
     bool isAttacked(U64 pieceLoc, bool wOrB, bool isSearchKingCheck);
 	
@@ -82,9 +82,12 @@ private:
 
 		//used in static exchange eval
 		U64 attackersTo(int sq, const BitBoards& b, const U64 occ) const;
+		//finds the smallest attacker for side to move, out of the stm attackers board,
+		//removes the attacker from the attackers and occuied board, then finds any x-ray attackers behind that piece
+		//and returns the int representing the piece
 		FORCE_INLINE int min_attacker(bool isWhite, const BitBoards & b, const int &to, const U64 &stmAttackers, U64 &occupied, U64 &attackers);
 
-        char whichPieceCaptured(U64 landing);
+        int whichPieceCaptured(U64 landing);
 
 
         //psuedo legal move gen for indvidual pieces
