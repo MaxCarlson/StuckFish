@@ -24,7 +24,14 @@ inline Move::Move()
 
 FORCE_INLINE bool operator ==(const Move& m, const Move& m1) {
 	return ((m.from == m1.from) && (m.to == m1.to)
-		&& (m.piece == m1.piece));
+		&& (m.piece == m1.piece) && (m.flag == m1.flag));
+}
+
+FORCE_INLINE bool operator !=(const Move& m, const Move& m1) {
+	//if all the conditions are equal, return false (or they are equal),
+	//else return true they are not equal.
+	return ((m.from == m1.from) && (m.to == m1.to)
+		&& (m.piece == m1.piece) && (m.flag == m1.flag)) ? false : true;
 }
 
 #endif // MOVE_H

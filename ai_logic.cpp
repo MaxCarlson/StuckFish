@@ -278,8 +278,7 @@ int Ai_Logic::alphaBeta(int depth, int alpha, int beta, searchStack *ss, bool is
 	int predictedDepth = 0;
     //U8 newDepth; //use with futility + other pruning later
     int queitSD = 25, f_prune = 0;
-
-	Move queits[64];
+	Move queits[64]; //container holding quiet moves so we can reduce their score 
 	int quietsC = 0;
 	sd.nodes++;
 	ss->ply = (ss - 1)->ply + 1; //increment ply
@@ -424,7 +423,7 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
     //add killers scores and hash moves scores to moves if there are any
     gen_moves.reorderMoves(ss, ttentry);
 
-    int hashFlag = TT_ALPHA, movesNum = gen_moves.moveCount, legalMoves = 0;
+    int hashFlag = TT_ALPHA, movesNum = gen_moves.moveCount, legalMoves = 0, bestScore = -INF;
 
 	//has this current node variation improved our static_eval ?
 	bool improving = ss->staticEval >= (ss - 2)->staticEval
@@ -432,72 +431,74 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 		|| (ss - 2)->staticEval == 0;
 
     Move hashMove; //move to store alpha in and pass to TTable
-    for(int i = 0; i < movesNum; ++i){
-        //grab best scoring move
-		Move newMove = gen_moves.movegen_sort(ss->ply, &gen_moves.moveAr[0]); 
+	for (int i = 0; i < movesNum; ++i) {
+		//grab best scoring move
+		Move newMove = gen_moves.movegen_sort(ss->ply, &gen_moves.moveAr[0]);
 
 		//if (sd.excludedMove && newMove.score >= SORT_HASH) continue;
 
-        //make move on BB's store data to string so move can be undone
-        newBoard.makeMove(newMove, zobrist, isWhite);
-        gen_moves.grab_boards(newBoard, isWhite);
+		//make move on BB's store data to string so move can be undone
+		newBoard.makeMove(newMove, zobrist, isWhite);
+		gen_moves.grab_boards(newBoard, isWhite);
 
-        //is move legal? if not skip it
-        if(gen_moves.isAttacked(king, isWhite, true)){ ///CHANGE METHOD OF UPDATING BOARDS, TOO INEFFICIENT
-            newBoard.unmakeMove(newMove, zobrist, isWhite);
-            gen_moves.grab_boards(newBoard, isWhite);
-            continue;
-        }
-        legalMoves ++;
-        newDepth = depth - 1;
-        history.cutoffs[isWhite][newMove.from][newMove.to] -= 1;
-		captureOrPromotion = (newMove.captured != PIECE_EMPTY || newMove.flag == 'Q'); 
+		//is move legal? if not skip it
+		if (gen_moves.isAttacked(king, isWhite, true)) { ///CHANGE METHOD OF UPDATING BOARDS, TOO INEFFICIENT
+			newBoard.unmakeMove(newMove, zobrist, isWhite);
+			gen_moves.grab_boards(newBoard, isWhite);
+			continue;
+		}
+		legalMoves++;
+		newDepth = depth - 1;
+		history.cutoffs[isWhite][newMove.from][newMove.to] -= 1;
+		captureOrPromotion = (newMove.captured != PIECE_EMPTY || newMove.flag == 'Q');
 		givesCheck = gen_moves.isAttacked(eking, !isWhite, true);
 
-/*
-		if (singularExtension && newMove.score >= SORT_HASH) {
-			int rBeta = std::max(ttValue - 2 * depth, -mateValue);
-			int d = depth / 2;
-			sd.excludedMove = true;
-			int s = -alphaBeta(d, rBeta - 1, rBeta, isWhite, ply, DO_NULL, NO_PV);
-			sd.excludedMove = false;
-			if (s < rBeta) {
-				newDepth++;
-			}
-		}		
-*/
-///*
- //new futility pruning really looks like it's pruning way to much right now, maybe adjust futile move counts until we have better move ordering!!!!
+		/*
+				if (singularExtension && newMove.score >= SORT_HASH) {
+					int rBeta = std::max(ttValue - 2 * depth, -mateValue);
+					int d = depth / 2;
+					sd.excludedMove = true;
+					int s = -alphaBeta(d, rBeta - 1, rBeta, isWhite, ply, DO_NULL, NO_PV);
+					sd.excludedMove = false;
+					if (s < rBeta) {
+						newDepth++;
+					}
+				}
+		*/
+		///*
+		 //new futility pruning really looks like it's pruning way to much right now, maybe adjust futile move counts until we have better move ordering!!!!
 		if (!is_pv
 			&& newMove.score < SORT_HASH
 			&& !captureOrPromotion
 			&& !FlagInCheck
 			&& !givesCheck
 			&& !newBoard.isPawnPush(newMove, isWhite)
-			&& alpha > VALUE_MATED_IN_MAX_PLY) {
+			&& bestScore > VALUE_MATED_IN_MAX_PLY) {
 
 			bool shouldSkip = false;
-			/*						
+			/*
 			if (depth < 10 && legalMoves >= futileMoveCounts[improving][depth]) {
 				shouldSkip = true;
 			}
 			*/
+			///*
 			predictedDepth = newDepth - reductions[is_pv][improving][depth][legalMoves];
-			
-			int futileVal;
-			if (predictedDepth < 6) {		
-				//int a = history.gains[isWhite][newMove.piece][newMove.to];
 
-				futileVal = ss->staticEval + history.gains[isWhite][newMove.piece][newMove.to] + (newDepth * 100) + 150;
+			int futileVal;
+			if (!shouldSkip && predictedDepth < 6) {
+				//int a = history.gains[isWhite][newMove.piece][newMove.to];
+				if (predictedDepth < 0) predictedDepth = 0;
+				//use predicted depth? Need to play with numbers!!
+				futileVal = ss->staticEval + (newDepth * 100) + 75; //+ history.gains[isWhite][newMove.piece][newMove.to]
 
 				if (futileVal <= alpha) {
-					alpha = std::max(futileVal, alpha);
+					bestScore = std::max(futileVal, bestScore);
 					shouldSkip = true;
 				}
 			}
-			
+			//*/
 			//don't search moves with negative SEE at low depths
-			if (!shouldSkip && depth < 4 && gen_moves.SEE(newMove, newBoard, isWhite, true) < 0) shouldSkip = true;
+			//if (!shouldSkip && depth < 4 && gen_moves.SEE(newMove, newBoard, isWhite, true) < 0) shouldSkip = true;
 
 			if (shouldSkip) {
 				newBoard.unmakeMove(newMove, zobrist, isWhite);
@@ -506,37 +507,37 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 				continue;
 			}
 		}
-//*/		
+		//*/		
 
-		/*		
-        //futility pruning ~~ is not a promotion or hashmove, is not a capture, and does not give check, and we've tried one move already
-        if(f_prune && newMove.score < SORT_HASH
-            && !captureOrPromotion && legalMoves
-            && !givesCheck){
+				/*
+				//futility pruning ~~ is not a promotion or hashmove, is not a capture, and does not give check, and we've tried one move already
+				if(f_prune && newMove.score < SORT_HASH
+					&& !captureOrPromotion && legalMoves
+					&& !givesCheck){
 
-            newBoard.unmakeMove(newMove, zobrist, isWhite);
-			gen_moves.grab_boards(newBoard, isWhite);
-			futileMoves = true; //flag so we know we skipped a move/not checkmate
-			futileC++;
-            continue;
-        }
-        */
+					newBoard.unmakeMove(newMove, zobrist, isWhite);
+					gen_moves.grab_boards(newBoard, isWhite);
+					futileMoves = true; //flag so we know we skipped a move/not checkmate
+					futileC++;
+					continue;
+				}
+				*/
 
-        //late move reduction
-        if(newDepth > 3
-            && legalMoves > 3
+				//late move reduction
+		if (newDepth > 3
+			&& legalMoves > 3
 			&& !FlagInCheck
 			&& !captureOrPromotion
 			&& !givesCheck
-			//&& history.cutoffs[isWhite][newMove.from][newMove.to] < 50 //test with commented out!			           
-            && (newMove.from != ss->killers[0].from || newMove.to != ss->killers[0].to)
-            && (newMove.from != ss->killers[1].from || newMove.to != ss->killers[1].to)
-			&& newMove.score < SORT_HASH){ //comment out? should already be tested by having on move already
+			//&& history.cutoffs[isWhite][newMove.from][newMove.to] < 50 //test with commented in!			           
+			&& newMove != ss->killers[0] 
+			&& newMove != ss->killers[1] 
+			&& newMove.score < SORT_HASH) { //comment out? should already be tested by having on move already
 
-            history.cutoffs[isWhite][newMove.from][newMove.to] = 50; //NEEEEEEEEEED to test, makes it about 50% faster from start node with it commented out
+			history.cutoffs[isWhite][newMove.from][newMove.to] = 50; //NEEEEEEEEEED to test, makes it about 50% faster from start node with it commented out
 
 			ss->reduction = reductions[is_pv][improving][depth][i]; //TRY CHANGING I TO LEGAL MOVES , SEE IF ELO GAINS
-			
+
 			//reduce reductions for moves that escape capture
 			if (ss->reduction) {
 				newBoard.unmakeMove(newMove, zobrist, isWhite);
@@ -547,7 +548,7 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 				}
 				newBoard.makeMove(newMove, zobrist, isWhite);
 			}
-			
+
 			int d1 = std::max(newDepth - ss->reduction, 1);
 
 			int val = -alphaBeta(d1, -(alpha + 1), -alpha, ss + 1, !isWhite, DO_NULL, NO_PV);
@@ -562,7 +563,7 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 			if (val > alpha && ss->reduction != 0) {
 				ss->reduction = 0;
 			}
-        }
+		}
 
 		newDepth -= ss->reduction;
 
@@ -571,30 +572,31 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 		//load the (most likely) next entry in the TTable into cache near cpu
 		_mm_prefetch((char *)TT.first_entry(zobrist.fetchKey(newMove, !isWhite)), _MM_HINT_NTA);
 
-//jump back here if our LMR raises Alpha
-re_search:
-		
+		//jump back here if our LMR raises Alpha
+	re_search:
 
-        if(!raisedAlpha){
-            //we're in princiapl variation search or full window search
-            score = -alphaBeta(newDepth, -beta, -alpha, ss + 1, !isWhite, DO_NULL, is_pv);
-        } else {
-            //zero window search
-            score = -alphaBeta(newDepth, -alpha -1, -alpha, ss + 1, !isWhite, DO_NULL, NO_PV);
-            //if our zero window search failed, do a full window search
-            if(score > alpha){
-                //PV search after failed zero window
-                score = -alphaBeta(newDepth, -beta, -alpha, ss + 1, !isWhite, DO_NULL, IS_PV);
-            }
-        }
 
-        //if a reduced search brings us above alpha, do a full non-reduced search
-        if(ss->reduction && score > alpha){
-            newDepth += ss->reduction;
+		if (!raisedAlpha) {
+			//we're in princiapl variation search or full window search
+			score = -alphaBeta(newDepth, -beta, -alpha, ss + 1, !isWhite, DO_NULL, is_pv);
+		}
+		else {
+			//zero window search
+			score = -alphaBeta(newDepth, -alpha - 1, -alpha, ss + 1, !isWhite, DO_NULL, NO_PV);
+			//if our zero window search failed, do a full window search
+			if (score > alpha) {
+				//PV search after failed zero window
+				score = -alphaBeta(newDepth, -beta, -alpha, ss + 1, !isWhite, DO_NULL, IS_PV);
+			}
+		}
+
+		//if a reduced search brings us above alpha, do a full non-reduced search
+		if (ss->reduction && score > alpha) {
+			newDepth += ss->reduction;
 			ss->reduction = 0;
-            
-            goto re_search;
-        }
+
+			goto re_search;
+		}
 
 		//store queit moves so we can decrease their value later
 		if (!captureOrPromotion && quietsC < 64) {
@@ -602,35 +604,41 @@ re_search:
 			quietsC++;
 		}
 
-        //undo move on BB's
-        newBoard.unmakeMove(newMove, zobrist, isWhite);
-        gen_moves.grab_boards(newBoard, isWhite);
+		//undo move on BB's
+		newBoard.unmakeMove(newMove, zobrist, isWhite);
+		gen_moves.grab_boards(newBoard, isWhite);
 
 		if (timeOver) return 0;
 
-        if(score > alpha){            
-            history.cutoffs[isWhite][newMove.from][newMove.to] += 6;
-			//store the principal variation
-			sd.PV[ss->ply] = newMove; //NEED TO DELETE AFTER A SEARCH!!!
-			hashMove = newMove;
+		if (score > bestScore) {
+			bestScore = score;
 
-            //if move causes a beta cutoff stop searching current branch
-            if(score >= beta){
-                hashFlag = TT_BETA;
-                //stop search and return beta
-                alpha = beta;
-                break;
-            }
-            //new best move
-            alpha = score;
-            raisedAlpha = true;
-            //if we've gained a new alpha set hash Flag equal to exact and store best move
-            hashFlag = TT_EXACT;
-        }
-    }
+			if (score > alpha) {
+				history.cutoffs[isWhite][newMove.from][newMove.to] += 6;
+				//store the principal variation
+				sd.PV[ss->ply] = newMove; //NEED TO DELETE AFTER A SEARCH!!!
+				hashMove = newMove;
+
+				//if move causes a beta cutoff stop searching current branch
+				if (score >= beta) {
+					hashFlag = TT_BETA;
+					//stop search and return beta
+					alpha = beta;
+					break;
+				}
+				//new best move
+				alpha = score;
+				raisedAlpha = true;
+				//if we've gained a new alpha set hash Flag equal to exact and store best move
+				hashFlag = TT_EXACT;
+			}
+		}
+	}
 
     if(!legalMoves){
+		//if there are no legal moves and we are in check it's checkmate this node
         if(FlagInCheck) alpha = mated_in(ss->ply);
+		//else it's a draw, return draw score - prefering mate to draw
         else alpha = contempt(isWhite); 
 
 	}
@@ -809,8 +817,7 @@ void Ai_Logic::updateStats(Move move, searchStack * ss, int depth, Move * quiets
 	static const int limit = SORT_KILL;
 	//update Killers for ply
 	//make sure killer is different
-	if (move.from != ss->killers[0].from
-		&& move.to != ss->killers[0].to) {
+	if (move != ss->killers[0]) {
 		//save primary killer to secondary slot
 		ss->killers[1] = ss->killers[0];
 	}
@@ -821,7 +828,8 @@ void Ai_Logic::updateStats(Move move, searchStack * ss, int depth, Move * quiets
 	int val = 4 * depth * depth;
 	history.updateHist(move, val, isWhite); //CHange to index by ply? or index just by piece type and to location>? TEST
 
-	while (--qCount) {
+	while (qCount) {
+		qCount--;
 		history.updateHist(quiets[qCount], -val, isWhite);
 	}
 }
