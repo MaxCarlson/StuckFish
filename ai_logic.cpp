@@ -35,8 +35,6 @@ bool timeOver;
 //master time manager
 TimeManager timeM;
 
-int futileC = 0; //count of futile moves
-
 //mate values are measured in distance from root, so need to be converted to and from TT
 inline int valueFromTT(int val, int ply); 
 inline int valueToTT(int val, int ply); 
@@ -144,7 +142,6 @@ Move Ai_Logic::iterativeDeep(int depth, bool isWhite)
 
 			//print data on search 
 			print(isWhite, bestScore);
-			//std::cout << futileC << std::endl;
         }
 		sd.depth++;
         //increment depth 
@@ -281,14 +278,13 @@ int Ai_Logic::alphaBeta(int depth, int alpha, int beta, searchStack *ss, bool is
 	int predictedDepth = 0;
     //U8 newDepth; //use with futility + other pruning later
     int queitSD = 25, f_prune = 0;
-    //int  mateValue = INF - ply; // used for mate distance pruning
+
 	Move queits[64];
 	int quietsC = 0;
 	sd.nodes++;
 	ss->ply = (ss - 1)->ply + 1; //increment ply
 	ss->reduction = 0; 
 	(ss + 1)->skipNull = false;
-	//(ss+1)->excludedMove = false; //dont need?
 
 	//checks if time over is true everytime if( nodes & 4095 ) ///NEED METHOD THAT CHECKS MUCH LESS
 	checkInput();
@@ -338,23 +334,23 @@ int Ai_Logic::alphaBeta(int depth, int alpha, int beta, searchStack *ss, bool is
     //are we in check?
     FlagInCheck = gen_moves.isAttacked(king, isWhite, true);
 
-//if in check, or in reduced search extension, skip nulls, statics evals, razoring, etc to moves_loop:
-    if(FlagInCheck || sd.excludedMove || sd.skipEarlyPruning) goto moves_loop;
+//if in check, or in reduced search extension: skip nulls, statics evals, razoring, etc to moves_loop:
+    if(FlagInCheck || (ss-1)->excludedMove.tried || sd.skipEarlyPruning) goto moves_loop;
 
 	evaluateBB eval;
 	ss->staticEval = eval.evalBoard(isWhite, newBoard, zobrist);
 
+	//update gain from previous ply stats for previous move
 	if ((ss - 1)->currentMove.captured == PIECE_EMPTY
 		&& (ss - 1)->currentMove.flag != 'Q'
-		&& ss->staticEval != 0 && (ss - 1)->staticEval != 0) {
+		&& ss->staticEval != 0 && (ss - 1)->staticEval != 0
+		&& (ss-1)->currentMove.tried) {
 
-		history.updateGain((ss - 1)->currentMove, -(ss - 1)->staticEval - ss->staticEval, isWhite);
+		history.updateGain((ss - 1)->currentMove, -(ss - 1)->staticEval - ss->staticEval, !isWhite);
 	}
 
 //eval pruning / static null move
     if(depth < 3 && !is_pv && abs(beta - 1) > -INF + 100){
-		//evaluateBB eval;
-		//int static_eval = eval.evalBoard(isWhite, newBoard, zobrist);
   
         int eval_margin = 120 * depth;
         if(ss->staticEval - eval_margin >= beta){
@@ -378,7 +374,7 @@ int Ai_Logic::alphaBeta(int depth, int alpha, int beta, searchStack *ss, bool is
 
 //razoring if not PV and is close to leaf and has a low score drop directly into quiescence
     if(!is_pv && allowNull && depth <= 3){
-        //evaluateBB eval;
+
         int threshold = alpha - 300 - (depth - 1) * 60;        
         //if(eval.evalBoard(isWhite, newBoard, zobrist) < threshold){
 		if(ss->staticEval < threshold){
@@ -389,7 +385,7 @@ int Ai_Logic::alphaBeta(int depth, int alpha, int beta, searchStack *ss, bool is
         }
     }
 
-	///* //Still a bit slow?
+	/* //Still a bit slow?
 //do we want to futility prune?
 	int fmargin[4] = { 0, 200, 300, 500 };
     //int fmargin[8] = {0, 100, 150, 200, 250, 300, 400, 500};
@@ -398,7 +394,7 @@ int Ai_Logic::alphaBeta(int depth, int alpha, int beta, searchStack *ss, bool is
 		&& ss->staticEval + fmargin[depth] <= alpha){
         f_prune = 1;
     }
-	//*/
+	*/
 ///*  //Internal iterative deepening search same ply to a shallow depth..
 	//and see if we can get a TT entry to speed up search
 	if (depth >= 6 && !ttMove
@@ -438,7 +434,7 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
     Move hashMove; //move to store alpha in and pass to TTable
     for(int i = 0; i < movesNum; ++i){
         //grab best scoring move
-		Move newMove = gen_moves.movegen_sort(ss->ply, &gen_moves.moveAr[0]); //huge speed decrease if not Move newMove is instatiated above loop!!??
+		Move newMove = gen_moves.movegen_sort(ss->ply, &gen_moves.moveAr[0]); 
 
 		//if (sd.excludedMove && newMove.score >= SORT_HASH) continue;
 
@@ -470,48 +466,47 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 			}
 		}		
 */
-
-///* //new futility pruning
+///*
+ //new futility pruning really looks like it's pruning way to much right now, maybe adjust futile move counts until we have better move ordering!!!!
 		if (!is_pv
 			&& newMove.score < SORT_HASH
 			&& !captureOrPromotion
 			&& !FlagInCheck
 			&& !givesCheck
+			&& !newBoard.isPawnPush(newMove, isWhite)
 			&& alpha > VALUE_MATED_IN_MAX_PLY) {
 
 			bool shouldSkip = false;
-								//replace i with legal moves???
-			if (depth < 13 && i >= futileMoveCounts[improving][depth]) {
+			/*						
+			if (depth < 10 && legalMoves >= futileMoveCounts[improving][depth]) {
 				shouldSkip = true;
 			}
-
-			predictedDepth = reductions[is_pv][improving][depth][i];
-
+			*/
+			predictedDepth = newDepth - reductions[is_pv][improving][depth][legalMoves];
+			
 			int futileVal;
-			if (predictedDepth < 7) {
-				futileVal = ss->staticEval + history.gains[isWhite][newMove.piece][newMove.to] + depth * 100 + 64;
+			if (predictedDepth < 6) {		
+				//int a = history.gains[isWhite][newMove.piece][newMove.to];
+
+				futileVal = ss->staticEval + history.gains[isWhite][newMove.piece][newMove.to] + (newDepth * 100) + 150;
 
 				if (futileVal <= alpha) {
-					alpha = futileVal;
+					alpha = std::max(futileVal, alpha);
 					shouldSkip = true;
 				}
 			}
-
-			if (depth < 4 && gen_moves.SEE(newMove, newBoard, isWhite, true) < 0) shouldSkip = true;
+			
+			//don't search moves with negative SEE at low depths
+			if (!shouldSkip && depth < 4 && gen_moves.SEE(newMove, newBoard, isWhite, true) < 0) shouldSkip = true;
 
 			if (shouldSkip) {
 				newBoard.unmakeMove(newMove, zobrist, isWhite);
 				gen_moves.grab_boards(newBoard, isWhite);
 				futileMoves = true; //flag so we know we skipped a move/not checkmate
-				futileC++;
 				continue;
 			}
 		}
-		//*/
-
-		//don't search moves with negative SEE at low depths
-		 //NEED to possible add a flag to not check capturing moves?
-
+//*/		
 
 		/*		
         //futility pruning ~~ is not a promotion or hashmove, is not a capture, and does not give check, and we've tried one move already
@@ -540,7 +535,7 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 
             history.cutoffs[isWhite][newMove.from][newMove.to] = 50; //NEEEEEEEEEED to test, makes it about 50% faster from start node with it commented out
 
-			ss->reduction = reductions[is_pv][improving][depth][i]; //i = number of moves method might not be better than previous one below, need to add more methods of reducing reduction in perilous situations
+			ss->reduction = reductions[is_pv][improving][depth][i]; //TRY CHANGING I TO LEGAL MOVES , SEE IF ELO GAINS
 			
 			//reduce reductions for moves that escape capture
 			if (ss->reduction) {
@@ -570,6 +565,8 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
         }
 
 		newDepth -= ss->reduction;
+
+		ss->currentMove = newMove;
 
 		//load the (most likely) next entry in the TTable into cache near cpu
 		_mm_prefetch((char *)TT.first_entry(zobrist.fetchKey(newMove, !isWhite)), _MM_HINT_NTA);
@@ -614,7 +611,7 @@ re_search:
         if(score > alpha){            
             history.cutoffs[isWhite][newMove.from][newMove.to] += 6;
 			//store the principal variation
-			sd.PV[ss->ply] = newMove;
+			sd.PV[ss->ply] = newMove; //NEED TO DELETE AFTER A SEARCH!!!
 			hashMove = newMove;
 
             //if move causes a beta cutoff stop searching current branch
@@ -629,7 +626,6 @@ re_search:
             raisedAlpha = true;
             //if we've gained a new alpha set hash Flag equal to exact and store best move
             hashFlag = TT_EXACT;
-
         }
     }
 
@@ -645,7 +641,7 @@ re_search:
 
 	if (futileMoves && !raisedAlpha && hashFlag != TT_BETA) {
 
-		if(!legalMoves) alpha = ss->staticEval; //testing needed as well
+		//if(!legalMoves) alpha = ss->staticEval; //testing needed as well
 		hashFlag = TT_EXACT; //NEED TO TEST
 	}
 

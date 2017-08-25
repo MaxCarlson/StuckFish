@@ -19,7 +19,8 @@ std::string boardArr[8][8] = {
 	{ "R", "N", "B", "Q", "K", "B", "N", "R" },
 };
 
-
+//used for flipping rank to whites relative rank
+const int flipRank[8] = { 8, 7, 6, 5, 4, 3 , 2, 1 };
 
 void BitBoards::constructBoards()
 {
@@ -720,9 +721,11 @@ void BitBoards::removeCapturedPiece(bool isWhite, char captured, U64 location)
 	}
 }
 
-
-
-
+int BitBoards::relativeRank(int sq, bool isWhite)
+{ //return reletive rank for side to move.
+	sq /= 8;
+	return isWhite ? flipRank[sq] : sq + 1;
+}
 
 
 

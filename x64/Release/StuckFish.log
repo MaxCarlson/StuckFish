@@ -1,14 +1,3 @@
-﻿  TimeManager.cpp
-  TranspositionT.cpp
-  UCI.cpp
-  ai_logic.cpp
-  bitboards.cpp
-  evaluatebb.cpp
-  hashentry.cpp
-  main.cpp
-  move.cpp
-  movegen.cpp
-  zobristh.cpp
-  Generating Code...
+﻿  ai_logic.cpp
   StuckFish.vcxproj -> C:\Users\C-60\Desktop\cppPrograms\StuckFish\x64\Release\StuckFish.exe
   StuckFish.vcxproj -> C:\Users\C-60\Desktop\cppPrograms\StuckFish\x64\Release\StuckFish.pdb (Full PDB)

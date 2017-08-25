@@ -60,7 +60,6 @@ struct searchDriver{
 	long startTime;
 	long moveTime = 2500;
 	bool isWhite;
-	bool excludedMove = false;
 	bool skipEarlyPruning = false;
 };
 extern searchDriver sd;

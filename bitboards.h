@@ -6,7 +6,7 @@ typedef unsigned long long  U64; // supported by MSC 13.00+ and C99
 #define C64(constantU64) constantU64##ULL
 
 #include <string>
-
+#include "move.h"
 class ZobristH;
 class Move;
 class MoveGen;
@@ -28,7 +28,11 @@ public:
     void drawBBA();
 
 	//piece material arrays for sides, using piece values
-	int sideMaterial[2]; //updated on make/unmake moves
+	int sideMaterial[2]; //updated on make/unmake moves //MOVE TO STRUCT ALONG WITH OTHER INFO?
+
+	bool isPawnPush(const Move& m, bool isWhite);
+
+	int relativeRank(int sq, bool isWhite);
 
 //bitboards
     U64 FullTiles;
@@ -59,5 +63,12 @@ private:
     //rolls back a capture on move unmake
     void undoCapture(U64 location, char piece, bool isNotWhite);
 };
+
+inline bool BitBoards::isPawnPush(const Move &m, bool isWhite) 
+{	//is there a pawn past their relative 4th rank?
+	return (m.piece == PAWN && relativeRank(m.from, isWhite) > 4);
+}
+
+
 
 #endif // BITBOARDS_H
