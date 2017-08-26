@@ -370,12 +370,12 @@ int Ai_Logic::alphaBeta(BitBoards& newBoard, int depth, int alpha, int beta, sea
         }
     }
 
-
-//razoring if not PV and is close to leaf and has a low score drop directly into quiescence
+/*
+//razoring if not PV and is close to leaf and has a low score drop directly into quiescence 512 + 32 * depth
     if(!is_pv && allowNull && depth <= 3){
 
         int threshold = alpha - 300 - (depth - 1) * 60;        
-        //if(eval.evalBoard(isWhite, newBoard, zobrist) < threshold){
+        
 		if(ss->staticEval < threshold){
 
             score = quiescent(newBoard, alpha, beta, isWhite, ss, queitSD, is_pv);
@@ -383,6 +383,22 @@ int Ai_Logic::alphaBeta(BitBoards& newBoard, int depth, int alpha, int beta, sea
             if(score < threshold) return alpha;
         }
     }
+*/
+	if (!is_pv ///TESTTESTTESTTEST
+		&& depth < 4
+		&& ss->staticEval + 300 * (depth - 1) * 60 <= alpha
+		&& !ttMove) { //need to add no pawn on 7th rank
+		
+		if (depth <= 1 && ss->staticEval + 300 * 3 * 60 <= alpha) {
+			return quiescent(newBoard, alpha, beta, isWhite, ss, queitSD, NO_PV);
+		}
+
+		int ralpha = alpha - 300  * (depth-1) * 60;
+
+		int val = quiescent(newBoard, ralpha, ralpha+1, isWhite, ss, queitSD, NO_PV);
+
+		if (val <= alpha) return val;
+	}
 
 	/* //Still a bit slow?
 //do we want to futility prune?
@@ -413,7 +429,7 @@ int Ai_Logic::alphaBeta(BitBoards& newBoard, int depth, int alpha, int beta, sea
 //*/
 moves_loop: //jump to here if in check or in a search extension or skip early pruning is true
 /*
-	singularExtension = depth >= 7
+	singularExtension = depth >= 8
 		&& !sd.excludedMove
 		&& ttMove && ttValue != INVALID
 		&& ttentry->flag == TT_BETA
@@ -701,7 +717,7 @@ int Ai_Logic::quiescent(BitBoards& newBoard, int alpha, int beta, bool isWhite, 
 
     if(standingPat >= beta){
 
-		//if (!ttentry) TT.save(zobrist.zobristKey, DEPTH_QS, valueToTT(standingPat, ss->ply), TT_BETA); //save to TT if there's no entry MAJOR PROBLEMS WITH THIS 
+		if (!ttentry) TT.save(zobrist.zobristKey, DEPTH_QS, valueToTT(standingPat, ss->ply), TT_BETA); //save to TT if there's no entry MAJOR PROBLEMS WITH THIS 
 		return beta;
     }
 
