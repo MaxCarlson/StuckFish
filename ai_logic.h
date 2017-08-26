@@ -56,13 +56,12 @@ private:
     int contempt(const BitBoards& newBoard, bool isWhite); //need some way to check board material before implementing
 
 	//repetition checker
-	bool isRepetition(const Move& m);
+	bool isRepetition(const BitBoards& newBoard, const Move& m);
 	
 
 //helpers
 	void updateStats(Move move, searchStack *ss, int depth, Move * quiets, int qCount, bool isWhite);
 
-    void addKiller(Move move, searchStack *ss);
     void ageHistorys();
 	
 

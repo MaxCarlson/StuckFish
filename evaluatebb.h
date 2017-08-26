@@ -12,7 +12,7 @@ class evaluateBB
 public:
 
     //forms total evaluation for baord state
-    int evalBoard(bool isWhite, const BitBoards &boards, const ZobristH &zobristE);
+    int evalBoard(bool isWhite, const BitBoards &boards);
 
 
 private:
@@ -50,7 +50,7 @@ private:
         bool isPiece(const U64 &piece, U8 sq);
         int flip(int side, S8 sq);
 
-    void saveTT(bool isWhite, int result, int hash, const ZobristH &zobrist); //replace with new tt scheme
+    void saveTT(bool isWhite, int result, int hash, const BitBoards &boards); //replace with new tt scheme
 
 
 

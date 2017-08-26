@@ -36,6 +36,8 @@ void UCI::uciLoop()
 
 	//master bitboard for turn
 	BitBoards newBoard;
+	//fill zobrist arrays with random numbers
+	newBoard.zobrist.zobristFill();
 
 	// Make sure that the outputs are sent straight away to the GUI
 	std::cout.setf(std::ios::unitbuf);
@@ -117,10 +119,6 @@ void UCI::updatePosition(BitBoards& newBoard, std::istringstream& input)
 	Move m;
 	std::string token, fen;
 
-	//dummy zobrist object
-	ZobristH zDummy;
-	
-
 	input >> token;
 
 	if (token == "startpos")
@@ -128,7 +126,7 @@ void UCI::updatePosition(BitBoards& newBoard, std::istringstream& input)
 		newGame(newBoard);
 
 		//create zobrist hash for startpos that is used to check repetitions
-		zobrist.getZobristHash(newBoard);
+		newBoard.zobrist.getZobristHash(newBoard);
 	}
 	else if (token == "fen")
 	{
@@ -151,11 +149,11 @@ void UCI::updatePosition(BitBoards& newBoard, std::istringstream& input)
 			m = strToMove(newBoard, token);
 
 			//make move + increment turns
-			newBoard.makeMove(m, zobrist, isWhite);
+			newBoard.makeMove(m, isWhite);
 			turns += 1;
 			
 			//push board position U64 to search driver.two fold repeitions
-			history.twoFoldRep.push_back(zobrist.zobristKey);
+			history.twoFoldRep.push_back(newBoard.zobrist.zobristKey);
 			repCount++;
 			
 			isWhite = !isWhite;
@@ -169,8 +167,8 @@ void UCI::newGame(BitBoards& newBoard)
 	newBoard.constructBoards();
 
 	for (int i = 0; i < 4; i++) {
-		rookMoved[i] = false;
-		castled[i] = false;
+		newBoard.rookMoved[i] = false;
+		newBoard.castled[i] = false;
 	}
 
 	turns = 0;

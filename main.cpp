@@ -12,20 +12,8 @@
 // number of half turns
 int turns = 0;
 
-//array for random numbers used to gen zobrist key
-U64 zArray[2][6][64];
-//denotes a castling has taken place for zobrist key
-U64 zCastle[4];
-//denotes if castling has occured
-bool castled[4] = {false};
-bool rookMoved[4] = {false};
-//used to change color of move
-U64 zBlackMove;
-//test ~~ used to indicate a NULL move state
-U64 zNullMove;
-
 //master zobrist object
-ZobristH zobrist;
+//ZobristH zobrist;
 
 //TTable of evals //UPDATE TO NEW TT SCHEME
 HashEntry transpositionEval[5021983];
@@ -40,10 +28,10 @@ MoveGen evalMoveGen;
 
 int main(int argc, char *argv[])
 {
-	ZobristH ZKey; //object only used to generate zobrist key arrays at start of program
+	//ZobristH ZKey; //object only used to generate zobrist key arrays at start of program
 
 	//calculate all zobrist numbers to later use with transpostion table
-	ZKey.zobristFill();
+	//ZKey.zobristFill();
 
     //Fill slider arrays and magic index arrays
     slider_attacks.Initialize();

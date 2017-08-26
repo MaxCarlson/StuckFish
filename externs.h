@@ -30,17 +30,8 @@ extern MoveGen evalMoveGen;
 //half turns
 extern int turns;
 
-//array holding U64 numbers for changing zobrist keys
-extern U64 zArray[2][6][64];
-//used to denote a castling has taken place for zobrist; wqs, wks, bqs, bks
-extern U64 zCastle[4];
-//array used to denote if castling has occured
-extern bool castled[4]; //wqs, wks, bqs, bks
-extern bool rookMoved[4]; //wqR, wkR, bqr, bkr
-//used to change color of move
-extern U64 zBlackMove;
-//test ~~ used to indicate a NULL move state
-extern U64 zNullMove;
+//master zobrist for turn
+//extern ZobristH zobrist;
 
 //array for storing objects containing zorbist key for position as well as depth and eval
 extern HashEntry transpositionEval[5021983];
@@ -91,9 +82,6 @@ struct Historys { //holds history info for search
 
 };
 extern Historys history;
-
-//master zobrist for turn
-extern ZobristH zobrist;
 
 //Bitboard of all king movements that can then be shifted
 extern const U64 KING_SPAN;

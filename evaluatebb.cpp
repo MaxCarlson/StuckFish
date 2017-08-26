@@ -93,14 +93,14 @@ struct evalVect {
 } ev; //object to hold values incase we want to print
 
 
-int evaluateBB::evalBoard(bool isWhite, const BitBoards& boards, const ZobristH& zobristE)
+int evaluateBB::evalBoard(bool isWhite, const BitBoards& boards)
 {
     //transposition hash for boards evals
     //int hash = (int)(zobristE.zobristKey % 5021983);
-	int hash = zobristE.zobristKey & 5021982;
+	int hash = boards.zobrist.zobristKey & 5021982;
     HashEntry entry = transpositionEval[hash];   
     //if we get a hash-table hit, return the evaluation
-    if(entry.zobrist == zobristE.zobristKey){
+    if(entry.zobrist == boards.zobrist.zobristKey){
         if(isWhite){
             //if eval was from blacks POV, return -eval
             if(entry.flag) return -entry.eval;
@@ -246,16 +246,16 @@ int evaluateBB::evalBoard(bool isWhite, const BitBoards& boards, const ZobristH&
     if(!isWhite) result = -result;
 
     //save to TT eval table
-    saveTT(isWhite, result, hash, zobristE);
+    saveTT(isWhite, result, hash, boards);
 	
     return result;
 }
 
-void evaluateBB::saveTT(bool isWhite, int result, int hash, const ZobristH &zobristE)
+void evaluateBB::saveTT(bool isWhite, int result, int hash, const BitBoards &boards)
 {
     //store eval into eval hash table
     transpositionEval[hash].eval = result;
-    transpositionEval[hash].zobrist = zobristE.zobristKey;
+    transpositionEval[hash].zobrist = boards.zobrist.zobristKey;
 
     //set flag for TT so we can switch value if we get a TT hit but
     //the color of the eval was opposite

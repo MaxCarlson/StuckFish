@@ -62,7 +62,7 @@ MoveGen::MoveGen()
 	//memset(&moveAr, 0, sizeof(moveAr)); //~~SLOWER than before
 }
 */
-void MoveGen::generatePsMoves(bool capturesOnly)
+void MoveGen::generatePsMoves(const BitBoards& boards, bool capturesOnly)
 {
 
     //counts total moves generated
@@ -115,7 +115,7 @@ void MoveGen::generatePsMoves(bool capturesOnly)
 	}
 	while (rooks) {
 		int loc = pop_lsb(&rooks);
-		possibleR(loc, friends, enemys, eking, capsOnly);
+		possibleR(loc, friends, enemys, eking, capsOnly, boards);
 	}
 	while (queens) {
 		int loc = pop_lsb(&queens);
@@ -378,7 +378,7 @@ void MoveGen::possibleB(U8 location,  const U64 &friends, const U64 &enemys, con
     }
 }
 
-void MoveGen::possibleR(U8 location,  const U64 &friends, const U64 &enemys, const U64 &oppositeking, const U64 &capturesOnly)
+void MoveGen::possibleR(U8 location,  const U64 &friends, const U64 &enemys, const U64 &oppositeking, const U64 &capturesOnly, const BitBoards& boards)
 {
     char piece = ROOK;
     char flag = '0';
@@ -386,12 +386,12 @@ void MoveGen::possibleR(U8 location,  const U64 &friends, const U64 &enemys, con
 	if (isWhite) {
 		//has rook moved flags
 		//is rook on initial location and rook hasn't moved yet
-		if (location == A1 && !rookMoved[0]) flag = A1 + 1;
-		else if (location == H1 && !rookMoved[1]) flag = H1 + 1;
+		if (location == A1 && !boards.rookMoved[0]) flag = A1 + 1;
+		else if (location == H1 && !boards.rookMoved[1]) flag = H1 + 1;
 	}
 	else {
-		if (location == A8 && !rookMoved[2]) flag = A8 + 1;
-		else if (location == H8 && !rookMoved[3]) flag = H8 + 1;
+		if (location == A8 && !boards.rookMoved[2]) flag = A8 + 1;
+		else if (location == H8 && !boards.rookMoved[3]) flag = H8 + 1;
 	}  
 
     U64 moves = slider_attacks.RookAttacks(FullTiles, location);

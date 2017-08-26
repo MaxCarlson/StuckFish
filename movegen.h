@@ -27,7 +27,7 @@ public:
 	//number of moves generated this node
     int moveCount;
 
-    void generatePsMoves(bool capturesOnly);
+    void generatePsMoves(const BitBoards& boards, bool capturesOnly);
 
 	//grab bitboard changes after a move, or any change in search. Need to get rid of eventually and just pass constRef to everything
     void grab_boards(const BitBoards &BBBoard, bool wOrB);
@@ -95,7 +95,7 @@ private:
         void possibleBP(const U64 &bpawns, const U64 &whiteking, bool capturesOnly);
         void possibleN(U8 location, const U64 &friends, const U64 &enemys, const U64 &oppositeking, const U64 &capturesOnly);
         void possibleB(U8 location, const U64 &friends, const U64 &enemys, const U64 &oppositeking, const U64 &capturesOnly);
-        void possibleR(U8 location, const U64 &friends, const U64 &enemys, const U64 &oppositeking, const U64 &capturesOnly);
+        void possibleR(U8 location, const U64 &friends, const U64 &enemys, const U64 &oppositeking, const U64 &capturesOnly, const BitBoards& boards);
         void possibleQ(U8 location, const U64 &friends, const U64 &enemys, const U64 &oppositeking, const U64 &capturesOnly);
         void possibleK(U8 location, const U64 &friends, const U64 &enemys, const U64 &oppositeking, const U64 &capturesOnly);
 

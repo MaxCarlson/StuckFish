@@ -16,11 +16,6 @@ std::uniform_int_distribution<U64> dist(std::llround(std::pow(2,61)), std::llrou
 
 
 
-ZobristH::ZobristH()
-{
-
-}
-
 U64 ZobristH::random64()
 {
     //get random 64 bit integer to seed zorbist arrays
@@ -35,6 +30,9 @@ void ZobristH::zobristFill()
     for(int color = 0; color < 2; color++){
         for(int pieceType = 0; pieceType < 6; pieceType ++){
             for(int square = 0; square < 64; square ++){
+				//fill the zero spot with 0LL's so we can XOR captures without worrying about if there is one
+				if (pieceType == 0) zArray[color][pieceType][square] = 0LL;
+
                 zArray[color][pieceType][square] = random64();
             }
         }
@@ -76,15 +74,6 @@ void ZobristH::UpdateKey(int start, int end, const Move& moveKey, bool isWhite)
     int piece = moveKey.piece;
     int captured = moveKey.captured;
 
-    //if a piece was captured XOR that location with randomkey at array location end
-    if (isWhite && captured != PIECE_EMPTY){
-			zobristKey ^= zArray[1][captured - 1][end];   
-
-    } else if (!isWhite && captured != PIECE_EMPTY) {
-			zobristKey ^= zArray[0][captured - 1][end];
-            
-    }
-
     //XOR zobristKey with zArray number at piece start end then end location
     //if piece is white..
     if(isWhite) {
@@ -92,38 +81,40 @@ void ZobristH::UpdateKey(int start, int end, const Move& moveKey, bool isWhite)
 		case PAWN:
 			//if normal pawn move
 			if (moveKey.flag == '0') {
-				zobristKey ^= zArray[0][0][start];
-				zobristKey ^= zArray[0][0][end];				
+				zobristKey ^= zArray[0][PAWN][start];
+				zobristKey ^= zArray[0][PAWN][end];
 			}
 			else { //if pawn promotion
-				zobristKey ^= zArray[0][0][start];
-				zobristKey ^= zArray[0][4][end]; //only handles queen promotions atm
+				zobristKey ^= zArray[0][PAWN][start];
+				zobristKey ^= zArray[0][QUEEN][end]; //only handles queen promotions atm
 			}
 			break;
 		default: //default for rest of pieces, castling handled down below
-			zobristKey ^= zArray[0][piece - 1][start];
-			zobristKey ^= zArray[0][piece - 1][end];
+			zobristKey ^= zArray[0][piece][start];
+			zobristKey ^= zArray[0][piece][end];
 			break;
-		}      
+		} 
+		zobristKey ^= zArray[1][captured][end];
     //black
     } else {
 		switch (piece) {
 		case PAWN:
 			if (moveKey.flag == '0') {
-				zobristKey ^= zArray[1][0][start];
-				zobristKey ^= zArray[1][0][end];
+				zobristKey ^= zArray[1][PAWN][start];
+				zobristKey ^= zArray[1][PAWN][end];
 			}
 			else {
-				zobristKey ^= zArray[1][0][start];
-				zobristKey ^= zArray[1][4][end];
+				zobristKey ^= zArray[1][PAWN][start];
+				zobristKey ^= zArray[1][QUEEN][end];
 			}
 			break;
 		default:
-			zobristKey ^= zArray[1][piece - 1][start];
-			zobristKey ^= zArray[1][piece - 1][end];
+			zobristKey ^= zArray[1][piece][start];
+			zobristKey ^= zArray[1][piece][end];
 			break;
 
-		}     
+		} 
+		zobristKey ^= zArray[0][captured][end];
     }
 
 	//need caslting code
@@ -139,10 +130,10 @@ U64 ZobristH::fetchKey(const Move & m, bool isWhite)
 
 	if (!isWhite) color = 1;
 
-	key ^= zArray[color][m.piece - 1][m.from];
-	key ^= zArray[color][m.piece - 1][m.to];
+	key ^= zArray[color][m.piece][m.from];
+	key ^= zArray[color][m.piece][m.to];
 
-	if(m.captured) key ^= zArray[!color][m.captured - 1][m.to]; //update if there's a capture
+	key ^= zArray[!color][m.captured][m.to]; //update if there's a capture
 
 	key ^= zBlackMove; //update color
 
@@ -165,54 +156,54 @@ U64 ZobristH::getZobristHash(const BitBoards& BBBoard)
         {
             //XOR the zkey with the U64 in the white pawns square
             //that was generated from rand64
-            returnZKey ^= zArray[0][0][square];
+            returnZKey ^= zArray[0][1][square];
         }
         else if(((BBBoard.BBBlackPawns >> square) & 1) == 1)
         {
-            returnZKey ^= zArray[1][0][square];
+            returnZKey ^= zArray[1][1][square];
         }
         //white pieces
         else if(((BBBoard.BBWhiteKnights >> square) & 1) == 1)
         {
-            returnZKey ^= zArray[0][1][square];
+            returnZKey ^= zArray[0][2][square];
         }
         else if(((BBBoard.BBWhiteBishops >> square) & 1) == 1)
         {
-            returnZKey ^= zArray[0][2][square];
+            returnZKey ^= zArray[0][3][square];
         }
 		else if (((BBBoard.BBWhiteRooks >> square) & 1) == 1)
 		{
-			returnZKey ^= zArray[0][3][square];
+			returnZKey ^= zArray[0][4][square];
 		}
         else if(((BBBoard.BBWhiteQueens >> square) & 1) == 1)
         {
-            returnZKey ^= zArray[0][4][square];
+            returnZKey ^= zArray[0][5][square];
         }
         else if(((BBBoard.BBWhiteKing >> square) & 1) == 1)
         {
-            returnZKey ^= zArray[0][5][square];
+            returnZKey ^= zArray[0][6][square];
         }
 
         //black pieces       
         else if(((BBBoard.BBBlackKnights >> square) & 1) == 1)
         {
-            returnZKey ^= zArray[1][1][square];
+            returnZKey ^= zArray[1][2][square];
         }
         else if(((BBBoard.BBBlackBishops >> square) & 1) == 1)
         {
-            returnZKey ^= zArray[1][2][square];
+            returnZKey ^= zArray[1][3][square];
         }
 		else if (((BBBoard.BBBlackRooks >> square) & 1) == 1)
 		{
-			returnZKey ^= zArray[1][3][square];
+			returnZKey ^= zArray[1][4][square];
 		}
         else if(((BBBoard.BBBlackQueens >> square) & 1) == 1)
         {
-            returnZKey ^= zArray[1][4][square];
+            returnZKey ^= zArray[1][5][square];
         }
         else if(((BBBoard.BBBlackKing >> square) & 1) == 1)
         {
-            returnZKey ^= zArray[1][5][square];
+            returnZKey ^= zArray[1][6][square];
         }
     }
     //EnPassant and castling stuff add later
@@ -221,7 +212,6 @@ U64 ZobristH::getZobristHash(const BitBoards& BBBoard)
 
     return returnZKey;
 }
-
 
 
 void ZobristH::testDistibution()
@@ -254,54 +244,54 @@ U64 ZobristH::debugKey(bool isWhite, const BitBoards& BBBoard)
         {
             //XOR the zkey with the U64 in the white pawns square
             //that was generated from rand64
-            returnZKey ^= zArray[0][0][square];
+            returnZKey ^= zArray[0][1][square];
         }
         else if(((BBBoard.BBBlackPawns >> square) & 1) == 1)
         {
-            returnZKey ^= zArray[1][0][square];
+            returnZKey ^= zArray[1][1][square];
         }
         //white pieces
         else if(((BBBoard.BBWhiteKnights >> square) & 1) == 1)
         {
-            returnZKey ^= zArray[0][1][square];
+            returnZKey ^= zArray[0][2][square];
         }
         else if(((BBBoard.BBWhiteBishops >> square) & 1) == 1)
         {
-            returnZKey ^= zArray[0][2][square];
+            returnZKey ^= zArray[0][3][square];
         }
 		else if (((BBBoard.BBWhiteRooks >> square) & 1) == 1)
 		{
-			returnZKey ^= zArray[0][3][square];
+			returnZKey ^= zArray[0][4][square];
 		}
         else if(((BBBoard.BBWhiteQueens >> square) & 1) == 1)
         {
-            returnZKey ^= zArray[0][4][square];
+            returnZKey ^= zArray[0][5][square];
         }
         else if(((BBBoard.BBWhiteKing >> square) & 1) == 1)
         {
-            returnZKey ^= zArray[0][5][square];
+            returnZKey ^= zArray[0][6][square];
         }
 
         //black pieces
         else if(((BBBoard.BBBlackKnights >> square) & 1) == 1)
         {
-            returnZKey ^= zArray[1][1][square];
+            returnZKey ^= zArray[1][2][square];
         }
         else if(((BBBoard.BBBlackBishops >> square) & 1) == 1)
         {
-            returnZKey ^= zArray[1][2][square];
+            returnZKey ^= zArray[1][3][square];
         }
 		else if (((BBBoard.BBBlackRooks >> square) & 1) == 1)
 		{
-			returnZKey ^= zArray[1][3][square];
+			returnZKey ^= zArray[1][4][square];
 		}
         else if(((BBBoard.BBBlackQueens >> square) & 1) == 1)
         {
-            returnZKey ^= zArray[1][4][square];
+            returnZKey ^= zArray[1][5][square];
         }
         else if(((BBBoard.BBBlackKing >> square) & 1) == 1)
         {
-            returnZKey ^= zArray[1][5][square];
+            returnZKey ^= zArray[1][6][square];
         }
     }
     //EnPassant and castling stuff add later
