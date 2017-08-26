@@ -472,7 +472,7 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 		captureOrPromotion = (newMove.captured != PIECE_EMPTY || newMove.flag == 'Q');
 		givesCheck = gen_moves.isAttacked(eking, !isWhite, true);
 
-		/*
+		/* //ELO loss with singular extensions so far
 		if (singularExtension && newMove.score >= SORT_HASH) {
 			int rBeta = std::max(ttValue - 2 * depth, -mateValue);
 			int d = depth / 2;
@@ -484,7 +484,7 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 			}
 		}
 		*/
-		/*
+		/* 
 		 //new futility pruning really looks like it's pruning way to much right now, maybe adjust futile move counts until we have better move ordering!!!!
 		if (!is_pv
 			&& newMove.score < SORT_HASH
@@ -527,21 +527,21 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 		}
 		*/		
 
-				/*
-				//futility pruning ~~ is not a promotion or hashmove, is not a capture, and does not give check, and we've tried one move already
-				if(f_prune && newMove.score < SORT_HASH
-					&& !captureOrPromotion && legalMoves
-					&& !givesCheck){
+		/* //This futility pruning works in conjuction with futile conditions above move loop, slight speed boost, unsure on ELO gain
+		//futility pruning ~~ is not a promotion or hashmove, is not a capture, and does not give check, and we've tried one move already
+		if(f_prune && newMove.score < SORT_HASH
+			&& !captureOrPromotion && legalMoves
+			&& !givesCheck){
 
-					newBoard.unmakeMove(newMove, zobrist, isWhite);
-					gen_moves.grab_boards(newBoard, isWhite);
-					futileMoves = true; //flag so we know we skipped a move/not checkmate
-					futileC++;
-					continue;
-				}
-				*/
+			newBoard.unmakeMove(newMove, zobrist, isWhite);
+			gen_moves.grab_boards(newBoard, isWhite);
+			futileMoves = true; //flag so we know we skipped a move/not checkmate
+			futileC++;
+			continue;
+		}
+		*/
 
-				//late move reduction
+		//late move reductions, reduce the depth of the search in non dangerous situations. 
 		if (newDepth > 3
 			&& legalMoves > 3
 			&& !FlagInCheck
@@ -552,7 +552,7 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 			&& newMove != ss->killers[1] 
 			&& newMove.score < SORT_HASH) { //comment out? should already be tested by having on move already
 
-			history.cutoffs[isWhite][newMove.from][newMove.to] = 50; //NEEEEEEEEEED to test, makes it about 50% faster from start node with it commented out
+			history.cutoffs[isWhite][newMove.from][newMove.to] = 50; //NEED to test, makes it about 50% faster from start node with it commented out
 
 			ss->reduction = reductions[is_pv][improving][depth][i]; //TRY CHANGING I TO LEGAL MOVES , SEE IF ELO GAINS
 
