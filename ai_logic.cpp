@@ -483,19 +483,18 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 			if (depth < 10 && legalMoves >= futileMoveCounts[improving][depth]) {
 				shouldSkip = true;
 			}
-			
-			
+						
 			predictedDepth = newDepth - reductions[is_pv][improving][depth][legalMoves];
 
 			int futileVal;
-			if (!shouldSkip && predictedDepth < 6) {
+			if (!shouldSkip && predictedDepth < 7) {
 				//int a = history.gains[isWhite][newMove.piece][newMove.to];
 				//if (predictedDepth < 0) predictedDepth = 0;
 				//use predicted depth? Need to play with numbers!!
 				futileVal = ss->staticEval + history.gains[isWhite][newMove.piece][newMove.to] + (predictedDepth * 200) + 150; //
 
 				if (futileVal <= alpha) {
-					bestScore = std::max(futileVal, bestScore);
+					//bestScore = std::max(futileVal, bestScore);
 					shouldSkip = true;
 				}
 			}
@@ -543,6 +542,7 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 
 			//reduce reductions for moves that escape capture
 			if (ss->reduction) {
+				//reverse move and pass SEE a reversed move to and from
 				newBoard.unmakeMove(newMove, zobrist, isWhite);
 				Move n; n.from = newMove.to; n.to = newMove.from; n.piece = newMove.piece;
 
@@ -639,9 +639,9 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 	}
 
     if(!legalMoves){
-		//if there are no legal moves and we are in check it's checkmate this node
+		//if there are no legal moves and we are in checkmate this node
         if(FlagInCheck) alpha = mated_in(ss->ply);
-		//else it's a draw, return draw score - prefering mate to draw
+		//else it's a stalemate, return contempt score - prefering mate to draw
         else alpha = contempt(newBoard, isWhite); 
 
 	}
@@ -682,7 +682,7 @@ int Ai_Logic::quiescent(BitBoards& newBoard, int alpha, int beta, bool isWhite, 
 	ttMove = ttentry ? ttentry->move.flag : false; //is there a move stored in transposition table?
 	ttValue = ttentry ? valueFromTT(ttentry->eval, ss->ply) : INVALID; //if there is a TT entry, grab its value
 
-/*
+///*
 	if (ttentry
 		&& ttentry->depth >= DEPTH_QS
 		&& (is_pv ? ttentry->flag == TT_EXACT
@@ -692,7 +692,7 @@ int Ai_Logic::quiescent(BitBoards& newBoard, int alpha, int beta, bool isWhite, 
 
 		return ttValue;
 	}
-*/
+//*/
     evaluateBB eval;
     //evaluate board position
     int standingPat = eval.evalBoard(isWhite, newBoard, zobrist);
@@ -703,7 +703,7 @@ int Ai_Logic::quiescent(BitBoards& newBoard, int alpha, int beta, bool isWhite, 
 
     if(standingPat >= beta){
 
-		//if (!ttentry) TT.save(zobrist.zobristKey, DEPTH_QS, valueToTT(standingPat, ply), TT_BETA); //save to TT if there's no entry MAJOR PROBLEMS WITH THIS 
+		//if (!ttentry) TT.save(zobrist.zobristKey, DEPTH_QS, valueToTT(standingPat, ss->ply), TT_BETA); //save to TT if there's no entry MAJOR PROBLEMS WITH THIS 
 		return beta;
     }
 

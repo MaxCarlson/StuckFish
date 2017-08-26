@@ -12,38 +12,38 @@ class evaluateBB
 public:
 
     //forms total evaluation for baord state
-    int evalBoard(bool isWhite, const BitBoards &BBBoard, const ZobristH &zobristE);
+    int evalBoard(bool isWhite, const BitBoards &boards, const ZobristH &zobristE);
 
 
 private:
     //gets rudimentry value of piece + square table value
-	void evalPieces();
+	void evalPieces(const BitBoards & boards);
 
 
     //generate zone around king ///Up for debate as to how large zone should be, currently encompasses 8 tiles directly around king
     //currently includes blocking pieces in zone
-    void generateKingZones(bool isWhite);
+    void generateKingZones(const BitBoards & boards, bool isWhite);
         U64 wKingZ;
         U64 bKingZ;
     //king pawn shield info
-    int wKingShield();
-    int bKingShield();
+    int wKingShield(const BitBoards & boards);
+    int bKingShield(const BitBoards & boards);
 
 
 
 
 //piece evaluation for mobility, attacking king squares, etc
-    int getPawnScore();
-    int pawnEval(bool isWhite, int location);
+    int getPawnScore(const BitBoards & boards);
+    int pawnEval(const BitBoards & boards, bool isWhite, int location);
         int isPawnSupported(bool isWhite, U64 pawn, U64 pawns);
 
-    void evalKnight(bool isWhite, int location);
+    void evalKnight(const BitBoards & boards, bool isWhite, int location);
 
-    void evalBishop(bool isWhite, int location);
+    void evalBishop(const BitBoards & boards, bool isWhite, int location);
 
-    void evalRook(bool isWhite, int location);
+    void evalRook(const BitBoards & boards, bool isWhite, int location);
 
-    void evalQueen(bool isWhite, int location);
+    void evalQueen(const BitBoards & boards, bool isWhite, int location);
 
     //gets blocked pieces data
     void blockedPieces(int side, const BitBoards &BBBoard);

@@ -93,9 +93,9 @@ struct evalVect {
 } ev; //object to hold values incase we want to print
 
 
-int evaluateBB::evalBoard(bool isWhite, const BitBoards& BBBoard, const ZobristH& zobristE)
+int evaluateBB::evalBoard(bool isWhite, const BitBoards& boards, const ZobristH& zobristE)
 {
-    //transposition hash for board evals
+    //transposition hash for boards evals
     //int hash = (int)(zobristE.zobristKey % 5021983);
 	int hash = zobristE.zobristKey & 5021982;
     HashEntry entry = transpositionEval[hash];   
@@ -112,10 +112,6 @@ int evaluateBB::evalBoard(bool isWhite, const BitBoards& BBBoard, const ZobristH
         }
 
     }
-
-    //if we don't get a hash hit, setup boards in global to mimic real boards
-    //and proceed with eval, we still might get a pawn hash-table hit later
-    evalMoveGen.grab_boards(BBBoard, isWhite);
 
     //reset values
     int result = 0, midGScore = 0, endGScore = 0;
@@ -142,12 +138,12 @@ int evaluateBB::evalBoard(bool isWhite, const BitBoards& BBBoard, const ZobristH
     }
 
     //generate zones around kings
-    generateKingZones(true);
-    generateKingZones(false);
+    generateKingZones(boards, true);
+    generateKingZones(boards, false);
 
 
 	//evaluate all pieces and positions and store info
-	evalPieces();
+	evalPieces(boards);
 
     //need to add end game piece square tables
     midGScore = ev.pieceMaterial[WHITE] - ev.pieceMaterial[BLACK];
@@ -163,10 +159,10 @@ int evaluateBB::evalBoard(bool isWhite, const BitBoards& BBBoard, const ZobristH
 
     //evaluate king shield and part of blocking later once finished
 
-    ev.kingShield[WHITE] = wKingShield();
-    ev.kingShield[BLACK] = bKingShield();
-	blockedPieces(WHITE, BBBoard);
-	blockedPieces(BLACK, BBBoard);
+    ev.kingShield[WHITE] = wKingShield(boards);
+    ev.kingShield[BLACK] = bKingShield(boards);
+	blockedPieces(WHITE, boards);
+	blockedPieces(BLACK, boards);
 
     midGScore += (ev.kingShield[WHITE] - ev.kingShield[BLACK]);
 
@@ -187,7 +183,7 @@ int evaluateBB::evalBoard(bool isWhite, const BitBoards& BBBoard, const ZobristH
 
     //probe pawn hash table for a hit, if we don't get a hit
     //proceed with pawnEval
-    result += getPawnScore();
+    result += getPawnScore(boards);
 
     /********************************************************************
     *  Merge midgame and endgame score. We interpolate between these    *
@@ -214,8 +210,8 @@ int evaluateBB::evalBoard(bool isWhite, const BitBoards& BBBoard, const ZobristH
      *  less than two attackers or if the attacker has no queen.        *
      *******************************************************************/
 
-    if(ev.attCount[WHITE] < 2 || BBBoard.BBWhiteQueens == 0LL) ev.attWeight[WHITE] = 0;
-    if(ev.attCount[BLACK] < 2 || BBBoard.BBBlackQueens == 0LL) ev.attWeight[BLACK] = 0;
+    if(ev.attCount[WHITE] < 2 || boards.BBWhiteQueens == 0LL) ev.attWeight[WHITE] = 0;
+    if(ev.attCount[BLACK] < 2 || boards.BBBlackQueens == 0LL) ev.attWeight[BLACK] = 0;
     result += SafetyTable[ev.attWeight[WHITE]];
     result -= SafetyTable[ev.attWeight[BLACK]];
 
@@ -469,25 +465,25 @@ int passed_pawn_pcsq[2][64] = { {
 }
 };
 
-void evaluateBB::evalPieces() 
+void evaluateBB::evalPieces(const BitBoards & boards) 
 {
 	//evaluate all pieces and store relvent info to struct ev
 	U64  wpawns, wknights, wrooks, wbishops, wqueens, wking, bpawns, bknights, brooks, bbishops, bqueens, bking;
 
 	//white
-	wpawns = evalMoveGen.BBWhitePawns;
-	wknights = evalMoveGen.BBWhiteKnights;
-	wbishops = evalMoveGen.BBWhiteBishops;
-	wrooks = evalMoveGen.BBWhiteRooks;
-	wqueens = evalMoveGen.BBWhiteQueens;
-	wking = evalMoveGen.BBWhiteKing;
+	wpawns = boards.BBWhitePawns;
+	wknights = boards.BBWhiteKnights;
+	wbishops = boards.BBWhiteBishops;
+	wrooks = boards.BBWhiteRooks;
+	wqueens = boards.BBWhiteQueens;
+	wking = boards.BBWhiteKing;
 	//black
-	bpawns = evalMoveGen.BBBlackPawns;
-	bknights = evalMoveGen.BBBlackKnights;
-	bbishops = evalMoveGen.BBBlackBishops;
-	brooks = evalMoveGen.BBBlackRooks;
-	bqueens = evalMoveGen.BBBlackQueens;
-	bking = evalMoveGen.BBBlackKing;
+	bpawns = boards.BBBlackPawns;
+	bknights = boards.BBBlackKnights;
+	bbishops = boards.BBBlackBishops;
+	brooks = boards.BBBlackRooks;
+	bqueens = boards.BBBlackQueens;
+	bking = boards.BBBlackKing;
 
 	//pawns
 	while (wpawns) {
@@ -504,51 +500,51 @@ void evaluateBB::evalPieces()
 	while (wknights) {
 		int x = pop_lsb(&wknights);
 		ev.knightCount[WHITE] ++;
-		evalKnight(true, x);
+		evalKnight(boards, true, x);
 		ev.pieceMaterial[WHITE] += 325 + wKnightsSqT[x];
 	}
 	while (bknights) {
 		int x = pop_lsb(&bknights);
 		ev.knightCount[BLACK] ++;
-		evalKnight(false, x);
+		evalKnight(boards, false, x);
 		ev.pieceMaterial[BLACK] += 325 + bKnightSqT[x]; 
 	}
 	//bishops
 	while (wbishops) {
 		int x = pop_lsb(&wbishops);
 		ev.bishopCount[WHITE] ++;
-		evalBishop(true, x);
+		evalBishop(boards, true, x);
 		ev.pieceMaterial[WHITE] += 335 + wBishopsSqT[x];
 	}
 	while (bbishops) {
 		int x = pop_lsb(&bbishops);
 		ev.bishopCount[BLACK] ++;
-		evalBishop(false, x);
+		evalBishop(boards, false, x);
 		ev.pieceMaterial[BLACK] += 335 + bBishopsSqT[x];
 	}
 	//rooks
 	while (wrooks) {
 		int x = pop_lsb(&wrooks);
 		ev.rookCount[WHITE] ++;
-		evalRook(true, x);
+		evalRook(boards, true, x);
 		ev.pieceMaterial[WHITE] += 500 + wRooksSqT[x];
 	}
 	while (brooks) {
 		int x = pop_lsb(&brooks);
 		ev.rookCount[BLACK] ++;
-		evalRook(false, x);
+		evalRook(boards, false, x);
 		ev.pieceMaterial[BLACK] += 500 + bRookSqT[x];
 	}
 	//queens
 	while (wqueens) {
 		int x = pop_lsb(&wqueens);
-		evalQueen(true, x);
+		evalQueen(boards, true, x);
 		ev.queenCount[WHITE] ++;
 		ev.pieceMaterial[WHITE] += 975 + wQueensSqt[x];
 	}
 	while (bqueens) {
 		int x = pop_lsb(&bqueens);
-		evalQueen(false, x);
+		evalQueen(boards, false, x);
 		ev.queenCount[BLACK] ++;
 		ev.pieceMaterial[BLACK] += 975 + bQueenSqT[x];
 	}
@@ -563,12 +559,12 @@ void evaluateBB::evalPieces()
 	}
 }
 
-void evaluateBB::generateKingZones(bool isWhite)
+void evaluateBB::generateKingZones(const BitBoards & boards, bool isWhite)
 {
 	//draw zone around king all 8 tiles around him, plus three in front -- north = front for white, south black
     U64 kZone;
-    if(isWhite) kZone = evalMoveGen.BBWhiteKing;
-    else kZone = evalMoveGen.BBBlackKing;
+    if(isWhite) kZone = boards.BBWhiteKing;
+    else kZone = boards.BBBlackKing;
     
 	int location = msb(kZone);
 
@@ -595,12 +591,12 @@ void evaluateBB::generateKingZones(bool isWhite)
     else bKingZ = kZone;
 }
 
-int evaluateBB::wKingShield()
+int evaluateBB::wKingShield(const BitBoards & boards)
 {
     //gather info on defending pawns
     int result = 0;
-    U64 king = evalMoveGen.BBWhiteKing;
-    U64 pawns = evalMoveGen.BBWhitePawns;
+    U64 king = boards.BBWhiteKing;
+    U64 pawns = boards.BBWhitePawns;
     U64 location = 1LL;
     //king on kingside
     if(wKingSide & king){
@@ -626,11 +622,11 @@ int evaluateBB::wKingShield()
     return result;
 }
 
-int evaluateBB::bKingShield()
+int evaluateBB::bKingShield(const BitBoards & boards)
 {
     int result = 0;
-    U64 king = evalMoveGen.BBBlackKing;
-    U64 pawns = evalMoveGen.BBBlackPawns;
+    U64 king = boards.BBBlackKing;
+    U64 pawns = boards.BBBlackPawns;
     U64 location = 1LL;
 
     //king on kingside
@@ -658,11 +654,11 @@ int evaluateBB::bKingShield()
     return result;
 }
 
-int evaluateBB::getPawnScore()
+int evaluateBB::getPawnScore(const BitBoards & boards)
 {
 	
-    //get zobristE/bitboard of current pawn positions
-    U64 pt = evalMoveGen.BBWhitePawns | evalMoveGen.BBBlackPawns;
+    //get zobristE/bitboards of current pawn positions
+    U64 pt = boards.BBWhitePawns | boards.BBBlackPawns;
     int hash = pt & 399999;
 
     //probe pawn hash table using bit-wise OR of white pawns and black pawns as zobrist key
@@ -670,24 +666,24 @@ int evaluateBB::getPawnScore()
         return transpositionPawn[hash].eval;
     }
 
-	//U64 pt = evalMoveGen.BBWhitePawns | evalMoveGen.BBBlackPawns;
+	//U64 pt = boards.BBWhitePawns | boards.BBBlackPawns;
 	//const PawnEntry *ttpawnentry;
 	//ttpawnentry = TT.probePawnT(pt);
 	//if (ttpawnentry) return ttpawnentry->eval;
 
-    //if we don't get a hash hit, search through all pawns on board and return score
-	U64 wPawns = evalMoveGen.BBWhitePawns;
-	U64 bPawns = evalMoveGen.BBBlackPawns;
+    //if we don't get a hash hit, search through all pawns on boards and return score
+	U64 wPawns = boards.BBWhitePawns;
+	U64 bPawns = boards.BBBlackPawns;
 
 	int score = 0;
 	while (wPawns) {
 		int loc = pop_lsb(&wPawns);
-		score += pawnEval(true, loc);
+		score += pawnEval(boards, true, loc);
 	}
 
 	while (bPawns) {
 		int loc = pop_lsb(&bPawns);
-		score -= pawnEval(false, loc);
+		score -= pawnEval(boards, false, loc);
 	}
 
     //store entry to pawn hash table
@@ -699,7 +695,7 @@ int evaluateBB::getPawnScore()
     return score;
 }
 
-int evaluateBB::pawnEval(bool isWhite, int location)
+int evaluateBB::pawnEval(const BitBoards & boards, bool isWhite, int location)
 {
     int side;
     int result = 0;
@@ -710,12 +706,12 @@ int evaluateBB::pawnEval(bool isWhite, int location)
     U64 pawn = 0LL, opawns, epawns;
     pawn += 1LL << location;
     if(isWhite){
-        opawns = evalMoveGen.BBWhitePawns;
-        epawns = evalMoveGen.BBBlackPawns;
+        opawns = boards.BBWhitePawns;
+        epawns = boards.BBBlackPawns;
         side = 0;
     } else {
-        opawns = evalMoveGen.BBBlackPawns;
-        epawns = evalMoveGen.BBWhitePawns;
+        opawns = boards.BBBlackPawns;
+        epawns = boards.BBWhitePawns;
         side = 1;
     }
 
@@ -759,7 +755,7 @@ int evaluateBB::pawnEval(bool isWhite, int location)
     //if there is an enemy pawn on the right or left ahead of this pawn
     if(right & epawns || left & epawns) flagIsPassed = 0;
 
-    opawns |= pawn; // restore real our pawn board
+    opawns |= pawn; // restore real our pawn boards
 
     tmpSup &= ~ RankMasks8[rank]; //remove our rank from supports
     supports &= tmpSup; // get BB of area whether support pawns could be
@@ -793,20 +789,20 @@ int evaluateBB::pawnEval(bool isWhite, int location)
 
 int evaluateBB::isPawnSupported(bool isWhite, U64 pawn, U64 pawns)
 {
-    if(evalMoveGen.westOne(pawn) & pawns) return 1;
-    if(evalMoveGen.eastOne(pawn) & pawns) return 1;
+    if((pawn >> 1) & pawns) return 1;
+    if((pawn << 1) & pawns) return 1;
 
     if(isWhite){
-        if(evalMoveGen.soWeOne(pawn) & pawns) return 1;
-        if(evalMoveGen.soEaOne(pawn) & pawns) return 1;
+        if((pawn << 7) & pawns) return 1;
+        if((pawn << 9) & pawns) return 1;
     } else {
-        if(evalMoveGen.noWeOne(pawn) & pawns) return 1;
-        if(evalMoveGen.noEaOne(pawn) & pawns) return 1;
+        if((pawn >> 9) & pawns) return 1;
+        if((pawn >> 7) & pawns) return 1;
     }
     return 0;
 }
 
-void evaluateBB::evalKnight(bool isWhite, int location)
+void evaluateBB::evalKnight(const BitBoards & boards, bool isWhite, int location)
 {
     int kAttks = 0, mob = 0, side;
     ev.gamePhase += 1;
@@ -814,13 +810,13 @@ void evaluateBB::evalKnight(bool isWhite, int location)
     U64 friends, eking, kingZone;
 
     if(isWhite){
-        friends = evalMoveGen.BBWhitePieces;
-        eking = evalMoveGen.BBBlackKing;
+        friends = boards.BBWhitePieces;
+        eking = boards.BBBlackKing;
         kingZone = bKingZ;
         side = 0;
     } else {
-        friends = evalMoveGen.BBBlackPieces;
-        eking = evalMoveGen.BBWhiteKing;
+        friends = boards.BBBlackPieces;
+        eking = boards.BBWhiteKing;
         kingZone = wKingZ;
         side = 1;
     }
@@ -862,7 +858,7 @@ void evaluateBB::evalKnight(bool isWhite, int location)
 
 }
 
-void evaluateBB::evalBishop(bool isWhite, int location)
+void evaluateBB::evalBishop(const BitBoards & boards, bool isWhite, int location)
 {
     int kAttks = 0, mob = 0, side;
     ev.gamePhase += 1;
@@ -870,18 +866,18 @@ void evaluateBB::evalBishop(bool isWhite, int location)
     U64 friends, eking, kingZone;
 
     if(isWhite){
-        friends = evalMoveGen.BBWhitePieces;
-        eking = evalMoveGen.BBBlackKing;
+        friends = boards.BBWhitePieces;
+        eking = boards.BBBlackKing;
         kingZone = bKingZ;
         side = 0;
     } else {
-        friends = evalMoveGen.BBBlackPieces;
-        eking = evalMoveGen.BBWhiteKing;
+        friends = boards.BBBlackPieces;
+        eking = boards.BBWhiteKing;
         kingZone = wKingZ;
         side = 1;
     }
 
-    U64 moves = slider_attacks.BishopAttacks(evalMoveGen.FullTiles, location);
+    U64 moves = slider_attacks.BishopAttacks(boards.FullTiles, location);
     moves &= ~friends & ~eking;
 
     while(moves){
@@ -906,7 +902,7 @@ void evaluateBB::evalBishop(bool isWhite, int location)
 
 }
 
-void evaluateBB::evalRook(bool isWhite, int location)
+void evaluateBB::evalRook(const BitBoards & boards, bool isWhite, int location)
 {
     bool  ownBlockingPawns = false, oppBlockingPawns = false;
     int kAttks = 0, mob = 0, side;
@@ -918,21 +914,21 @@ void evaluateBB::evalRook(bool isWhite, int location)
     currentFile = FileABB << x;
 
     if(isWhite){
-        friends = evalMoveGen.BBWhitePieces;
-        eking = evalMoveGen.BBBlackKing;
+        friends = boards.BBWhitePieces;
+        eking = boards.BBBlackKing;
         kingZone = bKingZ;
         side = 0;
 
-        opawns = evalMoveGen.BBWhitePawns;
-        epawns = evalMoveGen.BBBlackPawns;
+        opawns = boards.BBWhitePawns;
+        epawns = boards.BBBlackPawns;
     } else {
-        friends = evalMoveGen.BBBlackPieces;
-        eking = evalMoveGen.BBWhiteKing;
+        friends = boards.BBBlackPieces;
+        eking = boards.BBWhiteKing;
         kingZone = wKingZ;
         side = 1;
 
-        opawns = evalMoveGen.BBBlackPawns;
-        epawns = evalMoveGen.BBWhitePawns;
+        opawns = boards.BBBlackPawns;
+        epawns = boards.BBWhitePawns;
     }
 
 //open and half open file detection add bonus to mobility score of side
@@ -954,7 +950,7 @@ void evaluateBB::evalRook(bool isWhite, int location)
     }
 
 //mobility and king attack gen/detection
-    U64 moves = slider_attacks.RookAttacks(evalMoveGen.FullTiles, location);
+    U64 moves = slider_attacks.RookAttacks(boards.FullTiles, location);
     moves &= ~friends & ~ eking;
 
     while(moves){
@@ -977,7 +973,7 @@ void evaluateBB::evalRook(bool isWhite, int location)
     }
 }
 
-void evaluateBB::evalQueen(bool isWhite, int location)
+void evaluateBB::evalQueen(const BitBoards & boards, bool isWhite, int location)
 {
     ev.gamePhase += 4;
     int kAttks = 0, mob = 0, side;
@@ -985,19 +981,19 @@ void evaluateBB::evalQueen(bool isWhite, int location)
     U64 friends, eking, kingZone;
 
     if(isWhite){
-        friends = evalMoveGen.BBWhitePieces;
-        eking = evalMoveGen.BBBlackKing;
+        friends = boards.BBWhitePieces;
+        eking = boards.BBBlackKing;
         kingZone = bKingZ;
         side = 0;
     } else {
-        friends = evalMoveGen.BBBlackPieces;
-        eking = evalMoveGen.BBWhiteKing;
+        friends = boards.BBBlackPieces;
+        eking = boards.BBWhiteKing;
         kingZone = wKingZ;
         side = 1;
     }
 
 //similar to move gen, increment mobility and king attacks
-    U64 moves = slider_attacks.QueenAttacks(evalMoveGen.FullTiles, location);
+    U64 moves = slider_attacks.QueenAttacks(boards.FullTiles, location);
     moves &= ~friends & ~eking;
 
     while(moves){
@@ -1022,26 +1018,26 @@ void evaluateBB::evalQueen(bool isWhite, int location)
 
 }
 
-void evaluateBB::blockedPieces(int side, const BitBoards &BBBoard)
+void evaluateBB::blockedPieces(int side, const BitBoards& boards)
 {
     U64 pawn, epawn, knight, bishop, rook, king;
-    U64 empty = BBBoard.EmptyTiles;
+    U64 empty = boards.EmptyTiles;
     U64 emptyLoc = 1LL;
     int oppo = !side;
     if(side == WHITE){
-        pawn = BBBoard.BBWhitePawns;
-        epawn = BBBoard.BBBlackPawns;
-        knight = BBBoard.BBWhiteKnights;
-        bishop = BBBoard.BBWhiteBishops;
-		rook = BBBoard.BBWhiteRooks;
-        king = BBBoard.BBWhiteKing;
+        pawn = boards.BBWhitePawns;
+        epawn = boards.BBBlackPawns;
+        knight = boards.BBWhiteKnights;
+        bishop = boards.BBWhiteBishops;
+		rook = boards.BBWhiteRooks;
+        king = boards.BBWhiteKing;
     } else {
-        pawn = BBBoard.BBBlackPawns;
-        epawn = BBBoard.BBWhitePawns;
-        knight = BBBoard.BBBlackKnights;
-        bishop = BBBoard.BBBlackBishops;
-		rook = BBBoard.BBBlackRooks;
-        king = BBBoard.BBBlackKing;
+        pawn = boards.BBBlackPawns;
+        epawn = boards.BBWhitePawns;
+        knight = boards.BBBlackKnights;
+        bishop = boards.BBBlackBishops;
+		rook = boards.BBBlackRooks;
+        king = boards.BBBlackKing;
     }
 
     //central pawn block bishop blocked
