@@ -99,7 +99,7 @@ typedef long long S64;
 #define END_GAME_MAT 1300
 
 #define DEPTH_QS 0
-#define DEPTH_QS_NO_CHECK -1 //add qs checks at somepoint
+#define DEPTH_QS_NO_CHECK -2 //add qs checks at somepoint
 
 
 #define VALUE_MATE 32000

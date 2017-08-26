@@ -436,7 +436,7 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
     Move hashMove; //move to store alpha in and pass to TTable
 	for (int i = 0; i < movesNum; ++i) {
 		//grab best scoring move
-		Move newMove = gen_moves.movegen_sort(ss->ply, &gen_moves.moveAr[0]);
+		Move newMove = gen_moves.movegen_sort(ss->ply, gen_moves.moveAr);
 
 		//if (sd.excludedMove && newMove.score >= SORT_HASH) continue;
 
@@ -676,8 +676,6 @@ int Ai_Logic::quiescent(BitBoards& newBoard, int alpha, int beta, bool isWhite, 
 	int oldAlpha, bestScore, score;
 	ss->ply = (ss - 1)->ply + 1;
 
-	//if (is_pv) oldAlpha = alpha; //??Need?
-
 	ttentry = TT.probe(zobrist.zobristKey);
 	ttMove = ttentry ? ttentry->move.flag : false; //is there a move stored in transposition table?
 	ttValue = ttentry ? valueFromTT(ttentry->eval, ss->ply) : INVALID; //if there is a TT entry, grab its value
@@ -728,28 +726,25 @@ int Ai_Logic::quiescent(BitBoards& newBoard, int alpha, int beta, bool isWhite, 
 
     for(int i = 0; i < moveNum; ++i)
     {        
-        Move newMove = gen_moves.movegen_sort(ss->ply, &gen_moves.moveAr[0]);
-
-		///*
-		//also not fast enough yet, though more testing is needed
+        Move newMove = gen_moves.movegen_sort(ss->ply, gen_moves.moveAr);
+	
 		//delta pruning
 		if ((standingPat + SORT_VALUE[newMove.captured] + 200 < alpha)
 			&& (newBoard.sideMaterial[!isWhite] - SORT_VALUE[newMove.captured] > END_GAME_MAT)
 			&& newMove.flag != 'Q') continue;
-			
+					
 		//Don't search losing capture moves if not in PV
 		if (!is_pv && gen_moves.SEE(newMove, newBoard, isWhite, true) < 0) continue;
 
         newBoard.makeMove(newMove, zobrist, isWhite);
         gen_moves.grab_boards(newBoard, isWhite);
 
-        //is move legal? if not skip it ~~~~~~~~ possibly remove check later?
+        //is move legal? if not skip it 
         if(gen_moves.isAttacked(king, isWhite, true)){
             newBoard.unmakeMove(newMove, zobrist, isWhite);
             gen_moves.grab_boards(newBoard, isWhite);
             continue;
         }
-
 
         score = -quiescent(newBoard, -beta, -alpha, !isWhite, ss, quietDepth-1, is_pv);
 
@@ -772,7 +767,7 @@ int Ai_Logic::quiescent(BitBoards& newBoard, int alpha, int beta, bool isWhite, 
 
     }
 
-	//TT.save(hashMove, zobrist.zobristKey, DEPTH_QS, valueToTT(alpha, ply), hashFlag);
+	//TT.save(hashMove, zobrist.zobristKey, DEPTH_QS, valueToTT(alpha, ss->ply), hashFlag);
 
     return alpha;
 }

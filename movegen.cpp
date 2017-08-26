@@ -489,9 +489,9 @@ void MoveGen::movegen_push(char piece, char captured, char flag, U8 from, U8 to)
 
 
     /**************************************************************************
-    * Quiet moves are sorted by history score.                                *
+    * Quiet moves are sorted by history and gains score.                      *
     **************************************************************************/
-    moveAr[moveCount].score = history.history[isWhite][from][to]; //find a way to pass historys here instead of using global???
+	moveAr[moveCount].score = history.history[isWhite][from][to]; //+ history.gains[isWhite][piece][to] * 10; //find a way to pass historys here instead of using global???
 
     //scoring capture moves
     if(captured != PIECE_EMPTY){
