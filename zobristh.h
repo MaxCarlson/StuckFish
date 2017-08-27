@@ -21,8 +21,6 @@ public:
 	U64 zCastle[4];
 	//used to change color of move
 	U64 zBlackMove;
-	//test ~~ used to indicate a NULL move state
-	U64 zNullMove;
     //U64 zEnPassasnt[8]; ~~restore once implemented
 
     //generate unsigned 64 bit ints for hash mapping
@@ -40,7 +38,6 @@ public:
     //Update zobrist key by XOR ing rand numbers in zArray
     void UpdateKey(int start, int end, const Move& moveKey, bool isWhite);
     void UpdateColor();
-    void UpdateNull();
 
     //print out how many times a number in the array is created
     //use excel to graph results

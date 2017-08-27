@@ -41,8 +41,6 @@ public:
 
 	
 
-	int relativeRank(int sq, bool isWhite);
-
 //bitboards
     U64 FullTiles;
     U64 EmptyTiles;
@@ -64,28 +62,26 @@ public:
     U64 BBBlackBishops;
     U64 BBBlackQueens;
     U64 BBBlackKing;
-/*
-	//master zobrist key for boards
-	U64 Key;
-	U64 fetchKey(const Move & m, bool isWhite);
-	U64 getZobristHash();
-	void updateKeyColor();
-	//construct zobrist arrays
-	void initializeZobrist(ZobristH zobrist);
-*/
+
+	//NEED TO IMPLEMENT!
+	//holds all bitboards of all pieces, [i][0] is blank at 0LL and used for non captures that still |
+	U64 byColorPiece[2][7]; //0 white, 1 black ; 0 = no piece, 1 pawn, 2 knight, 3 bishop, 4 rook, 5 queen, 6 king
+	U64 allColorPieces[2]; //0 white, 1 black
+
 	//array used to denote if castling has occured
 	bool castled[4]; //wqs, wks, bqs, bks
 	bool rookMoved[4]; //wqR, wkR, bqr, bkr
 
 private:
-	//updates zobrist key for boards
-	void UpdateKey(int start, int end, const Move & moveKey, bool isWhite);
 
-    //removes cacptured piece from BB's
+    //removes captured piece from BB's
     void removeCapturedPiece(bool isWhite, char captured, U64 location);
 
     //rolls back a capture on move unmake
     void undoCapture(U64 location, char piece, bool isNotWhite);
+
+	//returns relative rank for side to move
+	int relativeRank(int sq, bool isWhite);
 };
 
 inline bool BitBoards::isPawnPush(const Move &m, bool isWhite) 

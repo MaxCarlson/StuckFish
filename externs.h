@@ -25,8 +25,6 @@ extern const int SORT_VALUE[7];
 //magics object
 extern SliderAttacks slider_attacks;
 
-extern MoveGen evalMoveGen;
-
 //half turns
 extern int turns;
 

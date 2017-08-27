@@ -82,7 +82,7 @@ Move Ai_Logic::search(BitBoards& newBoard, bool isWhite) {
 	newBoard.zobrist.getZobristHash(newBoard);
 
 	//update color only applied on black turn
-	if (!isWhite) newBoard.zobrist.UpdateColor();
+	//if (!isWhite) newBoard.zobrist.UpdateColor();
 
 	//decrease history values and clear gains stats after a search
 	ageHistorys();
@@ -314,7 +314,6 @@ int Ai_Logic::alphaBeta(BitBoards& newBoard, int depth, int alpha, int beta, sea
 		return ttValue;
 	}
 
-
     int score;
     if(depth < 1 || timeOver){
         //run capture search to max depth of queitSD
@@ -347,6 +346,7 @@ int Ai_Logic::alphaBeta(BitBoards& newBoard, int depth, int alpha, int beta, sea
 
 		history.updateGain((ss - 1)->currentMove, -(ss - 1)->staticEval - ss->staticEval, !isWhite);
 	}
+
 
 //eval pruning / static null move
     if(depth < 3 && !is_pv && abs(beta - 1) > -INF + 100){
@@ -783,7 +783,7 @@ int Ai_Logic::quiescent(BitBoards& newBoard, int alpha, int beta, bool isWhite, 
 
     }
 
-	//TT.save(hashMove, zobrist.zobristKey, DEPTH_QS, valueToTT(alpha, ss->ply), hashFlag);
+	//TT.save(hashMove, newBoard.zobrist.zobristKey, DEPTH_QS, valueToTT(alpha, ss->ply), hashFlag);
 
     return alpha;
 }
@@ -816,7 +816,6 @@ bool Ai_Logic::isRepetition(const BitBoards& newBoard, const Move& m)
 
 	for (int i = 0; i < history.twoFoldRep.size(); ++i) {
 		if (newBoard.zobrist.zobristKey == history.twoFoldRep[i]) repCount++;
-
 	}
 
 	if (repCount >= 2) {

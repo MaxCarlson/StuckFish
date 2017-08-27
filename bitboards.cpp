@@ -21,195 +21,6 @@ std::string boardArr[8][8] = {
 
 //used for flipping rank to whites relative rank
 const int flipRank[8] = { 8, 7, 6, 5, 4, 3 , 2, 1 };
-/*
-namespace zobrist {
-	//array holding U64 numbers for changing zobrist keys
-	U64 pieceKeys[2][7][64]; //color, piece (0 is no piece), square
-	//used to denote a castling has taken place for zobrist; wqs, wks, bqs, bks
-	U64 zCastle[4];
-	U64 zEnPassant[8];
-	U64 color;
-}
-
-void BitBoards::initializeZobrist(ZobristH zobrist)
-{
-
-	//fill zorbist array with random unisgned 64 bit ints
-	for (int color = 0; color < 2; color++) {
-		for (int pieceType = 0; pieceType < 7; pieceType++) {
-			for (int square = 0; square < 64; square++) {
-				//fill no pieces with 0LL so when theres no capture master key isn't muddled by XOR
-				if (pieceType == 0) zobrist::pieceKeys[color][pieceType][square] = 0LL;
-
-				zobrist::pieceKeys[color][pieceType][square] = zobrist.random64();
-			}
-		}
-
-	}
-	
-	//enpassant and castle filling below
-
-	for (int column = 0; column < 8; column++)
-	{
-	zobrist::zEnPassant[column] = zobrist.random64();
-	}
-	
-
-	for (int i = 0; i < 4; i++)
-	{
-		zobrist::zCastle[i] = zobrist.random64(); //white queen side, white king side, black qs, bks
-	}
-
-	//random is it blacks turn or not
-	zobrist::color = zobrist.random64();
-	
-}
-
-void BitBoards::UpdateKey(int start, int end, const Move& moveKey, bool isWhite)
-{
-	//gather piece, capture, and w or b info from movekey
-	//normal move
-	int piece = moveKey.piece;
-	int captured = moveKey.captured;
-
-	//XOR zobristKey with zArray number at piece start end then end location
-	//if piece is white..
-	if (isWhite) {
-		switch (piece) {
-		case PAWN:
-			//if normal pawn move
-			if (moveKey.flag == '0') {
-				Key ^= zArray[0][PAWN][start];
-				Key ^= zArray[0][PAWN][end];
-			}
-			else { //if pawn promotion
-				Key ^= zArray[0][PAWN][start];
-				Key ^= zArray[0][QUEEN][end]; //only handles queen promotions atm
-			}
-			break;
-		default: //default for rest of pieces, castling handled down below
-			Key ^= zArray[0][piece][start];
-			Key ^= zArray[0][piece][end];
-			break;
-		}
-		//captures (a non capture will be 0, which will XOR key with 0LL)
-		Key ^= zArray[0][captured][end];		
-	}
-	//black
-	else {
-		switch (piece) {
-		case PAWN:
-			if (moveKey.flag == '0') {
-				Key ^= zArray[1][PAWN][start];
-				Key ^= zArray[1][PAWN][end];
-			}
-			else {
-				Key ^= zArray[1][PAWN][start];
-				Key ^= zArray[1][QUEEN][end];
-			}
-			break;
-		default:
-			Key ^= zArray[1][piece][start];
-			Key ^= zArray[1][piece][end];
-			break;
-
-		}
-		Key ^= zArray[1][captured][end];
-	}
-
-	//need caslting code
-}
-
-void BitBoards::updateKeyColor()
-{
-	Key ^= color;
-}
-
-U64 BitBoards::fetchKey(const Move & m, bool isWhite)
-{
-	//get an idea of what most keys will be after moves..
-	//so we can prefetch that info
-	int color = 0;
-
-	if (!isWhite) color = 1;
-
-	Key ^= zArray[color][m.piece][m.from];
-	Key ^= zArray[color][m.piece][m.to];
-
-	Key ^= zArray[!color][m.captured][m.to]; //update if there's a capture
-
-	Key ^= zBlackMove; //update color
-
-	return Key; //return key estimate
-}
-
-U64 BitBoards::getZobristHash()
-{
-	U64 returnZKey = 0LL;
-	for (int square = 0; square < 64; square++) {
-		//white and black pawns
-		//if there is a white pawn on i square
-		if (((BBWhitePawns >> square) & 1) == 1)
-		{
-			//XOR the zkey with the U64 in the white pawns square
-			//that was generated from rand64
-			returnZKey ^= zArray[0][1][square];
-		}
-		else if (((BBBlackPawns >> square) & 1) == 1)
-		{
-			returnZKey ^= zArray[1][1][square];
-		}
-		//white pieces
-		else if (((BBWhiteKnights >> square) & 1) == 1)
-		{
-			returnZKey ^= zArray[0][2][square];
-		}
-		else if (((BBWhiteBishops >> square) & 1) == 1)
-		{
-			returnZKey ^= zArray[0][3][square];
-		}
-		else if (((BBWhiteRooks >> square) & 1) == 1)
-		{
-			returnZKey ^= zArray[0][4][square];
-		}
-		else if (((BBWhiteQueens >> square) & 1) == 1)
-		{
-			returnZKey ^= zArray[0][5][square];
-		}
-		else if (((BBWhiteKing >> square) & 1) == 1)
-		{
-			returnZKey ^= zArray[0][6][square];
-		}
-
-		//black pieces       
-		else if (((BBBlackKnights >> square) & 1) == 1)
-		{
-			returnZKey ^= zArray[1][2][square];
-		}
-		else if (((BBBlackBishops >> square) & 1) == 1)
-		{
-			returnZKey ^= zArray[1][3][square];
-		}
-		else if (((BBBlackRooks >> square) & 1) == 1)
-		{
-			returnZKey ^= zArray[1][4][square];
-		}
-		else if (((BBBlackQueens >> square) & 1) == 1)
-		{
-			returnZKey ^= zArray[1][5][square];
-		}
-		else if (((BBBlackKing >> square) & 1) == 1)
-		{
-			returnZKey ^= zArray[1][6][square];
-		}
-	}
-	//EnPassant and castling stuff add later
-
-	Key = returnZKey;
-
-	return returnZKey;
-}
-*/
 
 void BitBoards::constructBoards()
 {
@@ -522,10 +333,10 @@ void BitBoards::makeMove(const Move &move, bool isWhite)
 void BitBoards::unmakeMove(const Move &moveKey, bool isWhite)
 {
     //extract from to data
-    U8 xyI = moveKey.from;
-    U8 xyE = moveKey.to;
+    int xyI = moveKey.from;
+    int xyE = moveKey.to;
     //inital spot piece mask and end spot mask
-    U64 pieceMaskI = 1LL<< xyI;
+    U64 pieceMaskI = 1LL << xyI;
     U64 pieceMaskE = 1LL << xyE;
 
     if(isWhite){
@@ -759,88 +570,6 @@ void BitBoards::undoCapture(U64 location, char piece, bool isNotWhite)
 
 }
 
-void BitBoards::drawBB(U64 board)
-{
-    for(int i = 0; i < 64; i++){
-        if(board & (1ULL << i)){
-            std::cout<< 1 <<", ";
-        } else {
-            std::cout << 0 << ", ";
-        }
-        if((i+1)%8 == 0){
-            std::cout<< std::endl;
-        }
-    }
-    std::cout<< std::endl;
-}
-
-void BitBoards::drawBBA()
-{
-    char flips[8] = {'8', '7', '6', '5', '4', '3', '2', '1'};
-    char flipsL[8] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'};
-    int c = 0;
-
-    for(int i = 0; i < 64; i++){
-        if((i)%8 == 0){
-            std::cout<< std::endl;
-            std::cout << flips[c] << " | ";
-            c++;
-        }
-
-        if(BBWhitePawns & (1ULL<<i)){
-            std::cout << "P" << ", ";
-        }
-        if(BBWhiteRooks & (1ULL<<i)){
-            std::cout << "R" << ", ";
-        }
-        if(BBWhiteKnights & (1ULL<<i)){
-            std::cout << "N" << ", ";
-        }
-        if(BBWhiteBishops & (1ULL<<i)){
-            std::cout << "B" << ", ";
-        }
-        if(BBWhiteQueens & (1ULL<<i)){
-            std::cout << "Q" << ", ";
-        }
-        if(BBWhiteKing & (1ULL<<i)){
-            std::cout << "K" << ", ";
-        }
-        if(BBBlackPawns & (1ULL<<i)){
-            std::cout << "p" << ", ";
-        }
-        if(BBBlackRooks & (1ULL<<i)){
-            std::cout << "r" << ", ";
-        }
-        if(BBBlackKnights & (1ULL<<i)){
-            std::cout << "n" << ", ";
-        }
-        if(BBBlackBishops & (1ULL<<i)){
-            std::cout << "b" << ", ";
-        }
-        if(BBBlackQueens & (1ULL<<i)){
-            std::cout << "q" << ", ";
-        }
-        if(BBBlackKing & (1ULL<<i)){
-            std::cout << "k" << ", ";
-        }
-        if(EmptyTiles & (1ULL<<i)){
-            std::cout << " " << ", ";
-        }
-
-        //if(i % 8 == 7){
-        //    std::cout << "| " << flips[c] ;
-       //     c++;
-       // }
-    }
-
-    std::cout << std::endl << "    ";
-    for(int i = 0; i < 8; i++){
-        std::cout << flipsL[i] << "  ";
-    }
-
-    std::cout << std::endl << std::endl;;
-}
-
 void BitBoards::removeCapturedPiece(bool isWhite, char captured, U64 location)
 {
 	if (isWhite) {
@@ -915,12 +644,96 @@ void BitBoards::removeCapturedPiece(bool isWhite, char captured, U64 location)
 	}
 }
 
+//returns the rank of a square relative to side specified
 int BitBoards::relativeRank(int sq, bool isWhite)
 { //return reletive rank for side to move.
 	sq /= 8;
 	return isWhite ? flipRank[sq] : sq + 1;
 }
 
+//used for drawing a singular bitboard
+void BitBoards::drawBB(U64 board)
+{
+	for (int i = 0; i < 64; i++) {
+		if (board & (1ULL << i)) {
+			std::cout << 1 << ", ";
+		}
+		else {
+			std::cout << 0 << ", ";
+		}
+		if ((i + 1) % 8 == 0) {
+			std::cout << std::endl;
+		}
+	}
+	std::cout << std::endl;
+}
+//draws all bitboards as a chess board in chars
+void BitBoards::drawBBA()
+{
+	char flips[8] = { '8', '7', '6', '5', '4', '3', '2', '1' };
+	char flipsL[8] = { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H' };
+	int c = 0;
+
+	for (int i = 0; i < 64; i++) {
+		if ((i) % 8 == 0) {
+			std::cout << std::endl;
+			std::cout << flips[c] << " | ";
+			c++;
+		}
+
+		if (BBWhitePawns & (1ULL << i)) {
+			std::cout << "P" << ", ";
+		}
+		if (BBWhiteRooks & (1ULL << i)) {
+			std::cout << "R" << ", ";
+		}
+		if (BBWhiteKnights & (1ULL << i)) {
+			std::cout << "N" << ", ";
+		}
+		if (BBWhiteBishops & (1ULL << i)) {
+			std::cout << "B" << ", ";
+		}
+		if (BBWhiteQueens & (1ULL << i)) {
+			std::cout << "Q" << ", ";
+		}
+		if (BBWhiteKing & (1ULL << i)) {
+			std::cout << "K" << ", ";
+		}
+		if (BBBlackPawns & (1ULL << i)) {
+			std::cout << "p" << ", ";
+		}
+		if (BBBlackRooks & (1ULL << i)) {
+			std::cout << "r" << ", ";
+		}
+		if (BBBlackKnights & (1ULL << i)) {
+			std::cout << "n" << ", ";
+		}
+		if (BBBlackBishops & (1ULL << i)) {
+			std::cout << "b" << ", ";
+		}
+		if (BBBlackQueens & (1ULL << i)) {
+			std::cout << "q" << ", ";
+		}
+		if (BBBlackKing & (1ULL << i)) {
+			std::cout << "k" << ", ";
+		}
+		if (EmptyTiles & (1ULL << i)) {
+			std::cout << " " << ", ";
+		}
+
+		//if(i % 8 == 7){
+		//    std::cout << "| " << flips[c] ;
+		//     c++;
+		// }
+	}
+
+	std::cout << std::endl << "    ";
+	for (int i = 0; i < 8; i++) {
+		std::cout << flipsL[i] << "  ";
+	}
+
+	std::cout << std::endl << std::endl;;
+}
 
 
 

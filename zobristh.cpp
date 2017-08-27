@@ -33,7 +33,7 @@ void ZobristH::zobristFill()
 				//fill the zero spot with 0LL's so we can XOR captures without worrying about if there is one
 				if (pieceType == 0) zArray[color][pieceType][square] = 0LL;
 
-                zArray[color][pieceType][square] = random64();
+				else zArray[color][pieceType][square] = random64();
             }
         }
 
@@ -54,17 +54,11 @@ void ZobristH::zobristFill()
 
     //random is it blacks turn or not
     zBlackMove = random64();
-    zNullMove = random64(); //not needed?
 }
 
 void ZobristH::UpdateColor()
 {
     zobristKey ^= zBlackMove;
-}
-
-void ZobristH::UpdateNull()
-{
-    zobristKey ^= zNullMove;
 }
 
 void ZobristH::UpdateKey(int start, int end, const Move& moveKey, bool isWhite)
@@ -212,7 +206,6 @@ U64 ZobristH::getZobristHash(const BitBoards& BBBoard)
 
     return returnZKey;
 }
-
 
 void ZobristH::testDistibution()
 {

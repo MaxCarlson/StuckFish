@@ -6,7 +6,6 @@
 
 #include "externs.h"
 #include "bitboards.h"
-#include "zobristh.h"
 #include "ai_logic.h"
 #include "TranspositionT.h"
 
@@ -166,22 +165,19 @@ void UCI::newGame(BitBoards& newBoard)
 {
 	newBoard.constructBoards();
 
-	for (int i = 0; i < 4; i++) {
-		newBoard.rookMoved[i] = false;
-		newBoard.castled[i] = false;
-	}
-
 	turns = 0;
 
 	//clear move repetitions
 	history.twoFoldRep.clear();
+
+	//Do We 
 
 	isWhite = true;
 }
 
 void UCI::printOptions()
 {
-	//tell GUI we can change that transposition table size
+	//tell GUI we can change that transposition table size //NOT WOKRING, probably not correct
 	std::cout << "option name Hash" << std::endl;
 
 	//other options ....

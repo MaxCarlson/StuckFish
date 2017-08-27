@@ -3,7 +3,7 @@
 
 #include "defines.h"
 
-class Move
+class Move //change to struct and move somewhere, no reason for this file!
 {
 public:
     const Move();

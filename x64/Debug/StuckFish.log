@@ -1,12 +1,13 @@
 ﻿  zobristh.cpp
   movegen.cpp
+  main.cpp
+  ai_logic.cpp
   Generating Code...
   Compiling...
-  main.cpp
   evaluatebb.cpp
   bitboards.cpp
-  ai_logic.cpp
   UCI.cpp
+  TimeManager.cpp
   Generating Code...
   StuckFish.vcxproj -> C:\Users\C-60\Desktop\cppPrograms\StuckFish\x64\Debug\StuckFish.exe
   StuckFish.vcxproj -> C:\Users\C-60\Desktop\cppPrograms\StuckFish\x64\Debug\StuckFish.pdb (Partial PDB)
