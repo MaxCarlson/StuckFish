@@ -24,107 +24,228 @@ const int flipRank[8] = { 8, 7, 6, 5, 4, 3 , 2, 1 };
 
 void BitBoards::constructBoards()
 {
-    FullTiles = 0LL;
-
-    BBWhitePawns = 0LL;
-    BBWhitePieces = 0LL;
-    BBWhiteRooks = 0LL;
-    BBWhiteKnights = 0LL;
-    BBWhiteBishops = 0LL;
-    BBWhiteQueens = 0LL;
-    BBWhiteKing = 0LL;
-
-    BBBlackPieces = 0LL;
-    BBBlackPawns = 0LL;
-    BBBlackRooks = 0LL;
-    BBBlackKnights = 0LL;
-    BBBlackBishops = 0LL;
-    BBBlackQueens = 0LL;
-    BBBlackKing = 0LL;
-
-	//reset side material values
-	sideMaterial[0] = 0; //white
-	sideMaterial[1] = 0;
 
 	for (int i = 0; i < 4; ++i) {
 		rookMoved[i] = false;
 		castled[i] = false;
 	}
-	
 
-    //seed bitboards
-    for(int i = 0; i < 64; i++){
-        if(boardArr[i/8][i%8] == "P"){
-            BBWhitePawns += 1LL<<i;
-            BBWhitePieces += 1LL<<i;
-            FullTiles += 1LL<<i;
+	//reset piece and color BitBoards to 0;
+	for (int i = 0; i < 2; ++i) {
+		allPiecesColorBB[i] = 0LL;
+		//reset side material values
+		sideMaterial[i] = 0; 
+
+		for (int j = 0; j < 7; ++j) {
+			byColorPiecesBB[i][j] = 0LL;
+			byPieceType[j] = 0LL;
+		}
+	}
+
+	FullTiles = 0LL;
+
+	//seed bitboards
+	for (int i = 0; i < 64; i++) {
+		squareBB[i] = 1LL << i;
+
+		if (boardArr[i / 8][i % 8] == "P") {
+			byColorPiecesBB[0][1] += 1LL << i;
+			allPiecesColorBB[0] += 1LL << i;
+			byPieceType[1] += 1LL << i;
+
+			FullTiles += 1LL << i;
 			sideMaterial[0] += PAWN_VAL;
-        } else if(boardArr[i/8][i%8] == "R"){
-            BBWhiteRooks += 1LL<<i;
-            BBWhitePieces += 1LL<<i;
-            FullTiles += 1LL<<i;
-			sideMaterial[0] += ROOK_VAL;
-        }else if(boardArr[i/8][i%8] == "N"){
-            BBWhiteKnights += 1LL<<i;
-            BBWhitePieces += 1LL<<i;
-            FullTiles += 1LL<<i;
-			sideMaterial[0] += KNIGHT_VAL;
-        }else if(boardArr[i/8][i%8] == "B"){
-            BBWhiteBishops += 1LL<<i;
-            BBWhitePieces += 1LL<<i;
-            FullTiles += 1LL<<i;
-			sideMaterial[0] += BISHOP_VAL;
-        }else if(boardArr[i/8][i%8] == "Q"){
-            BBWhiteQueens += 1LL<<i;
-            BBWhitePieces += 1LL<<i;
-            FullTiles += 1LL<<i;
-			sideMaterial[0] += QUEEN_VAL;
-        }else if(boardArr[i/8][i%8] == "K"){
-            BBWhiteKing += 1LL<<i;
-            BBWhitePieces += 1LL<<i;
-            FullTiles += 1LL<<i;
-			sideMaterial[0] += KING_VAL;
-        } else if(boardArr[i/8][i%8] == "p"){
-            BBBlackPawns += 1LL<<i;
-            BBBlackPieces += 1LL<<i;
-            FullTiles += 1LL<<i;
-			sideMaterial[1] += PAWN_VAL;
-        } else if(boardArr[i/8][i%8] == "r"){
-            BBBlackRooks += 1LL<<i;
-            BBBlackPieces += 1LL<<i;
-            FullTiles += 1LL<<i;
-			sideMaterial[1] += ROOK_VAL;
-        }else if(boardArr[i/8][i%8] == "n"){
-            BBBlackKnights += 1LL<<i;
-            BBBlackPieces += 1LL<<i;
-            FullTiles += 1LL<<i;
-			sideMaterial[1] += KNIGHT_VAL;
-        }else if(boardArr[i/8][i%8] == "b"){
-            BBBlackBishops += 1LL<<i;
-            BBBlackPieces += 1LL<<i;
-            FullTiles += 1LL<<i;
-			sideMaterial[1] += BISHOP_VAL;
-        }else if(boardArr[i/8][i%8] == "q"){
-            BBBlackQueens += 1LL<<i;
-            BBBlackPieces += 1LL<<i;
-            FullTiles += 1LL<<i;
-			sideMaterial[1] += QUEEN_VAL;
-        }else if(boardArr[i/8][i%8] == "k"){
-            BBBlackKing += 1LL<<i;
-            BBBlackPieces += 1LL<<i;
-            FullTiles += 1LL<<i;
-			sideMaterial[1] += KING_VAL;
-        }
-    }
+		}
+		else if (boardArr[i / 8][i % 8] == "N") {
+			byColorPiecesBB[0][2] += 1LL << i;
+			allPiecesColorBB[0] += 1LL << i;
+			byPieceType[2] += 1LL << i;
 
-    //mark empty tiles with 1's
-    EmptyTiles = ~FullTiles;
+			FullTiles += 1LL << i;
+			sideMaterial[0] += KNIGHT_VAL;
+		}
+		else if (boardArr[i / 8][i % 8] == "B") {
+			byColorPiecesBB[0][3] += 1LL << i;
+			allPiecesColorBB[0] += 1LL << i;
+			byPieceType[3] += 1LL << i;
+
+			FullTiles += 1LL << i;
+			sideMaterial[0] += BISHOP_VAL;
+		}
+		else if (boardArr[i / 8][i % 8] == "R") {
+			byColorPiecesBB[0][4] += 1LL << i;
+			allPiecesColorBB[0] += 1LL << i;
+			byPieceType[4] += 1LL << i;
+
+			FullTiles += 1LL << i;
+			sideMaterial[0] += ROOK_VAL;
+		}
+		else if (boardArr[i / 8][i % 8] == "Q") {
+			byColorPiecesBB[0][5] += 1LL << i;
+			allPiecesColorBB[0] += 1LL << i;
+			byPieceType[5] += 1LL << i;
+
+			FullTiles += 1LL << i;
+			sideMaterial[0] += QUEEN_VAL;
+		}
+		else if (boardArr[i / 8][i % 8] == "K") {
+			byColorPiecesBB[0][6] += 1LL << i;
+			allPiecesColorBB[0] += 1LL << i;
+			byPieceType[6] += 1LL << i;
+
+			FullTiles += 1LL << i;
+			sideMaterial[0] += KING_VAL;
+		}
+		//black pieces
+		else if (boardArr[i / 8][i % 8] == "p") {
+			byColorPiecesBB[1][1] += 1LL << i;
+			allPiecesColorBB[1] += 1LL << i;
+			byPieceType[1] += 1LL << i;
+
+			FullTiles += 1LL << i;
+			sideMaterial[1] += PAWN_VAL;
+		}
+		else if (boardArr[i / 8][i % 8] == "n") {
+			byColorPiecesBB[1][2] += 1LL << i;
+			allPiecesColorBB[1] += 1LL << i;
+			byPieceType[2] += 1LL << i;
+
+			FullTiles += 1LL << i;
+			sideMaterial[1] += KNIGHT_VAL;
+		}
+		else if (boardArr[i / 8][i % 8] == "b") {
+			byColorPiecesBB[1][3] += 1LL << i;
+			allPiecesColorBB[1] += 1LL << i;
+			byPieceType[3] += 1LL << i;
+
+			FullTiles += 1LL << i;
+			sideMaterial[1] += BISHOP_VAL;
+		}
+		else if (boardArr[i / 8][i % 8] == "r") {
+			byColorPiecesBB[1][4] += 1LL << i;
+			allPiecesColorBB[1] += 1LL << i;
+			byPieceType[4] += 1LL << i;
+
+			FullTiles += 1LL << i;
+			sideMaterial[1] += ROOK_VAL;
+		}
+		else if (boardArr[i / 8][i % 8] == "q") {
+			byColorPiecesBB[1][5] += 1LL << i;
+			allPiecesColorBB[1] += 1LL << i;
+			byPieceType[5] += 1LL << i;
+
+			FullTiles += 1LL << i;
+			sideMaterial[1] += QUEEN_VAL;
+		}
+		else if (boardArr[i / 8][i % 8] == "k") {
+			byColorPiecesBB[1][6] += 1LL << i;
+			allPiecesColorBB[1] += 1LL << i;
+			byPieceType[6] += 1LL << i;
+			
+			FullTiles += 1LL << i;
+			sideMaterial[1] += KING_VAL;
+		}
+	}
+
+	//mark empty tiles opposite of full tiles
+  	EmptyTiles = ~FullTiles;
 
 }
 
+void BitBoards::makeMove(const Move& m, bool isWhite) 
+{
+	//color is stupid because I started the program with a bool is white, which (int)'s to 1
+	//need to change it to an int to remove this sort of thing
+	int color = !isWhite;
+
+
+	if (allPiecesColorBB[color] & allPiecesColorBB[!color]) {
+		drawBBA();
+	}
+
+	//drawBBA();
+	if (allPiecesColorBB[color] & allPiecesColorBB[!color]) {
+		drawBBA();
+		drawBB(allPiecesColorBB[color]);
+		drawBB(allPiecesColorBB[!color]);
+	}
+
+	//remove or add captured piece from BB's same as above for moving piece
+	if (m.captured) {
+
+		addOrRemovePiece(m.captured, !color, m.to);
+		//update material
+		sideMaterial[!color] -= SORT_VALUE[m.captured];
+	}
+
+	if (m.flag == '0') {
+		movePiece(m.piece, color, m.from, m.to);	
+		
+	}
+	//pawn promotion
+	else if (m.flag == 'Q') {
+
+		addOrRemovePiece(PAWN, color, m.from);
+		addOrRemovePiece(QUEEN, color, m.to);
+
+		sideMaterial[color] += SORT_VALUE[QUEEN] - SORT_VALUE[PAWN];
+	}
+
+
+	if (allPiecesColorBB[color] & allPiecesColorBB[!color]) {
+		drawBBA();
+	}
+
+	//update the zobrist key
+	zobrist.UpdateKey(m.from, m.to, m, isWhite);
+	zobrist.UpdateColor();
+}
+void BitBoards::unmakeMove(const Move & m, bool isWhite)
+{
+	int color = !isWhite;
+
+
+	if (allPiecesColorBB[color] & allPiecesColorBB[!color]) {
+		drawBBA();
+		drawBB(allPiecesColorBB[color]);
+		drawBB(allPiecesColorBB[!color]);
+	}
+
+
+	if (m.flag == '0') {
+		movePiece(m.piece, color, m.to, m.from);
+	}
+	//pawn promotion
+	else if (m.flag == 'Q'){
+
+		addOrRemovePiece(PAWN, color, m.from);
+		addOrRemovePiece(QUEEN, color, m.to);
+
+		sideMaterial[color] += SORT_VALUE[PAWN] - SORT_VALUE[QUEEN];
+	}
+
+	//add captured piece from BB's similar to above for moving piece
+	if (m.captured) {
+
+		addOrRemovePiece(m.captured, !color, m.to);
+		sideMaterial[!color] += SORT_VALUE[m.captured];
+	}
+
+
+	if (allPiecesColorBB[color] & allPiecesColorBB[!color]) {
+		drawBBA();
+		drawBB(allPiecesColorBB[color]);
+		drawBB(allPiecesColorBB[!color]);
+	}
+
+	//update the zobrist key
+	zobrist.UpdateKey(m.from, m.to, m, isWhite);
+	zobrist.UpdateColor();
+}
+/*
 void BitBoards::makeMove(const Move &move, bool isWhite)
 {
-    U8 xyI, xyE;
+    int xyI, xyE;
     //move coordinates, later replace x,y x1,y1 with from/to coordinates to remove math
     //xyI = move.y * 8 + move.x;
     //xyE = move.y1 * 8 + move.x1;
@@ -643,7 +764,7 @@ void BitBoards::removeCapturedPiece(bool isWhite, char captured, U64 location)
 		}
 	}
 }
-
+*/
 //returns the rank of a square relative to side specified
 int BitBoards::relativeRank(int sq, bool isWhite)
 { //return reletive rank for side to move.
@@ -681,40 +802,40 @@ void BitBoards::drawBBA()
 			c++;
 		}
 
-		if (BBWhitePawns & (1ULL << i)) {
+		if (byColorPiecesBB[0][1] & (1ULL << i)) {
 			std::cout << "P" << ", ";
 		}
-		if (BBWhiteRooks & (1ULL << i)) {
-			std::cout << "R" << ", ";
-		}
-		if (BBWhiteKnights & (1ULL << i)) {
+		if (byColorPiecesBB[0][2] & (1ULL << i)) {
 			std::cout << "N" << ", ";
 		}
-		if (BBWhiteBishops & (1ULL << i)) {
+		if (byColorPiecesBB[0][3] & (1ULL << i)) {
 			std::cout << "B" << ", ";
 		}
-		if (BBWhiteQueens & (1ULL << i)) {
+		if (byColorPiecesBB[0][4] & (1ULL << i)) {
+			std::cout << "R" << ", ";
+		}
+		if (byColorPiecesBB[0][5] & (1ULL << i)) {
 			std::cout << "Q" << ", ";
 		}
-		if (BBWhiteKing & (1ULL << i)) {
+		if (byColorPiecesBB[0][6] & (1ULL << i)) {
 			std::cout << "K" << ", ";
 		}
-		if (BBBlackPawns & (1ULL << i)) {
+		if (byColorPiecesBB[1][1] & (1ULL << i)) {
 			std::cout << "p" << ", ";
 		}
-		if (BBBlackRooks & (1ULL << i)) {
-			std::cout << "r" << ", ";
-		}
-		if (BBBlackKnights & (1ULL << i)) {
+		if (byColorPiecesBB[1][2] & (1ULL << i)) {
 			std::cout << "n" << ", ";
 		}
-		if (BBBlackBishops & (1ULL << i)) {
+		if (byColorPiecesBB[1][3] & (1ULL << i)) {
 			std::cout << "b" << ", ";
 		}
-		if (BBBlackQueens & (1ULL << i)) {
+		if (byColorPiecesBB[1][4] & (1ULL << i)) {
+			std::cout << "r" << ", ";
+		}
+		if (byColorPiecesBB[1][5] & (1ULL << i)) {
 			std::cout << "q" << ", ";
 		}
-		if (BBBlackKing & (1ULL << i)) {
+		if (byColorPiecesBB[1][6] & (1ULL << i)) {
 			std::cout << "k" << ", ";
 		}
 		if (EmptyTiles & (1ULL << i)) {

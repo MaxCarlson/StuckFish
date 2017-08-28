@@ -99,7 +99,7 @@ void UCI::uciLoop()
 			}
 
 			std::thread thr(&UCI::search, this, newBoard); 
-			thr.join(); //search on new thread
+			thr.join(); //search on new thread -- need to implement so search thread can receive signals to stop from GUI.
 			
 		}
 		else if (token == "quit")
@@ -170,8 +170,6 @@ void UCI::newGame(BitBoards& newBoard)
 	//clear move repetitions
 	history.twoFoldRep.clear();
 
-	//Do We 
-
 	isWhite = true;
 }
 
@@ -236,29 +234,17 @@ Move UCI::strToMove(BitBoards& newBoard, std::string& input)
 {
 	Move m;
 	int flipsN[9] = {0, 7, 6, 5, 4, 3, 2, 1, 0};
+	char flipsA[8]{ 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h' };
 
 	int x, y, x1, y1, xyI, xyE;
 
 	char cx = input[0];
 	char cx1 = input[2];
-	if (cx == 'a') x = 0;
-	else if (cx == 'b') x = 1;
-	else if (cx == 'c') x = 2;
-	else if (cx == 'd') x = 3;
-	else if (cx == 'e') x = 4;
-	else if (cx == 'f') x = 5;
-	else if (cx == 'g') x = 6;
-	else if (cx == 'h') x = 7;
 
-	if (cx1 == 'a') x1 = 0;
-	else if (cx1 == 'b') x1 = 1;
-	else if (cx1 == 'c') x1 = 2;
-	else if (cx1 == 'd') x1 = 3;
-	else if (cx1 == 'e') x1 = 4;
-	else if (cx1 == 'f') x1 = 5;
-	else if (cx1 == 'g') x1 = 6;
-	else if (cx1 == 'h') x1 = 7;
-
+	for (int i = 0; i < 8; ++i) {
+		if (cx == flipsA[i]) x = i;
+		if (cx1 == flipsA[i]) x1 = i;
+	}
 
 	y = flipsN[input[1] - '0'];
 	y1 = flipsN[input[3] - '0'];
@@ -269,29 +255,31 @@ Move UCI::strToMove(BitBoards& newBoard, std::string& input)
 	m.from = xyI; //store from and to for move
 	m.to = xyE;
 
-	U64 f = 1LL << xyI; //create bitboards of initial 
-	U64 t = 1LL << xyE; //and landing pos
+	U64 f = newBoard.squareBB[xyI]; //create bitboards of initial 
+	U64 t = newBoard.squareBB[xyE]; //and landing pos
 
 						//very ugly, better way to do it?
-	if (f & newBoard.BBWhitePawns || f & newBoard.BBBlackPawns) m.piece = PAWN; 
-	else if (f & newBoard.BBWhiteKnights || f & newBoard.BBBlackKnights) m.piece = KNIGHT;
-	else if (f & newBoard.BBWhiteBishops || f & newBoard.BBBlackBishops) m.piece = BISHOP;
-	else if (f & newBoard.BBWhiteRooks || f & newBoard.BBBlackRooks) m.piece = ROOK;
-	else if (f & newBoard.BBWhiteQueens || f & newBoard.BBBlackQueens) m.piece = QUEEN;
-	else if (f & newBoard.BBWhiteKing || f & newBoard.BBBlackKing) m.piece = KING;
+	if (f & newBoard.byPieceType[PAWN]) m.piece = PAWN; 
+	else if (f & newBoard.byPieceType[KNIGHT]) m.piece = KNIGHT;
+	else if (f & newBoard.byPieceType[BISHOP]) m.piece = BISHOP;
+	else if (f & newBoard.byPieceType[ROOK]) m.piece = ROOK;
+	else if (f & newBoard.byPieceType[QUEEN]) m.piece = QUEEN;
+	else if (f & newBoard.byPieceType[KING]) m.piece = KING;
 
-	if (t & newBoard.BBWhitePawns || t & newBoard.BBBlackPawns) m.captured = PAWN;
-	else if (t & newBoard.BBWhiteKnights || t & newBoard.BBBlackKnights) m.captured = KNIGHT;
-	else if (t & newBoard.BBWhiteBishops || t & newBoard.BBBlackBishops) m.captured = BISHOP;
-	else if (t & newBoard.BBWhiteRooks || t & newBoard.BBBlackRooks) m.captured = ROOK;
-	else if (t & newBoard.BBWhiteQueens || t & newBoard.BBBlackQueens) m.captured = QUEEN;
-	else if (t & newBoard.BBWhiteKing || t & newBoard.BBBlackKing) m.captured = KING;
+	if (t & newBoard.byPieceType[PAWN]) m.captured = PAWN;
+	else if (t & newBoard.byPieceType[KNIGHT]) m.captured = KNIGHT;
+	else if (t & newBoard.byPieceType[BISHOP]) m.captured = BISHOP;
+	else if (t & newBoard.byPieceType[ROOK]) m.captured = ROOK;
+	else if (t & newBoard.byPieceType[QUEEN]) m.captured = QUEEN;
+	else if (t & newBoard.byPieceType[KING]) m.captured = KING;
 	else m.captured = PIECE_EMPTY; //no capture
 
 	m.flag = '0';
 
+	//promotions
 	if (input.length() == 5) {
 		if (input[4] == 'q') m.flag = 'Q';
+		//below not implemented!!!!!!!!!!!
 		else if (input[4] == 'r') m.flag = 'R';
 		else if (input[4] == 'b') m.flag = 'B';
 		else if (input[4] == 'n') m.flag = 'N';

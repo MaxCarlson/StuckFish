@@ -12,9 +12,6 @@ class ZobristH;
 class Move;
 class MoveGen;
 
-struct BoardInfo {
-
-};
 
 class BitBoards
 {
@@ -26,68 +23,77 @@ public:
     //builds boards through reading an array
     void constructBoards();
 
-    void makeMove(const Move &move, bool isWhite);
-    void unmakeMove(const Move &moveKey, bool isWhite);
+	//make the move
+	void makeMove(const Move& m, bool isWhite);
+	//unamke move
+	void unmakeMove(const Move& m, bool isWhite);
 
-    //helper funtction to draw out bitboards like chess boards
-    void drawBB(U64 board);
-    //draw out bitboards like a full chessboard array
-    void drawBBA();
-
-	//piece material arrays for sides, using piece values
-	int sideMaterial[2]; //updated on make/unmake moves //MOVE TO STRUCT ALONG WITH OTHER INFO?
-
+	//is this a pawn move on the 5th or higher relative rank?
 	bool isPawnPush(const Move& m, bool isWhite);
 
-	
 
 //bitboards
     U64 FullTiles;
     U64 EmptyTiles;
 
-    U64 BBWhitePieces;
-
-    U64 BBWhitePawns;
-    U64 BBWhiteRooks;
-    U64 BBWhiteKnights;
-    U64 BBWhiteBishops;
-    U64 BBWhiteQueens;
-    U64 BBWhiteKing;
-
-    U64 BBBlackPieces;
-
-    U64 BBBlackPawns;
-    U64 BBBlackRooks;
-    U64 BBBlackKnights;
-    U64 BBBlackBishops;
-    U64 BBBlackQueens;
-    U64 BBBlackKing;
-
-	//NEED TO IMPLEMENT!
 	//holds all bitboards of all pieces, [i][0] is blank at 0LL and used for non captures that still |
-	U64 byColorPiece[2][7]; //0 white, 1 black ; 0 = no piece, 1 pawn, 2 knight, 3 bishop, 4 rook, 5 queen, 6 king
-	U64 allColorPieces[2]; //0 white, 1 black
+	U64 byColorPiecesBB[2][7]; //0 white, 1 black ; 0 = no piece, 1 pawn, 2 knight, 3 bishop, 4 rook, 5 queen, 6 king
+	U64 allPiecesColorBB[2]; //0 white, 1 black
+	U64 byPieceType[7]; //holds both black and white pieces of a type
+	U64 squareBB[64]; //holds a U64 of each square on gameboard, indexed by 0 = top left, 63 = bottom right
+
+//state info
+	//piece material arrays for sides, using piece values
+	int sideMaterial[2]; //updated on make/unmake moves //MOVE TO STRUCT ALONG WITH OTHER INFO?
 
 	//array used to denote if castling has occured
 	bool castled[4]; //wqs, wks, bqs, bks
 	bool rookMoved[4]; //wqR, wkR, bqr, bkr
 
+
+//helper funtction to draw out bitboards like chess boards
+	void drawBB(U64 board);
+	//draw out bitboards like a full chessboard array
+	void drawBBA();
+
 private:
 
-    //removes captured piece from BB's
-    void removeCapturedPiece(bool isWhite, char captured, U64 location);
+	void movePiece(int piece, int color, int from, int to);
 
-    //rolls back a capture on move unmake
-    void undoCapture(U64 location, char piece, bool isNotWhite);
+	void addOrRemovePiece(int piece, int color, int sq);
 
 	//returns relative rank for side to move
 	int relativeRank(int sq, bool isWhite);
 };
 
+//can only be used if there is no piece on landing spot
+inline void BitBoards::movePiece(int piece, int color, int from, int to)
+{
+	U64 from_to = squareBB[from] ^ squareBB[to];
+
+	byColorPiecesBB[color][piece] ^= from_to;
+	allPiecesColorBB[color] ^= from_to;
+
+	byPieceType[piece] ^= from_to;
+	FullTiles ^= from_to;
+	EmptyTiles ^= from_to;
+}
+//also can only be used to add piece if no piece is on destination sq
+inline void BitBoards::addOrRemovePiece(int piece, int color, int sq)
+{
+	byColorPiecesBB[color][piece] ^= squareBB[sq];
+	allPiecesColorBB[color] ^= squareBB[sq];
+	byPieceType[piece] ^= squareBB[sq];
+	FullTiles ^= squareBB[sq];
+	EmptyTiles ^= squareBB[sq];
+}
+
 inline bool BitBoards::isPawnPush(const Move &m, bool isWhite) 
 {	//is there a pawn past their relative 4th rank?
 	return (m.piece == PAWN && relativeRank(m.from, isWhite) > 4);
 }
+
+
 
 
 

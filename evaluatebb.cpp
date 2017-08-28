@@ -138,8 +138,7 @@ int evaluateBB::evalBoard(bool isWhite, const BitBoards& boards)
     }
 
     //generate zones around kings
-    generateKingZones(boards, true);
-    generateKingZones(boards, false);
+    generateKingZones(boards);
 
 
 	//evaluate all pieces and positions and store info
@@ -210,8 +209,8 @@ int evaluateBB::evalBoard(bool isWhite, const BitBoards& boards)
      *  less than two attackers or if the attacker has no queen.        *
      *******************************************************************/
 
-    if(ev.attCount[WHITE] < 2 || boards.BBWhiteQueens == 0LL) ev.attWeight[WHITE] = 0;
-    if(ev.attCount[BLACK] < 2 || boards.BBBlackQueens == 0LL) ev.attWeight[BLACK] = 0;
+    if(ev.attCount[WHITE] < 2 || boards.byColorPiecesBB[0][5] == 0LL) ev.attWeight[WHITE] = 0;
+    if(ev.attCount[BLACK] < 2 || boards.byColorPiecesBB[1][5] == 0LL) ev.attWeight[BLACK] = 0;
     result += SafetyTable[ev.attWeight[WHITE]];
     result -= SafetyTable[ev.attWeight[BLACK]];
 
@@ -471,19 +470,19 @@ void evaluateBB::evalPieces(const BitBoards & boards)
 	U64  wpawns, wknights, wrooks, wbishops, wqueens, wking, bpawns, bknights, brooks, bbishops, bqueens, bking;
 
 	//white
-	wpawns = boards.BBWhitePawns;
-	wknights = boards.BBWhiteKnights;
-	wbishops = boards.BBWhiteBishops;
-	wrooks = boards.BBWhiteRooks;
-	wqueens = boards.BBWhiteQueens;
-	wking = boards.BBWhiteKing;
+	wpawns = boards.byColorPiecesBB[0][1];
+	wknights = boards.byColorPiecesBB[0][2];
+	wbishops = boards.byColorPiecesBB[0][3];
+	wrooks = boards.byColorPiecesBB[0][4];
+	wqueens = boards.byColorPiecesBB[0][5];
+	wking = boards.byColorPiecesBB[0][6];
 	//black
-	bpawns = boards.BBBlackPawns;
-	bknights = boards.BBBlackKnights;
-	bbishops = boards.BBBlackBishops;
-	brooks = boards.BBBlackRooks;
-	bqueens = boards.BBBlackQueens;
-	bking = boards.BBBlackKing;
+	bpawns = boards.byColorPiecesBB[1][1];
+	bknights = boards.byColorPiecesBB[1][2];
+	bbishops = boards.byColorPiecesBB[1][3];
+	brooks = boards.byColorPiecesBB[1][4];
+	bqueens = boards.byColorPiecesBB[1][5];
+	bking = boards.byColorPiecesBB[1][6];
 
 	//pawns
 	while (wpawns) {
@@ -500,51 +499,51 @@ void evaluateBB::evalPieces(const BitBoards & boards)
 	while (wknights) {
 		int x = pop_lsb(&wknights);
 		ev.knightCount[WHITE] ++;
-		evalKnight(boards, true, x);
+		evalKnight(boards, WHITE, x);
 		ev.pieceMaterial[WHITE] += 325 + wKnightsSqT[x];
 	}
 	while (bknights) {
 		int x = pop_lsb(&bknights);
 		ev.knightCount[BLACK] ++;
-		evalKnight(boards, false, x);
+		evalKnight(boards, BLACK, x);
 		ev.pieceMaterial[BLACK] += 325 + bKnightSqT[x]; 
 	}
 	//bishops
 	while (wbishops) {
 		int x = pop_lsb(&wbishops);
 		ev.bishopCount[WHITE] ++;
-		evalBishop(boards, true, x);
+		evalBishop(boards, WHITE, x);
 		ev.pieceMaterial[WHITE] += 335 + wBishopsSqT[x];
 	}
 	while (bbishops) {
 		int x = pop_lsb(&bbishops);
 		ev.bishopCount[BLACK] ++;
-		evalBishop(boards, false, x);
+		evalBishop(boards, BLACK, x);
 		ev.pieceMaterial[BLACK] += 335 + bBishopsSqT[x];
 	}
 	//rooks
 	while (wrooks) {
 		int x = pop_lsb(&wrooks);
 		ev.rookCount[WHITE] ++;
-		evalRook(boards, true, x);
+		evalRook(boards, WHITE, x);
 		ev.pieceMaterial[WHITE] += 500 + wRooksSqT[x];
 	}
 	while (brooks) {
 		int x = pop_lsb(&brooks);
 		ev.rookCount[BLACK] ++;
-		evalRook(boards, false, x);
+		evalRook(boards, BLACK, x);
 		ev.pieceMaterial[BLACK] += 500 + bRookSqT[x];
 	}
 	//queens
 	while (wqueens) {
 		int x = pop_lsb(&wqueens);
-		evalQueen(boards, true, x);
+		evalQueen(boards, WHITE, x);
 		ev.queenCount[WHITE] ++;
 		ev.pieceMaterial[WHITE] += 975 + wQueensSqt[x];
 	}
 	while (bqueens) {
 		int x = pop_lsb(&bqueens);
-		evalQueen(boards, false, x);
+		evalQueen(boards, BLACK, x);
 		ev.queenCount[BLACK] ++;
 		ev.pieceMaterial[BLACK] += 975 + bQueenSqT[x];
 	}
@@ -559,45 +558,52 @@ void evaluateBB::evalPieces(const BitBoards & boards)
 	}
 }
 
-void evaluateBB::generateKingZones(const BitBoards & boards, bool isWhite)
+void evaluateBB::generateKingZones(const BitBoards & boards)
 {
 	//draw zone around king all 8 tiles around him, plus three in front -- north = front for white, south black
     U64 kZone;
-    if(isWhite) kZone = boards.BBWhiteKing;
-    else kZone = boards.BBBlackKing;
-    
-	int location = msb(kZone);
 
-	if (location > 9) {
-		kZone |= KING_SPAN << (location - 9);
+	for (int side = 0; side < 2; ++side) {
 
+		if (side) kZone = boards.byColorPiecesBB[BLACK][KING];
+		else kZone = boards.byColorPiecesBB[WHITE][KING];
+
+		int location = msb(kZone);
+
+		if (location > 9) {
+			kZone |= KING_SPAN << (location - 9);
+
+		}
+		else {
+			kZone |= KING_SPAN >> (9 - location);
+		}
+
+		//add a zone three tiles across in front of the 8 squares surrounding the king
+		if (side)  kZone |= kZone << 8; 
+		else kZone |= kZone >> 8;
+
+		if (location % 8 < 4) {
+			kZone &= ~FILE_GH;
+
+		}
+		else {
+			kZone &= ~FILE_AB;
+		}
+
+		if (side) kingZones[BLACK] = kZone;
+		else kingZones[WHITE] = kZone;
 	}
-	else {
-		kZone |= KING_SPAN >> (9 - location);
-	}
-
-	if (isWhite) kZone |= kZone >> 8;
-	else kZone |= kZone << 8;
-
-	if (location % 8 < 4) {
-		kZone &= ~FILE_GH;
-
-	}
-	else {
-		kZone &= ~FILE_AB;
-	}
-
-    if(isWhite) wKingZ = kZone;
-    else bKingZ = kZone;
 }
 
 int evaluateBB::wKingShield(const BitBoards & boards)
 {
     //gather info on defending pawns
     int result = 0;
-    U64 king = boards.BBWhiteKing;
-    U64 pawns = boards.BBWhitePawns;
+	U64 pawns = boards.byColorPiecesBB[WHITE][PAWN];
+    U64 king = boards.byColorPiecesBB[WHITE][KING];
+
     U64 location = 1LL;
+
     //king on kingside
     if(wKingSide & king){
         if(pawns & (location << F2)) result += 10;
@@ -625,8 +631,9 @@ int evaluateBB::wKingShield(const BitBoards & boards)
 int evaluateBB::bKingShield(const BitBoards & boards)
 {
     int result = 0;
-    U64 king = boards.BBBlackKing;
-    U64 pawns = boards.BBBlackPawns;
+	U64 pawns = boards.byColorPiecesBB[BLACK][PAWN];
+    U64 king = boards.byColorPiecesBB[BLACK][KING];
+
     U64 location = 1LL;
 
     //king on kingside
@@ -658,7 +665,7 @@ int evaluateBB::getPawnScore(const BitBoards & boards)
 {
 	
     //get zobristE/bitboards of current pawn positions
-    U64 pt = boards.BBWhitePawns | boards.BBBlackPawns;
+	U64 pt = boards.byPieceType[PAWN];
     int hash = pt & 399999;
 
     //probe pawn hash table using bit-wise OR of white pawns and black pawns as zobrist key
@@ -672,18 +679,18 @@ int evaluateBB::getPawnScore(const BitBoards & boards)
 	//if (ttpawnentry) return ttpawnentry->eval;
 
     //if we don't get a hash hit, search through all pawns on boards and return score
-	U64 wPawns = boards.BBWhitePawns;
-	U64 bPawns = boards.BBBlackPawns;
+	U64 wPawns = boards.byColorPiecesBB[WHITE][PAWN];
+	U64 bPawns = boards.byColorPiecesBB[BLACK][PAWN];
 
 	int score = 0;
 	while (wPawns) {
 		int loc = pop_lsb(&wPawns);
-		score += pawnEval(boards, true, loc);
+		score += pawnEval(boards, WHITE, loc);
 	}
 
 	while (bPawns) {
 		int loc = pop_lsb(&bPawns);
-		score -= pawnEval(boards, false, loc);
+		score -= pawnEval(boards, BLACK, loc);
 	}
 
     //store entry to pawn hash table
@@ -695,25 +702,17 @@ int evaluateBB::getPawnScore(const BitBoards & boards)
     return score;
 }
 
-int evaluateBB::pawnEval(const BitBoards & boards, bool isWhite, int location)
+int evaluateBB::pawnEval(const BitBoards & boards, int side, int location)
 {
-    int side;
     int result = 0;
     int flagIsPassed = 1; // we will be trying to disprove that
     int flagIsWeak = 1;   // we will be trying to disprove that
     int flagIsOpposed = 0;
 
-    U64 pawn = 0LL, opawns, epawns;
-    pawn += 1LL << location;
-    if(isWhite){
-        opawns = boards.BBWhitePawns;
-        epawns = boards.BBBlackPawns;
-        side = 0;
-    } else {
-        opawns = boards.BBBlackPawns;
-        epawns = boards.BBWhitePawns;
-        side = 1;
-    }
+	U64 pawn = boards.squareBB[location];
+	U64 opawns = boards.byColorPiecesBB[side][PAWN];
+	U64 epawns = boards.byColorPiecesBB[!side][PAWN];
+
 
     int file = location % 8;
     int rank = location / 8;
@@ -732,7 +731,7 @@ int evaluateBB::pawnEval(const BitBoards & boards, bool isWhite, int location)
 
     if(doubledPassMask & opawns) result -= 10; //real value for doubled pawns is -20, because this method counts them twice it's set at half real
 
-    if(isWhite){
+    if(!side){ //if is white
         for(int i = 7; i > rank-1; i--) {
             doubledPassMask &= ~RankMasks8[i];
             left &= ~RankMasks8[i];
@@ -767,7 +766,7 @@ int evaluateBB::pawnEval(const BitBoards & boards, bool isWhite, int location)
     //evaluate passed pawns, scoring them higher if they are protected or
     //if their advance is supported by friendly pawns
     if(flagIsPassed){
-        if(isPawnSupported(isWhite, pawn, opawns)){
+        if(isPawnSupported(side, pawn, opawns)){
             result += (passed_pawn_pcsq[side][location] * 10) / 8;
         } else {
             result += passed_pawn_pcsq[side][location];
@@ -787,12 +786,12 @@ int evaluateBB::pawnEval(const BitBoards & boards, bool isWhite, int location)
 
 }
 
-int evaluateBB::isPawnSupported(bool isWhite, U64 pawn, U64 pawns)
+int evaluateBB::isPawnSupported(int side, U64 pawn, U64 pawns)
 {
     if((pawn >> 1) & pawns) return 1;
     if((pawn << 1) & pawns) return 1;
 
-    if(isWhite){
+    if(side == WHITE){
         if((pawn << 7) & pawns) return 1;
         if((pawn << 9) & pawns) return 1;
     } else {
@@ -802,24 +801,13 @@ int evaluateBB::isPawnSupported(bool isWhite, U64 pawn, U64 pawns)
     return 0;
 }
 
-void evaluateBB::evalKnight(const BitBoards & boards, bool isWhite, int location)
+void evaluateBB::evalKnight(const BitBoards & boards, int side, int location)
 {
-    int kAttks = 0, mob = 0, side;
+    int kAttks = 0, mob = 0;
     ev.gamePhase += 1;
 
-    U64 friends, eking, kingZone;
-
-    if(isWhite){
-        friends = boards.BBWhitePieces;
-        eking = boards.BBBlackKing;
-        kingZone = bKingZ;
-        side = 0;
-    } else {
-        friends = boards.BBBlackPieces;
-        eking = boards.BBWhiteKing;
-        kingZone = wKingZ;
-        side = 1;
-    }
+	U64 friends = boards.allPiecesColorBB[side];
+	U64 eking = boards.byColorPiecesBB[!side][KING];
 
 //similar to move generation code except we increment mobility counter and king area attack counters
     U64 moves;
@@ -831,9 +819,9 @@ void evaluateBB::evalKnight(const BitBoards & boards, bool isWhite, int location
     }
 
     if(location % 8 < 4){
-        moves &= ~FILE_GH & ~friends & ~eking;
+        moves &= ~FILE_GH & ~friends;
     } else {
-        moves &= ~FILE_AB & ~friends & ~eking;
+        moves &= ~FILE_AB & ~friends;
     }
 
     while(moves){
@@ -841,7 +829,7 @@ void evaluateBB::evalKnight(const BitBoards & boards, bool isWhite, int location
         ++mob;
 		U64 loc = 1LL << pop_lsb(&moves);
 
-        if(loc & kingZone){
+        if(loc & kingZones[!side]){
             ++kAttks; //this knight is attacking zone around enemy king
         }
     }
@@ -858,33 +846,23 @@ void evaluateBB::evalKnight(const BitBoards & boards, bool isWhite, int location
 
 }
 
-void evaluateBB::evalBishop(const BitBoards & boards, bool isWhite, int location)
+void evaluateBB::evalBishop(const BitBoards & boards, int side, int location)
 {
-    int kAttks = 0, mob = 0, side;
+    int kAttks = 0, mob = 0;
     ev.gamePhase += 1;
 
-    U64 friends, eking, kingZone;
+	U64 friends = boards.allPiecesColorBB[side];
+	U64 eking = boards.byColorPiecesBB[!side][KING];
 
-    if(isWhite){
-        friends = boards.BBWhitePieces;
-        eking = boards.BBBlackKing;
-        kingZone = bKingZ;
-        side = 0;
-    } else {
-        friends = boards.BBBlackPieces;
-        eking = boards.BBWhiteKing;
-        kingZone = wKingZ;
-        side = 1;
-    }
 
     U64 moves = slider_attacks.BishopAttacks(boards.FullTiles, location);
-    moves &= ~friends & ~eking;
+    moves &= ~friends;
 
     while(moves){
         ++mob; //increment bishop mobility
 		U64 loc = 1LL << pop_lsb(&moves);
 
-        if(loc & kingZone){
+        if(loc & kingZones[!side]){
             ++kAttks; //this bishop is attacking zone around enemy king
         }
     }
@@ -902,34 +880,23 @@ void evaluateBB::evalBishop(const BitBoards & boards, bool isWhite, int location
 
 }
 
-void evaluateBB::evalRook(const BitBoards & boards, bool isWhite, int location)
+void evaluateBB::evalRook(const BitBoards & boards, int side, int location)
 {
     bool  ownBlockingPawns = false, oppBlockingPawns = false;
-    int kAttks = 0, mob = 0, side;
+    int kAttks = 0, mob = 0;
     ev.gamePhase += 2;
 
-    U64 friends, eking, kingZone, currentFile, opawns, epawns;
+    U64 friends, eking, currentFile, opawns, epawns;
 
-    int x = location % 8;
-    currentFile = FileABB << x;
 
-    if(isWhite){
-        friends = boards.BBWhitePieces;
-        eking = boards.BBBlackKing;
-        kingZone = bKingZ;
-        side = 0;
+    currentFile = FileMasks8[location & 7];
 
-        opawns = boards.BBWhitePawns;
-        epawns = boards.BBBlackPawns;
-    } else {
-        friends = boards.BBBlackPieces;
-        eking = boards.BBWhiteKing;
-        kingZone = wKingZ;
-        side = 1;
+	friends = boards.allPiecesColorBB[side];
+	eking = boards.byColorPiecesBB[!side][KING];
 
-        opawns = boards.BBBlackPawns;
-        epawns = boards.BBWhitePawns;
-    }
+	opawns = boards.byColorPiecesBB[side][PAWN];
+	epawns = boards.byColorPiecesBB[!side][PAWN];
+
 
 //open and half open file detection add bonus to mobility score of side
     if(currentFile & opawns){
@@ -951,13 +918,13 @@ void evaluateBB::evalRook(const BitBoards & boards, bool isWhite, int location)
 
 //mobility and king attack gen/detection
     U64 moves = slider_attacks.RookAttacks(boards.FullTiles, location);
-    moves &= ~friends & ~ eking;
+    moves &= ~friends;
 
     while(moves){
         ++mob; //increment rook mobility
 		U64 loc = 1LL << pop_lsb(&moves);
 
-        if(loc & kingZone){
+        if(loc & kingZones[!side]){
             ++kAttks; //this rook is attacking zone around enemy king
         }
     }
@@ -973,34 +940,24 @@ void evaluateBB::evalRook(const BitBoards & boards, bool isWhite, int location)
     }
 }
 
-void evaluateBB::evalQueen(const BitBoards & boards, bool isWhite, int location)
+void evaluateBB::evalQueen(const BitBoards & boards, int side, int location)
 {
     ev.gamePhase += 4;
-    int kAttks = 0, mob = 0, side;
+    int kAttks = 0, mob = 0;
 
-    U64 friends, eking, kingZone;
+	U64 friends = boards.allPiecesColorBB[side];
+	U64 eking = boards.byColorPiecesBB[!side][KING];
 
-    if(isWhite){
-        friends = boards.BBWhitePieces;
-        eking = boards.BBBlackKing;
-        kingZone = bKingZ;
-        side = 0;
-    } else {
-        friends = boards.BBBlackPieces;
-        eking = boards.BBWhiteKing;
-        kingZone = wKingZ;
-        side = 1;
-    }
 
 //similar to move gen, increment mobility and king attacks
     U64 moves = slider_attacks.QueenAttacks(boards.FullTiles, location);
-    moves &= ~friends & ~eking;
+    moves &= ~friends;
 
     while(moves){
         ++mob; //increment queen mobility
 		int loc = 1LL << pop_lsb(&moves);
 
-        if(loc & kingZone){
+        if(loc & kingZones[!side]){
             ++kAttks; //this queen is attacking zone around enemy king
         }
     }
@@ -1024,21 +981,15 @@ void evaluateBB::blockedPieces(int side, const BitBoards& boards)
     U64 empty = boards.EmptyTiles;
     U64 emptyLoc = 1LL;
     int oppo = !side;
-    if(side == WHITE){
-        pawn = boards.BBWhitePawns;
-        epawn = boards.BBBlackPawns;
-        knight = boards.BBWhiteKnights;
-        bishop = boards.BBWhiteBishops;
-		rook = boards.BBWhiteRooks;
-        king = boards.BBWhiteKing;
-    } else {
-        pawn = boards.BBBlackPawns;
-        epawn = boards.BBWhitePawns;
-        knight = boards.BBBlackKnights;
-        bishop = boards.BBBlackBishops;
-		rook = boards.BBBlackRooks;
-        king = boards.BBBlackKing;
-    }
+
+
+	pawn = boards.byColorPiecesBB[side][PAWN];
+	knight = boards.byColorPiecesBB[side][KNIGHT];
+	bishop = boards.byColorPiecesBB[side][BISHOP];
+	rook = boards.byColorPiecesBB[side][ROOK];
+	king = boards.byColorPiecesBB[side][KING];
+
+	epawn = boards.byColorPiecesBB[oppo][PAWN];
 
     //central pawn block bishop blocked
     if(isPiece(bishop, flip(side, C1))

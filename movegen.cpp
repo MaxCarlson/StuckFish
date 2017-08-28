@@ -382,7 +382,7 @@ void MoveGen::possibleR(U8 location,  const U64 &friends, const U64 &enemys, con
 {
     char piece = ROOK;
     char flag = '0';
-
+/*
 	if (isWhite) {
 		//has rook moved flags
 		//is rook on initial location and rook hasn't moved yet
@@ -393,7 +393,7 @@ void MoveGen::possibleR(U8 location,  const U64 &friends, const U64 &enemys, con
 		if (location == A8 && !boards.rookMoved[2]) flag = A8 + 1;
 		else if (location == H8 && !boards.rookMoved[3]) flag = H8 + 1;
 	}  
-
+*/
     U64 moves = slider_attacks.RookAttacks(FullTiles, location);
     moves &= ~friends & capturesOnly & ~oppositeking;
 
@@ -494,7 +494,7 @@ void MoveGen::movegen_push(char piece, char captured, char flag, U8 from, U8 to)
 	moveAr[moveCount].score = history.history[isWhite][from][to]; //+ history.gains[isWhite][piece][to] * 10; //find a way to pass historys here instead of using global???
 
     //scoring capture moves
-    if(captured != PIECE_EMPTY){
+    if(captured){
 
 		int idAr[7] = { 0, 5, 4, 3, 2, 1, 0 }; //higher id value for lower value piece - captures are better if from lower
 
@@ -582,7 +582,7 @@ int MoveGen::SEE(const Move& m, const BitBoards& b, bool isWhite, bool isCapture
 
 	swapList[0] = SORT_VALUE[m.captured];
 
-	occupied = b.FullTiles ^ (1LL << m.from); //remove capturing piece from occupied bb 
+	occupied = b.FullTiles ^ b.squareBB[m.from]; //remove capturing piece from occupied bb 
 
 	//need castling and enpassant logic once implmented
 
@@ -590,13 +590,19 @@ int MoveGen::SEE(const Move& m, const BitBoards& b, bool isWhite, bool isCapture
 	attackers = attackersTo(m.to, b, occupied) & occupied;
 
 	//if there are no attacking pieces, return
-	if (isWhite && !(attackers & b.BBBlackPieces)) return swapList[0];
-	else if (!isWhite && !(attackers & b.BBWhitePieces))  return swapList[0];
+	int color = !isWhite;
+	if(!(attackers & b.allPiecesColorBB[color])) return swapList[0];
+
+
+	//if (isWhite && !(attackers & b.BBBlackPieces)) return swapList[0];
+	//else if (!isWhite && !(attackers & b.BBWhitePieces))  return swapList[0];
 
 	//switch sides
 	isWhite = !isWhite;
-	if(isWhite) stmAttackers = attackers & b.BBWhitePieces; 
-	else  stmAttackers = attackers & b.BBBlackPieces;
+	color = ~color;
+	stmAttackers = attackers & b.allPiecesColorBB[color];
+	//if(isWhite) stmAttackers = attackers & b.BBWhitePieces; 
+	//else  stmAttackers = attackers & b.BBBlackPieces;
 
 	if (!stmAttackers) return swapList[0];
 	
@@ -620,8 +626,10 @@ int MoveGen::SEE(const Move& m, const BitBoards& b, bool isWhite, bool isCapture
 
 		isWhite = !isWhite;
 
-		if (isWhite) stmAttackers = attackers & b.BBWhitePieces;
-		else stmAttackers = attackers & b.BBBlackPieces;
+		color = ~color;
+		stmAttackers = attackers & b.allPiecesColorBB[color];
+		//if (isWhite) stmAttackers = attackers & b.BBWhitePieces;
+		//else stmAttackers = attackers & b.BBBlackPieces;
 
 		index++;
 	} while (stmAttackers);
@@ -654,24 +662,24 @@ U64 MoveGen::attackersTo(int sq, const BitBoards& b, const U64 occ) const
 	else {
 		attackers &= ~FILE_AB;
 	}
-	attackers &= b.BBWhiteKnights | b.BBBlackKnights;
+	attackers &= b.byPieceType[KNIGHT]; //knights
 
 	//drawBB(attackers);
 
 	//pawns
-	attackers |= (loc << 9) & notHFile & b.BBWhitePawns;
-	attackers |= (loc << 7) & notAFile & b.BBWhitePawns;
+	attackers |= (loc << 9) & notHFile & b.byColorPiecesBB[WHITE][PAWN];
+	attackers |= (loc << 7) & notAFile & b.byColorPiecesBB[WHITE][PAWN];
 	//drawBB(attackers);
-	attackers |= (loc >> 9) & notHFile & b.BBBlackPawns;
-	attackers |= (loc >> 7) &  notAFile & b.BBBlackPawns;
+	attackers |= (loc >> 9) & notHFile & b.byColorPiecesBB[BLACK][PAWN];
+	attackers |= (loc >> 7) &  notAFile & b.byColorPiecesBB[BLACK][PAWN];
 	//drawBB(attackers);
 
 	//bishop and queens
-	attackers |= slider_attacks.BishopAttacks(occ, sq) & (b.BBBlackBishops | b.BBWhiteBishops | b.BBBlackQueens | b.BBWhiteQueens);
+	attackers |= slider_attacks.BishopAttacks(occ, sq) & (b.byPieceType[BISHOP] | b.byPieceType[QUEEN]);
 	//drawBB(attackers);
 
 	//rooks and queens
-	attackers |= slider_attacks.RookAttacks(occ, sq) & (b.BBBlackRooks | b.BBWhiteRooks | b.BBBlackQueens | b.BBWhiteQueens);
+	attackers |= slider_attacks.RookAttacks(occ, sq) & (b.byPieceType[ROOK] | b.byPieceType[QUEEN]);
 	//drawBB(attackers);
 
 	if (sq > 9) {
@@ -687,7 +695,7 @@ U64 MoveGen::attackersTo(int sq, const BitBoards& b, const U64 occ) const
 	else {
 		kingA &= ~FILE_AB;
 	}
-	attackers |= kingA & (b.BBWhiteKing | b.BBBlackKing);
+	attackers |= kingA & (b.byPieceType[KING]);
 		
 	return attackers;
 }
@@ -696,21 +704,21 @@ FORCE_INLINE int MoveGen::min_attacker(bool isWhite, const BitBoards & b, const 
 {
 	U64 pawns, knights, rooks, bishops, queens, king, loc;
 
-	if (isWhite) { //NEED TO CHANGE BITBOARDS TO HOLD ARRAY OF PIECE BOARDS INSTEAD OF INDIVIDUAL BOARDS
-		pawns = b.BBWhitePawns;
-		knights = b.BBWhiteKnights;
-		bishops = b.BBWhiteBishops;
-		rooks = b.BBWhiteRooks;
-		queens = b.BBWhiteQueens;
-		king = b.BBWhiteKing;
+	if (isWhite) { //NEED TO CHANGE to make recursive and use piece type to return and search again
+		pawns = b.byColorPiecesBB[0][1];
+		knights = b.byColorPiecesBB[0][2];
+		bishops = b.byColorPiecesBB[0][3];
+		rooks = b.byColorPiecesBB[0][4];
+		queens = b.byColorPiecesBB[0][5];
+		king = b.byColorPiecesBB[0][6];
 	}
 	else {
-		pawns = b.BBBlackPawns;
-		knights = b.BBBlackKnights;
-		bishops = b.BBBlackBishops;
-		rooks = b.BBBlackRooks;
-		queens = b.BBBlackQueens;
-		king = b.BBBlackKing;
+		pawns = b.byColorPiecesBB[1][1];
+		knights = b.byColorPiecesBB[1][2];
+		bishops = b.byColorPiecesBB[1][3];
+		rooks = b.byColorPiecesBB[1][4];
+		queens = b.byColorPiecesBB[1][5];
+		king = b.byColorPiecesBB[1][6];
 	}
 
 	//drawBB(stmAttackers);
@@ -745,11 +753,11 @@ FORCE_INLINE int MoveGen::min_attacker(bool isWhite, const BitBoards & b, const 
 
 	//find xray attackers behind piece once it's been removed and add to attackers
 	if (piece == PAWN || piece == BISHOP || piece == QUEEN) {                       //ADD BY TYPE BOARD REPRESENTATION TO BITBOARDS
-		attackers |= slider_attacks.BishopAttacks(occupied, to) & (b.BBBlackBishops | b.BBWhiteBishops | b.BBBlackQueens | b.BBWhiteQueens);
+		attackers |= slider_attacks.BishopAttacks(occupied, to) & (b.byPieceType[3] | b.byPieceType[5]);
 	}
 
 	if (piece == ROOK || piece == QUEEN) {
-		attackers |= slider_attacks.RookAttacks(occupied, to) & (b.BBBlackRooks | b.BBWhiteRooks| b.BBBlackQueens | b.BBWhiteQueens);
+		attackers |= slider_attacks.RookAttacks(occupied, to) & (b.byPieceType[4] | b.byPieceType[5]);
 	}
 	//add new attackers to board
 	attackers &= occupied;
@@ -807,10 +815,11 @@ int MoveGen::whichPieceCaptured(U64 landing)
 
 void MoveGen::grab_boards(const BitBoards &BBBoard, bool wOrB)
 {
+	
     isWhite = wOrB;
     FullTiles = BBBoard.FullTiles;
     EmptyTiles = BBBoard.EmptyTiles;
-
+	/*
     BBWhitePieces = BBBoard.BBWhitePieces;
     BBWhitePawns = BBBoard.BBWhitePawns;
     BBWhiteKnights = BBBoard.BBWhiteKnights;
@@ -826,6 +835,23 @@ void MoveGen::grab_boards(const BitBoards &BBBoard, bool wOrB)
     BBBlackRooks = BBBoard.BBBlackRooks;
     BBBlackQueens = BBBoard.BBBlackQueens;
     BBBlackKing = BBBoard.BBBlackKing;
+	*/
+	BBWhitePieces = BBBoard.allPiecesColorBB[0];
+	BBWhitePawns = BBBoard.byColorPiecesBB[0][1];
+	BBWhiteKnights = BBBoard.byColorPiecesBB[0][2];
+	BBWhiteBishops = BBBoard.byColorPiecesBB[0][3];
+	BBWhiteRooks = BBBoard.byColorPiecesBB[0][4];
+	BBWhiteQueens = BBBoard.byColorPiecesBB[0][5];
+	BBWhiteKing = BBBoard.byColorPiecesBB[0][6];
+
+	BBBlackPieces = BBBoard.allPiecesColorBB[1];
+	BBBlackPawns = BBBoard.byColorPiecesBB[1][1];
+	BBBlackKnights = BBBoard.byColorPiecesBB[1][2];
+	BBBlackBishops = BBBoard.byColorPiecesBB[1][3];
+	BBBlackRooks = BBBoard.byColorPiecesBB[1][4];
+	BBBlackQueens = BBBoard.byColorPiecesBB[1][5];
+	BBBlackKing = BBBoard.byColorPiecesBB[1][6];
+
 }
 
 bool MoveGen::isAttacked(U64 pieceLoc, bool wOrB, bool isSearchKingCheck)

@@ -182,9 +182,8 @@ int Ai_Logic::searchRoot(BitBoards& newBoard, int depth, int alpha, int beta, se
 	gen_moves.reorderMoves(ss, ttentry);
 
     //who's our king?
-    U64 king;
-    if(isWhite) king = newBoard.BBWhiteKing;
-    else king = newBoard.BBBlackKing;	
+	//color is messed up here, the boards are indexed by opposite 0 = white
+	U64 king = newBoard.byColorPiecesBB[!isWhite][KING];
 	flagInCheck = gen_moves.isAttacked(king, isWhite, true);
 
     int moveNum = gen_moves.moveCount;
@@ -326,9 +325,10 @@ int Ai_Logic::alphaBeta(BitBoards& newBoard, int depth, int alpha, int beta, sea
     gen_moves.grab_boards(newBoard, isWhite);
 
 
-    U64 king, eking;
-    if(isWhite){ king = newBoard.BBWhiteKing; eking = newBoard.BBBlackKing; }
-    else { king = newBoard.BBBlackKing; eking = newBoard.BBWhiteKing; }
+	int color = !isWhite; //color is messed up here, the boards are indexed by opposite 0 = white
+	U64 king = newBoard.byColorPiecesBB[color][KING];
+	U64 eking = newBoard.byColorPiecesBB[~color][KING];
+
     //are we in check?
     FlagInCheck = gen_moves.isAttacked(king, isWhite, true);
 
@@ -735,10 +735,8 @@ int Ai_Logic::quiescent(BitBoards& newBoard, int alpha, int beta, bool isWhite, 
     int hashFlag = TT_ALPHA, moveNum = gen_moves.moveCount;
 
 
-    U64 king;
     Move hashMove;
-    if(isWhite) king = newBoard.BBWhiteKing;
-    else king = newBoard.BBBlackKing;
+	U64 king = newBoard.byColorPiecesBB[!isWhite][KING];
 
     for(int i = 0; i < moveNum; ++i)
     {        
@@ -809,7 +807,6 @@ int Ai_Logic::contempt(const BitBoards& newBoard, bool isWhite)
 bool Ai_Logic::isRepetition(const BitBoards& newBoard, const Move& m)
 {
 	if (m.piece == PAWN) return false;
-	else if (m.flag == 'Q') return false;
 	//add in castling logic to quit early
 
 	int repCount = 0;
