@@ -90,7 +90,6 @@ typedef long long S64;
 #define SORT_PROM  90000000
 #define SORT_KILL  80000000
 
-//#define INF 10000
 
 #define MAX_PLY 128
 
@@ -99,7 +98,7 @@ typedef long long S64;
 #define END_GAME_MAT 1300
 
 #define DEPTH_QS 0
-#define DEPTH_QS_NO_CHECK -2 //add qs checks at somepoint
+#define DEPTH_QS_NO_CHECK -2 //add qs checks at somepoint, negative values cause errors right now
 
 
 #define VALUE_MATE 32000
@@ -108,28 +107,6 @@ typedef long long S64;
 #define VALUE_MATED_IN_MAX_PLY -31872
 
 #define INVALID 32767
-
-enum Value { //taken from stockfish
-	/*
-	VALUE_ZERO = 0,
-	//VALUE_DRAW = 0,
-
-	VALUE_MATE = 32000,
-	INF = 32001,
-	VALUE_NONE = 32002,
-
-	VALUE_MATE_IN_MAX_PLY = VALUE_MATE - MAX_PLY,
-	VALUE_MATED_IN_MAX_PLY = -VALUE_MATE + MAX_PLY,
-	*/
-
-	PawnValueMg = 198, PawnValueEg = 258, //NOT USING STOCKFISH VALUES AT THE MOMENT, MAY USE LATER
-	KnightValueMg = 817, KnightValueEg = 846,
-	BishopValueMg = 836, BishopValueEg = 857,
-	RookValueMg = 1270, RookValueEg = 1278,
-	QueenValueMg = 2521, QueenValueEg = 2558,
-
-	MidgameLimit = 15581, EndgameLimit = 3998
-};
 
 //CACHE_LINE_ALIGNMENT
 

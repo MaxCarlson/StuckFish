@@ -608,7 +608,7 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 				score = -alphaBeta(newBoard, newDepth, -beta, -alpha, ss + 1, !isWhite, DO_NULL, IS_PV);
 			}
 		}
-
+/*u
 		//if a reduced search brings us above alpha, do a full non-reduced search
 		if (ss->reduction && score > alpha) {
 			newDepth += ss->reduction;
@@ -616,7 +616,7 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 
 			goto re_search;
 		}
-
+*/
 		//store queit moves so we can decrease their value later
 		if (!captureOrPromotion && quietsC < 64) {
 			queits[quietsC] = newMove;

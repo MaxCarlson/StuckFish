@@ -1,4 +1,3 @@
-﻿  ai_logic.cpp
-  evaluatebb.cpp
-  Generating Code...
-LINK : fatal error LNK1168: cannot open C:\Users\C-60\Desktop\cppPrograms\StuckFish\x64\Release\StuckFish.exe for writing
+﻿  evaluatebb.cpp
+  StuckFish.vcxproj -> C:\Users\C-60\Desktop\cppPrograms\StuckFish\x64\Release\StuckFish.exe
+  StuckFish.vcxproj -> C:\Users\C-60\Desktop\cppPrograms\StuckFish\x64\Release\StuckFish.pdb (Full PDB)

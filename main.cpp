@@ -17,7 +17,7 @@ HashEntry transpositionEval[5021983];
 //pawn config hash table
 HashEntry transpositionPawn[400000];
 
-//user for magic sliders
+//user for magic sliders -- figure out how to make thread safe?
 SliderAttacks slider_attacks;
 
 int main(int argc, char *argv[])

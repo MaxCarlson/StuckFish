@@ -5,6 +5,7 @@
 #include "hashentry.h"
 #include "zobristh.h"
 #include "TranspositionT.h"
+#include "psqTables.h"
 
 
 const U64 RankMasks8[8] =/*from rank8 to rank1 ?*/
@@ -17,7 +18,7 @@ const U64 FileMasks8[8] =/*from fileA to FileH*/
     0x1010101010101010L, 0x2020202020202020L, 0x4040404040404040L, 0x8080808080808080L
 };
 //for flipping squares in blockers if black
-const int bSQ[64] = {
+static const int bSQ[64] = {
     56,57,58,59,60,61,62,63,
     48,49,50,51,52,53,54,55,
     40,41,42,43,44,45,46,47,
@@ -60,6 +61,22 @@ static const int SafetyTable[100] = {
  500, 500, 500, 500, 500, 500, 500, 500, 500, 500
 };
 
+const int midGmMobilityBonus[7][28]{
+	{}, {}, //no piece and pawn indexs
+	{-20, -16, -2, 3, 6, 10, 15, 17, 19}, //knights mid game mobility bonus per square
+
+	{-17, -10, 1, 4, 7, 11, 14, //bishops
+	17, 19, 21, 22, 23, 23, 24}, 
+
+	{-12, -8, -3, 1, 4, 8, 11, 12, //rooks
+	14, 16, 17, 18, 18, 19, 19}, 
+
+	{-14, -9, -3, 0, 2, 4, 5, 6, 7, 7,//queens
+	7, 8, 8, 8, 8, 8, 8, 9, 9, 9, 9, 9,
+	9, 9, 9, 9, 9, 9 } 
+
+};
+
 const int pieceVal[7] = { 0, 100, 325, 335, 500, 975, 0 };
 /*
 piece values
@@ -73,23 +90,24 @@ piece values
 */
 
 struct evalVect {
-	int gamePhase;
-	int pieceMaterial[2];
-	int midGMobility[2];
-	int endGMobility[2];
-	int attCount[2];
-	int attWeight[2];
-	int mgTropism[2]; // still need to add
-	int egTropism[2]; // still need to add
-	int kingShield[2];
-	int adjustMaterial[2];
-	int blockages[2]; // still need to add
-	int pawnCount[2];
-	int pawnMaterial[2];
-	int knightCount[2];
-	int bishopCount[2];
-	int rookCount[2];
-	int queenCount[2];
+	int gamePhase = 0;
+	int pieceMaterial[2] = { 0 };
+	int midGMobility[2] = { 0 };
+	int endGMobility[2] = { 0 };
+	int attCount[2] = { 0 };
+	int attWeight[2] = { 0 };
+	int mgTropism[2] = { 0 };// still need to add
+	int egTropism[2] = { 0 }; // still need to add
+	int kingShield[2] = { 0 };
+	int adjustMaterial[2] = { 0 };
+	int blockages[2] = { 0 }; 
+	int pawnCount[2] = { 0 };
+	int pawnMaterial[2] = { 0 };
+	int knightCount[2] = { 0 };
+	int bishopCount[2] = { 0 };
+	int rookCount[2] = { 0 };
+	int queenCount[2] = { 0 };
+	int psqTabMat[2][2] = { { 0 } }; //holds psq table scores, 0 white, 1 black, mid game = 0, end game 1
 } ev; //object to hold values incase we want to print
 
 
@@ -116,7 +134,7 @@ int evaluateBB::evalBoard(bool isWhite, const BitBoards& boards)
     //reset values
     int result = 0, midGScore = 0, endGScore = 0;
     ev.gamePhase = 0;
-
+///*
     for (int color = 0; color < 2; color++){
         ev.pieceMaterial[color] = 0;
         ev.midGMobility[color] = 0;
@@ -134,19 +152,19 @@ int evaluateBB::evalBoard(bool isWhite, const BitBoards& boards)
         ev.bishopCount[color] = 0;
         ev.rookCount[color] = 0;
         ev.queenCount[color] = 0;
-
+		ev.psqTabMat[color][0] = 0;
+		ev.psqTabMat[color][1] = 0;
     }
-
+//*/
     //generate zones around kings
     generateKingZones(boards);
-
 
 	//evaluate all pieces and positions and store info
 	evalPieces(boards);
 
-    //need to add end game piece square tables
-    midGScore = ev.pieceMaterial[WHITE] - ev.pieceMaterial[BLACK];
-    endGScore = midGScore;
+    //calcualte mid game and end game scores, they differ only by pcsq table scores
+    midGScore = ev.pieceMaterial[WHITE] + ev.psqTabMat[WHITE][0] - ev.pieceMaterial[BLACK] - ev.psqTabMat[BLACK][0];
+    endGScore = ev.pieceMaterial[WHITE] + ev.psqTabMat[WHITE][1] - ev.pieceMaterial[BLACK] - ev.psqTabMat[BLACK][1];
 
     //gather game phase data based on piece counts of both sides
     for(int color = 1; color < 2; color++){
@@ -199,7 +217,8 @@ int evaluateBB::evalBoard(bool isWhite, const BitBoards& boards)
 
     result +=( (midGScore * mgWeight) + (endGScore * egWeight)) / 24;
 
-    //add phase independent scoring
+    //score blockages as well as piece pair bonuses and penalties,
+	//as above prefering a bishop pair
 
 	result += (ev.blockages[WHITE] - ev.blockages[BLACK]);
     result += (ev.adjustMaterial[WHITE] - ev.adjustMaterial[BLACK]);
@@ -262,208 +281,6 @@ void evaluateBB::saveTT(bool isWhite, int result, int hash, const BitBoards &boa
     else transpositionEval[hash].flag = 1;
 }
 
-//white piece square lookup tables
-int wPawnsSqT[64] = {
-     0,  0,  0,  0,  0,  0,  0,  0,
-    50, 50, 50, 50, 50, 50, 50, 50,
-    10, 10, 20, 30, 30, 20, 10, 10,
-     5,  5, 10, 25, 25, 10,  5,  5,
-     0,  0,  0, 20, 20,  0,  0,  0,
-     5, -5,-10,  0,  0,-10, -5,  5,
-     5, 10, 10,-20,-20, 10, 10,  5,
-     0,  0,  0,  0,  0,  0,  0,  0
-};
-
-int wKnightsSqT[64] = {
-    -50,-40,-30,-30,-30,-30,-40,-50,
-    -40,-20,  0,  0,  0,  0,-20,-40,
-    -30,  0, 10, 15, 15, 10,  0,-30,
-    -30,  5, 15, 20, 20, 15,  5,-30,
-    -30,  0, 15, 20, 20, 15,  0,-30,
-    -30,  5, 10, 15, 15, 10,  5,-30,
-    -40,-20,  0,  5,  5,  0,-20,-40,
-    -50,-40,-30,-30,-30,-30,-40,-50,
-};
-
-int wBishopsSqT[64] = {
-    -20,-10,-10,-10,-10,-10,-10,-20,
-    -10,  0,  0,  0,  0,  0,  0,-10,
-    -10,  0,  5, 10, 10,  5,  0,-10,
-    -10,  5,  5, 10, 10,  5,  5,-10,
-    -10,  0, 10, 10, 10, 10,  0,-10,
-    -10, 10, 10, 10, 10, 10, 10,-10,
-    -10,  5,  0,  0,  0,  0,  5,-10,
-    -20,-10,-10,-10,-10,-10,-10,-20,
-};
-
-int wRooksSqT[64] = {
-    0,  0,  0,  0,  0,  0,  0,  0,
-    5, 10, 10, 10, 10, 10, 10,  5,
-   -5,  0,  0,  0,  0,  0,  0, -5,
-   -5,  0,  0,  0,  0,  0,  0, -5,
-   -5,  0,  0,  0,  0,  0,  0, -5,
-   -5,  0,  0,  0,  0,  0,  0, -5,
-   -5,  3,  3,  6,  6,  3,  3, -5,
-    0,  0,  0,  5,  5,  0,  0,  0
-};
-
-int wQueensSqt[64] = {
-    -20,-10,-10, -5, -5,-10,-10,-20,
-    -10,  0,  0,  0,  0,  0,  0,-10,
-    -10,  0,  5,  5,  5,  5,  0,-10,
-     -5,  0,  5,  5,  5,  5,  0, -5,
-      0,  0,  5,  5,  5,  5,  0, -5,
-    -10,  5,  5,  5,  5,  5,  0,-10,
-    -10,  0,  5,  0,  0,  0,  0,-10,
-    -20,-10,-10, -5, -5,-10,-10,-20
-};
-
-int wKingMidSqT[64] = {
-    -30,-40,-40,-50,-50,-40,-40,-30,
-    -30,-40,-40,-50,-50,-40,-40,-30,
-    -30,-40,-40,-50,-50,-40,-40,-30,
-    -30,-40,-40,-50,-50,-40,-40,-30,
-    -20,-30,-30,-40,-40,-30,-30,-20,
-    -10,-20,-20,-20,-20,-20,-20,-10,
-     20, 20,  0,  0,  0,  0, 20, 20,
-     20, 30, 10,  0,  0, 10, 30, 20
-};
-
-int wKingEndSqT[64] = {
-    -50,-40,-30,-20,-20,-30,-40,-50,
-    -30,-20,-10,  0,  0,-10,-20,-30,
-    -30,-10, 20, 30, 30, 20,-10,-30,
-    -30,-10, 30, 40, 40, 30,-10,-30,
-    -30,-10, 30, 40, 40, 30,-10,-30,
-    -30,-10, 20, 30, 30, 20,-10,-30,
-    -30,-30,  0,  0,  0,  0,-30,-30,
-    -50,-30,-30,-30,-30,-30,-30,-50
-};
-
-//black piece square lookup tables
-int bPawnSqT[64] = {
-     0,  0,   0,   0,   0,   0,  0,   0,
-     5, 10,  10, -20, -20,  10, 10,   5,
-     5, -5, -10,   0,   0, -10, -5,   5,
-     0,  0,   0,  20,  20,   0,  0,   0,
-     5,  5,  10,  25,  25,  10,  5,   5,
-    10, 10,  20,  30,  30,  20,  10, 10,
-    50, 50,  50,  50,  50,  50,  50, 50,
-     0,  0,   0,   0,   0,   0,   0,  0,
-
-};
-
-int bKnightSqT[64] = {
-    -50, -40, -30, -30, -30, -30, -40, -50,
-    -40, -20,   0,   5,   5,   0, -20, -40,
-    -30,   5,  10,  15,  15,  10,   5, -30,
-    -30,   0,  15,  20,  20,  15,   0, -30,
-    -30,   5,  15,  20,  20,  15,   5, -30,
-    -30,   0,  10,  15,  15,  10,   0, -30,
-    -40, -20,   0,   0,   0,   0, -20, -40,
-    -50, -40, -30, -30, -30, -30, -40, -50,
-
-};
-
-int bBishopsSqT[64] = {
-    -20, -10, -10, -10, -10, -10, -10, -20,
-    -10,   5,   0,   0,   0,   0,   5, -10,
-    -10,  10,  10,  10,  10,  10,  10, -10,
-    -10,   0,  10,  10,  10,  10,   0, -10,
-    -10,   5,   5,  10,  10,   5,   5, -10,
-    -10,   0,   5,  10,  10,   5,   0, -10,
-    -10,   0,   0,   0,   0,   0,   0, -10,
-    -20, -10, -10, -10, -10, -10, -10, -20,
-
-};
-
-int bRookSqT[64] = {
-     0,  0,  0,  5,  5,  0,  0,  0,
-    -5,  3,  3,  6,  6,  3,  3, -5,
-    -5,  0,  0,  0,  0,  0,  0, -5,
-    -5,  0,  0,  0,  0,  0,  0, -5,
-    -5,  0,  0,  0,  0,  0,  0, -5,
-    -5,  0,  0,  0,  0,  0,  0, -5,
-     5, 10, 10, 10, 10, 10, 10,  5,
-     0,  0,  0,  0,  0,  0,  0,  0,
-
-};
-
-int bQueenSqT[64] = {
-    -20, -10, -10, -5, -5, -10, -10, -20,
-    -10,   0,   0,  0,  0,   5,   0, -10,
-    -10,   0,   5,  5,  5,   5,   5, -10,
-    -5,    0,   5,  5,  5,   5,   0,   0,
-    -5,    0,   5,  5,  5,   5,   0,  -5,
-    -10,   0,   5,  5,  5,   5,   0, -10,
-    -10,   0,   0,  0,  0,   0,   0, -10,
-    -20, -10, -10, -5, -5, -10, -10, -20,
-};
-
-int bKingMidSqT[64]= {
-     20,  30,  10,   0,   0,  10,  30,  20,
-     20,  20,   0,   0,   0,   0,  20,  20,
-    -10, -20, -20, -20, -20, -20, -20, -10,
-    -20, -30, -30, -40, -40, -30, -30, -20,
-    -30, -40, -40, -50, -50, -40, -40, -30,
-    -30, -40, -40, -50, -50, -40, -40, -30,
-    -30, -40, -40, -50, -50, -40, -40, -30,
-    -30, -40, -40, -50, -50, -40, -40, -30,
-};
-
-int bKingEndSqT[64] = {
-    -50, -30, -30, -30, -30, -30, -30, -50,
-    -30, -30,   0,   0,   0,   0, -30, -30,
-    -30, -10,  20,  30,  30,  20, -10, -30,
-    -30, -10,  30,  40,  40,  30, -10, -30,
-    -30, -10,  30,  40,  40,  30, -10, -30,
-    -30, -10,  20,  30,  30,  20, -10, -30,
-    -30, -20, -10,   0,   0, -10, -20, -30,
-    -50, -40, -30, -20, -20, -30, -40, -50,
-};
-
-int weak_pawn_pcsq[2][64] = { {
-     0,   0,   0,   0,   0,   0,   0,   0,
-   -10, -12, -14, -16, -16, -14, -12, -10,
-   -10, -12, -14, -16, -16, -14, -12, -10,
-   -10, -12, -14, -16, -16, -14, -12, -10,
-   -10, -12, -14, -16, -16, -14, -12, -10,
-   -10, -12, -14, -16, -16, -14, -12, -10,
-   -10, -12, -14, -16, -16, -14, -12, -10,
-     0,   0,   0,   0,   0,   0,   0,   0
-}, {
-    0,    0,   0,   0,   0,   0,   0,   0,
-   -10, -12, -14, -16, -16, -14, -12, -10,
-   -10, -12, -14, -16, -16, -14, -12, -10,
-   -10, -12, -14, -16, -16, -14, -12, -10,
-   -10, -12, -14, -16, -16, -14, -12, -10,
-   -10, -12, -14, -16, -16, -14, -12, -10,
-   -10, -12, -14, -16, -16, -14, -12, -10,
-    0,    0,   0,   0,   0,   0,   0,   0,
-}
-};
-
-int passed_pawn_pcsq[2][64] = { {
-     0,   0,   0,   0,   0,   0,   0,   0,
-   140, 140, 140, 140, 140, 140, 140, 140,
-    92,  92,  92,  92,  92,  92,  92,  92,
-    56,  56,  56,  56,  56,  56,  56,  56,
-    32,  32,  32,  32,  32,  32,  32,  32,
-    20,  20,  20,  20,  20,  20,  20,  20,
-    20,  20,  20,  20,  20,  20,  20,  20,
-     0,   0,   0,   0,   0,   0,   0,   0
-}, {
-    0,     0,   0,   0,   0,   0,   0,   0,
-    20,   20,  20,  20,  20,  20,  20,  20,
-    20,   20,  20,  20,  20,  20,  20,  20,
-    32,   32,  32,  32,  32,  32,  32,  32,
-    56,   56,  56,  56,  56,  56,  56,  56,
-    92,   92,  92,  92,  92,  92,  92,  92,
-    140, 140, 140, 140, 140, 140, 140, 140,
-    0,     0,   0,   0,   0,   0,   0,   0,
-}
-};
-
 void evaluateBB::evalPieces(const BitBoards & boards) 
 {
 	//evaluate all pieces and store relvent info to struct ev
@@ -486,75 +303,99 @@ void evaluateBB::evalPieces(const BitBoards & boards)
 
 	//pawns
 	while (wpawns) {
-		pop_lsb(&wpawns); //pawns and pawn sqtables are evaluated in pawn_eval
-		ev.pawnCount[WHITE] ++;
+		int x = pop_lsb(&wpawns); //pawns are evaluated in pawn_eval
+		ev.pawnCount[WHITE] ++; 
 		ev.pieceMaterial[WHITE] += 100;
+		ev.psqTabMat[WHITE][0] += pawnPsqMg[x];
+		ev.psqTabMat[WHITE][1] += pawnPsqEg[x];
 	}
 	while (bpawns) {
-		pop_lsb(&bpawns);
+		int x = pop_lsb(&bpawns);
 		ev.pawnCount[BLACK] ++;
 		ev.pieceMaterial[BLACK] += 100;
+		ev.psqTabMat[BLACK][0] += pawnPsqMg[bSQ[x]];
+		ev.psqTabMat[BLACK][1] += pawnPsqEg[bSQ[x]];
 	}
 	//knights
 	while (wknights) {
 		int x = pop_lsb(&wknights);
 		ev.knightCount[WHITE] ++;
 		evalKnight(boards, WHITE, x);
-		ev.pieceMaterial[WHITE] += 325 + wKnightsSqT[x];
+		ev.pieceMaterial[WHITE] += SORT_VALUE[KNIGHT];
+		ev.psqTabMat[WHITE][0] += knightPsqMg[x]; //mid game piece square table
+		ev.psqTabMat[WHITE][1] += knightPsqEg[x]; //end game psqt
 	}
 	while (bknights) {
 		int x = pop_lsb(&bknights);
 		ev.knightCount[BLACK] ++;
 		evalKnight(boards, BLACK, x);
-		ev.pieceMaterial[BLACK] += 325 + bKnightSqT[x]; 
+		ev.pieceMaterial[BLACK] += SORT_VALUE[KNIGHT];
+		ev.psqTabMat[BLACK][0] += knightPsqMg[bSQ[x]]; //piece square table values need to be 
+		ev.psqTabMat[BLACK][1] += knightPsqEg[bSQ[x]]; //flipped along horizontal line for black
 	}
 	//bishops
 	while (wbishops) {
 		int x = pop_lsb(&wbishops);
 		ev.bishopCount[WHITE] ++;
 		evalBishop(boards, WHITE, x);
-		ev.pieceMaterial[WHITE] += 335 + wBishopsSqT[x];
+		ev.pieceMaterial[WHITE] += SORT_VALUE[BISHOP];
+		ev.psqTabMat[WHITE][0] += bishopPsqMg[x];
+		ev.psqTabMat[WHITE][1] += bishopPsqEg[x];
 	}
 	while (bbishops) {
 		int x = pop_lsb(&bbishops);
 		ev.bishopCount[BLACK] ++;
 		evalBishop(boards, BLACK, x);
-		ev.pieceMaterial[BLACK] += 335 + bBishopsSqT[x];
+		ev.pieceMaterial[BLACK] += SORT_VALUE[BISHOP];
+		ev.psqTabMat[BLACK][0] += bishopPsqMg[bSQ[x]];
+		ev.psqTabMat[BLACK][1] += bishopPsqEg[bSQ[x]];
 	}
 	//rooks
 	while (wrooks) {
 		int x = pop_lsb(&wrooks);
 		ev.rookCount[WHITE] ++;
 		evalRook(boards, WHITE, x);
-		ev.pieceMaterial[WHITE] += 500 + wRooksSqT[x];
+		ev.pieceMaterial[WHITE] += SORT_VALUE[ROOK];
+		ev.psqTabMat[WHITE][0] += rookPsqMg[x];
+		ev.psqTabMat[WHITE][1] += rookPsqEg[x];
 	}
 	while (brooks) {
 		int x = pop_lsb(&brooks);
 		ev.rookCount[BLACK] ++;
 		evalRook(boards, BLACK, x);
-		ev.pieceMaterial[BLACK] += 500 + bRookSqT[x];
+		ev.pieceMaterial[BLACK] += SORT_VALUE[ROOK];
+		ev.psqTabMat[BLACK][0] += rookPsqMg[bSQ[x]];
+		ev.psqTabMat[BLACK][1] += rookPsqEg[bSQ[x]];
 	}
 	//queens
 	while (wqueens) {
 		int x = pop_lsb(&wqueens);
 		evalQueen(boards, WHITE, x);
 		ev.queenCount[WHITE] ++;
-		ev.pieceMaterial[WHITE] += 975 + wQueensSqt[x];
+		ev.pieceMaterial[WHITE] += SORT_VALUE[QUEEN];
+		ev.psqTabMat[WHITE][0] += queenPsqMg[x];
+		ev.psqTabMat[WHITE][1] += queenPsqEg[x];
 	}
 	while (bqueens) {
 		int x = pop_lsb(&bqueens);
 		evalQueen(boards, BLACK, x);
 		ev.queenCount[BLACK] ++;
-		ev.pieceMaterial[BLACK] += 975 + bQueenSqT[x];
+		ev.pieceMaterial[BLACK] += SORT_VALUE[QUEEN];
+		ev.psqTabMat[BLACK][0] += queenPsqMg[bSQ[x]];
+		ev.psqTabMat[BLACK][1] += queenPsqEg[bSQ[x]];
 	}
 	//kings
 	while (wking) {
 		int x = pop_lsb(&wking);
-		ev.pieceMaterial[WHITE] += wKingMidSqT[x];
+		ev.pieceMaterial[WHITE] += SORT_VALUE[KING];
+		ev.psqTabMat[WHITE][0] += kingPsqMg[x];
+		ev.psqTabMat[WHITE][1] += kingPsqEg[x];
 	}
 	while (bking) {
 		int x = pop_lsb(&bking);
-		ev.pieceMaterial[BLACK] += bKingMidSqT[x];
+		ev.pieceMaterial[BLACK] += SORT_VALUE[KING];
+		ev.psqTabMat[BLACK][0] += kingPsqMg[bSQ[x]];
+		ev.psqTabMat[BLACK][1] += kingPsqEg[bSQ[x]];
 	}
 }
 
