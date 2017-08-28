@@ -61,7 +61,7 @@ static const int SafetyTable[100] = {
  500, 500, 500, 500, 500, 500, 500, 500, 500, 500
 };
 
-const int midGmMobilityBonus[7][28]{
+const int midGmMobilityBonus[6][28]{
 	{}, {}, //no piece and pawn indexs
 	{-20, -16, -2, 3, 6, 10, 15, 17, 19}, //knights mid game mobility bonus per square
 
@@ -80,7 +80,7 @@ const int midGmMobilityBonus[7][28]{
 const int pieceVal[7] = { 0, 100, 325, 335, 500, 975, 0 };
 /*
 piece values
-  NP= 0
+  NoP= 0
   P = 100
   N = 325
   B = 335
@@ -88,27 +88,6 @@ piece values
   Q = 975
   K = 0
 */
-
-struct evalVect {
-	int gamePhase = 0;
-	int pieceMaterial[2] = { 0 };
-	int midGMobility[2] = { 0 };
-	int endGMobility[2] = { 0 };
-	int attCount[2] = { 0 };
-	int attWeight[2] = { 0 };
-	int mgTropism[2] = { 0 };// still need to add
-	int egTropism[2] = { 0 }; // still need to add
-	int kingShield[2] = { 0 };
-	int adjustMaterial[2] = { 0 };
-	int blockages[2] = { 0 }; 
-	int pawnCount[2] = { 0 };
-	int pawnMaterial[2] = { 0 };
-	int knightCount[2] = { 0 };
-	int bishopCount[2] = { 0 };
-	int rookCount[2] = { 0 };
-	int queenCount[2] = { 0 };
-	int psqTabMat[2][2] = { { 0 } }; //holds psq table scores, 0 white, 1 black, mid game = 0, end game 1
-} ev; //object to hold values incase we want to print
 
 
 int evaluateBB::evalBoard(bool isWhite, const BitBoards& boards)
@@ -130,37 +109,18 @@ int evaluateBB::evalBoard(bool isWhite, const BitBoards& boards)
         }
 
     }
+	//create struct containing eval data
+	evalVect ev;
 
     //reset values
     int result = 0, midGScore = 0, endGScore = 0;
     ev.gamePhase = 0;
-///*
-    for (int color = 0; color < 2; color++){
-        ev.pieceMaterial[color] = 0;
-        ev.midGMobility[color] = 0;
-        ev.endGMobility[color] = 0;
-        ev.attCount[color] = 0;
-        ev.attWeight[color] = 0;
-        ev.mgTropism[color] = 0;
-        ev.egTropism[color] = 0;
-        ev.kingShield[color] = 0;
-        ev.adjustMaterial[color] = 0;
-        ev.blockages[color] = 0;
-        ev.pawnCount[color] = 0;
-        ev.pawnMaterial[color] = 0;
-        ev.knightCount[color] = 0;
-        ev.bishopCount[color] = 0;
-        ev.rookCount[color] = 0;
-        ev.queenCount[color] = 0;
-		ev.psqTabMat[color][0] = 0;
-		ev.psqTabMat[color][1] = 0;
-    }
-//*/
+
     //generate zones around kings
     generateKingZones(boards);
 
 	//evaluate all pieces and positions and store info
-	evalPieces(boards);
+	evalPieces(boards, ev);
 
     //calcualte mid game and end game scores, they differ only by pcsq table scores
     midGScore = ev.pieceMaterial[WHITE] + ev.psqTabMat[WHITE][0] - ev.pieceMaterial[BLACK] - ev.psqTabMat[BLACK][0];
@@ -178,8 +138,8 @@ int evaluateBB::evalBoard(bool isWhite, const BitBoards& boards)
 
     ev.kingShield[WHITE] = wKingShield(boards);
     ev.kingShield[BLACK] = bKingShield(boards);
-	blockedPieces(WHITE, boards);
-	blockedPieces(BLACK, boards);
+	blockedPieces(WHITE, boards, ev);
+	blockedPieces(BLACK, boards, ev);
 
     midGScore += (ev.kingShield[WHITE] - ev.kingShield[BLACK]);
 
@@ -281,7 +241,7 @@ void evaluateBB::saveTT(bool isWhite, int result, int hash, const BitBoards &boa
     else transpositionEval[hash].flag = 1;
 }
 
-void evaluateBB::evalPieces(const BitBoards & boards) 
+void evaluateBB::evalPieces(const BitBoards & boards, evalVect & ev) 
 {
 	//evaluate all pieces and store relvent info to struct ev
 	U64  wpawns, wknights, wrooks, wbishops, wqueens, wking, bpawns, bknights, brooks, bbishops, bqueens, bking;
@@ -320,7 +280,7 @@ void evaluateBB::evalPieces(const BitBoards & boards)
 	while (wknights) {
 		int x = pop_lsb(&wknights);
 		ev.knightCount[WHITE] ++;
-		evalKnight(boards, WHITE, x);
+		evalKnight(boards, ev, WHITE, x);
 		ev.pieceMaterial[WHITE] += SORT_VALUE[KNIGHT];
 		ev.psqTabMat[WHITE][0] += knightPsqMg[x]; //mid game piece square table
 		ev.psqTabMat[WHITE][1] += knightPsqEg[x]; //end game psqt
@@ -328,7 +288,7 @@ void evaluateBB::evalPieces(const BitBoards & boards)
 	while (bknights) {
 		int x = pop_lsb(&bknights);
 		ev.knightCount[BLACK] ++;
-		evalKnight(boards, BLACK, x);
+		evalKnight(boards, ev, BLACK, x);
 		ev.pieceMaterial[BLACK] += SORT_VALUE[KNIGHT];
 		ev.psqTabMat[BLACK][0] += knightPsqMg[bSQ[x]]; //piece square table values need to be 
 		ev.psqTabMat[BLACK][1] += knightPsqEg[bSQ[x]]; //flipped along horizontal line for black
@@ -337,7 +297,7 @@ void evaluateBB::evalPieces(const BitBoards & boards)
 	while (wbishops) {
 		int x = pop_lsb(&wbishops);
 		ev.bishopCount[WHITE] ++;
-		evalBishop(boards, WHITE, x);
+		evalBishop(boards, ev, WHITE, x);
 		ev.pieceMaterial[WHITE] += SORT_VALUE[BISHOP];
 		ev.psqTabMat[WHITE][0] += bishopPsqMg[x];
 		ev.psqTabMat[WHITE][1] += bishopPsqEg[x];
@@ -345,7 +305,7 @@ void evaluateBB::evalPieces(const BitBoards & boards)
 	while (bbishops) {
 		int x = pop_lsb(&bbishops);
 		ev.bishopCount[BLACK] ++;
-		evalBishop(boards, BLACK, x);
+		evalBishop(boards, ev, BLACK, x);
 		ev.pieceMaterial[BLACK] += SORT_VALUE[BISHOP];
 		ev.psqTabMat[BLACK][0] += bishopPsqMg[bSQ[x]];
 		ev.psqTabMat[BLACK][1] += bishopPsqEg[bSQ[x]];
@@ -354,7 +314,7 @@ void evaluateBB::evalPieces(const BitBoards & boards)
 	while (wrooks) {
 		int x = pop_lsb(&wrooks);
 		ev.rookCount[WHITE] ++;
-		evalRook(boards, WHITE, x);
+		evalRook(boards, ev, WHITE, x);
 		ev.pieceMaterial[WHITE] += SORT_VALUE[ROOK];
 		ev.psqTabMat[WHITE][0] += rookPsqMg[x];
 		ev.psqTabMat[WHITE][1] += rookPsqEg[x];
@@ -362,7 +322,7 @@ void evaluateBB::evalPieces(const BitBoards & boards)
 	while (brooks) {
 		int x = pop_lsb(&brooks);
 		ev.rookCount[BLACK] ++;
-		evalRook(boards, BLACK, x);
+		evalRook(boards, ev, BLACK, x);
 		ev.pieceMaterial[BLACK] += SORT_VALUE[ROOK];
 		ev.psqTabMat[BLACK][0] += rookPsqMg[bSQ[x]];
 		ev.psqTabMat[BLACK][1] += rookPsqEg[bSQ[x]];
@@ -370,7 +330,7 @@ void evaluateBB::evalPieces(const BitBoards & boards)
 	//queens
 	while (wqueens) {
 		int x = pop_lsb(&wqueens);
-		evalQueen(boards, WHITE, x);
+		evalQueen(boards, ev, WHITE, x);
 		ev.queenCount[WHITE] ++;
 		ev.pieceMaterial[WHITE] += SORT_VALUE[QUEEN];
 		ev.psqTabMat[WHITE][0] += queenPsqMg[x];
@@ -378,7 +338,7 @@ void evaluateBB::evalPieces(const BitBoards & boards)
 	}
 	while (bqueens) {
 		int x = pop_lsb(&bqueens);
-		evalQueen(boards, BLACK, x);
+		evalQueen(boards, ev, BLACK, x);
 		ev.queenCount[BLACK] ++;
 		ev.pieceMaterial[BLACK] += SORT_VALUE[QUEEN];
 		ev.psqTabMat[BLACK][0] += queenPsqMg[bSQ[x]];
@@ -642,7 +602,7 @@ int evaluateBB::isPawnSupported(int side, U64 pawn, U64 pawns)
     return 0;
 }
 
-void evaluateBB::evalKnight(const BitBoards & boards, int side, int location)
+void evaluateBB::evalKnight(const BitBoards & boards, evalVect & ev, int side, int location)
 {
     int kAttks = 0, mob = 0;
     ev.gamePhase += 1;
@@ -687,7 +647,7 @@ void evaluateBB::evalKnight(const BitBoards & boards, int side, int location)
 
 }
 
-void evaluateBB::evalBishop(const BitBoards & boards, int side, int location)
+void evaluateBB::evalBishop(const BitBoards & boards, evalVect & ev, int side, int location)
 {
     int kAttks = 0, mob = 0;
     ev.gamePhase += 1;
@@ -721,7 +681,7 @@ void evaluateBB::evalBishop(const BitBoards & boards, int side, int location)
 
 }
 
-void evaluateBB::evalRook(const BitBoards & boards, int side, int location)
+void evaluateBB::evalRook(const BitBoards & boards, evalVect & ev, int side, int location)
 {
     bool  ownBlockingPawns = false, oppBlockingPawns = false;
     int kAttks = 0, mob = 0;
@@ -781,7 +741,7 @@ void evaluateBB::evalRook(const BitBoards & boards, int side, int location)
     }
 }
 
-void evaluateBB::evalQueen(const BitBoards & boards, int side, int location)
+void evaluateBB::evalQueen(const BitBoards & boards, evalVect & ev, int side, int location)
 {
     ev.gamePhase += 4;
     int kAttks = 0, mob = 0;
@@ -816,7 +776,7 @@ void evaluateBB::evalQueen(const BitBoards & boards, int side, int location)
 
 }
 
-void evaluateBB::blockedPieces(int side, const BitBoards& boards)
+void evaluateBB::blockedPieces(int side, const BitBoards& boards, evalVect & ev)
 {
     U64 pawn, epawn, knight, bishop, rook, king;
     U64 empty = boards.EmptyTiles;

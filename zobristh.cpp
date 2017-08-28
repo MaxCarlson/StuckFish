@@ -63,66 +63,32 @@ void ZobristH::UpdateColor()
 
 void ZobristH::UpdateKey(int start, int end, const Move& moveKey, bool isWhite)
 {
-    //gather piece, capture, and w or b info from movekey
-    //normal move
-    int piece = moveKey.piece;
-    int captured = moveKey.captured;
+	//update the zobrist key after move or unmake move.
+	//color is messed up, 0 = white. Hence we inverse the is white to get actual color
+	int color = !isWhite;
 
-    //XOR zobristKey with zArray number at piece start end then end location
-    //if piece is white..
-    if(isWhite) {
-		switch (piece) {
-		case PAWN:
-			//if normal pawn move
-			if (moveKey.flag == '0') {
-				zobristKey ^= zArray[0][PAWN][start];
-				zobristKey ^= zArray[0][PAWN][end];
-			}
-			else { //if pawn promotion
-				zobristKey ^= zArray[0][PAWN][start];
-				zobristKey ^= zArray[0][QUEEN][end]; //only handles queen promotions atm
-			}
-			break;
-		default: //default for rest of pieces, castling handled down below
-			zobristKey ^= zArray[0][piece][start];
-			zobristKey ^= zArray[0][piece][end];
-			break;
-		} 
-		zobristKey ^= zArray[1][captured][end];
-    //black
-    } else {
-		switch (piece) {
-		case PAWN:
-			if (moveKey.flag == '0') {
-				zobristKey ^= zArray[1][PAWN][start];
-				zobristKey ^= zArray[1][PAWN][end];
-			}
-			else {
-				zobristKey ^= zArray[1][PAWN][start];
-				zobristKey ^= zArray[1][QUEEN][end];
-			}
-			break;
-		default:
-			zobristKey ^= zArray[1][piece][start];
-			zobristKey ^= zArray[1][piece][end];
-			break;
+	zobristKey ^= zArray[color][moveKey.piece][moveKey.from];
+	zobristKey ^= zArray[color][moveKey.piece][moveKey.to];
 
-		} 
-		zobristKey ^= zArray[0][captured][end];
-    }
+	zobristKey ^= zArray[!color][moveKey.captured][moveKey.to];
+
+	//pawn promotions to queen, other not implemented
+	if (moveKey.flag == 'Q') {
+		zobristKey ^= zArray[color][PAWN][moveKey.to];
+		zobristKey ^= zArray[color][QUEEN][moveKey.to];
+	}
+
 
 	//need caslting code
-
 }
 
 U64 ZobristH::fetchKey(const Move & m, bool isWhite)
 {
 	//get an idea of what most keys will be after moves..
 	//so we can prefetch that info
-	int color = 0;
-	U64 key = zobristKey;
+	int color = !isWhite;
 
-	if (!isWhite) color = 1;
+	U64 key = zobristKey;
 
 	key ^= zArray[color][m.piece][m.from];
 	key ^= zArray[color][m.piece][m.to];

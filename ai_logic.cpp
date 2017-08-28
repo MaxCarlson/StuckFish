@@ -370,6 +370,7 @@ int Ai_Logic::alphaBeta(BitBoards& newBoard, int depth, int alpha, int beta, sea
         }
     }
 
+
 /*
 //razoring if not PV and is close to leaf and has a low score drop directly into quiescence 512 + 32 * depth
     if(!is_pv && allowNull && depth <= 3){
