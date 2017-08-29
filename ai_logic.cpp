@@ -388,7 +388,8 @@ int Ai_Logic::alphaBeta(BitBoards& newBoard, int depth, int alpha, int beta, sea
 	if (!is_pv ///TESTTESTTESTTEST
 		&& depth < 4
 		&& ss->staticEval + 300 * (depth - 1) * 60 <= alpha
-		&& !ttMove) { //need to add no pawn on 7th rank
+		&& !ttMove
+		&& !newBoard.pawnOn7th(isWhite)) { //need to add no pawn on 7th rank
 		
 		if (depth <= 1 && ss->staticEval + 300 * 3 * 60 <= alpha) {
 			return quiescent(newBoard, alpha, beta, isWhite, ss, queitSD, NO_PV);
@@ -745,7 +746,7 @@ int Ai_Logic::quiescent(BitBoards& newBoard, int alpha, int beta, bool isWhite, 
 	
 		//delta pruning
 		if ((standingPat + SORT_VALUE[newMove.captured] + 200 < alpha)
-			&& (newBoard.sideMaterial[!isWhite] - SORT_VALUE[newMove.captured] > END_GAME_MAT)
+			&& (newBoard.bInfo.sideMaterial[!isWhite] - SORT_VALUE[newMove.captured] > END_GAME_MAT)
 			&& newMove.flag != 'Q') continue;
 					
 		//Don't search losing capture moves if not in PV
@@ -795,7 +796,7 @@ int Ai_Logic::contempt(const BitBoards& newBoard, bool isWhite)
 	int value = DRAW_OPENING;
 
 	//if my sides material is below endgame mat, use DRAW_ENDGAME val sideMat[0] is white
-	if (newBoard.sideMaterial[!isWhite] < END_GAME_MAT) {
+	if (newBoard.bInfo.sideMaterial[!isWhite] < END_GAME_MAT) {
 		value = DRAW_ENDGAME;
 	}
 

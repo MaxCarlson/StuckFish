@@ -61,26 +61,7 @@ void ZobristH::UpdateColor()
     zobristKey ^= zBlackMove;
 }
 
-void ZobristH::UpdateKey(int start, int end, const Move& moveKey, bool isWhite)
-{
-	//update the zobrist key after move or unmake move.
-	//color is messed up, 0 = white. Hence we inverse the is white to get actual color
-	int color = !isWhite;
 
-	zobristKey ^= zArray[color][moveKey.piece][moveKey.from];
-	zobristKey ^= zArray[color][moveKey.piece][moveKey.to];
-
-	zobristKey ^= zArray[!color][moveKey.captured][moveKey.to];
-
-	//pawn promotions to queen, other not implemented
-	if (moveKey.flag == 'Q') {
-		zobristKey ^= zArray[color][PAWN][moveKey.to];
-		zobristKey ^= zArray[color][QUEEN][moveKey.to];
-	}
-
-
-	//need caslting code
-}
 
 U64 ZobristH::fetchKey(const Move & m, bool isWhite)
 {

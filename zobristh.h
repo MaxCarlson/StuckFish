@@ -1,10 +1,9 @@
 #ifndef ZOBRISTH_H
 #define ZOBRISTH_H
 #include <string>
+#include "move.h"
 
 
-typedef unsigned long long  U64; // supported by MSC 13.00+ and C99
-#define C64(constantU64) constantU64##ULL
 
 class BitBoards;
 class MoveGen;
@@ -48,6 +47,25 @@ public:
 
 };
 
+inline void ZobristH::UpdateKey(int start, int end, const Move& moveKey, bool isWhite)
+{
+	//update the zobrist key after move or unmake move.
+	//color is messed up, 0 = white. Hence we inverse the is white to get actual color
+	int color = !isWhite;
 
+	zobristKey ^= zArray[color][moveKey.piece][moveKey.from];
+	zobristKey ^= zArray[color][moveKey.piece][moveKey.to];
+
+	zobristKey ^= zArray[!color][moveKey.captured][moveKey.to];
+
+	//pawn promotions to queen, other not implemented
+	if (moveKey.flag == 'Q') {
+		zobristKey ^= zArray[color][PAWN][moveKey.to];
+		zobristKey ^= zArray[color][QUEEN][moveKey.to];
+	}
+
+
+	//need caslting code
+}
 
 #endif // ZOBRISTH_H

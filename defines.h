@@ -78,8 +78,6 @@ typedef int S32;
 typedef unsigned long long U64;
 typedef long long S64;
 
-#define MOVE_NONE Move n //not usable?
-
 #define TT_ALPHA 1
 #define TT_BETA 2
 #define TT_EXACT 3
@@ -101,8 +99,9 @@ typedef long long S64;
 #define DEPTH_QS_NO_CHECK -2 //add qs checks at somepoint, negative values cause errors right now
 
 
-#define VALUE_MATE 32000
+
 #define INF 32001
+#define VALUE_MATE 32000
 #define VALUE_MATE_IN_MAX_PLY 31872
 #define VALUE_MATED_IN_MAX_PLY -31872
 
@@ -110,30 +109,37 @@ typedef long long S64;
 
 //CACHE_LINE_ALIGNMENT
 
-FORCE_INLINE int lsb(unsigned long long b) {
+//return least significant bit location
+inline int lsb(unsigned long long b) {
 	unsigned long idx;
 	_BitScanForward64(&idx, b);
 	return (int)idx;
 }
-
-FORCE_INLINE int msb(unsigned long long b) {
+//most significant bit location
+inline int msb(unsigned long long b) {
 	unsigned long idx;
 	_BitScanReverse64(&idx, b);
 	return (int)idx;
 }
 
 //finds and pops the least significant bit from the board, pass it a refrence
-FORCE_INLINE int pop_lsb(unsigned long long* b) {
+inline int pop_lsb(unsigned long long* b) {
 	const int s = lsb(*b);
 	*b &= *b - 1;
 	return s;
 }
 
+//counts number of non zero bits in a bitboard
+inline int bit_count(unsigned long long b) {
+	return _mm_popcnt_u64(b);
+}
 
+//these functions return appropriate mate values for the current ply
+//prefering to mate sooner than later
 inline int mate_in(int ply) {
 	return VALUE_MATE - ply;
 }
-
+//^^
 inline int mated_in(int ply) {
 	return -VALUE_MATE + ply;
 }

@@ -39,7 +39,7 @@ const U64 FileHBB = FileABB << 7;
 const U64 FILE_AB = FileABB + FileBBB;
 const U64 FILE_GH = FileGBB + FileHBB;
 
-static const U64 RankMasks8[8] =/*from rank8 to rank1 ?*/
+static const U64 RankMasks8[8] =/*from rank 1 to 8 ?*/
 {
     0xFFL, 0xFF00L, 0xFF0000L, 0xFF000000L, 0xFF00000000L, 0xFF0000000000L, 0xFF000000000000L, 0xFF00000000000000L
 };
