@@ -29,6 +29,7 @@ enum esqare {
     A3=40, B3, C3, D3, E3, F3, G3, H3,
     A2=48, B2, C2, D2, E2, F2, G2, H2,
     A1=56, B1, C1, D1, E1, F1, G1, H1,
+	SQ_NONE
 };
 
 enum epiece {
@@ -106,6 +107,7 @@ typedef long long S64;
 #define VALUE_MATED_IN_MAX_PLY -31872
 
 #define INVALID 32767
+
 
 //CACHE_LINE_ALIGNMENT
 

@@ -39,7 +39,10 @@ void BitBoards::constructBoards()
 			byColorPiecesBB[i][j] = 0LL;
 			byPieceType[j] = 0LL;
 			pieceCount[i][j] = 0;	
-			pieceLoc[i][j].clear();
+			
+			for (int h = 0; h < 16; ++h) {
+				pieceLoc[i][j][h] = SQ_NONE;
+			}
 		}
 	}
 	
@@ -48,7 +51,7 @@ void BitBoards::constructBoards()
 	//seed bitboards
 	for (int i = 0; i < 64; i++) {
 		squareBB[i] = 1LL << i;
-		pieceIndex[i] = INVALID;
+		pieceIndex[i] = SQ_NONE;
 		if (boardArr[i / 8][i % 8] == "P") {
 			byColorPiecesBB[0][1] += 1LL << i;
 			allPiecesColorBB[0] += 1LL << i;
@@ -58,7 +61,7 @@ void BitBoards::constructBoards()
 			bInfo.sideMaterial[0] += PAWN_VAL;
 
 			//record square piece is located at and increment the piece count
-			pieceLoc[WHITE][PAWN].push_back(i);
+			pieceLoc[WHITE][PAWN][pieceCount[WHITE][PAWN]] = i;
 			pieceIndex[i] = pieceCount[WHITE][PAWN]; //store the piece loc list index of this particular piece, indexed by square it's on
 			pieceCount[WHITE][PAWN] ++;
 			
@@ -71,7 +74,7 @@ void BitBoards::constructBoards()
 			FullTiles += 1LL << i;
 			bInfo.sideMaterial[0] += KNIGHT_VAL;
 
-			pieceLoc[WHITE][KNIGHT].push_back(i);
+			pieceLoc[WHITE][KNIGHT][pieceCount[WHITE][KNIGHT]] = i;
 			pieceIndex[i] = pieceCount[WHITE][KNIGHT];
 			pieceCount[WHITE][KNIGHT]++;
 		}
@@ -83,7 +86,7 @@ void BitBoards::constructBoards()
 			FullTiles += 1LL << i;
 			bInfo.sideMaterial[0] += BISHOP_VAL;
 
-			pieceLoc[WHITE][BISHOP].push_back(i);
+			pieceLoc[WHITE][BISHOP][pieceCount[WHITE][BISHOP]] = i;
 			pieceIndex[i] = pieceCount[WHITE][BISHOP];
 			pieceCount[WHITE][BISHOP]++;
 		}
@@ -94,7 +97,7 @@ void BitBoards::constructBoards()
 
 			FullTiles += 1LL << i;
 			bInfo.sideMaterial[0] += ROOK_VAL;
-			pieceLoc[WHITE][ROOK].push_back(i);;
+			pieceLoc[WHITE][ROOK][pieceCount[WHITE][ROOK]] = i;
 			pieceIndex[i] = pieceCount[WHITE][ROOK];
 			pieceCount[WHITE][ROOK]++;
 		}
@@ -106,7 +109,7 @@ void BitBoards::constructBoards()
 			FullTiles += 1LL << i;
 			bInfo.sideMaterial[0] += QUEEN_VAL;
 
-			pieceLoc[WHITE][QUEEN].push_back(i);
+			pieceLoc[WHITE][QUEEN][pieceCount[WHITE][QUEEN]] = i;
 			pieceIndex[i] = pieceCount[WHITE][QUEEN];
 			pieceCount[WHITE][QUEEN]++;
 		}
@@ -118,7 +121,7 @@ void BitBoards::constructBoards()
 			FullTiles += 1LL << i;
 			bInfo.sideMaterial[0] += KING_VAL;
 
-			pieceLoc[WHITE][KING].push_back(i);
+			pieceLoc[WHITE][KING][pieceCount[WHITE][KING]] = i;
 			pieceIndex[i] = pieceCount[WHITE][KING];
 			pieceCount[WHITE][KING]++;
 		}
@@ -131,7 +134,7 @@ void BitBoards::constructBoards()
 			FullTiles += 1LL << i;
 			bInfo.sideMaterial[1] += PAWN_VAL;
 
-			pieceLoc[BLACK][PAWN].push_back(i);
+			pieceLoc[BLACK][PAWN][pieceCount[BLACK][PAWN]] = i;
 			pieceIndex[i] = pieceCount[BLACK][PAWN];
 			pieceCount[BLACK][PAWN]++;
 		}
@@ -143,7 +146,7 @@ void BitBoards::constructBoards()
 			FullTiles += 1LL << i;
 			bInfo.sideMaterial[1] += KNIGHT_VAL;
 
-			pieceLoc[BLACK][KNIGHT].push_back(i);
+			pieceLoc[BLACK][KNIGHT][pieceCount[BLACK][KNIGHT]] = i;
 			pieceIndex[i] = pieceCount[BLACK][KNIGHT];
 			pieceCount[BLACK][KNIGHT]++;
 		}
@@ -155,7 +158,7 @@ void BitBoards::constructBoards()
 			FullTiles += 1LL << i;
 			bInfo.sideMaterial[1] += BISHOP_VAL;
 
-			pieceLoc[BLACK][BISHOP].push_back(i);
+			pieceLoc[BLACK][BISHOP][pieceCount[BLACK][BISHOP]] = i;
 			pieceIndex[i] = pieceCount[BLACK][BISHOP];
 			pieceCount[BLACK][BISHOP]++;
 		}
@@ -167,7 +170,7 @@ void BitBoards::constructBoards()
 			FullTiles += 1LL << i;
 			bInfo.sideMaterial[1] += ROOK_VAL;
 
-			pieceLoc[BLACK][ROOK].push_back(i);
+			pieceLoc[BLACK][ROOK][pieceCount[BLACK][ROOK]] = i;
 			pieceIndex[i] = pieceCount[BLACK][ROOK];
 			pieceCount[BLACK][ROOK]++;
 		}
@@ -179,7 +182,7 @@ void BitBoards::constructBoards()
 			FullTiles += 1LL << i;
 			bInfo.sideMaterial[1] += QUEEN_VAL;
 
-			pieceLoc[BLACK][QUEEN].push_back(i);
+			pieceLoc[BLACK][QUEEN][pieceCount[BLACK][QUEEN]] = i;
 			pieceIndex[i] = pieceCount[BLACK][QUEEN];
 			pieceCount[BLACK][QUEEN]++;
 		}
@@ -191,7 +194,7 @@ void BitBoards::constructBoards()
 			FullTiles += 1LL << i;
 			bInfo.sideMaterial[1] += KING_VAL;
 
-			pieceLoc[BLACK][KING].push_back(i);
+			pieceLoc[BLACK][KING][pieceCount[BLACK][KING]] = i;
 			pieceIndex[i] = pieceCount[BLACK][KING];
 			pieceCount[BLACK][KING]++;
 		}
@@ -243,14 +246,16 @@ void BitBoards::unmakeMove(const Move & m, bool isWhite)
 {
 	int color = !isWhite;
 
-	//move piece
-	movePiece(m.piece, color, m.to, m.from);
-	
+	if (m.flag == '0') {
+		//move piece
+		movePiece(m.piece, color, m.to, m.from);
+	}
 	//pawn promotion
-	if (m.flag == 'Q'){
+	else if (m.flag == 'Q'){
 		//remove pawn from to square,
 		//we added two pawns above so here we remove one
-		removePiece(PAWN, color, m.to);
+		//removePiece(PAWN, color, m.to);
+		addPiece(PAWN, color, m.from);
 		//remove queen
 		removePiece(QUEEN, color, m.to);
 

@@ -9,13 +9,13 @@ typedef unsigned long long  U64; // supported by MSC 13.00+ and C99
 #include <deque>
 #include "move.h"
 #include "zobristh.h"
+
 class ZobristH;
 class Move;
 class MoveGen;
 
 struct BoardInfo {
-	int sideMaterial[2]; //updated on make/unmake moves
-	//int pieceSqVals[2][2]; //piece square table bonuses and reductions
+	int sideMaterial[2]; //updated on make/unmake moves	
 };
 
 class BitBoards
@@ -51,11 +51,12 @@ public:
 	U64 byPieceType[7]; //holds both black and white pieces of a type
 	U64 squareBB[64]; //holds a U64 of each square on gameboard, indexed by 0 = top left, 63 = bottom right
 
-	
 	//pieces and their square locations. So we don't have to pop_lsb a board to find a piece
-	std::deque<int>pieceLoc[2][7]; //color, piece type
-	int pieceCount[2][7]; //count of number of pieces; color, piece type
-	int pieceIndex[64]; //a lookup index so we can extract the index of the piece in the list above from just it's location
+	int pieceLoc[2][7][16]; //color, piece type
+	int pieceIndex[64];    //a lookup index so we can extract the index of the piece in the list above from just it's location
+	int pieceCount[2][7]; //count of number of pieces; color, piece type. 0 = no piece, 1 pawn, etc.
+	
+
 
 //state info
 	//piece material arrays for sides, using piece values
@@ -94,9 +95,8 @@ inline void BitBoards::movePiece(int piece, int color, int from, int to)
 	FullTiles ^= from_to;
 	EmptyTiles ^= from_to;
 
-	//change the location of the piece to where it's moving 
-	pieceLoc[color][piece][pieceIndex[from]] = to;
-
+	pieceIndex[to] = pieceIndex[from];
+	pieceLoc[color][piece][pieceIndex[to]] = to;
 }
 //also can only be used to add piece if no piece is on destination sq
 inline void BitBoards::addPiece(int piece, int color, int sq)
@@ -107,12 +107,10 @@ inline void BitBoards::addPiece(int piece, int color, int sq)
 	FullTiles ^= squareBB[sq];
 	EmptyTiles ^= squareBB[sq];
 
-	
-	pieceLoc[color][piece].push_back(sq);
-	pieceIndex[sq] = pieceCount[color][piece];
-	pieceCount[color][piece]++;
+	pieceIndex[sq] = pieceCount[color][piece]++;
+	pieceLoc[color][piece][pieceIndex[sq]] = sq;
 }
-
+//will add piece to bitboards if there is no piece to be removed on square!!
 inline void BitBoards::removePiece(int piece, int color, int sq)
 {
 	byColorPiecesBB[color][piece] ^= squareBB[sq];
@@ -121,9 +119,10 @@ inline void BitBoards::removePiece(int piece, int color, int sq)
 	FullTiles ^= squareBB[sq];
 	EmptyTiles ^= squareBB[sq];
 
-	pieceCount[color][piece]--;
-	pieceLoc[color][piece].erase(pieceLoc[color][piece].begin() +pieceIndex[sq]);
-	pieceIndex[sq] = INVALID;
+	int lSq = pieceLoc[color][piece][--pieceCount[color][piece]];
+	pieceIndex[lSq] = pieceIndex[sq];
+	pieceLoc[color][piece][pieceIndex[lSq]] = lSq;
+	pieceLoc[color][piece][pieceCount[color][piece]] = SQ_NONE;
 }
 
 //is there a pawn past their relative 4th rank?

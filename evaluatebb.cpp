@@ -292,11 +292,10 @@ void evaluateBB::evalPieces(const BitBoards & boards, EvalInfo & ev)
 	while (wpawns) {
 		int x = pop_lsb(&wpawns); //pawns are evaluated in pawn_eval
 		ev.pawnCount[WHITE] ++; 
-		//ev.psqTabMat[WHITE][0] += pawnPsqMg[x];
-		//ev.psqTabMat[WHITE][1] += pawnPsqEg[x];
 		ev.psqTabMat[WHITE][0] += pieceSqTab[PAWN][0][x]; //psq; piece type, midgame/endgame/location
 		ev.psqTabMat[WHITE][1] += pieceSqTab[PAWN][1][x];
 	}
+	
 	while (bpawns) {
 		int x = pop_lsb(&bpawns);
 		ev.pawnCount[BLACK] ++;
