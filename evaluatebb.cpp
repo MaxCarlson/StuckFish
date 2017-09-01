@@ -107,7 +107,6 @@ piece values
   K = 0
 */
 
-
 int evaluateBB::evalBoard(bool isWhite, const BitBoards& boards)
 {
     //transposition hash for boards evals
@@ -259,16 +258,6 @@ void evaluateBB::saveTT(bool isWhite, int result, int hash, const BitBoards &boa
     //the color of the eval was opposite
     if(isWhite) transpositionEval[hash].flag = 0;
     else transpositionEval[hash].flag = 1;
-}
-
-template<int pT, int color>
-int evaluatePieces(const BitBoards & boards, EvalInfo & ev) {
-
-	int i = 0;
-	while (boards.pieceLoc[color][pT][i] != SQ_NONE) {
-
-	}
-
 }
 
 void evaluateBB::evalPieces(const BitBoards & boards, EvalInfo & ev) 

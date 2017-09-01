@@ -21,6 +21,31 @@ std::string boardArr[8][8] = {
 //used for flipping rank to whites relative rank
 const int flipRank[8] = { 8, 7, 6, 5, 4, 3 , 2, 1 };
 
+U64 KnightAttackSquares[64];
+
+void BitBoards::initBoards()
+{
+	//initilize all psuedo legal knight attacks into BB
+	//move this somewhere else.
+	for (int i = 0; i < 64; ++i) {
+		U64 moves;
+		if (i > 18) {
+			moves = KNIGHT_SPAN << (i - 18);
+		}
+		else {
+			moves = KNIGHT_SPAN >> (18 - i);
+		}
+
+		if (i % 8 < 4) {
+			moves &= ~FILE_GH;
+		}
+		else {
+			moves &= ~FILE_AB;
+		}
+		KnightAttackSquares[i] = moves;
+	}
+}
+
 void BitBoards::constructBoards()
 {
 
@@ -373,6 +398,10 @@ void BitBoards::drawBBA()
 	}
 
 	std::cout << std::endl << std::endl;;
+}
+
+inline U64 BitBoards::knightAttacks(int location) {
+	return KnightAttackSquares[location];
 }
 
 

@@ -7,7 +7,8 @@
 #include <sstream>
 
 #include "externs.h"
-#include "evaluatebb.h"
+#include "evaluatebb.h" //remove once we debug evaluate
+#include "Evaluate.h"
 #include "bitboards.h"
 #include "movegen.h"
 #include "zobristh.h"
@@ -335,8 +336,9 @@ int Ai_Logic::alphaBeta(BitBoards& newBoard, int depth, int alpha, int beta, sea
 //if in check, or in reduced search extension: skip nulls, statics evals, razoring, etc to moves_loop:
     if(FlagInCheck || (ss-1)->excludedMove.tried || sd.skipEarlyPruning) goto moves_loop;
 
-	evaluateBB eval;
-	ss->staticEval = eval.evalBoard(isWhite, newBoard);
+	//evaluateBB eval;
+	Evaluate eval;
+	ss->staticEval = eval.evaluate(newBoard, isWhite);//eval.evalBoard(isWhite, newBoard);
 
 	//update gain from previous ply stats for previous move
 	if ((ss - 1)->currentMove.captured == PIECE_EMPTY
@@ -709,9 +711,11 @@ int Ai_Logic::quiescent(BitBoards& newBoard, int alpha, int beta, bool isWhite, 
 		return ttValue;
 	}
 //*/
-    evaluateBB eval;
+    //evaluateBB eval;
     //evaluate board position
-    int standingPat = eval.evalBoard(isWhite, newBoard);
+    //int standingPat = eval.evalBoard(isWhite, newBoard);
+	Evaluate eval;
+	int standingPat = eval.evaluate(newBoard, isWhite);
 
     if(quietDepth <= 0 || timeOver){		
         return standingPat;

@@ -35,6 +35,8 @@ void UCI::uciLoop()
 
 	//master bitboard for turn
 	BitBoards newBoard;
+	//initalize things
+	newBoard.initBoards();
 	//fill zobrist arrays with random numbers
 	newBoard.zobrist.zobristFill();
 

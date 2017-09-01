@@ -21,6 +21,7 @@ extern const int SORT_VALUE[7];
 
 //master bitboard for turn
 //extern BitBoards newBoard;
+extern U64 KnightAttackSquares[64];
 
 //magics object
 extern SliderAttacks slider_attacks;

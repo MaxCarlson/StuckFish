@@ -2,6 +2,9 @@
 #include "defines.h"
 #include "bitboards.h"
 #include "externs.h"
+#include "psqTables.h"
+#include "hashentry.h"
+
 
 const U64 RankMasks8[8] =/*from rank8 to rank1 ?*/
 {
@@ -101,18 +104,22 @@ const int endGMobilityBonus[6][28]{
 const int KingAttackerWeights[6] = { 0, 0, 2, 2, 3, 5 };
 
 struct EvalInfo {
-	int gameScore[COLOR][STAGE]; //white, black - mid game = 0, end game = 1
+	int gameScore[COLOR][STAGE] = { { 0 } }; //white, black - mid game = 0, end game = 1
 
-	U64 kingZone[COLOR]; //zone around king, by color
-	int kingAttackers[COLOR]; //number of pieces attacking opponent king
-	int kingAttWeights[COLOR]; //added weight of king attackers
-	int adjacentKingAttckers[COLOR]; //num pieces attacking sqs adjacent to king
+	int psqScores[COLOR][STAGE] = { { 0 } }; //piece square table scores
+
+	U64 kingZone[COLOR] = {0LL}; //zone around king, by color
+	int kingAttackers[COLOR] = {0}; //number of pieces attacking opponent king
+	int kingAttWeights[COLOR] = { 0 }; //added weight of king attackers
+	int adjacentKingAttckers[COLOR] = { 0 }; //num pieces attacking sqs adjacent to king
 
 	U64 attackedBy[COLOR][7]; //bitboards of attacked squares by color and piece type, 0 for second index is all pieces of that color
 
-	int mobility[COLOR][STAGE]; //color, midgame/endgame scoring
+	int mobility[COLOR][STAGE] = { { 0 } }; //color, midgame/endgame scoring
 
-	int blockages[COLOR];
+	int blockages[COLOR] = { 0 };
+
+	int adjustMaterial[COLOR] = { 0 };
 };
 
 void Evaluate::generateKingZones(const BitBoards & boards, EvalInfo & ev)
@@ -158,19 +165,25 @@ void evaluatePieces(const BitBoards & boards, EvalInfo & ev) {
 	const int them = (color == WHITE ? BLACK : WHITE);
 	const int nextPiece = (color == WHITE ? pT : pT + 1);
 
-	//if we're out of pieces stop evaluating
-	if (pT == KING) return;
-
 	int square;
 	
 	ev.attackedBy[color][pT] = 0LL;
 
-	while (square = *piece++ != SQ_NONE) {
+	while ((square = *piece++ ) != SQ_NONE) {
+
+		//adjust square table lookup for black if need be
+		int adjSq = color == WHITE ? square : bSQ[square];
+
+		//add piece square table scores 
+		ev.psqScores[color][mg] += pieceSqTab[pT][mg][adjSq];
+		ev.psqScores[color][eg] += pieceSqTab[pT][eg][adjSq];
+
+		if (pT == PAWN) continue;
 		
 		U64 bb = pT == BISHOP ? slider_attacks.BishopAttacks(boards.FullTiles, square)
 			: pT == ROOK ? slider_attacks.RookAttacks(boards.FullTiles, square)
 			: pT == QUEEN ? slider_attacks.QueenAttacks(boards.FullTiles, square)
-			 : 0LL; // need to add knight attacks, pawns evaled sepperatly
+			 : KnightAttackSquares[square]; // need to add knight attacks, pawns evaled sepperatly
 
 		//add pinned piece code, not moving pieces out of line from their pin
 
@@ -193,7 +206,6 @@ void evaluatePieces(const BitBoards & boards, EvalInfo & ev) {
 			bb &= ~(ev.attackedBy[them][KNIGHT]
 				| ev.attackedBy[them][BISHOP]
 				| ev.attackedBy[them][ROOK]);
-
 
 		//gather mobility count and record mob scores for mid and end game
 		int mobility = bit_count(bb);
@@ -241,23 +253,275 @@ void evaluatePieces(const BitBoards & boards, EvalInfo & ev) {
 	return evaluatePieces<nextPiece, !color>(boards, ev);
 }
 
-template<> //get rid of recursive function too complex error
+template<> //get rid of recursive function too complex error, also return when piece type hits king
 void evaluatePieces<KING, WHITE>(const BitBoards & boards, EvalInfo & ev) { return; };
 
 int Evaluate::evaluate(const BitBoards & boards, bool isWhite)
 {
+	int hash = boards.zobrist.zobristKey & 5021982; //REPLACE THIS!!
+	HashEntry entry = transpositionEval[hash];
+	//if we get a hash-table hit, return the evaluation
+	if (entry.zobrist == boards.zobrist.zobristKey) {
+		if (isWhite) {
+			//if eval was from blacks POV, return -eval
+			if (entry.flag) return -entry.eval;
+			else return entry.eval; //if eval was from our side, return normally
+		}
+		else {
+
+			if (entry.flag) return entry.eval;
+			else return -entry.eval;
+		}
+
+	}
+
 	EvalInfo ev;
+	int result = 0, score[STAGE] = { 0 };
+
+	generateKingZones(boards, ev);
+
+	evaluatePieces<PAWN, WHITE>(boards, ev);
+
+	score[mg] = boards.bInfo.sideMaterial[WHITE] + ev.psqScores[WHITE][mg] - boards.bInfo.sideMaterial[BLACK] - ev.psqScores[BLACK][mg];
+	score[eg] = boards.bInfo.sideMaterial[WHITE] + ev.psqScores[WHITE][eg] - boards.bInfo.sideMaterial[BLACK] - ev.psqScores[BLACK][eg];
+
+	int gamePhase = 0;
+
+	for (int color = 1; color < 2; color++) {
+		gamePhase += boards.pieceCount[color][KNIGHT];
+		gamePhase += boards.pieceCount[color][BISHOP];
+		gamePhase += boards.pieceCount[color][ROOK] * 2;
+		gamePhase += boards.pieceCount[color][QUEEN] * 4;
+	}
+
+	blockedPieces(WHITE, boards, ev);
+	blockedPieces(BLACK, boards, ev);
+
+	//adjusting material value of pieces bonus for bishop, small penalty for others
+	if (boards.pieceCount[WHITE][BISHOP] > 1) ev.adjustMaterial[WHITE] += BISHOP_PAIR;
+	if (boards.pieceCount[BLACK][BISHOP] > 1) ev.adjustMaterial[BLACK] -= BISHOP_PAIR;
+	if (boards.pieceCount[WHITE][KNIGHT] > 1) ev.adjustMaterial[WHITE] -= KNIGHT_PAIR;
+	if (boards.pieceCount[BLACK][KNIGHT] > 1) ev.adjustMaterial[BLACK] += KNIGHT_PAIR;
+	if (boards.pieceCount[WHITE][ROOK] > 1) ev.adjustMaterial[WHITE] -= ROOK_PAIR;
+	if (boards.pieceCount[BLACK][ROOK] > 1) ev.adjustMaterial[BLACK] += ROOK_PAIR;
+
+
+	ev.adjustMaterial[WHITE] += knight_adj[(boards.pieceCount[WHITE][PAWN])] * boards.pieceCount[WHITE][KNIGHT];
+	ev.adjustMaterial[BLACK] -= knight_adj[boards.pieceCount[BLACK][PAWN]] * boards.pieceCount[BLACK][KNIGHT];
+	ev.adjustMaterial[WHITE] += rook_adj[boards.pieceCount[WHITE][PAWN]] * boards.pieceCount[WHITE][ROOK];
+	ev.adjustMaterial[BLACK] -= rook_adj[boards.pieceCount[BLACK][PAWN]] * boards.pieceCount[BLACK][ROOK];
+
+	//probe pawn hash table for a hit, if we don't get a hit
+	//proceed with pawnEval
+	result += getPawnScore(boards, ev);
+
+	score[mg] += (ev.mobility[WHITE][mg] - ev.mobility[BLACK][mg]);
+	score[eg] += (ev.mobility[WHITE][eg] - ev.mobility[BLACK][eg]);
+	if (gamePhase > 24) gamePhase = 24;
+	int mgWeight = gamePhase;
+	int egWeight = 24 - gamePhase;
+
+	result += ((score[mg] * mgWeight) + (score[eg] * egWeight)) / 24;
+
+	result += (ev.blockages[WHITE] - ev.blockages[BLACK]);
+	result += (ev.adjustMaterial[WHITE] - ev.adjustMaterial[BLACK]);
+
+	if (ev.kingAttackers[WHITE] < 2 || boards.byColorPiecesBB[0][5] == 0LL) ev.kingAttWeights[WHITE] = 0;
+	if (ev.kingAttackers[BLACK] < 2 || boards.byColorPiecesBB[1][5] == 0LL) ev.kingAttWeights[BLACK] = 0;
+	result += SafetyTable[ev.kingAttWeights[WHITE]];
+	result -= SafetyTable[ev.kingAttWeights[BLACK]];
+
+	//low material adjustment scoring here
+	int strong, weak;
+	if (result > 0) {
+		strong = WHITE;
+		weak = BLACK;
+	}
+	else {
+		strong = BLACK;
+		weak = WHITE;
+	}
+
+	if (boards.pieceCount[strong][PAWN] == 0) { // NEED more intensive filters for low material
+
+		if (boards.bInfo.sideMaterial[strong] < 400) return 0;
+
+		if (boards.pieceCount[weak][PAWN] == 0 && boards.bInfo.sideMaterial[strong] == 2 * SORT_VALUE[KNIGHT])  return 0;//two knights
+
+		if (boards.bInfo.sideMaterial[strong] == SORT_VALUE[ROOK] && boards.bInfo.sideMaterial[weak] == SORT_VALUE[BISHOP]) result /= 2;
+
+		if (boards.bInfo.sideMaterial[strong] == SORT_VALUE[ROOK] + SORT_VALUE[BISHOP]
+			&& boards.bInfo.sideMaterial[weak] == SORT_VALUE[ROOK]) result /= 2;
+
+		if (boards.bInfo.sideMaterial[strong] == SORT_VALUE[ROOK] + SORT_VALUE[KNIGHT]
+			&& boards.bInfo.sideMaterial[weak] == SORT_VALUE[ROOK]) result /= 2;
+	}
+
+
+	//switch score for color
+	if (!isWhite) result = -result;
+
+	//save to TT eval table
+	saveTT(isWhite, result, hash, boards);
+
+	return result;
+}
+
+void Evaluate::saveTT(bool isWhite, int result, int hash, const BitBoards &boards)
+{
+	//store eval into eval hash table
+	transpositionEval[hash].eval = result;
+	transpositionEval[hash].zobrist = boards.zobrist.zobristKey;
+
+	//set flag for TT so we can switch value if we get a TT hit but
+	//the color of the eval was opposite
+	if (isWhite) transpositionEval[hash].flag = 0;
+	else transpositionEval[hash].flag = 1;
+}
+
+int Evaluate::getPawnScore(const BitBoards & boards, EvalInfo & ev)
+{
+
+	//get zobristE/bitboards of current pawn positions
+	U64 pt = boards.byPieceType[PAWN];
+	int hash = pt & 399999;
+
+	//probe pawn hash table using bit-wise OR of white pawns and black pawns as zobrist key
+	if (transpositionPawn[hash].zobrist == pt) {
+		return transpositionPawn[hash].eval;
+	}
+
+	//U64 pt = boards.BBWhitePawns | boards.BBBlackPawns;
+	//const PawnEntry *ttpawnentry;
+	//ttpawnentry = TT.probePawnT(pt);
+	//if (ttpawnentry) return ttpawnentry->eval;
+
+	//if we don't get a hash hit, search through all pawns on boards and return score
+	U64 wPawns = boards.byColorPiecesBB[WHITE][PAWN];
+	U64 bPawns = boards.byColorPiecesBB[BLACK][PAWN];
+
 	int score = 0;
+	while (wPawns) {
+		int loc = pop_lsb(&wPawns);
+		score += pawnEval(boards, WHITE, loc);
+		
+	}
 
+	while (bPawns) {
+		int loc = pop_lsb(&bPawns);
+		score -= pawnEval(boards, BLACK, loc);
+	}
 
-	//evaluate knights - queens
-	evaluatePieces<KNIGHT, WHITE>(boards, ev);
+	//store entry to pawn hash table
+	transpositionPawn[hash].eval = score;
+	transpositionPawn[hash].zobrist = pt;
 
-
+	//TT.savePawnEntry(pt, score);
 
 	return score;
 }
 
+int Evaluate::pawnEval(const BitBoards & boards, int side, int location)
+{
+	int result = 0;
+	int flagIsPassed = 1; // we will be trying to disprove that
+	int flagIsWeak = 1;   // we will be trying to disprove that
+	int flagIsOpposed = 0;
+
+	U64 pawn = boards.squareBB[location];
+	U64 opawns = boards.byColorPiecesBB[side][PAWN];
+	U64 epawns = boards.byColorPiecesBB[!side][PAWN];
+
+
+	int file = location % 8;
+	int rank = location / 8;
+
+	U64 doubledPassMask = FileMasks8[file]; //mask for finding doubled or passed pawns
+
+	U64 left = 0LL;
+	if (file > 0) left = FileMasks8[file - 1]; //masks are accoring to whites perspective
+
+	U64 right = 0LL;
+	if (file < 7) right = FileMasks8[file + 1]; //files to the left and right of pawn
+
+	U64 supports = right | left, tmpSup = 0LL; //mask for area behind pawn and to the left an right, used to see if weak + mask for holding and values
+
+	opawns &= ~pawn; //remove this pawn from his friendly pawn BB so as not to count himself in doubling
+
+	if (doubledPassMask & opawns) result -= 10; //real value for doubled pawns is -20, because this method counts them twice it's set at half real
+
+	if (!side) { //if is white
+		for (int i = 7; i > rank - 1; i--) {
+			doubledPassMask &= ~RankMasks8[i];
+			left &= ~RankMasks8[i];
+			right &= ~RankMasks8[i];
+			tmpSup |= RankMasks8[i];
+		}
+	}
+	else {
+		for (int i = 0; i < rank + 1; i++) {
+			doubledPassMask &= ~RankMasks8[i];
+			left &= ~RankMasks8[i];
+			right &= ~RankMasks8[i];
+			tmpSup |= RankMasks8[i];
+		}
+	}
+
+
+	//if there is an enemy pawn ahead of this pawn
+	if (doubledPassMask & epawns) flagIsOpposed = 1;
+
+	//if there is an enemy pawn on the right or left ahead of this pawn
+	if (right & epawns || left & epawns) flagIsPassed = 0;
+
+	opawns |= pawn; // restore real our pawn boards
+
+	tmpSup &= ~RankMasks8[rank]; //remove our rank from supports
+	supports &= tmpSup; // get BB of area whether support pawns could be
+
+						//if there are pawns behing this pawn and to the left or the right pawn is not weak
+	if (supports & opawns) flagIsWeak = 0;
+
+
+	//evaluate passed pawns, scoring them higher if they are protected or
+	//if their advance is supported by friendly pawns
+	if (flagIsPassed) {
+		if (isPawnSupported(side, pawn, opawns)) {
+			result += (passed_pawn_pcsq[side][location] * 10) / 8;
+		}
+		else {
+			result += passed_pawn_pcsq[side][location];
+		}
+	}
+
+	//eval weak pawns, increasing the penalty if they are in a half open file
+	if (flagIsWeak) {
+		result += weak_pawn_pcsq[side][location];
+
+		if (flagIsOpposed) {
+			result -= 4;
+		}
+	}
+
+	return result;
+
+}
+
+int Evaluate::isPawnSupported(int side, U64 pawn, U64 pawns)
+{
+	if ((pawn >> 1) & pawns) return 1;
+	if ((pawn << 1) & pawns) return 1;
+
+	if (side == WHITE) {
+		if ((pawn << 7) & pawns) return 1;
+		if ((pawn << 9) & pawns) return 1;
+	}
+	else {
+		if ((pawn >> 9) & pawns) return 1;
+		if ((pawn >> 7) & pawns) return 1;
+	}
+	return 0;
+}
 
 void Evaluate::blockedPieces(int side, const BitBoards& boards, EvalInfo & ev)
 {

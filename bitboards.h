@@ -22,6 +22,8 @@ class BitBoards
 {
 
 public:
+	void initBoards();
+
 	//holds zobrist key and arrays neccasary for modifying key
 	ZobristH zobrist;
 
@@ -37,6 +39,8 @@ public:
 	bool isPawnPush(const Move& m, bool isWhite);
 	//is there a pawn on the 7 th rank relative to stm
 	bool pawnOn7th(bool isWhite);
+
+	U64 knightAttacks(int location);
 
 	//Holds board information, struct above
 	BoardInfo bInfo;
