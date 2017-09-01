@@ -79,7 +79,15 @@ void UCI::uciLoop()
 			TT.clearTable(); //need to clear other TTables too at somepoint
 			searchM.initSearch();
 		}
-
+		else if (token == "test") { //used to enable quick testing
+			newGame(newBoard); //add function to reset TTables ? plus / only
+			searchM.clearHistorys();
+			TT.clearTable(); //need to clear other TTables too at somepoint
+			searchM.initSearch();
+			wtime = btime = 2200000;
+			std::thread thr(&UCI::search, this, newBoard);
+			thr.join();
+		}
 		else if (token == "position") {
 			updatePosition(newBoard, is);
 		}

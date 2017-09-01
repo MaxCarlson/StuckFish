@@ -92,7 +92,7 @@ private:
 	//returns relative rank for side to move
 	int relativeRank(int sq, bool isWhite);
 };
-
+//these function return a board of particular pieces/combination of pieces
 inline U64 BitBoards::pieces(int color) const{
 	return allPiecesColorBB[color];
 }

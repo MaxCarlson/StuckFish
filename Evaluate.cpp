@@ -1,4 +1,7 @@
 #include "Evaluate.h"
+
+#include <iostream>
+
 #include "defines.h"
 #include "bitboards.h"
 #include "externs.h"
@@ -47,19 +50,24 @@ const int BISHOP_PAIR = 30;
 const int KNIGHT_PAIR = 8;
 const int ROOK_PAIR = 16;
 
+/*
 const int threatenedByPawn[STAGE][6] = //midgame/endgame - piece type threatened
 { { 0, 0, 24, 25, 35, 40 }, 
   { 0, 0, 32, 32, 57, 65 } };
+*/
+const int threatenedByPawn[STAGE][6] = //midgame/endgame - piece type threatened
+{ { 0, 0, 10, 13, 23, 32 },
+{ 0, 0, 12, 15, 35, 45 } };
 
-const int rookHalfOpen[STAGE] = {9, 4};
-const int rookOpen[STAGE] = {15, 9};
+const int rookHalfOpen[STAGE] = {5, 3};
+const int rookOpen[STAGE] = {10, 5};
 
-const int QueenContactCheck = 11;
-const int RookContactCheck = 8;
-const int QueenCheck = 5;
-const int RookCheck = 4;
-const int BishopCheck = 3;
-const int KnightCheck = 2;
+const int QueenContactCheck = 7;
+const int RookContactCheck = 5;
+const int QueenCheck = 3;
+const int RookCheck = 2;
+const int BishopCheck = 1;
+const int KnightCheck = 1;
 
 static const int SafetyTable[100] = {
 	0,  0,   1,   2,   3,   5,   7,   9,  12,  15,
@@ -134,7 +142,7 @@ void Evaluate::generateKingZones(const BitBoards & boards, EvalInfo & ev)
 	//draw zone around king all 8 tiles around him, plus three in front -- north = front for white, south black
 	
 	for (int side = 0; side < 2; ++side) {
-		U64 kZone;
+		U64 kZone, tkz;
 
 		if (side) kZone = boards.byColorPiecesBB[BLACK][KING];
 		else kZone = boards.byColorPiecesBB[WHITE][KING];
@@ -147,6 +155,17 @@ void Evaluate::generateKingZones(const BitBoards & boards, EvalInfo & ev)
 		else {
 			kZone |= KING_SPAN >> (9 - location);
 		}
+
+		if (location % 8 < 4) {
+			tkz = kZone & ~FILE_GH;
+
+		}
+		else {
+			tkz = kZone & ~FILE_AB;
+		}
+
+		//add king attacks to attacked by
+		ev.attackedBy[side][KING] = tkz;
 
 		//add a zone three tiles across in front of the 8 squares surrounding the king
 		if (side)  kZone |= kZone << 8;
@@ -185,7 +204,12 @@ void evaluatePieces(const BitBoards & boards, EvalInfo & ev) {
 		ev.psqScores[color][mg] += pieceSqTab[pT][mg][adjSq];
 		ev.psqScores[color][eg] += pieceSqTab[pT][eg][adjSq];
 
-		if (pT == PAWN) continue;
+		
+
+		if (pT == PAWN) {
+			ev.attackedBy[color][PAWN] |= ev.attackedBy[color][0] |= boards.psuedoAttacks(PAWN, color, square);
+			continue;
+		}
 		
 		//find attack squares, including xray bishop and rook attacks blocked by queens / rooks/queens
 		U64 bb = pT == BISHOP ? slider_attacks.BishopAttacks(boards.FullTiles ^ boards.pieces(color, QUEEN), square)
@@ -203,7 +227,7 @@ void evaluatePieces(const BitBoards & boards, EvalInfo & ev) {
 
 			ev.kingAttackers[color]++;
 			ev.kingAttWeights[color] += KingAttackerWeights[pT];		
-			U64 adjacent = bb & ev.kingZone[them]; //NEEDS TO BE KING ATTACKS INSTEAD OF KING ZONE!@@!@!@!@!@!@!@@!@@!@!@!@!@!@!@@@!@!@
+			U64 adjacent = bb & ev.attackedBy[them][KING]; //NEEDS TO BE KING ATTACKS INSTEAD OF KING ZONE!@@!@!@!@!@!@!@@!@@!@!@!@!@!@!@@@!@!@
 
 			if (adjacent) ev.adjacentKingAttckers[color] += bit_count(adjacent);
 		}
@@ -268,8 +292,11 @@ template<int color>
 int evaluateKing(const BitBoards & boards, EvalInfo & ev, int mgScore) {
 
 	const int them = color == WHITE ? BLACK : WHITE;
-	int attackUnits;
+	int attackUnits = 0;
 	int score = 0;
+
+	//our king location
+	const int square = msb(boards.byColorPiecesBB[color][KING]);
 
 	U64 undefended, safe;
 
@@ -282,24 +309,83 @@ int evaluateKing(const BitBoards & boards, EvalInfo & ev, int mgScore) {
 				| ev.attackedBy[color][BISHOP] | ev.attackedBy[color][ROOK]
 				| ev.attackedBy[color][QUEEN]);
 
-		attackUnits = std::min(12, (ev.kingAttackers[them] * ev.kingAttWeights[them]) / 2)
-					+ 3 * (ev.adjacentKingAttckers[them] + bit_count(undefended))
-					- mgScore / 32
-					- !bit_count(boards.byColorPiecesBB[them][QUEEN]) * 6;
+		attackUnits = std::min(10, (ev.kingAttackers[them] * ev.kingAttWeights[them]) / 2
+					+ (ev.adjacentKingAttckers[them] + bit_count(undefended)));
 
-		//queen enemy safe contact checks
+		//queen enemy safe contact checks, where enemy queen is next to king 
 		U64 bb = undefended & ev.attackedBy[them][QUEEN] & ~boards.pieces(them);
 
 		if (bb) {
-			
-			bb &= (ev.attackedBy[Them][PAWN] | ev.attackedBy[Them][KNIGHT]
-				| ev.attackedBy[Them][BISHOP] | ev.attackedBy[Them][ROOK]);
+				//remove squares defended by enemy pieces
+			bb &= (ev.attackedBy[them][PAWN] | ev.attackedBy[them][KNIGHT]
+				| ev.attackedBy[them][BISHOP] | ev.attackedBy[them][ROOK]);
 
 			if (bb) attackUnits += QueenContactCheck * bit_count(bb);
 		}
 
-		//rook safe enemy checks
+		//rook safe enemy contact checks
 		bb = undefended & ev.attackedBy[them][ROOK] & ~boards.pieces(them);
+
+		//only look at checking squares, & with rook attacks from king location
+		bb &= boards.psuedoAttacks(ROOK, color, square);
+
+		if (bb) {
+				//remove squares defended by enemy pieces
+			bb &= (ev.attackedBy[them][PAWN] | ev.attackedBy[them][KNIGHT]
+				| ev.attackedBy[them][BISHOP] | ev.attackedBy[them][ROOK]);
+
+			if (bb) attackUnits += RookContactCheck * bit_count(bb);
+		}
+
+		//look at enemy safe checks from sliders and knights
+		safe = ~(boards.pieces(them) | ev.attackedBy[color][0]);
+
+					//color doesn't matter here, attacks are the same
+		U64 b1 = boards.psuedoAttacks(ROOK, color, square) & safe;
+		U64 b2 = boards.psuedoAttacks(BISHOP, color, square) & safe;
+
+		bb = (b1 | b2) & ev.attackedBy[them][QUEEN];
+
+		//enemy safe queen checks
+		if (bb) attackUnits += QueenCheck * bit_count(bb);
+
+		bb = b1 & ev.attackedBy[them][ROOK];
+
+		if(bb) attackUnits += RookCheck * bit_count(bb);
+
+		//enemy safe bishop checks
+		bb = b2 & ev.attackedBy[them][BISHOP];
+
+		if(bb) attackUnits += BishopCheck * bit_count(bb);
+
+		//enemy safe knight checks
+
+		bb = boards.psuedoAttacks(KNIGHT, them, square) & ev.attackedBy[them][KNIGHT] & safe;
+
+		if(bb) attackUnits += KnightCheck * bit_count(bb);
+
+		attackUnits = std::min(99, attackUnits);
+
+		score -= SafetyTable[attackUnits];
+	}
+
+	return score;
+}
+
+template<int color>
+int evalThreats(const BitBoards & boards, EvalInfo & ev) {
+
+	int them = color == WHITE ? BLACK : WHITE;
+
+	U64 bb, weakEnemys, protectedEnemys;
+
+	//enemys (that are not their pawns) which are protected by knights or bishops
+	protectedEnemys = (boards.pieces(them) ^ boards.pieces(them, PAWN))
+					& ev.attackedBy[them][PAWN]
+					& (ev.attackedBy[them][KNIGHT] | ev.attackedBy[them][BISHOP]);
+
+	if (protectedEnemys) {
+		//ev.gameScore
 	}
 }
 
@@ -325,6 +411,7 @@ int Evaluate::evaluate(const BitBoards & boards, bool isWhite)
 	EvalInfo ev;
 	int result = 0, score[STAGE] = { 0 };
 
+	//initilize king zones and king attacks
 	generateKingZones(boards, ev);
 
 	evaluatePieces<PAWN, WHITE>(boards, ev);
@@ -364,6 +451,10 @@ int Evaluate::evaluate(const BitBoards & boards, bool isWhite)
 	//proceed with pawnEval
 	result += getPawnScore(boards, ev);
 
+	//add threat and some other scoring done in eval pieces, etc to scores
+	score[mg] += ev.gameScore[WHITE][mg] - ev.gameScore[BLACK][mg];
+	score[eg] += ev.gameScore[WHITE][eg] - ev.gameScore[BLACK][eg];
+
 	score[mg] += (ev.mobility[WHITE][mg] - ev.mobility[BLACK][mg]);
 	score[eg] += (ev.mobility[WHITE][eg] - ev.mobility[BLACK][eg]);
 	if (gamePhase > 24) gamePhase = 24;
@@ -375,10 +466,16 @@ int Evaluate::evaluate(const BitBoards & boards, bool isWhite)
 	result += (ev.blockages[WHITE] - ev.blockages[BLACK]);
 	result += (ev.adjustMaterial[WHITE] - ev.adjustMaterial[BLACK]);
 
-	if (ev.kingAttackers[WHITE] < 2 || boards.byColorPiecesBB[0][5] == 0LL) ev.kingAttWeights[WHITE] = 0;
-	if (ev.kingAttackers[BLACK] < 2 || boards.byColorPiecesBB[1][5] == 0LL) ev.kingAttWeights[BLACK] = 0;
-	result += SafetyTable[ev.kingAttWeights[WHITE]];
-	result -= SafetyTable[ev.kingAttWeights[BLACK]];
+	//if (ev.kingAttackers[WHITE] < 2 || boards.byColorPiecesBB[WHITE][QUEEN] == 0LL) ev.kingAttWeights[WHITE] = 0;
+	//if (ev.kingAttackers[BLACK] < 2 || boards.byColorPiecesBB[BLACK][QUEEN] == 0LL) ev.kingAttWeights[BLACK] = 0;
+
+	if (!(ev.kingAttackers[WHITE] < 2 || boards.byColorPiecesBB[WHITE][QUEEN] == 0LL)) result += evaluateKing<WHITE>(boards, ev, score[mg]);
+	if (!(ev.kingAttackers[BLACK] < 2 || boards.byColorPiecesBB[BLACK][QUEEN] == 0LL)) result -= evaluateKing<BLACK>(boards, ev, score[mg]);
+
+	//result += evaluateKing<WHITE>(boards, ev, score[mg]) - evaluateKing<BLACK>(boards, ev, score[mg]);
+
+	//result += SafetyTable[ev.kingAttWeights[WHITE]];
+	//result -= SafetyTable[ev.kingAttWeights[BLACK]];
 
 	//low material adjustment scoring here
 	int strong = result > 0 ? WHITE : BLACK;
