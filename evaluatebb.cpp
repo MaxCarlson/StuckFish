@@ -263,7 +263,11 @@ void evaluateBB::saveTT(bool isWhite, int result, int hash, const BitBoards &boa
 
 template<int pT, int color>
 int evaluatePieces(const BitBoards & boards, EvalInfo & ev) {
-	
+
+	int i = 0;
+	while (boards.pieceLoc[color][pT][i] != SQ_NONE) {
+
+	}
 
 }
 

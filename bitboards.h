@@ -95,6 +95,7 @@ inline void BitBoards::movePiece(int piece, int color, int from, int to)
 	FullTiles ^= from_to;
 	EmptyTiles ^= from_to;
 
+	//update the pieces location
 	pieceIndex[to] = pieceIndex[from];
 	pieceLoc[color][piece][pieceIndex[to]] = to;
 }
@@ -107,6 +108,7 @@ inline void BitBoards::addPiece(int piece, int color, int sq)
 	FullTiles ^= squareBB[sq];
 	EmptyTiles ^= squareBB[sq];
 
+	//increment piece count and add piece to location and index for location
 	pieceIndex[sq] = pieceCount[color][piece]++;
 	pieceLoc[color][piece][pieceIndex[sq]] = sq;
 }
