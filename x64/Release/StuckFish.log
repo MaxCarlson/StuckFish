@@ -1,3 +1,2 @@
 ﻿  Evaluate.cpp
-  StuckFish.vcxproj -> C:\Users\C-60\Desktop\cppPrograms\StuckFish\x64\Release\StuckFish.exe
-  StuckFish.vcxproj -> C:\Users\C-60\Desktop\cppPrograms\StuckFish\x64\Release\StuckFish.pdb (Full PDB)
+Evaluate.cpp(368): fatal error C1202: recursive type or function dependency context too complex

@@ -52,7 +52,14 @@ enum epiece {
 enum ecolor {
     WHITE,
     BLACK,
-    COLOR_EMPTY
+    COLOR
+};
+
+//mid and end game indices
+enum GameStage {
+	mg,
+	eg,
+	STAGE
 };
 
 /*
