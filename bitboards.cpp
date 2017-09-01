@@ -21,14 +21,33 @@ std::string boardArr[8][8] = {
 //used for flipping rank to whites relative rank
 const int flipRank[8] = { 8, 7, 6, 5, 4, 3 , 2, 1 };
 
-U64 KnightAttackSquares[64];
+//zero index contains white pawn attacks, 1 black pawns
+ //move this somewhere else, preferably not an extern. Maybe into bb object?
 
 void BitBoards::initBoards()
 {
-	//initilize all psuedo legal knight attacks into BB
+	//initilize all Pseudo legal attacks into BB
 	//move this somewhere else.
 	for (int i = 0; i < 64; ++i) {
-		U64 moves;
+		U64 moves, p, wp, bp;
+		p = 1LL << i;
+		wp = p >> 7;
+		wp |= p >> 9;
+		bp = p << 9;
+		bp |= p << 7;
+
+		if (i % 8 < 4) {
+			wp &= ~FileHBB;
+			bp &= ~FileHBB;
+		}
+		else {
+			wp &= ~FileABB;
+			bp &= ~FileABB;
+		}
+		PseudoAttacks[PAWN - 1][i] = wp;
+		PseudoAttacks[PAWN][i] = bp;
+		
+
 		if (i > 18) {
 			moves = KNIGHT_SPAN << (i - 18);
 		}
@@ -42,7 +61,27 @@ void BitBoards::initBoards()
 		else {
 			moves &= ~FILE_AB;
 		}
-		KnightAttackSquares[i] = moves;
+
+		PseudoAttacks[KNIGHT][i] = moves;
+
+		PseudoAttacks[QUEEN][i] = PseudoAttacks[BISHOP][i] = slider_attacks.BishopAttacks(0LL, i);
+
+		PseudoAttacks[QUEEN][i] |= PseudoAttacks[ROOK][i] = slider_attacks.RookAttacks(0LL, i);
+
+		if (i > 9) {
+			moves = KING_SPAN << (i - 9);
+		}
+		else {
+			moves = KING_SPAN >> (9 - i);
+		}
+		if (i % 8 < 4) {
+			moves &= ~FILE_GH;
+		}
+		else {
+			moves &= ~FILE_AB;
+		}
+
+		PseudoAttacks[KING][i] = moves;
 	}
 }
 
@@ -400,9 +439,6 @@ void BitBoards::drawBBA()
 	std::cout << std::endl << std::endl;;
 }
 
-inline U64 BitBoards::knightAttacks(int location) {
-	return KnightAttackSquares[location];
-}
 
 
 

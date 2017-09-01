@@ -40,8 +40,6 @@ public:
 	//is there a pawn on the 7 th rank relative to stm
 	bool pawnOn7th(bool isWhite);
 
-	U64 knightAttacks(int location);
-
 	//Holds board information, struct above
 	BoardInfo bInfo;
 
@@ -63,6 +61,12 @@ public:
 	U64 pieces(int color)const;
 	U64 pieces(int color, int pt)const;
 	U64 pieces(int color, int pt, int pt1)const;
+
+	//full of attacks all possible attacks for all squares and pieces
+	//on a completely empty board
+	U64 PseudoAttacks[7][64]; //zero index is white pawns
+
+	U64 psuedoAttacks(int piece, int color, int sq) const;
 
 //state info
 	//piece material arrays for sides, using piece values
@@ -99,6 +103,15 @@ inline U64 BitBoards::pieces(int color, int pt) const{
 
 inline U64 BitBoards::pieces(int color, int pt, int pt1) const{
 	return (byColorPiecesBB[color][pt] | byColorPiecesBB[color][pt1]);
+}
+
+//return an attack set for a piece on any square, attacks are generated
+//as if there are no pieces on the boards
+inline U64 BitBoards::psuedoAttacks(int piece, int color, int sq) const
+{
+	return piece == PAWN ? color == WHITE
+		? PseudoAttacks[PAWN - 1][sq] : PseudoAttacks[PAWN][sq]
+		: PseudoAttacks[piece][sq];
 }
 
 //is there a pawn past their relative 4th rank?

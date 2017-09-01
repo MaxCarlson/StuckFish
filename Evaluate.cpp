@@ -191,7 +191,7 @@ void evaluatePieces(const BitBoards & boards, EvalInfo & ev) {
 		U64 bb = pT == BISHOP ? slider_attacks.BishopAttacks(boards.FullTiles ^ boards.pieces(color, QUEEN), square)
 			: pT == ROOK ? slider_attacks.RookAttacks(boards.FullTiles ^ boards.pieces(color, QUEEN, ROOK), square)
 			: pT == QUEEN ? slider_attacks.QueenAttacks(boards.FullTiles, square)
-			 : KnightAttackSquares[square]; // need to add knight attacks, pawns evaled sepperatly
+			 : boards.PseudoAttacks[KNIGHT][square]; // need to add knight attacks, pawns evaled sepperatly
 
 		//add pinned piece code, not moving pieces out of line from their pin
 
