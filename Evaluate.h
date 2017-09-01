@@ -16,12 +16,16 @@ public:
 
 	
 
+	
+
 
 
 	
 
 private:
 	void generateKingZones(const BitBoards & boards, EvalInfo & ev);
+	int wKingShield(const BitBoards & boards);
+	int bKingShield(const BitBoards & boards);
 
 	int pawnEval(const BitBoards & boards, int side, int location);
 

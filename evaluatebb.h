@@ -40,9 +40,6 @@ private:
     //gets rudimentry value of piece + square table value
 	void evalPieces(const BitBoards & boards, EvalInfo & ev);
 
-	//test new function
-	int evaluatePieces(const BitBoards & boards, EvalInfo & ev);
-
     //generate zone around king ///Up for debate as to how large zone should be, currently encompasses 8 tiles directly around king
     //currently includes blocking pieces in zone
     void generateKingZones(const BitBoards & boards);

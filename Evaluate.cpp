@@ -54,6 +54,13 @@ const int threatenedByPawn[STAGE][6] = //midgame/endgame - piece type threatened
 const int rookHalfOpen[STAGE] = {9, 4};
 const int rookOpen[STAGE] = {15, 9};
 
+const int QueenContactCheck = 11;
+const int RookContactCheck = 8;
+const int QueenCheck = 5;
+const int RookCheck = 4;
+const int BishopCheck = 3;
+const int KnightCheck = 2;
+
 static const int SafetyTable[100] = {
 	0,  0,   1,   2,   3,   5,   7,   9,  12,  15,
 	18,  22,  26,  30,  35,  39,  44,  50,  56,  62,
@@ -169,7 +176,7 @@ void evaluatePieces(const BitBoards & boards, EvalInfo & ev) {
 	
 	ev.attackedBy[color][pT] = 0LL;
 
-	while ((square = *piece++ ) != SQ_NONE) {
+	while (( square = *piece++ ) != SQ_NONE) {
 
 		//adjust square table lookup for black if need be
 		int adjSq = color == WHITE ? square : bSQ[square];
@@ -180,8 +187,9 @@ void evaluatePieces(const BitBoards & boards, EvalInfo & ev) {
 
 		if (pT == PAWN) continue;
 		
-		U64 bb = pT == BISHOP ? slider_attacks.BishopAttacks(boards.FullTiles, square)
-			: pT == ROOK ? slider_attacks.RookAttacks(boards.FullTiles, square)
+		//find attack squares, including xray bishop and rook attacks blocked by queens / rooks/queens
+		U64 bb = pT == BISHOP ? slider_attacks.BishopAttacks(boards.FullTiles ^ boards.pieces(color, QUEEN), square)
+			: pT == ROOK ? slider_attacks.RookAttacks(boards.FullTiles ^ boards.pieces(color, QUEEN, ROOK), square)
 			: pT == QUEEN ? slider_attacks.QueenAttacks(boards.FullTiles, square)
 			 : KnightAttackSquares[square]; // need to add knight attacks, pawns evaled sepperatly
 
@@ -256,6 +264,45 @@ void evaluatePieces(const BitBoards & boards, EvalInfo & ev) {
 template<> //get rid of recursive function too complex error, also return when piece type hits king
 void evaluatePieces<KING, WHITE>(const BitBoards & boards, EvalInfo & ev) { return; };
 
+template<int color>
+int evaluateKing(const BitBoards & boards, EvalInfo & ev, int mgScore) {
+
+	const int them = color == WHITE ? BLACK : WHITE;
+	int attackUnits;
+	int score = 0;
+
+	U64 undefended, safe;
+
+	if (ev.kingAttackers[them]) {
+				
+		//find attacked squares around king which have no defenders apart from king
+		undefended = ev.attackedBy[them][0] //attacked by squares for all pieces of color
+				& ev.attackedBy[color][KING]
+				& ~( ev.attackedBy[color][PAWN] | ev.attackedBy[color][KNIGHT]
+				| ev.attackedBy[color][BISHOP] | ev.attackedBy[color][ROOK]
+				| ev.attackedBy[color][QUEEN]);
+
+		attackUnits = std::min(12, (ev.kingAttackers[them] * ev.kingAttWeights[them]) / 2)
+					+ 3 * (ev.adjacentKingAttckers[them] + bit_count(undefended))
+					- mgScore / 32
+					- !bit_count(boards.byColorPiecesBB[them][QUEEN]) * 6;
+
+		//queen enemy safe contact checks
+		U64 bb = undefended & ev.attackedBy[them][QUEEN] & ~boards.pieces(them);
+
+		if (bb) {
+			
+			bb &= (ev.attackedBy[Them][PAWN] | ev.attackedBy[Them][KNIGHT]
+				| ev.attackedBy[Them][BISHOP] | ev.attackedBy[Them][ROOK]);
+
+			if (bb) attackUnits += QueenContactCheck * bit_count(bb);
+		}
+
+		//rook safe enemy checks
+		bb = undefended & ev.attackedBy[them][ROOK] & ~boards.pieces(them);
+	}
+}
+
 int Evaluate::evaluate(const BitBoards & boards, bool isWhite)
 {
 	int hash = boards.zobrist.zobristKey & 5021982; //REPLACE THIS!!
@@ -297,6 +344,8 @@ int Evaluate::evaluate(const BitBoards & boards, bool isWhite)
 	blockedPieces(WHITE, boards, ev);
 	blockedPieces(BLACK, boards, ev);
 
+	score[mg] += wKingShield(boards) - bKingShield(boards);
+
 	//adjusting material value of pieces bonus for bishop, small penalty for others
 	if (boards.pieceCount[WHITE][BISHOP] > 1) ev.adjustMaterial[WHITE] += BISHOP_PAIR;
 	if (boards.pieceCount[BLACK][BISHOP] > 1) ev.adjustMaterial[BLACK] -= BISHOP_PAIR;
@@ -332,15 +381,8 @@ int Evaluate::evaluate(const BitBoards & boards, bool isWhite)
 	result -= SafetyTable[ev.kingAttWeights[BLACK]];
 
 	//low material adjustment scoring here
-	int strong, weak;
-	if (result > 0) {
-		strong = WHITE;
-		weak = BLACK;
-	}
-	else {
-		strong = BLACK;
-		weak = WHITE;
-	}
+	int strong = result > 0 ? WHITE : BLACK;
+	int weak = !strong;
 
 	if (boards.pieceCount[strong][PAWN] == 0) { // NEED more intensive filters for low material
 
@@ -359,11 +401,77 @@ int Evaluate::evaluate(const BitBoards & boards, bool isWhite)
 
 
 	//switch score for color
-	if (!isWhite) result = -result;
+	result = isWhite ? result : -result;
 
 	//save to TT eval table
 	saveTT(isWhite, result, hash, boards);
 
+	return result;
+}
+
+int Evaluate::wKingShield(const BitBoards & boards)
+{
+	//gather info on defending pawns
+	int result = 0;
+	U64 pawns = boards.byColorPiecesBB[WHITE][PAWN];
+	U64 king = boards.byColorPiecesBB[WHITE][KING];
+
+	U64 location = 1LL;
+
+	//king on kingside
+	if (KingSide & king) {
+		if (pawns & (location << F2)) result += 10;
+		else if (pawns & (location << F3)) result += 5;
+
+		if (pawns & (location << G2)) result += 10;
+		else if (pawns & (location << G3)) result += 5;
+
+		if (pawns & (location << H2)) result += 10;
+		else if (pawns & (location << H3)) result += 5;
+	}
+	else if (QueenSide & king) {
+		if (pawns & (location << A2)) result += 10;
+		else if (pawns & (location << A3)) result += 5;
+
+		if (pawns & (location << B2)) result += 10;
+		else if (pawns & (location << B3)) result += 5;
+
+		if (pawns & (location << C2)) result += 10;
+		else if (pawns & (location << C3)) result += 5;
+	}
+	return result;
+}
+
+int Evaluate::bKingShield(const BitBoards & boards)
+{
+	int result = 0;
+	U64 pawns = boards.byColorPiecesBB[BLACK][PAWN];
+	U64 king = boards.byColorPiecesBB[BLACK][KING];
+
+	U64 location = 1LL;
+
+	//king on kingside
+	if (QueenSide & king) {
+		if (pawns & (location << F7)) result += 10;
+		else if (pawns & (location << F6)) result += 5;
+
+		if (pawns & (location << G7)) result += 10;
+		else if (pawns & (location << G6)) result += 5;
+
+		if (pawns & (location << H7)) result += 10;
+		else if (pawns & (location << H6)) result += 5;
+	}
+	//queen side
+	else if (KingSide & king) {
+		if (pawns & (location << A7)) result += 10;
+		else if (pawns & (location << A6)) result += 5;
+
+		if (pawns & (location << B7)) result += 10;
+		else if (pawns & (location << B6)) result += 5;
+
+		if (pawns & (location << C7)) result += 10;
+		else if (pawns & (location << C6)) result += 5;
+	}
 	return result;
 }
 

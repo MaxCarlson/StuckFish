@@ -60,7 +60,9 @@ public:
 	int pieceIndex[64];    //a lookup index so we can extract the index of the piece in the list above from just it's location
 	int pieceCount[2][7]; //count of number of pieces; color, piece type. 0 = no piece, 1 pawn, etc.
 	
-
+	U64 pieces(int color)const;
+	U64 pieces(int color, int pt)const;
+	U64 pieces(int color, int pt, int pt1)const;
 
 //state info
 	//piece material arrays for sides, using piece values
@@ -86,6 +88,30 @@ private:
 	//returns relative rank for side to move
 	int relativeRank(int sq, bool isWhite);
 };
+
+inline U64 BitBoards::pieces(int color) const{
+	return allPiecesColorBB[color];
+}
+
+inline U64 BitBoards::pieces(int color, int pt) const{
+	return byColorPiecesBB[color][pt];
+}
+
+inline U64 BitBoards::pieces(int color, int pt, int pt1) const{
+	return (byColorPiecesBB[color][pt] | byColorPiecesBB[color][pt1]);
+}
+
+//is there a pawn past their relative 4th rank?
+inline bool BitBoards::isPawnPush(const Move &m, bool isWhite) 
+{	
+	return (m.piece == PAWN && relativeRank(m.from, isWhite) > 4);
+}
+
+//is there a pawn on the 7th rank for side to move?
+inline bool BitBoards::pawnOn7th(bool isWhite)
+{	//again color is messed up, !isWhite, if white, points to whites index for pieces
+	return (byColorPiecesBB[!isWhite][PAWN] & (isWhite ? 0xFF00L : 0xFF000000000000L));
+}
 
 //can only be used if there is no piece on landing spot
 inline void BitBoards::movePiece(int piece, int color, int from, int to)
@@ -130,20 +156,6 @@ inline void BitBoards::removePiece(int piece, int color, int sq)
 	pieceLoc[color][piece][pieceIndex[lSq]] = lSq;
 	pieceLoc[color][piece][pieceCount[color][piece]] = SQ_NONE;
 }
-
-//is there a pawn past their relative 4th rank?
-inline bool BitBoards::isPawnPush(const Move &m, bool isWhite) 
-{	
-	return (m.piece == PAWN && relativeRank(m.from, isWhite) > 4);
-}
-
-//is there a pawn on the 7th rank for side to move?
-inline bool BitBoards::pawnOn7th(bool isWhite)
-{	//again color is messed up, !isWhite, if white, points to whites index for pieces
-	return (byColorPiecesBB[!isWhite][PAWN] & (isWhite ? 0xFF00L : 0xFF000000000000L));
-}
-
-
 
 
 
