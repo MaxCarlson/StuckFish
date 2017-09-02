@@ -40,24 +40,29 @@ const U64 full = 0xffffffffffffffffULL;
 const int knight_adj[9] = { -20, -16, -12, -8, -4,  0,  4,  8, 10 };
 const int rook_adj[9] = { 15,  12,   9,  6,  3,  0, -3, -6, -9 };
 
-//values definitely need to be adjusted and file/rank/side variable
-const int rookOpenFile = 10;
-const int rookHalfOpenFile = 5;
-
 //positive value
 const int BISHOP_PAIR = 30;
 //used as negatives to incourage bishop pair
 const int KNIGHT_PAIR = 8;
 const int ROOK_PAIR = 16;
+const int Hanging[STAGE] = {9, 7};
+const int kingOnPawn[STAGE] = {0, 30};
+const int kingOnMPawn[STAGE] = {0, 64};
 
-/*
+
 const int threatenedByPawn[STAGE][6] = //midgame/endgame - piece type threatened
 { { 0, 0, 24, 25, 35, 40 }, 
   { 0, 0, 32, 32, 57, 65 } };
-*/
+/*
 const int threatenedByPawn[STAGE][6] = //midgame/endgame - piece type threatened
 { { 0, 0, 10, 13, 23, 32 },
 { 0, 0, 12, 15, 35, 45 } };
+*/
+const int threats[2][2][6] = //minor/major - mid/endgame threats/ piece type
+{   //mid game             //end game
+	{{0, 2, 6, 6, 12, 12}, {0, 8, 10, 10, 20, 20},}, //minor
+	{{0, 4, 4, 4,  4,  6}, {0, 8, 10, 10, 10, 11}}   //major
+};
 
 const int rookHalfOpen[STAGE] = {5, 3};
 const int rookOpen[STAGE] = {10, 5};
@@ -68,6 +73,8 @@ const int QueenCheck = 3;
 const int RookCheck = 2;
 const int BishopCheck = 1;
 const int KnightCheck = 1;
+
+const int KingAttackerWeights[6] = { 0, 0, 2, 2, 4, 7 };
 
 static const int SafetyTable[100] = {
 	0,  0,   1,   2,   3,   5,   7,   9,  12,  15,
@@ -116,7 +123,6 @@ const int endGMobilityBonus[6][28]{
 	17, 17, 17, 17 }
 };
 
-const int KingAttackerWeights[6] = { 0, 0, 2, 2, 3, 5 };
 
 struct EvalInfo {
 	int gameScore[COLOR][STAGE] = { { 0 } }; //white, black - mid game = 0, end game = 1
@@ -128,7 +134,7 @@ struct EvalInfo {
 	int kingAttWeights[COLOR] = { 0 }; //added weight of king attackers
 	int adjacentKingAttckers[COLOR] = { 0 }; //num pieces attacking sqs adjacent to king
 
-	U64 attackedBy[COLOR][7]; //bitboards of attacked squares by color and piece type, 0 for second index is all pieces of that color
+	U64 attackedBy[COLOR][7] = { {0LL} }; //bitboards of attacked squares by color and piece type, 0 for second index is all pieces of that color
 
 	int mobility[COLOR][STAGE] = { { 0 } }; //color, midgame/endgame scoring
 
@@ -149,6 +155,13 @@ void Evaluate::generateKingZones(const BitBoards & boards, EvalInfo & ev)
 
 		int location = boards.pieceLoc[side][KING][0];
 
+		//piece square table flip if black
+		int psqLoc = side == WHITE ? location : bSQ[location];
+
+		//psq table scoring for king
+		ev.psqScores[side][mg] += pieceSqTab[KING][mg][psqLoc];
+		ev.psqScores[side][eg] += pieceSqTab[KING][eg][psqLoc];
+
 		if (location > 9) {
 			kZone |= KING_SPAN << (location - 9);
 		}
@@ -164,8 +177,8 @@ void Evaluate::generateKingZones(const BitBoards & boards, EvalInfo & ev)
 			tkz = kZone & ~FILE_AB;
 		}
 
-		//add king attacks to attacked by
-		ev.attackedBy[side][KING] = tkz;
+		//add king attacks to attacked by and attacked by all
+		ev.attackedBy[side][0] |= ev.attackedBy[side][KING] = tkz;
 
 		//add a zone three tiles across in front of the 8 squares surrounding the king
 		if (side)  kZone |= kZone << 8;
@@ -189,11 +202,11 @@ void evaluatePieces(const BitBoards & boards, EvalInfo & ev) {
 
 	const int* piece = boards.pieceLoc[color][pT];
 	const int them = (color == WHITE ? BLACK : WHITE);
+
+	//increment piece type if we're on a black piece
 	const int nextPiece = (color == WHITE ? pT : pT + 1);
 
 	int square;
-	
-	ev.attackedBy[color][pT] = 0LL;
 
 	while (( square = *piece++ ) != SQ_NONE) {
 
@@ -202,12 +215,10 @@ void evaluatePieces(const BitBoards & boards, EvalInfo & ev) {
 
 		//add piece square table scores 
 		ev.psqScores[color][mg] += pieceSqTab[pT][mg][adjSq];
-		ev.psqScores[color][eg] += pieceSqTab[pT][eg][adjSq];
+		ev.psqScores[color][eg] += pieceSqTab[pT][eg][adjSq];		
 
-		
-
-		if (pT == PAWN) {
-			ev.attackedBy[color][PAWN] |= ev.attackedBy[color][0] |= boards.psuedoAttacks(PAWN, color, square);
+		if (pT == PAWN) { //remove later once we have sepperate pawn eval class
+			ev.attackedBy[color][0] |= ev.attackedBy[color][PAWN] |= boards.psuedoAttacks(PAWN, color, square);
 			continue;
 		}
 		
@@ -215,20 +226,22 @@ void evaluatePieces(const BitBoards & boards, EvalInfo & ev) {
 		U64 bb = pT == BISHOP ? slider_attacks.BishopAttacks(boards.FullTiles ^ boards.pieces(color, QUEEN), square)
 			: pT == ROOK ? slider_attacks.RookAttacks(boards.FullTiles ^ boards.pieces(color, QUEEN, ROOK), square)
 			: pT == QUEEN ? slider_attacks.QueenAttacks(boards.FullTiles, square)
-			 : boards.PseudoAttacks[KNIGHT][square]; // need to add knight attacks, pawns evaled sepperatly
+			 : boards.PseudoAttacks[KNIGHT][square]; 
 
 		//add pinned piece code, not moving pieces out of line from their pin
 
 		//add attack squares to both piece attacks by color, and all piece attacks by color
-		ev.attackedBy[color][pT] |= ev.attackedBy[color][0] |= bb;
+		//very important order, if all pieces comes first the pT will grab all attack boards generated.
+		ev.attackedBy[color][0] |= ev.attackedBy[color][pT] |= bb;
 
 		//if pieces is attacking zone around king..
 		if (bb & ev.kingZone[them]) {
 
 			ev.kingAttackers[color]++;
 			ev.kingAttWeights[color] += KingAttackerWeights[pT];		
-			U64 adjacent = bb & ev.attackedBy[them][KING]; //NEEDS TO BE KING ATTACKS INSTEAD OF KING ZONE!@@!@!@!@!@!@!@@!@@!@!@!@!@!@!@@@!@!@
+			U64 adjacent = bb & ev.attackedBy[them][KING]; 
 
+			//if piece is attacking squares defended by the enemy king..
 			if (adjacent) ev.adjacentKingAttckers[color] += bit_count(adjacent);
 		}
 
@@ -309,8 +322,10 @@ int evaluateKing(const BitBoards & boards, EvalInfo & ev, int mgScore) {
 				| ev.attackedBy[color][BISHOP] | ev.attackedBy[color][ROOK]
 				| ev.attackedBy[color][QUEEN]);
 
-		attackUnits = std::min(10, (ev.kingAttackers[them] * ev.kingAttWeights[them]) / 2
-					+ (ev.adjacentKingAttckers[them] + bit_count(undefended)));
+		attackUnits = std::min(17, (ev.kingAttackers[them] * ev.kingAttWeights[them]) / 2)
+					+ 2 * (ev.adjacentKingAttckers[them] + bit_count(undefended))
+					- mgScore / 32
+					- !boards.pieceCount[them][QUEEN] * 15;
 
 		//queen enemy safe contact checks, where enemy queen is next to king 
 		U64 bb = undefended & ev.attackedBy[them][QUEEN] & ~boards.pieces(them);
@@ -373,19 +388,76 @@ int evaluateKing(const BitBoards & boards, EvalInfo & ev, int mgScore) {
 }
 
 template<int color>
-int evalThreats(const BitBoards & boards, EvalInfo & ev) {
+void evalThreats(const BitBoards & boards, EvalInfo & ev) {
 
-	int them = color == WHITE ? BLACK : WHITE;
+	int them = (color == WHITE ? BLACK : WHITE);
 
 	U64 bb, weakEnemys, protectedEnemys;
 
-	//enemys (that are not their pawns) which are protected by knights or bishops
+	enum {Minor, Major};
+
+	//enemys (that are not their pawns) which are protected by their knights or bishops
 	protectedEnemys = (boards.pieces(them) ^ boards.pieces(them, PAWN))
 					& ev.attackedBy[them][PAWN]
-					& (ev.attackedBy[them][KNIGHT] | ev.attackedBy[them][BISHOP]);
+					& (ev.attackedBy[color][KNIGHT] | ev.attackedBy[color][BISHOP]);
 
+
+	//if an enemy is protected by a pawn, and attacked by our bishop or knight
 	if (protectedEnemys) {
-		//ev.gameScore
+		int p = boards.pieceOnSq(lsb(protectedEnemys));
+
+		ev.gameScore[color][mg] += threats[Minor][mg][p];
+		ev.gameScore[color][eg] += threats[Minor][eg][p];
+	}
+
+	weakEnemys = boards.pieces(them)
+			   & ~ev.attackedBy[them][0] //not supported by their pieces
+			   & ev.attackedBy[color][0]; //and attacked by any of our pieces
+
+	//add bonus for attacking undefended pieces
+	if (weakEnemys) {
+
+		//enemy piece is attacked by our knight or bishop
+		bb = weakEnemys & (ev.attackedBy[color][KNIGHT] | ev.attackedBy[color][BISHOP]);
+
+		if (bb) {
+			int p = boards.pieceOnSq(lsb(bb));
+
+			ev.gameScore[color][mg] += threats[Minor][mg][p];
+			ev.gameScore[color][eg] += threats[Minor][eg][p];
+		}
+
+		//enemy piece is attacked by our rook/queen
+		bb = weakEnemys & (ev.attackedBy[color][ROOK] | ev.attackedBy[color][QUEEN]);
+
+		if (bb) {
+			int p = boards.pieceOnSq(lsb(bb));
+
+			ev.gameScore[color][mg] += threats[Major][mg][p];
+			ev.gameScore[color][eg] += threats[Major][eg][p];
+		}
+
+		//enemy piece/s aren't supported
+		bb = weakEnemys & ~ev.attackedBy[them][0]; 
+
+		if (bb) {
+			int pop = bit_count(bb);
+
+			ev.gameScore[color][mg] += pop * Hanging[mg];
+			ev.gameScore[color][eg] += pop * Hanging[eg];
+		}
+
+		//enemy pawn/s are attacked by our king
+		bb = weakEnemys & boards.pieces(them, PAWN) & ev.attackedBy[color][KING];
+
+		if (bb) {
+			pop_lsb(&bb);
+			//one or many pawns?
+			int score = bb ? kingOnMPawn[eg] : kingOnPawn[eg];
+
+			//no mid game value for this threat
+			ev.gameScore[color][eg] += score;
+		}
 	}
 }
 
@@ -407,6 +479,7 @@ int Evaluate::evaluate(const BitBoards & boards, bool isWhite)
 		}
 
 	}
+	
 
 	EvalInfo ev;
 	int result = 0, score[STAGE] = { 0 };
@@ -414,12 +487,18 @@ int Evaluate::evaluate(const BitBoards & boards, bool isWhite)
 	//initilize king zones and king attacks
 	generateKingZones(boards, ev);
 
+	//evaluate all pieces, except for most pawn info and king. Start at knight once we have
+	//a sepperate class for pawn info, holding a more relevent pawn TT than we have now
 	evaluatePieces<PAWN, WHITE>(boards, ev);
+
+	//can only evaluate threats after piece attack boards have been generated
+	evalThreats<WHITE>(boards, ev);
+	evalThreats<BLACK>(boards, ev);
 
 	score[mg] = boards.bInfo.sideMaterial[WHITE] + ev.psqScores[WHITE][mg] - boards.bInfo.sideMaterial[BLACK] - ev.psqScores[BLACK][mg];
 	score[eg] = boards.bInfo.sideMaterial[WHITE] + ev.psqScores[WHITE][eg] - boards.bInfo.sideMaterial[BLACK] - ev.psqScores[BLACK][eg];
 
-	int gamePhase = 0;
+	int gamePhase = 0; //evalThreats<WHITE>(boards, ev);
 
 	for (int color = 1; color < 2; color++) {
 		gamePhase += boards.pieceCount[color][KNIGHT];
@@ -457,6 +536,9 @@ int Evaluate::evaluate(const BitBoards & boards, bool isWhite)
 
 	score[mg] += (ev.mobility[WHITE][mg] - ev.mobility[BLACK][mg]);
 	score[eg] += (ev.mobility[WHITE][eg] - ev.mobility[BLACK][eg]);
+
+	score[mg] += evaluateKing<WHITE>(boards, ev, score[mg]) - evaluateKing<BLACK>(boards, ev, score[mg]);
+
 	if (gamePhase > 24) gamePhase = 24;
 	int mgWeight = gamePhase;
 	int egWeight = 24 - gamePhase;
@@ -469,8 +551,8 @@ int Evaluate::evaluate(const BitBoards & boards, bool isWhite)
 	//if (ev.kingAttackers[WHITE] < 2 || boards.byColorPiecesBB[WHITE][QUEEN] == 0LL) ev.kingAttWeights[WHITE] = 0;
 	//if (ev.kingAttackers[BLACK] < 2 || boards.byColorPiecesBB[BLACK][QUEEN] == 0LL) ev.kingAttWeights[BLACK] = 0;
 
-	if (!(ev.kingAttackers[WHITE] < 2 || boards.byColorPiecesBB[WHITE][QUEEN] == 0LL)) result += evaluateKing<WHITE>(boards, ev, score[mg]);
-	if (!(ev.kingAttackers[BLACK] < 2 || boards.byColorPiecesBB[BLACK][QUEEN] == 0LL)) result -= evaluateKing<BLACK>(boards, ev, score[mg]);
+	//if (!(ev.kingAttackers[WHITE] < 2 || boards.byColorPiecesBB[WHITE][QUEEN] == 0LL)) result += evaluateKing<WHITE>(boards, ev, score[mg]);
+	//if (!(ev.kingAttackers[BLACK] < 2 || boards.byColorPiecesBB[BLACK][QUEEN] == 0LL)) result -= evaluateKing<BLACK>(boards, ev, score[mg]);
 
 	//result += evaluateKing<WHITE>(boards, ev, score[mg]) - evaluateKing<BLACK>(boards, ev, score[mg]);
 

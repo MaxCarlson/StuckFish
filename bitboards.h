@@ -57,10 +57,12 @@ public:
 	int pieceLoc[2][7][16]; //color, piece type
 	int pieceIndex[64];    //a lookup index so we can extract the index of the piece in the list above from just it's location
 	int pieceCount[2][7]; //count of number of pieces; color, piece type. 0 = no piece, 1 pawn, etc.
+	int pieceOn[64]; // allows us to lookup which piece is on a square
 	
 	U64 pieces(int color)const;
 	U64 pieces(int color, int pt)const;
 	U64 pieces(int color, int pt, int pt1)const;
+	int pieceOnSq(int sq) const;
 
 	//full of attacks all possible attacks for all squares and pieces
 	//on a completely empty board
@@ -105,6 +107,11 @@ inline U64 BitBoards::pieces(int color, int pt, int pt1) const{
 	return (byColorPiecesBB[color][pt] | byColorPiecesBB[color][pt1]);
 }
 
+inline int BitBoards::pieceOnSq(int sq) const
+{
+	return pieceOn[sq];
+}
+
 //return an attack set for a piece on any square, attacks are generated
 //as if there are no pieces on the boards
 inline U64 BitBoards::psuedoAttacks(int piece, int color, int sq) const
@@ -138,6 +145,9 @@ inline void BitBoards::movePiece(int piece, int color, int from, int to)
 	FullTiles ^= from_to;
 	EmptyTiles ^= from_to;
 
+	pieceOn[from] = PIECE_EMPTY;
+	pieceOn[to] = piece;
+
 	//update the pieces location
 	pieceIndex[to] = pieceIndex[from];
 	pieceLoc[color][piece][pieceIndex[to]] = to;
@@ -151,6 +161,7 @@ inline void BitBoards::addPiece(int piece, int color, int sq)
 	FullTiles ^= squareBB[sq];
 	EmptyTiles ^= squareBB[sq];
 
+	pieceOn[sq] = piece;
 	//increment piece count and add piece to location and index for location
 	pieceIndex[sq] = pieceCount[color][piece]++;
 	pieceLoc[color][piece][pieceIndex[sq]] = sq;
@@ -163,6 +174,8 @@ inline void BitBoards::removePiece(int piece, int color, int sq)
 	byPieceType[piece] ^= squareBB[sq];
 	FullTiles ^= squareBB[sq];
 	EmptyTiles ^= squareBB[sq];
+
+	pieceOn[sq] = PIECE_EMPTY;
 
 	int lSq = pieceLoc[color][piece][--pieceCount[color][piece]];
 	pieceIndex[lSq] = pieceIndex[sq];

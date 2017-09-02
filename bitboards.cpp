@@ -116,6 +116,8 @@ void BitBoards::constructBoards()
 	for (int i = 0; i < 64; i++) {
 		squareBB[i] = 1LL << i;
 		pieceIndex[i] = SQ_NONE;
+		pieceOn[i] = PIECE_EMPTY;
+
 		if (boardArr[i / 8][i % 8] == "P") {
 			byColorPiecesBB[0][1] += 1LL << i;
 			allPiecesColorBB[0] += 1LL << i;

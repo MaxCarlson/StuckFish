@@ -523,7 +523,7 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 			//if (!shouldSkip && depth < 4 && gen_moves.SEE(newMove, newBoard, isWhite, true) < 0) shouldSkip = true;
 
 			if (shouldSkip) {
-				newBoard.unmakeMove(newMove, zobrist, isWhite);
+				newBoard.unmakeMove(newMove, isWhite);
 				gen_moves.grab_boards(newBoard, isWhite);
 				futileMoves = true; //flag so we know we skipped a move/not checkmate
 				continue;
