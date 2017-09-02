@@ -162,23 +162,11 @@ void Evaluate::generateKingZones(const BitBoards & boards, EvalInfo & ev)
 		ev.psqScores[side][mg] += pieceSqTab[KING][mg][psqLoc];
 		ev.psqScores[side][eg] += pieceSqTab[KING][eg][psqLoc];
 
-		if (location > 9) {
-			kZone |= KING_SPAN << (location - 9);
-		}
-		else {
-			kZone |= KING_SPAN >> (9 - location);
-		}
-
-		if (location % 8 < 4) {
-			tkz = kZone & ~FILE_GH;
-
-		}
-		else {
-			tkz = kZone & ~FILE_AB;
-		}
+		//grab pseudo attacks for king on square
+		kZone = boards.psuedoAttacks(KING, side, location);
 
 		//add king attacks to attacked by and attacked by all
-		ev.attackedBy[side][0] |= ev.attackedBy[side][KING] = tkz;
+		ev.attackedBy[side][0] |= ev.attackedBy[side][KING] = kZone;
 
 		//add a zone three tiles across in front of the 8 squares surrounding the king
 		if (side)  kZone |= kZone << 8;
@@ -191,14 +179,14 @@ void Evaluate::generateKingZones(const BitBoards & boards, EvalInfo & ev)
 		else {
 			kZone &= ~FILE_AB;
 		}
-
+		//remove square king is on, maybe delete this in future?
 		if (side) ev.kingZone[BLACK] = kZone & ~boards.byColorPiecesBB[BLACK][KING];
 		else ev.kingZone[WHITE] = kZone & ~boards.byColorPiecesBB[WHITE][KING];
 	}
 }
 
 template<int pT, int color>
-void evaluatePieces(const BitBoards & boards, EvalInfo & ev) {
+void evaluatePieces(const BitBoards & boards, EvalInfo & ev, U64 * mobilityArea) {
 
 	const int* piece = boards.pieceLoc[color][pT];
 	const int them = (color == WHITE ? BLACK : WHITE);
@@ -253,7 +241,9 @@ void evaluatePieces(const BitBoards & boards, EvalInfo & ev) {
 				| ev.attackedBy[them][ROOK]);
 
 		//gather mobility count and record mob scores for mid and end game
-		int mobility = bit_count(bb);
+		//don't count squares occupied by our pawns or king, or attacked by their pawns
+		//towards mobility. Additional restrictions for queen mob.
+		int mobility = bit_count(bb & mobilityArea[color]);
 
 		ev.mobility[color][mg] += midGmMobilityBonus[pT][mobility];
 		ev.mobility[color][eg] += endGMobilityBonus[pT][mobility];
@@ -295,11 +285,18 @@ void evaluatePieces(const BitBoards & boards, EvalInfo & ev) {
 		}
 	}
 
-	return evaluatePieces<nextPiece, !color>(boards, ev);
+	BitBoards a = boards;
+	if (pT == PAWN) { //remove this once we get sepperate pawn eval
+		mobilityArea[them] = ~(ev.attackedBy[color][PAWN] | mobilityArea[them]);
+		a.drawBB(mobilityArea[color]);
+		a.drawBB(mobilityArea[them]);
+	}
+
+	return evaluatePieces<nextPiece, !color>(boards, ev, mobilityArea);
 }
 
 template<> //get rid of recursive function too complex error, also return when piece type hits king
-void evaluatePieces<KING, WHITE>(const BitBoards & boards, EvalInfo & ev) { return; };
+void evaluatePieces<KING, WHITE>(const BitBoards & boards, EvalInfo & ev, U64 * mobility) { return; };
 
 template<int color>
 int evaluateKing(const BitBoards & boards, EvalInfo & ev, int mgScore) {
@@ -484,12 +481,19 @@ int Evaluate::evaluate(const BitBoards & boards, bool isWhite)
 	EvalInfo ev;
 	int result = 0, score[STAGE] = { 0 };
 
-	//initilize king zones and king attacks
+	//initilize king zones and king attacks for both kings
 	generateKingZones(boards, ev);
 
 	//evaluate all pieces, except for most pawn info and king. Start at knight once we have
 	//a sepperate class for pawn info, holding a more relevent pawn TT than we have now
-	evaluatePieces<PAWN, WHITE>(boards, ev);
+	//right now we're passing it a mobility area that's calcuated mostly inside, later 
+	//we'll have to add exclusion of pawns outside the function.
+
+	U64 mobilityArea[COLOR]; //remove our king+our pawns from our color mobility areas
+	mobilityArea[WHITE] = boards.pieces(WHITE, PAWN, KING); //remove protected by pawns in evaluate pices function until we have 
+	mobilityArea[BLACK] = boards.pieces(BLACK, PAWN, KING); //a sepperate pawn eval and advanced pawn hash table
+															//mobilityArea[color] = ~(ev.attackedBy[them][PAWN] | mobilityArea[color]);
+	evaluatePieces<PAWN, WHITE>(boards, ev, mobilityArea);
 
 	//can only evaluate threats after piece attack boards have been generated
 	evalThreats<WHITE>(boards, ev);
@@ -498,7 +502,7 @@ int Evaluate::evaluate(const BitBoards & boards, bool isWhite)
 	score[mg] = boards.bInfo.sideMaterial[WHITE] + ev.psqScores[WHITE][mg] - boards.bInfo.sideMaterial[BLACK] - ev.psqScores[BLACK][mg];
 	score[eg] = boards.bInfo.sideMaterial[WHITE] + ev.psqScores[WHITE][eg] - boards.bInfo.sideMaterial[BLACK] - ev.psqScores[BLACK][eg];
 
-	int gamePhase = 0; //evalThreats<WHITE>(boards, ev);
+	int gamePhase = 0;;
 
 	for (int color = 1; color < 2; color++) {
 		gamePhase += boards.pieceCount[color][KNIGHT];
@@ -537,6 +541,7 @@ int Evaluate::evaluate(const BitBoards & boards, bool isWhite)
 	score[mg] += (ev.mobility[WHITE][mg] - ev.mobility[BLACK][mg]);
 	score[eg] += (ev.mobility[WHITE][eg] - ev.mobility[BLACK][eg]);
 
+	//evaluate both kings. Function returns a score taken from the king safety array
 	score[mg] += evaluateKing<WHITE>(boards, ev, score[mg]) - evaluateKing<BLACK>(boards, ev, score[mg]);
 
 	if (gamePhase > 24) gamePhase = 24;
