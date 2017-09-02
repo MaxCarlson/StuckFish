@@ -79,6 +79,10 @@ Move Ai_Logic::search(BitBoards& newBoard, bool isWhite) {
 	//max depth
 	int depth = MAX_PLY;
 
+	//if we're only allowed to search to this depth,
+	//only search to specified depth.
+	if (fixedDepthSearch) depth = fixedDepthSearch;
+
 	//generate accurate zobrist key based on bitboards
 	newBoard.zobrist.getZobristHash(newBoard);
 
@@ -144,8 +148,8 @@ Move Ai_Logic::iterativeDeep(BitBoards& newBoard, int depth, bool isWhite)
 			//print data on search 
 			print(isWhite, bestScore);
         }
-		sd.depth++;
-        //increment depth 
+		//increment depth 
+		sd.depth++;    
     }
 
 

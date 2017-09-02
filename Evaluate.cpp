@@ -9,10 +9,12 @@
 #include "hashentry.h"
 
 
-const U64 RankMasks8[8] =/*from rank8 to rank1 ?*/
+const U64 RankMasks8[8] = //from rank 1 - 8 
 {
-	0xFFL, 0xFF00L, 0xFF0000L, 0xFF000000L, 0xFF00000000L, 0xFF0000000000L, 0xFF000000000000L, 0xFF00000000000000L
+	0xFF00000000000000L, 0xFF000000000000L,  0xFF0000000000L, 0xFF00000000L, 0xFF000000L, 0xFF0000L, 0xFF00L, 0xFFL,
 };
+
+
 const U64 FileMasks8[8] =/*from fileA to FileH*/
 {
 	0x101010101010101L, 0x202020202020202L, 0x404040404040404L, 0x808080808080808L,
@@ -33,6 +35,11 @@ static const int bSQ[64] = {
 //masks for determining which side king is on
 U64 KingSide = FileMasks8[5] | FileMasks8[6] | FileMasks8[7];
 U64 QueenSide = FileMasks8[2] | FileMasks8[1] | FileMasks8[0];
+
+U64 center[STAGE] = {
+	(FileCBB | FileDBB | FileEBB | FileFBB) & (RankMasks8[1] | RankMasks8[2] | RankMasks8[3]),
+	(FileCBB | FileDBB | FileEBB | FileFBB) & (RankMasks8[6] | RankMasks8[5] | RankMasks8[4])
+};
 
 const U64 full = 0xffffffffffffffffULL;
 
@@ -74,7 +81,7 @@ const int RookCheck = 2;
 const int BishopCheck = 1;
 const int KnightCheck = 1;
 
-const int KingAttackerWeights[6] = { 0, 0, 2, 2, 4, 7 };
+const int KingAttackerWeights[6] = { 0, 0, 2, 2, 3, 5 };
 
 static const int SafetyTable[100] = {
 	0,  0,   1,   2,   3,   5,   7,   9,  12,  15,
@@ -285,11 +292,8 @@ void evaluatePieces(const BitBoards & boards, EvalInfo & ev, U64 * mobilityArea)
 		}
 	}
 
-	BitBoards a = boards;
 	if (pT == PAWN) { //remove this once we get sepperate pawn eval
 		mobilityArea[them] = ~(ev.attackedBy[color][PAWN] | mobilityArea[them]);
-		a.drawBB(mobilityArea[color]);
-		a.drawBB(mobilityArea[them]);
 	}
 
 	return evaluatePieces<nextPiece, !color>(boards, ev, mobilityArea);
@@ -297,6 +301,35 @@ void evaluatePieces(const BitBoards & boards, EvalInfo & ev, U64 * mobilityArea)
 
 template<> //get rid of recursive function too complex error, also return when piece type hits king
 void evaluatePieces<KING, WHITE>(const BitBoards & boards, EvalInfo & ev, U64 * mobility) { return; };
+
+template<int color>
+int centerControl(const BitBoards & boards, const EvalInfo & ev) {
+
+	const int them = color == WHITE ? BLACK : WHITE;
+
+	BitBoards a = boards;
+	//find the safe tiles, safe if not attacked by enemy pawn,
+	//or if it is attacked by an enemy piece and not defended
+	U64 safe = center[color]
+			& ~boards.pieces(color, PAWN)
+			& ~ev.attackedBy[them][PAWN]
+			& (ev.attackedBy[color][0] | ev.attackedBy[them][0]);
+	//a.drawBBA();
+	//a.drawBB(center[color]);
+	//a.drawBB(safe);
+
+	//find squares which are between one and three squares behind friendly pawns
+	U64 behind = boards.pieces(color, PAWN);
+
+	behind |= (color == WHITE ? behind <<  8 : behind >>  8);
+	behind |= (color == WHITE ? behind << 16 : behind >> 16);
+
+	//a.drawBB(boards.pieces(color, PAWN));
+	//a.drawBB(behind);
+	//a.drawBB(RankMasks8[1]);
+
+	return bit_count((color == WHITE ? safe >> 32 : safe << 32) | (behind & safe));
+}
 
 template<int color>
 int evaluateKing(const BitBoards & boards, EvalInfo & ev, int mgScore) {
@@ -458,6 +491,19 @@ void evalThreats(const BitBoards & boards, EvalInfo & ev) {
 	}
 }
 
+enum {Mobility,  Pawns,   Center, KingSafety};
+
+const struct Weight { int mg, eg; } Weights[] = {
+	{ 270, 305 }, { 0, 0 }, { 50, 0 }, { 275, 0 }
+};
+
+
+void applyWeights(int* score, const Weight & w, int val) {
+	
+	score[mg] += val * w.mg / 256;
+	score[eg] += val * w.eg / 256;
+}
+
 int Evaluate::evaluate(const BitBoards & boards, bool isWhite)
 {
 	int hash = boards.zobrist.zobristKey & 5021982; //REPLACE THIS!!
@@ -502,6 +548,9 @@ int Evaluate::evaluate(const BitBoards & boards, bool isWhite)
 	score[mg] = boards.bInfo.sideMaterial[WHITE] + ev.psqScores[WHITE][mg] - boards.bInfo.sideMaterial[BLACK] - ev.psqScores[BLACK][mg];
 	score[eg] = boards.bInfo.sideMaterial[WHITE] + ev.psqScores[WHITE][eg] - boards.bInfo.sideMaterial[BLACK] - ev.psqScores[BLACK][eg];
 
+	int ctrl =  centerControl<WHITE>(boards, ev) - centerControl<BLACK>(boards, ev);
+	applyWeights(score, Weights[Center], ctrl);
+
 	int gamePhase = 0;;
 
 	for (int color = 1; color < 2; color++) {
@@ -534,15 +583,16 @@ int Evaluate::evaluate(const BitBoards & boards, bool isWhite)
 	//proceed with pawnEval
 	result += getPawnScore(boards, ev);
 
+	//evaluate both kings. Function returns a score taken from the king safety array
+	int ksf = evaluateKing<WHITE>(boards, ev, score[mg]) - evaluateKing<BLACK>(boards, ev, score[mg]);
+	applyWeights(score, Weights[KingSafety],  ksf);
+
 	//add threat and some other scoring done in eval pieces, etc to scores
 	score[mg] += ev.gameScore[WHITE][mg] - ev.gameScore[BLACK][mg];
 	score[eg] += ev.gameScore[WHITE][eg] - ev.gameScore[BLACK][eg];
 
 	score[mg] += (ev.mobility[WHITE][mg] - ev.mobility[BLACK][mg]);
 	score[eg] += (ev.mobility[WHITE][eg] - ev.mobility[BLACK][eg]);
-
-	//evaluate both kings. Function returns a score taken from the king safety array
-	score[mg] += evaluateKing<WHITE>(boards, ev, score[mg]) - evaluateKing<BLACK>(boards, ev, score[mg]);
 
 	if (gamePhase > 24) gamePhase = 24;
 	int mgWeight = gamePhase;
@@ -715,7 +765,7 @@ int Evaluate::getPawnScore(const BitBoards & boards, EvalInfo & ev)
 
 int Evaluate::pawnEval(const BitBoards & boards, int side, int location)
 {
-	int result = 0;
+	int result = 0; // WE will be replacing this entire function soon.
 	int flagIsPassed = 1; // we will be trying to disprove that
 	int flagIsWeak = 1;   // we will be trying to disprove that
 	int flagIsOpposed = 0;
@@ -727,6 +777,8 @@ int Evaluate::pawnEval(const BitBoards & boards, int side, int location)
 
 	int file = location % 8;
 	int rank = location / 8;
+	int flip[8] = {7, 6, 5, 4, 3, 2, 1, 0};
+	rank = flip[rank];
 
 	U64 doubledPassMask = FileMasks8[file]; //mask for finding doubled or passed pawns
 
@@ -743,15 +795,16 @@ int Evaluate::pawnEval(const BitBoards & boards, int side, int location)
 	if (doubledPassMask & opawns) result -= 10; //real value for doubled pawns is -20, because this method counts them twice it's set at half real
 
 	if (!side) { //if is white
-		for (int i = 7; i > rank - 1; i--) {
+		for (int i = 0; i < rank + 1; i++) {
 			doubledPassMask &= ~RankMasks8[i];
 			left &= ~RankMasks8[i];
 			right &= ~RankMasks8[i];
 			tmpSup |= RankMasks8[i];
 		}
 	}
-	else {
-		for (int i = 0; i < rank + 1; i++) {
+	else {		
+		
+		for (int i = 7; i > rank - 1; i--) {
 			doubledPassMask &= ~RankMasks8[i];
 			left &= ~RankMasks8[i];
 			right &= ~RankMasks8[i];

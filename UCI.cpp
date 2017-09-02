@@ -21,6 +21,7 @@ int btime; //black clock
 int winc;
 int binc;
 int movestogo;
+int fixedDepthSearch = 0;
 
 UCI::UCI()
 {
@@ -106,6 +107,7 @@ void UCI::uciLoop()
 				else if (token == "winc")      is >> winc;
 				else if (token == "binc")      is >> binc;
 				else if (token == "movestogo") is >> movestogo;
+				else if (token == "depth")     is >> fixedDepthSearch;
 			}
 
 			std::thread thr(&UCI::search, this, newBoard); 

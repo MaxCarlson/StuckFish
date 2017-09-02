@@ -100,6 +100,7 @@ extern int btime; //black clock
 extern int winc;
 extern int binc;
 extern int movestogo;
+extern int fixedDepthSearch;
 
 
 #endif // EXTERNS_H
