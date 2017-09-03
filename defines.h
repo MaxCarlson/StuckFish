@@ -4,7 +4,7 @@
 #include <intrin.h>
 #include <vector>
 
-#define ENGINE_NAME "StuckFish 0.1"
+#define ENGINE_NAME "StuckFish 0.2"
 
 #define CACHE_LINE_SIZE 64 //taken from stockfish
 #if defined(_MSC_VER) || defined(__INTEL_COMPILER)
@@ -143,7 +143,7 @@ enum Directions {
 
 //shifts a bitboard in any of the enum directions above. Must use enum values in template
 template<int sh>
-U64 shift_bb(U64 b) { //probably have to reverse signs on this one!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+inline U64 shift_bb(U64 b) { //is shift correct? test
 	return  sh == N ? b >> 8 : sh == S ? b << 8
 		: sh == NE ? (b & ~FileHBB) >> 9 : sh == SE ? (b & ~FileHBB) << 7
 		: sh == NW ? (b & ~FileABB) >> 7 : sh == SW ? (b & ~FileABB) << 9

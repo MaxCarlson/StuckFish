@@ -44,6 +44,23 @@ inline Scores operator+=(Scores& s1, const Scores s2) {
 	return s1;
 };
 
+//masks used for pawn eval, possibly other things too
+U64 forwardBB[COLOR][64];
+U64 PassedPawnMask[COLOR][64];
+
+//function returns a bitboard of all squares ahead of the sq
+//input, realtive to side to move.
+inline U64 forward_bb(int color, int sq) {
+	return forwardBB[color][sq];
+}
+
+//returns a mask of all tiles in front of a pawn,
+//as well as all tiles forward one tile and to the left and right
+//relative to side to move
+inline U64 passed_pawn_mask(int color, int sq) {
+	return PassedPawnMask[color][sq];
+}
+
 template<int color>
 Scores evalPawns(const BitBoards & boards, Pawns *e) {
 	
@@ -60,6 +77,7 @@ Scores evalPawns(const BitBoards & boards, Pawns *e) {
 	//initialize values
 	U64 ourPawns = boards.pieces(color, PAWN);
 	U64 enemyPawns = boards.pieces(them, PAWN);
+	U64 doubled;
 
 	bool passed, isolated, opposed, connected, backward, candidate, unsupported, lever;
 
@@ -89,10 +107,15 @@ Scores evalPawns(const BitBoards & boards, Pawns *e) {
 
 		//flag pawn as passed, isolated, doauble,
 		//unsupported or connected
-		connected   = ourPawns & adjacentFiles[f] & prc;
-		unsupported = !(ourPawns & adjacentFiles[f] & pr);
-		isolated    = !(ourPawns & adjacentFiles[f]);
-		doubled = ourPawns; // & forward bb
+		connected   =  ourPawns    & adjacentFiles[f] & prc;
+		unsupported = !(ourPawns   & adjacentFiles[f] & pr);
+		isolated    = !(ourPawns   & adjacentFiles[f]);
+		doubled	    =  ourPawns    & forward_bb(color, square);
+		opposed     =  enemyPawns  & forward_bb(color, square);
+		//passed      = !(enemyPawns & passed_pawn_mask(color, square));
+
+
+
 	}
 
 	

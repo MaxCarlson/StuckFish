@@ -21,10 +21,10 @@ std::string boardArr[8][8] = {
 //used for flipping rank to whites relative rank
 const int flipRank[8] = { 8, 7, 6, 5, 4, 3 , 2, 1 };
 
-U64 forwardBB[COLOR][64];
-
 //zero index contains white pawn attacks, 1 black pawns
  //move this somewhere else, preferably not an extern. Maybe into bb object?
+
+
 
 void BitBoards::initBoards()
 {
@@ -89,16 +89,32 @@ void BitBoards::initBoards()
 	//it holds a computer bitboard relative to side to move
 	//lines forward from a particual square
 	for (int color = 0; color < 2; ++color) {
-		int shift = color == WHITE ? N : S;
+		//const int sh = color == WHITE ? N : S; ?? doesn't accept as template argument
 
 		for (int sq = 0; sq < 64; ++sq) {
 
-			forwardBB[color][sq] = squareBB[sq];
+			//create forward bb masks
+			forwardBB[color][sq] = 1LL << sq;
+			PassedPawnMask[color][sq] = 0LL;
 
-			for (int i = 0; i < 8; ++i) {
-				forwardBB[color][sq] |= shift_bb<shift>(forwardBB[color][sq]);
+			if (color == WHITE) { //unfotunatly cannot find a fix to declaring <x> = color == WHITE ? N : S;
+				forwardBB[color][sq] = shift_bb<N>(forwardBB[color][sq]);
+				for (int i = 0; i < 8; ++i) { //something to do with non static storage duration cannot be used as non-type argument
+					forwardBB[color][sq] |= shift_bb<N>(forwardBB[color][sq]);
+					//create passed pawn masks
+					PassedPawnMask[color][sq] |= psuedoAttacks(PAWN, WHITE, sq) | forwardBB[color][sq];
+					PassedPawnMask[color][sq] |= shift_bb<N>(PassedPawnMask[color][sq]);
+				}
 			}
-			 
+			else {
+				forwardBB[color][sq] = shift_bb<S>(forwardBB[color][sq]);
+				for (int i = 0; i < 8; ++i) {
+					forwardBB[color][sq] |= shift_bb<S>(forwardBB[color][sq]);
+					PassedPawnMask[color][sq] |= psuedoAttacks(PAWN, BLACK, sq) | forwardBB[color][sq];
+					PassedPawnMask[color][sq] |= shift_bb<S>(PassedPawnMask[color][sq]);
+				}
+			}
+
 		}
 	}
 }

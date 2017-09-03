@@ -1,18 +1,14 @@
-﻿  ai_logic.cpp
-  bitboards.cpp
-bitboards.cpp(99): error C2672: 'shift_bb': no matching overloaded function found
-bitboards.cpp(99): error C2971: 'shift_bb': template parameter 'sh': 'shift': a variable with non-static storage duration cannot be used as a non-type argument
-  c:\users\c-60\desktop\cppprograms\stuckfish\defines.h(146): note: see declaration of 'shift_bb'
-  bitboards.cpp(92): note: see declaration of 'shift'
-  Evaluate.cpp
-  evaluatebb.cpp
-  main.cpp
-  movegen.cpp
+﻿  Evaluate.cpp
   Pawns.cpp
-Pawns.cpp(95): error C2065: 'doubled': undeclared identifier
-  Pawns.cpp(114): note: see reference to function template instantiation 'Scores evalPawns<WHITE>(const BitBoards &,Pawns *)' being compiled
   TimeManager.cpp
   TranspositionT.cpp
   UCI.cpp
+  ai_logic.cpp
+  bitboards.cpp
+  evaluatebb.cpp
+  main.cpp
+  movegen.cpp
   zobristh.cpp
   Generating Code...
+  StuckFish.vcxproj -> C:\Users\C-60\Desktop\cppPrograms\StuckFish\x64\Release\StuckFish.exe
+  StuckFish.vcxproj -> C:\Users\C-60\Desktop\cppPrograms\StuckFish\x64\Release\StuckFish.pdb (Full PDB)
