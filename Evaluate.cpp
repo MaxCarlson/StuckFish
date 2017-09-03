@@ -7,6 +7,7 @@
 #include "externs.h"
 #include "psqTables.h"
 #include "hashentry.h"
+#include "Pawns.h"
 
 
 const U64 RankMasks8[8] = //from rank 1 - 8 
@@ -491,15 +492,16 @@ void evalThreats(const BitBoards & boards, EvalInfo & ev) {
 	}
 }
 
-enum {Mobility,  Pawns,   Center, KingSafety};
-/* 
-const struct Weight { int mg, eg; } Weights[] = { //current weights, 50 +- 25 ELO loss 78games
-	{ 270, 305 }, { 0, 0 }, { 50, 0 }, { 275, 0 } //scores inline with enum above - Midgame, Endgame
-};*/
-const struct Weight { int mg, eg; } Weights[] = { //Test weights
+enum {Mobility,  PawnStructure,   Center, KingSafety};
+
+const struct Weight { int mg, eg; } Weights[] = { 
 	{ 289, 344 }, { 0, 0 }, { 50, 0 }, { 318, 0 }
 };
-
+/*
+const struct Weight { int mg, eg; } Weights[] = { //Test Not Good
+	{ 289, 320 },{ 0, 0 },{ 50, 0 },{ 290, 0 }
+};
+*/
 //for applying non phase independant scoring.
 //Weights are used to modify values in a particular section 
 //compared to those of other sections in overall scoring
@@ -539,6 +541,10 @@ int Evaluate::evaluate(const BitBoards & boards, bool isWhite)
 
 	//initilize king zones and king attacks for both kings
 	generateKingZones(boards, ev);
+
+	///TEST PAWN CLASS
+	Pawns::probe(boards, pawnsTable);
+	
 
 	//evaluate all pieces, except for most pawn info and king. Start at knight once we have
 	//a sepperate class for pawn info, holding a more relevent pawn TT than we have now

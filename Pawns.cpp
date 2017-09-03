@@ -128,9 +128,13 @@ const Scores PawnsFileSpan = S(0, 6);
 // Unsupported pawn penalty
 const Scores UnsupportedPawnPenalty = S(10, 5);
 
+//global pawn hash table
+Pawns::Table pawnsTable;
+
+namespace Pawns {
 
 template<int color>
-Scores evalPawns(const BitBoards & boards, Pawns *e) {
+Scores evalPawns(const BitBoards & boards, PawnsEntry *e) {
 	
 	Scores val; val.mg = 0; val.eg = 0;
 
@@ -214,7 +218,7 @@ Scores evalPawns(const BitBoards & boards, Pawns *e) {
 			backward = (bb | shift_bb<Up>(bb)) & enemyPawns;
 
 		}
-
+		
 		//if (!(opposed | passed | (pawn_attack_span(color, square) & enemyPawns)) continue; //need to TESTTESTTEST
 
 		// A not-passed pawn is a candidate to become passed, if it is free to
@@ -236,7 +240,7 @@ Scores evalPawns(const BitBoards & boards, Pawns *e) {
 			val -= UnsupportedPawnPenalty;
 
 		if (doubled)
-			val -= Doubled[(int)opposed][f]; // NEED TO ADD ~~~ / rank_distance(square, lsb(doubled));
+			val -= Doubled[f]; // NEED TO ADD ~~~ / rank_distance(square, lsb(doubled));
 
 		if (backward)
 			val -= Backward[opposed][f];
@@ -245,16 +249,16 @@ Scores evalPawns(const BitBoards & boards, Pawns *e) {
 			//val += Connected[f][relative_rank(color, square)];
 
 		if (lever)
-			val += Lever[boards.relativeRank(square, !color)];
+			val += Lever[relative_rank(color, square)]; // NEED TO TEST AND MAKE SURE ALL RELATIVE RANK FUNCTIOSN WORKS
 
 		if (candidate)
 		{
-			val += CandidatePassed[boards.relativeRank(square, !color)];
+			val += CandidatePassed[relative_rank(color, square)];
 
 			if (!doubled)
 				e->candidatePawns[color] |= square;
 		}
-
+		
 	}
 
 	bb = e->semiOpenFiles[color] ^ 0xFF; //TEST?????????????????????????????????????????????????
@@ -263,16 +267,18 @@ Scores evalPawns(const BitBoards & boards, Pawns *e) {
 
 	// In endgame it's better to have pawns on both wings. So give a bonus according
 	// to file distance between left and right outermost pawns.
-	val += PawnsFileSpan * e->pawnSpan[color];
+	//val += PawnsFileSpan * e->pawnSpan[color];
 	
 	return val;
 }
 
-Pawns * probe(const BitBoards & boards, Table & entries)
+
+
+PawnsEntry * Pawns::probe(const BitBoards & boards, Table & entries)
 {
 	U64 key = boards.pawn_key();
 
-	Pawns* entry = entries[key];
+	PawnsEntry* entry = entries[key];
 
 	if (entry->Key == key) {
 		return entry;
@@ -286,4 +292,7 @@ Pawns * probe(const BitBoards & boards, Table & entries)
 	entry->score[eg] = s.eg;
 
 	return entry;
+}
+
+
 }

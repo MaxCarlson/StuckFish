@@ -175,8 +175,25 @@ inline int bit_count(unsigned long long b) {
 	return _mm_popcnt_u64(b);
 }
 
+//returns file of square
 inline int file_of(int sq) {
 	return sq & 7;
+}
+
+inline int rank_of(int sq) {
+	return (sq >> 3); //possibly reverse symbol needed?
+}
+//returns a relative rank from an input rank
+inline int relative_rank(int color, int rank) {
+	return (rank ^ (color * 7));
+}
+//returns a relative rank from a square location input
+inline int relative_rankSq(int color, int square) {
+	return relative_rank(color, rank_of(square));
+}
+
+inline int pawn_push(int color) {
+	return color == WHITE ? -8 : 8;
 }
 
 //returns the most advanced piece on the board,

@@ -10,7 +10,7 @@ typedef unsigned long long  U64; // supported by MSC 13.00+ and C99
 #include <algorithm>
 #include "move.h"
 #include "slider_attacks.h"
-
+#include "Pawns.h"
 
 class HashEntry;
 class ZobristH;
@@ -21,7 +21,7 @@ extern const int SORT_VALUE[7];
 
 //magics object
 extern SliderAttacks slider_attacks;
-
+extern Pawns::Table pawnsTable;
 //half turns
 extern int turns;
 
