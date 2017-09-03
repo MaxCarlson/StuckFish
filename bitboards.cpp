@@ -7,6 +7,7 @@
 #include "zobristh.h"
 #include "TranspositionT.h"
 
+
 std::string boardArr[8][8] = {
 	{ "r", "n", "b", "q", "k", "b", "n", "r" },
 	{ "p", "p", "p", "p", "p", "p", "p", "p", },
@@ -20,11 +21,6 @@ std::string boardArr[8][8] = {
 
 //used for flipping rank to whites relative rank
 const int flipRank[8] = { 8, 7, 6, 5, 4, 3 , 2, 1 };
-
-//zero index contains white pawn attacks, 1 black pawns
- //move this somewhere else, preferably not an extern. Maybe into bb object?
-
-
 
 void BitBoards::initBoards()
 {
@@ -96,6 +92,7 @@ void BitBoards::initBoards()
 			//create forward bb masks
 			forwardBB[color][sq] = 1LL << sq;
 			PassedPawnMask[color][sq] = 0LL;
+			PawnAttackSpan[color][sq] = 0LL;
 
 			if (color == WHITE) { //unfotunatly cannot find a fix to declaring <x> = color == WHITE ? N : S;
 				forwardBB[color][sq] = shift_bb<N>(forwardBB[color][sq]);
@@ -104,6 +101,9 @@ void BitBoards::initBoards()
 					//create passed pawn masks
 					PassedPawnMask[color][sq] |= psuedoAttacks(PAWN, WHITE, sq) | forwardBB[color][sq];
 					PassedPawnMask[color][sq] |= shift_bb<N>(PassedPawnMask[color][sq]);
+					//create pawn attack span masks
+					PawnAttackSpan[color][sq] |= psuedoAttacks(PAWN, WHITE, sq);
+					PawnAttackSpan[color][sq] |= shift_bb<N>(PawnAttackSpan[color][sq]);
 				}
 			}
 			else {
@@ -112,10 +112,13 @@ void BitBoards::initBoards()
 					forwardBB[color][sq] |= shift_bb<S>(forwardBB[color][sq]);
 					PassedPawnMask[color][sq] |= psuedoAttacks(PAWN, BLACK, sq) | forwardBB[color][sq];
 					PassedPawnMask[color][sq] |= shift_bb<S>(PassedPawnMask[color][sq]);
+					PawnAttackSpan[color][sq] |= psuedoAttacks(PAWN, BLACK, sq);
+					PawnAttackSpan[color][sq] |= shift_bb<S>(PawnAttackSpan[color][sq]);
 				}
 			}
 
 		}
+		
 	}
 }
 

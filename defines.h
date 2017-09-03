@@ -179,6 +179,18 @@ inline int file_of(int sq) {
 	return sq & 7;
 }
 
+//returns the most advanced piece on the board,
+//relative to side to move
+inline int frontmost_sq(int color, U64 b) 
+{
+	return color == WHITE ? lsb(b) : msb(b);
+	
+}
+inline int  backmost_sq(int color, U64 b)
+{ 
+	return color == WHITE ? msb(b) : lsb(b);
+}
+
 //these functions return appropriate mate values for the current ply
 //prefering to mate sooner than later
 inline int mate_in(int ply) {
