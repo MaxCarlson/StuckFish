@@ -111,6 +111,7 @@ void BitBoards::constructBoards()
 	}
 	
 	FullTiles = 0LL;
+	bInfo.PawnKey = 0LL;
 
 	//seed bitboards
 	for (int i = 0; i < 64; i++) {
@@ -130,7 +131,7 @@ void BitBoards::constructBoards()
 			pieceLoc[WHITE][PAWN][pieceCount[WHITE][PAWN]] = i;
 			pieceIndex[i] = pieceCount[WHITE][PAWN]; //store the piece loc list index of this particular piece, indexed by square it's on
 			pieceCount[WHITE][PAWN] ++;
-			
+			bInfo.PawnKey ^= zobrist.zArray[WHITE][PAWN][i];
 		}
 		else if (boardArr[i / 8][i % 8] == "N") {
 			byColorPiecesBB[0][2] += 1LL << i;
@@ -203,6 +204,7 @@ void BitBoards::constructBoards()
 			pieceLoc[BLACK][PAWN][pieceCount[BLACK][PAWN]] = i;
 			pieceIndex[i] = pieceCount[BLACK][PAWN];
 			pieceCount[BLACK][PAWN]++;
+			bInfo.PawnKey ^= zobrist.zArray[BLACK][PAWN][i];
 		}
 		else if (boardArr[i / 8][i % 8] == "n") {
 			byColorPiecesBB[1][2] += 1LL << i;
@@ -283,20 +285,28 @@ void BitBoards::makeMove(const Move& m, bool isWhite)
 		removePiece(m.captured, !color, m.to);
 		//update material
 		bInfo.sideMaterial[!color] -= SORT_VALUE[m.captured];
+
+		//update the pawn hashkey on capture
+		if (m.captured == PAWN) bInfo.PawnKey ^= zobrist.zArray[!color][PAWN][m.to];
 	}
 
 	//move the piece from - to
 	movePiece(m.piece, color, m.from, m.to);	
 		
+	if (m.piece == PAWN) {
+		//pawn promotion
+		if (m.flag == 'Q') {
+			//remove pawn placed
+			removePiece(PAWN, color, m.to);
+			//add queen to to square
+			addPiece(QUEEN, color, m.to);
+			//update material
+			bInfo.sideMaterial[color] += SORT_VALUE[QUEEN] - SORT_VALUE[PAWN];
 
-	//pawn promotion
-	if (m.flag == 'Q') {
-		//remove pawn placed
-		removePiece(PAWN, color, m.to);
-		//add queen to to square
-		addPiece(QUEEN, color, m.to);
-		//update material
-		bInfo.sideMaterial[color] += SORT_VALUE[QUEEN] - SORT_VALUE[PAWN];
+			bInfo.PawnKey ^= zobrist.zArray[color][PAWN][m.to];
+		}
+		//update the pawn key, if it's a promotion it cancels out and updates correctly
+		bInfo.PawnKey ^= zobrist.zArray[color][PAWN][m.to] ^ zobrist.zArray[color][PAWN][m.from];
 	}
 
 	//debug catch
@@ -307,6 +317,9 @@ void BitBoards::makeMove(const Move& m, bool isWhite)
 	//update the zobrist key
 	zobrist.UpdateKey(m.from, m.to, m, isWhite);
 	zobrist.UpdateColor();
+
+	//prefetch TT entry into cache
+	_mm_prefetch((char *)TT.first_entry(zobrist.zobristKey), _MM_HINT_NTA);
 }
 void BitBoards::unmakeMove(const Move & m, bool isWhite)
 {
@@ -315,6 +328,8 @@ void BitBoards::unmakeMove(const Move & m, bool isWhite)
 	if (m.flag == '0') {
 		//move piece
 		movePiece(m.piece, color, m.to, m.from);
+
+		if(m.piece == PAWN) bInfo.PawnKey ^= zobrist.zArray[color][PAWN][m.to] ^ zobrist.zArray[color][PAWN][m.to];
 	}
 	//pawn promotion
 	else if (m.flag == 'Q'){
@@ -326,6 +341,8 @@ void BitBoards::unmakeMove(const Move & m, bool isWhite)
 		removePiece(QUEEN, color, m.to);
 
 		bInfo.sideMaterial[color] += SORT_VALUE[PAWN] - SORT_VALUE[QUEEN];
+
+		bInfo.PawnKey ^= zobrist.zArray[color][PAWN][m.from];
 	}
 
 	//add captured piece from BB's similar to above for moving piece
@@ -333,6 +350,8 @@ void BitBoards::unmakeMove(const Move & m, bool isWhite)
 		//add captured piece to to square
 		addPiece(m.captured, !color, m.to);
 		bInfo.sideMaterial[!color] += SORT_VALUE[m.captured];
+
+		if (m.captured == PAWN) bInfo.PawnKey ^= zobrist.zArray[!color][PAWN][m.to];
 	}
 
 	//debug catch
@@ -345,9 +364,6 @@ void BitBoards::unmakeMove(const Move & m, bool isWhite)
 	//update the zobrist key
 	zobrist.UpdateKey(m.from, m.to, m, isWhite);
 	zobrist.UpdateColor();
-
-	//prefetch TT entry into cache
-	_mm_prefetch((char *)TT.first_entry(zobrist.zobristKey), _MM_HINT_NTA);
 }
 
 //returns the rank of a square relative to side specified

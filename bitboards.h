@@ -16,6 +16,8 @@ class MoveGen;
 
 struct BoardInfo {
 	int sideMaterial[2]; //updated on make/unmake moves	
+
+	U64 PawnKey;
 };
 
 class BitBoards
@@ -64,6 +66,8 @@ public:
 	U64 pieces(int color, int pt, int pt1)const;
 	int pieceOnSq(int sq) const;
 
+	U64 pawn_key() const;
+
 	//full of attacks all possible attacks for all squares and pieces
 	//on a completely empty board
 	U64 PseudoAttacks[7][64]; //zero index is white pawns
@@ -110,6 +114,11 @@ inline U64 BitBoards::pieces(int color, int pt, int pt1) const{
 inline int BitBoards::pieceOnSq(int sq) const
 {
 	return pieceOn[sq];
+}
+
+//returns the incrementaly updated pawn hash key
+inline U64 BitBoards::pawn_key() const {
+	return bInfo.PawnKey;
 }
 
 //return an attack set for a piece on any square, attacks are generated

@@ -2,6 +2,7 @@
 #define DEFINES_H
 
 #include <intrin.h>
+#include <vector>
 
 #define ENGINE_NAME "StuckFish 0.1"
 
@@ -85,6 +86,17 @@ typedef unsigned int U32;
 typedef int S32;
 typedef unsigned long long U64;
 typedef long long S64;
+
+
+//used for TTables that aren't our main TT
+template<class Entry, int Size>
+struct HashTable {
+	HashTable() : table(Size, Entry()) {}
+	Entry* operator[](U64 k) { return &table[(uint32_t)k & (Size - 1)]; }
+
+private:
+	std::vector<Entry> table;
+};
 
 #define TT_ALPHA 1
 #define TT_BETA 2

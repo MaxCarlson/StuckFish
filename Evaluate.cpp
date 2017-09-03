@@ -492,16 +492,27 @@ void evalThreats(const BitBoards & boards, EvalInfo & ev) {
 }
 
 enum {Mobility,  Pawns,   Center, KingSafety};
-
-const struct Weight { int mg, eg; } Weights[] = {
-	{ 270, 305 }, { 0, 0 }, { 50, 0 }, { 275, 0 }
+/* 
+const struct Weight { int mg, eg; } Weights[] = { //current weights, 50 +- 25 ELO loss 78games
+	{ 270, 305 }, { 0, 0 }, { 50, 0 }, { 275, 0 } //scores inline with enum above - Midgame, Endgame
+};*/
+const struct Weight { int mg, eg; } Weights[] = { //Test weights
+	{ 289, 344 }, { 0, 0 }, { 50, 0 }, { 318, 0 }
 };
 
-
+//for applying non phase independant scoring.
+//Weights are used to modify values in a particular section 
+//compared to those of other sections in overall scoring
 void applyWeights(int* score, const Weight & w, int val) {
 	
 	score[mg] += val * w.mg / 256;
 	score[eg] += val * w.eg / 256;
+}
+//used when there are sepperate values from mid and end game.
+void applyWeights(int* score, const Weight & w, int val, int val1) {
+
+	score[mg] += val  * w.mg / 256;
+	score[eg] += val1 * w.eg / 256;
 }
 
 int Evaluate::evaluate(const BitBoards & boards, bool isWhite)
@@ -523,7 +534,6 @@ int Evaluate::evaluate(const BitBoards & boards, bool isWhite)
 
 	}
 	
-
 	EvalInfo ev;
 	int result = 0, score[STAGE] = { 0 };
 
@@ -533,7 +543,7 @@ int Evaluate::evaluate(const BitBoards & boards, bool isWhite)
 	//evaluate all pieces, except for most pawn info and king. Start at knight once we have
 	//a sepperate class for pawn info, holding a more relevent pawn TT than we have now
 	//right now we're passing it a mobility area that's calcuated mostly inside, later 
-	//we'll have to add exclusion of pawns outside the function.
+	//we'll have to add exclusion of pawns && pawn attack squares outside the function.
 
 	U64 mobilityArea[COLOR]; //remove our king+our pawns from our color mobility areas
 	mobilityArea[WHITE] = boards.pieces(WHITE, PAWN, KING); //remove protected by pawns in evaluate pices function until we have 
@@ -591,8 +601,12 @@ int Evaluate::evaluate(const BitBoards & boards, bool isWhite)
 	score[mg] += ev.gameScore[WHITE][mg] - ev.gameScore[BLACK][mg];
 	score[eg] += ev.gameScore[WHITE][eg] - ev.gameScore[BLACK][eg];
 
-	score[mg] += (ev.mobility[WHITE][mg] - ev.mobility[BLACK][mg]);
-	score[eg] += (ev.mobility[WHITE][eg] - ev.mobility[BLACK][eg]);
+	//score[mg] += (ev.mobility[WHITE][mg] - ev.mobility[BLACK][mg]);
+	//score[eg] += (ev.mobility[WHITE][eg] - ev.mobility[BLACK][eg]);
+	int m1 = ev.mobility[WHITE][mg] - ev.mobility[BLACK][mg];
+	int m2 = ev.mobility[WHITE][eg] - ev.mobility[BLACK][eg];
+
+	applyWeights(score, Weights[Mobility], m1, m2);//TEST
 
 	if (gamePhase > 24) gamePhase = 24;
 	int mgWeight = gamePhase;
@@ -602,17 +616,6 @@ int Evaluate::evaluate(const BitBoards & boards, bool isWhite)
 
 	result += (ev.blockages[WHITE] - ev.blockages[BLACK]);
 	result += (ev.adjustMaterial[WHITE] - ev.adjustMaterial[BLACK]);
-
-	//if (ev.kingAttackers[WHITE] < 2 || boards.byColorPiecesBB[WHITE][QUEEN] == 0LL) ev.kingAttWeights[WHITE] = 0;
-	//if (ev.kingAttackers[BLACK] < 2 || boards.byColorPiecesBB[BLACK][QUEEN] == 0LL) ev.kingAttWeights[BLACK] = 0;
-
-	//if (!(ev.kingAttackers[WHITE] < 2 || boards.byColorPiecesBB[WHITE][QUEEN] == 0LL)) result += evaluateKing<WHITE>(boards, ev, score[mg]);
-	//if (!(ev.kingAttackers[BLACK] < 2 || boards.byColorPiecesBB[BLACK][QUEEN] == 0LL)) result -= evaluateKing<BLACK>(boards, ev, score[mg]);
-
-	//result += evaluateKing<WHITE>(boards, ev, score[mg]) - evaluateKing<BLACK>(boards, ev, score[mg]);
-
-	//result += SafetyTable[ev.kingAttWeights[WHITE]];
-	//result -= SafetyTable[ev.kingAttWeights[BLACK]];
 
 	//low material adjustment scoring here
 	int strong = result > 0 ? WHITE : BLACK;
