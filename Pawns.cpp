@@ -1,12 +1,24 @@
 #include "Pawns.h"
 #include "bitboards.h"
 #include "externs.h"
+#include "psqTables.h"
+
+//for flipping squares if black, place this somewhere else as an extern
+static const int bSQ[64] = {
+	56,57,58,59,60,61,62,63,
+	48,49,50,51,52,53,54,55,
+	40,41,42,43,44,45,46,47,
+	32,33,34,35,36,37,38,39,
+	24,25,26,27,28,29,30,31,
+	16,17,18,19,20,21,22,23,
+	8, 9, 10,11,12,13,14,15,
+	0, 1,  2, 3, 4, 5, 6, 7
+};
 
 static const U64 RankMasks8[8] = //from rank 1 - 8 
 {
 	0xFF00000000000000L, 0xFF000000000000L,  0xFF0000000000L, 0xFF00000000L, 0xFF000000L, 0xFF0000L, 0xFF00L, 0xFFL,
 };
-
 
 static const U64 FileMasks8[8] =/*from fileA to FileH*/
 {
@@ -76,12 +88,12 @@ const Scores Backward[2][8] = {
 
 
 // Connected pawn bonus by file and rank from blacks pov
-//when looking as if it were a chess board. Whites pov by index though.
+// when looking as if it were a chess board. Whites pov by index
 const Scores Connected[8][8] = {
-	{ S(0,0),   S(1,1),   S(1,1),   S(1,1),   S(1,1),   S(1,1),   S(1,1),   S(0,0)   },
-	{ S(0,0),   S(1,1),   S(1,1),   S(1,1),   S(1,1),   S(1,1),   S(1,1),   S(0,0)   },
-	{ S(0,0),   S(2,2),   S(2,2),   S(3,3),   S(3,3),   S(2,2),   S(2,2),   S(0,0)   },
-	{ S(3,3),   S(5,5),   S(5,5),   S(6,6),   S(6,6),   S(5,5),   S(5,5),   S(3,3)   },
+	{ S(0 ,0 ), S(1 , 1), S(1 , 1), S(1 , 1), S(1 , 1), S(1 , 1), S(1 , 1), S(0 , 0) },
+	{ S(0 ,0 ), S(1 , 1), S(1 , 1), S(1 , 1), S(1 , 1), S(1 , 1), S(1 , 1), S(0 , 0) },
+	{ S(0 ,0 ), S(2 , 2), S(2 , 2), S(3 , 3), S(3 , 3), S(2 , 2), S(2 , 2), S(0 , 0) },
+	{ S(3 ,3 ), S(5 , 5), S(5 , 5), S(6 , 6), S(6 , 6), S(5 , 5), S(5 , 5), S(3 , 3) },
 	{ S(11,11), S(14,14), S(14,14), S(15,15), S(15,15), S(14,14), S(14,14), S(11,11) },
 	{ S(27,27), S(30,30), S(30,30), S(31,31), S(31,31), S(30,30), S(30,30), S(27,27) },
 	{ S(53,53), S(57,57), S(57,57), S(59,59), S(59,59), S(57,57), S(57,57), S(53,53) }
@@ -107,7 +119,7 @@ const Scores UnsupportedPawnPenalty = S(10, 5);
 
 //global pawn hash table
 Pawns::Table pawnsTable;
-#include <iostream>
+
 namespace Pawns {
 
 template<int color>
@@ -145,10 +157,15 @@ Scores evalPawns(const BitBoards & boards, PawnsEntry *e) {
 	//location of pawn, 
 	int square;
 
+
 	//draw from the list of our color pawns until there are no more to evaluate
 	while ((square = *list++) != SQ_NONE) {
 
 		int f = file_of(square);
+
+		//piece square table index change if black
+		int psq = color == WHITE ? square : bSQ[square];
+		e->pieceSqTabScores[color] += make_scores(pieceSqTab[PAWN][mg][psq], pieceSqTab[PAWN][eg][psq]);
 
 		//file of this pawn cannot be semi open
 		e->semiOpenFiles[color] &= ~(1LL << f);
@@ -194,7 +211,7 @@ Scores evalPawns(const BitBoards & boards, PawnsEntry *e) {
 			backward = (bb | shift_bb<Up>(bb)) & enemyPawns;
 		}
 		
-		//if (!(opposed | passed | (pawn_attack_span(color, square) & enemyPawns)) continue; //need to TESTTESTTEST
+		if (!(opposed | passed | (pawn_attack_span(color, square) & enemyPawns))) continue; //need to TESTTESTTEST
 
 		// A not-passed pawn is a candidate to become passed, if it is free to
 		// advance and if the number of friendly pawns beside or behind this
@@ -250,17 +267,6 @@ Scores evalPawns(const BitBoards & boards, PawnsEntry *e) {
 	// In endgame it's better to have pawns on both wings. So give a bonus according
 	// to file distance between left and right outermost pawns.
 	val += PawnsFileSpan * e->pawnSpan[color];
-
-	const int bonusByFile[] = { 1, 3, 3, 4, 4, 3, 3, 1 };
-
-	for (int r = 0; r < 7; ++r)
-		for (int f = 0; f <= 7; ++f)
-		{
-			int bonus = (r * (r - 1) * (r - 2) + bonusByFile[f] * (r / 2 + 1))/2.3;
-			Connected[f][r] = make_scores(bonus, bonus);
-			std::cout <<"S( " << bonus << "," << bonus << " )" << ", ";
-			if (f == 7) std::cout << std::endl;
-		}
 	
 	return val;
 }

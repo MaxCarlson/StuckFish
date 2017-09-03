@@ -149,6 +149,8 @@ struct EvalInfo {
 	int blockages[COLOR] = { 0 };
 
 	int adjustMaterial[COLOR] = { 0 };
+
+	Pawns::PawnsEntry * pe;
 };
 
 void Evaluate::generateKingZones(const BitBoards & boards, EvalInfo & ev)
@@ -213,10 +215,10 @@ void evaluatePieces(const BitBoards & boards, EvalInfo & ev, U64 * mobilityArea)
 		ev.psqScores[color][mg] += pieceSqTab[pT][mg][adjSq];
 		ev.psqScores[color][eg] += pieceSqTab[pT][eg][adjSq];		
 
-		if (pT == PAWN) { //remove later once we have sepperate pawn eval class
-			ev.attackedBy[color][0] |= ev.attackedBy[color][PAWN] |= boards.psuedoAttacks(PAWN, color, square);
-			continue;
-		}
+		//if (pT == PAWN) { //remove later once we have sepperate pawn eval class
+		//	ev.attackedBy[color][0] |= ev.attackedBy[color][PAWN] |= boards.psuedoAttacks(PAWN, color, square);
+		//	continue;
+		//}
 		
 		//find attack squares, including xray bishop and rook attacks blocked by queens / rooks/queens
 		U64 bb = pT == BISHOP ? slider_attacks.BishopAttacks(boards.FullTiles ^ boards.pieces(color, QUEEN), square)
@@ -495,7 +497,7 @@ void evalThreats(const BitBoards & boards, EvalInfo & ev) {
 enum {Mobility,  PawnStructure,   Center, KingSafety};
 
 const struct Weight { int mg, eg; } Weights[] = { 
-	{ 289, 344 }, { 0, 0 }, { 50, 0 }, { 318, 0 }
+	{ 289, 344 }, { 233, 201 }, { 50, 0 }, { 318, 0 }
 };
 /*
 const struct Weight { int mg, eg; } Weights[] = { //Test Not Good
@@ -543,8 +545,18 @@ int Evaluate::evaluate(const BitBoards & boards, bool isWhite)
 	generateKingZones(boards, ev);
 
 	///TEST PAWN CLASS
-	Pawns::probe(boards, pawnsTable);
-	
+	ev.pe = Pawns::probe(boards, pawnsTable); //NEED TO CONVERT ALL SCORING IN THIS FILE TO SCORES STRUCT
+
+	score[mg] = ev.pe->score[mg];
+	score[eg] = ev.pe->score[eg];
+
+	ev.attackedBy[WHITE][0] |= ev.attackedBy[WHITE][PAWN] = ev.pe->pawnAttacks[WHITE];
+	ev.attackedBy[BLACK][0] |= ev.attackedBy[BLACK][PAWN] = ev.pe->pawnAttacks[BLACK];
+
+	ev.psqScores[WHITE][mg] += ev.pe->pieceSqTabScores[WHITE].mg;
+	ev.psqScores[BLACK][mg] += ev.pe->pieceSqTabScores[BLACK].mg;
+	ev.psqScores[WHITE][eg] += ev.pe->pieceSqTabScores[WHITE].eg;
+	ev.psqScores[BLACK][eg] += ev.pe->pieceSqTabScores[BLACK].eg;
 
 	//evaluate all pieces, except for most pawn info and king. Start at knight once we have
 	//a sepperate class for pawn info, holding a more relevent pawn TT than we have now
@@ -555,14 +567,14 @@ int Evaluate::evaluate(const BitBoards & boards, bool isWhite)
 	mobilityArea[WHITE] = boards.pieces(WHITE, PAWN, KING); //remove protected by pawns in evaluate pices function until we have 
 	mobilityArea[BLACK] = boards.pieces(BLACK, PAWN, KING); //a sepperate pawn eval and advanced pawn hash table
 															//mobilityArea[color] = ~(ev.attackedBy[them][PAWN] | mobilityArea[color]);
-	evaluatePieces<PAWN, WHITE>(boards, ev, mobilityArea);
+	evaluatePieces<KNIGHT, WHITE>(boards, ev, mobilityArea);
 
 	//can only evaluate threats after piece attack boards have been generated
 	evalThreats<WHITE>(boards, ev);
 	evalThreats<BLACK>(boards, ev);
 
-	score[mg] = boards.bInfo.sideMaterial[WHITE] + ev.psqScores[WHITE][mg] - boards.bInfo.sideMaterial[BLACK] - ev.psqScores[BLACK][mg];
-	score[eg] = boards.bInfo.sideMaterial[WHITE] + ev.psqScores[WHITE][eg] - boards.bInfo.sideMaterial[BLACK] - ev.psqScores[BLACK][eg];
+	score[mg] += boards.bInfo.sideMaterial[WHITE] + ev.psqScores[WHITE][mg] - boards.bInfo.sideMaterial[BLACK] - ev.psqScores[BLACK][mg];
+	score[eg] += boards.bInfo.sideMaterial[WHITE] + ev.psqScores[WHITE][eg] - boards.bInfo.sideMaterial[BLACK] - ev.psqScores[BLACK][eg];
 
 	int ctrl =  centerControl<WHITE>(boards, ev) - centerControl<BLACK>(boards, ev);
 	applyWeights(score, Weights[Center], ctrl);
@@ -597,7 +609,7 @@ int Evaluate::evaluate(const BitBoards & boards, bool isWhite)
 
 	//probe pawn hash table for a hit, if we don't get a hit
 	//proceed with pawnEval
-	result += getPawnScore(boards, ev);
+	//result += getPawnScore(boards, ev);
 
 	//evaluate both kings. Function returns a score taken from the king safety array
 	int ksf = evaluateKing<WHITE>(boards, ev, score[mg]) - evaluateKing<BLACK>(boards, ev, score[mg]);

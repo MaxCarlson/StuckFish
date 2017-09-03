@@ -2,8 +2,9 @@
 
 //tables used taken from CPW engine, 
 //tables are flipped along a horizontal middle line for black
-///*							
-static const int pieceSqTab[7][2][64]{ //indexed by piece type, mid or end game, square
+///*
+//indexed by piece type, mid or end game, square //convert to Scores Struct!!!!!!!!!!!!!
+static const int pieceSqTab[7][2][64]{ 
 	{ {}, {} }, //no piece
 	{{
 		0,   0,   0,   0,   0,   0,   0,   0, //pawns
