@@ -21,6 +21,66 @@
 #  define FORCE_INLINE  inline
 #endif
 
+//holds mid and end game values
+struct Scores { int mg, eg; };
+
+inline Scores make_scores(int m, int e) {
+	Scores x;
+	x.mg = m; x.eg = e;
+	return x;
+}
+
+//overloaded Scores operators
+inline Scores operator-(Scores s1, const Scores s2) {
+	s1.mg -= s2.mg;
+	s1.eg -= s2.eg;
+	return s1;
+};
+
+inline void operator-=(Scores& s1, const Scores s2) {
+	s1.mg -= s2.mg;
+	s1.eg -= s2.eg;
+};
+
+inline Scores operator+(Scores s1, const Scores s2) {
+	s1.mg += s2.mg;
+	s1.eg += s2.eg;
+	return s1;
+};
+
+inline void operator+=(Scores& s1, const Scores s2) {
+	s1.mg += s2.mg;
+	s1.eg += s2.eg;
+};
+
+inline Scores operator*(Scores s1, const Scores s2) {
+	s1.mg *= s2.mg;
+	s1.eg *= s2.eg;
+	return s1;
+}
+
+inline Scores operator*(Scores s1, const int s2) {
+	s1.mg *= s2;
+	s1.eg *= s2;
+	return s1;
+}
+
+inline void operator*=(Scores& s1, const Scores s2) {
+	s1.mg *= s2.mg;
+	s1.eg *= s2.eg;
+}
+
+inline Scores operator/(Scores s1, const Scores s2) {
+	s1.mg /= s2.mg;
+	s1.eg /= s2.eg;
+	return s1;
+}
+
+inline void operator/=(Scores& s1, const Scores s2) {
+	s1.mg /= s2.mg;
+	s1.eg /= s2.eg;
+}
+
 enum esqare {
     A8=0,  B8, C8, D8, E8, F8, G8, H8,
     A7=8,  B7, C7, D7, E7, F7, G7, H7,
@@ -130,6 +190,7 @@ private:
 
 //CACHE_LINE_ALIGNMENT
 
+
 enum Directions {
 	N,
 	NE,
@@ -175,16 +236,23 @@ inline int bit_count(unsigned long long b) {
 	return _mm_popcnt_u64(b);
 }
 
+//is there more than one bit set on the board?
+inline bool more_than_one(unsigned long long b) {
+	return b & (b - 1);
+}
+
 //returns file of square
 inline int file_of(int sq) {
 	return sq & 7;
 }
 
+//returns the correct rank of the square for our bitboard layout.
+//with the XOR 7 it returns the reverse correct
 inline int rank_of(int sq) {
-	return (sq >> 3); //possibly reverse symbol needed?
+	return (sq >> 3) ^ 7; 
 }
 //returns a relative rank from an input rank
-inline int relative_rank(int color, int rank) {
+inline int relative_rank(int color, int rank) { //POSIBLY NEED TO RETURN U64>?>?>?>?>?
 	return (rank ^ (color * 7));
 }
 //returns a relative rank from a square location input

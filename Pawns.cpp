@@ -21,40 +21,8 @@ static const U64 adjacentFiles[8] = {
 	0x2828282828282828L, 0x5050505050505050L, 0xa0a0a0a0a0a0a0a0L, 0x4040404040404040L
 };
 
-//holds mid and end game values
-struct Scores { int mg, eg; };
-
-const U64 DarkSquares = 0xAA55AA55AA55AA55ULL;
-
-inline Scores operator-(Scores s1, const Scores s2) { 
-	s1.mg -= s2.mg;
-	s1.eg -= s2.eg;
-	return s1;
-};
-
-inline Scores operator-=(Scores s1, const Scores s2) {
-	s1.mg -= s2.mg;
-	s1.eg -= s2.eg;
-	return s1;
-};
-
-inline Scores operator+(Scores s1, const Scores s2) {
-	s1.mg += s2.mg;
-	s1.eg += s2.eg;
-	return s1;
-};
-
-inline Scores operator+=(Scores& s1, const Scores s2) {
-	s1.mg += s2.mg;
-	s1.eg += s2.eg;
-	return s1;
-};
-
-inline Scores make_scores(int m, int e) {
-	Scores x;
-	x.mg = m; x.eg = e;
-	return x;
-}
+const U64 DarkSquares = 0x55aa55aa55aa55aaULL;
+const U64 LightSquares = 0xAA55AA55AA55AA55ULL; 
 
 //masks used for pawn eval, possibly other things too
 U64 forwardBB[COLOR][64]; //line in front of square relative side to move
@@ -107,8 +75,17 @@ const Scores Backward[2][8] = {
 };
 
 
-// Connected pawn bonus by file and rank (initialized by formula)
-//Scores Connected[FILE_NB][RANK_NB]; !! NEED TO ADD TO SCORE CONNECTED
+// Connected pawn bonus by file and rank from blacks pov
+//when looking as if it were a chess board. Whites pov by index though.
+const Scores Connected[8][8] = {
+	{ S(0,0),   S(1,1),   S(1,1),   S(1,1),   S(1,1),   S(1,1),   S(1,1),   S(0,0)   },
+	{ S(0,0),   S(1,1),   S(1,1),   S(1,1),   S(1,1),   S(1,1),   S(1,1),   S(0,0)   },
+	{ S(0,0),   S(2,2),   S(2,2),   S(3,3),   S(3,3),   S(2,2),   S(2,2),   S(0,0)   },
+	{ S(3,3),   S(5,5),   S(5,5),   S(6,6),   S(6,6),   S(5,5),   S(5,5),   S(3,3)   },
+	{ S(11,11), S(14,14), S(14,14), S(15,15), S(15,15), S(14,14), S(14,14), S(11,11) },
+	{ S(27,27), S(30,30), S(30,30), S(31,31), S(31,31), S(30,30), S(30,30), S(27,27) },
+	{ S(53,53), S(57,57), S(57,57), S(59,59), S(59,59), S(57,57), S(57,57), S(53,53) }
+};
 
 // Candidate passed pawn bonus by rank
 const Scores CandidatePassed[8] = {
@@ -130,7 +107,7 @@ const Scores UnsupportedPawnPenalty = S(10, 5);
 
 //global pawn hash table
 Pawns::Table pawnsTable;
-
+#include <iostream>
 namespace Pawns {
 
 template<int color>
@@ -158,19 +135,17 @@ Scores evalPawns(const BitBoards & boards, PawnsEntry *e) {
 
 	bool passed, isolated, opposed, connected, backward, candidate, unsupported, lever;
 
-	e->passedPawns[color]			= e->candidatePawns[color] = 0;
+	e->passedPawns[color]			= e->candidatePawns[color] = 0LL;
 	e->kingSquares[color]			= SQ_NONE;
 	e->semiOpenFiles[color]			= 0xFF;
 	e->pawnAttacks[color]			= shift_bb<Right>(ourPawns) | shift_bb<Left>(ourPawns);
 	e->pawnsOnSquares[color][BLACK] = bit_count(ourPawns & DarkSquares);
 	e->pawnsOnSquares[color][WHITE] = boards.pieceCount[color][PAWN] - e->pawnsOnSquares[color][BLACK];
 
+	//location of pawn, 
 	int square;
-	//used for indexing files without if in loop
-	int sqfx = color == WHITE ? 1 : -2;
-	//used for increasing square count bu one relative stm
-	int deltaN = color == WHITE ? 8 : -8;
 
+	//draw from the list of our color pawns until there are no more to evaluate
 	while ((square = *list++) != SQ_NONE) {
 
 		int f = file_of(square);
@@ -178,11 +153,11 @@ Scores evalPawns(const BitBoards & boards, PawnsEntry *e) {
 		//file of this pawn cannot be semi open
 		e->semiOpenFiles[color] &= ~(1LL << f);
 
-		//previous rank
-		U64 pr = RankMasks8[square / 8 + sqfx]; //!@!@@@!@@!@!@!@!!@!@!@!@!!@@!@ NEED to test and make sure this grabs the right rank, CTRL F to find others if it doesn't
+		//previous rank, we use a reverse pawn push from our color to get previous
+		U64 pr = RankMasks8[rank_of(square + pawn_push(them))];
 
 		//previous rank plus current rank
-		bb = pr | RankMasks8[square / 8 - 1];
+		bb = pr | RankMasks8[rank_of(square)];
 
 		//flag pawn as passed, isolated, doauble,
 		//unsupported or connected
@@ -194,7 +169,7 @@ Scores evalPawns(const BitBoards & boards, PawnsEntry *e) {
 		passed      = !(enemyPawns & passed_pawn_mask(color, square));
 		lever       =  enemyPawns  & pawnAttacksBB[square];
 
-		
+
 		// If the pawn is passed, isolated, or connected it cannot be
 		// backward. If there are friendly pawns behind on adjacent files
 		// or if it can capture an enemy pawn it cannot be backward either.
@@ -210,13 +185,13 @@ Scores evalPawns(const BitBoards & boards, PawnsEntry *e) {
 			// backward by looking in the forward direction on the adjacent
 			// files, and picking the closest pawn there.
 
-			bb = pawn_attack_span(color, square) & (ourPawns | enemyPawns);
-			bb = pawn_attack_span(color, square) & RankMasks8[backmost_sq(color, bb) / 8 + sqfx];
+			bb = pawn_attack_span(color, square) & (ourPawns | enemyPawns); //Pretty sure everything here works pefectly, Haven't looked at black but rank tested it 
 
+			bb = pawn_attack_span(color, square) & RankMasks8[rank_of(backmost_sq(color, bb))];
+			
 			// If we have an enemy pawn in the same or next rank, the pawn is
 			// backward because it cannot advance without being captured.
 			backward = (bb | shift_bb<Up>(bb)) & enemyPawns;
-
 		}
 		
 		//if (!(opposed | passed | (pawn_attack_span(color, square) & enemyPawns)) continue; //need to TESTTESTTEST
@@ -227,14 +202,20 @@ Scores evalPawns(const BitBoards & boards, PawnsEntry *e) {
 		// enemy pawns in the forward direction on the adjacent files.
 			
 		candidate = !(opposed | passed | backward | isolated)
-				 && (bb = pawn_attack_span(them, square + deltaN) & ourPawns) != 0 //need to test the & to make sure it works
+				 && (bb = pawn_attack_span(them, square + pawn_push(color)) & ourPawns) != 0 //need to test the & to make sure it works
 				 && bit_count(bb) >= bit_count(pawn_attack_span(color, square) & enemyPawns);
 
-		if (passed && !doubled) 
-			e->passedPawns[color] |= square; 
+		// Passed pawns will be properly scored in evaluation because we need
+		// full attack info to evaluate passed pawns. Only the frontmost passed
+		// pawn on each file is considered a true passed pawn.
+
+
+		if (passed && !doubled) {
+			e->passedPawns[color] |= boards.squareBB[square];
+		}
 
 		if (isolated)
-			val -= Isolated[opposed][f]; //NEED TO TEST IF OPERATOR OVERLOADS WORK OR IF THEY NEED CHAGNING
+			val -= Isolated[opposed][f]; 
 
 		if (unsupported && !isolated)
 			val -= UnsupportedPawnPenalty;
@@ -260,14 +241,26 @@ Scores evalPawns(const BitBoards & boards, PawnsEntry *e) {
 		}
 		
 	}
+	
+	bb = e->semiOpenFiles[color] ^ 0xFF; 
 
-	bb = e->semiOpenFiles[color] ^ 0xFF; //TEST?????????????????????????????????????????????????
-
-	e->pawnSpan[color] = bb ? (msb(bb) - lsb(bb)) : 0; //ALSO TESTTTTTTTTTTTTTTTTTTTT
+	//length across board that pawns span from left to right
+	e->pawnSpan[color] = bb ? (msb(bb) - lsb(bb)) : 0; 
 
 	// In endgame it's better to have pawns on both wings. So give a bonus according
 	// to file distance between left and right outermost pawns.
-	//val += PawnsFileSpan * e->pawnSpan[color];
+	val += PawnsFileSpan * e->pawnSpan[color];
+
+	const int bonusByFile[] = { 1, 3, 3, 4, 4, 3, 3, 1 };
+
+	for (int r = 0; r < 7; ++r)
+		for (int f = 0; f <= 7; ++f)
+		{
+			int bonus = (r * (r - 1) * (r - 2) + bonusByFile[f] * (r / 2 + 1))/2.3;
+			Connected[f][r] = make_scores(bonus, bonus);
+			std::cout <<"S( " << bonus << "," << bonus << " )" << ", ";
+			if (f == 7) std::cout << std::endl;
+		}
 	
 	return val;
 }
