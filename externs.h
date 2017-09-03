@@ -94,6 +94,10 @@ extern const U64 FileHBB;
 extern const U64 FILE_AB;
 extern const U64 FILE_GH;
 
+//holds a array of lines "forward" relative from side to move
+//in front of a particualar square
+extern U64 forwardBB[COLOR][64];
+
 //UCI input varibles for "go"
 extern int wtime; //time left on whites clock
 extern int btime; //black clock

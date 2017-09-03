@@ -130,6 +130,26 @@ private:
 
 //CACHE_LINE_ALIGNMENT
 
+enum Directions {
+	N,
+	NE,
+	NW,
+	W,
+	S,
+	SW,
+	SE,
+	E
+};
+
+//shifts a bitboard in any of the enum directions above. Must use enum values in template
+template<int sh>
+U64 shift_bb(U64 b) { //probably have to reverse signs on this one!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	return  sh == N ? b >> 8 : sh == S ? b << 8
+		: sh == NE ? (b & ~FileHBB) >> 9 : sh == SE ? (b & ~FileHBB) << 7
+		: sh == NW ? (b & ~FileABB) >> 7 : sh == SW ? (b & ~FileABB) << 9
+		: 0LL;
+}
+
 //return least significant bit location
 inline int lsb(unsigned long long b) {
 	unsigned long idx;
@@ -153,6 +173,10 @@ inline int pop_lsb(unsigned long long* b) {
 //counts number of non zero bits in a bitboard
 inline int bit_count(unsigned long long b) {
 	return _mm_popcnt_u64(b);
+}
+
+inline int file_of(int sq) {
+	return sq & 7;
 }
 
 //these functions return appropriate mate values for the current ply

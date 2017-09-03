@@ -1,5 +1,25 @@
 #include "Pawns.h"
 #include "bitboards.h"
+#include "externs.h"
+
+static const U64 RankMasks8[8] = //from rank 1 - 8 
+{
+	0xFF00000000000000L, 0xFF000000000000L,  0xFF0000000000L, 0xFF00000000L, 0xFF000000L, 0xFF0000L, 0xFF00L, 0xFFL,
+};
+
+
+static const U64 FileMasks8[8] =/*from fileA to FileH*/
+{
+	0x101010101010101L, 0x202020202020202L, 0x404040404040404L, 0x808080808080808L,
+	0x1010101010101010L, 0x2020202020202020L, 0x4040404040404040L, 0x8080808080808080L
+};
+
+//hold all files adjacent to the index input,
+//0 == file A adjacent file (fileB)
+static const U64 adjacentFiles[8] = {
+	0x202020202020202L, 0x505050505050505L , 0xa0a0a0a0a0a0a0aL, 0x1414141414141414L, 
+	0x2828282828282828L, 0x5050505050505050L, 0xa0a0a0a0a0a0a0a0L, 0x4040404040404040L
+};
 
 //holds mid and end game values
 struct Scores { int mg, eg; };
@@ -24,26 +44,6 @@ inline Scores operator+=(Scores& s1, const Scores s2) {
 	return s1;
 };
 
-enum Directions{
-	N,
-	NE,
-	NW,
-	W,
-	S,
-	SW,
-	SE,	
-	E	
-};
-
-//shifts a bitboard in any of the enum directions above. Must use enum values in template
-template<int sh> 
-U64 shift_bb(const U64& b) {
-	return  sh == N ? b << 8 : sh == S ? b >> 8
-		: sh == NE ? (b & ~FileHBB) << 9 : sh == SE ? (b & ~FileHBB) >> 7
-		: sh == NW ? (b & ~FileABB) << 7 : sh == SW ? (b & ~FileABB) >> 9
-		: 0LL;
-}
-
 template<int color>
 Scores evalPawns(const BitBoards & boards, Pawns *e) {
 	
@@ -57,10 +57,12 @@ Scores evalPawns(const BitBoards & boards, Pawns *e) {
 	//grab piece list of our pawns so we can iterate through and score them
 	const int* list = boards.pieceLoc[color][PAWN];
 
+	//initialize values
 	U64 ourPawns = boards.pieces(color, PAWN);
 	U64 enemyPawns = boards.pieces(them, PAWN);
 
-	//initialize values
+	bool passed, isolated, opposed, connected, backward, candidate, unsupported, lever;
+
 	e->passedPawns[color]			= e->candidatePawns[color] = 0;
 	e->kingSquares[color]			= SQ_NONE;
 	e->semiOpenFiles[color]			= 0xFF;
@@ -69,11 +71,28 @@ Scores evalPawns(const BitBoards & boards, Pawns *e) {
 	e->pawnsOnSquares[color][WHITE] = boards.pieceCount[color][PAWN] - e->pawnsOnSquares[color][BLACK];
 
 	int square;
+	//used for indexing files without if in loop
+	int sqfx = color == WHITE ? 1 : -2;
+
 	while ((square = *list++) != SQ_NONE) {
 
+		int f = file_of(square);
 
+		//file of this pawn cannot be semi open
+		e->semiOpenFiles[color] &= ~(1LL << f);
 
+		//previous rank
+		U64 pr = RankMasks8[square / 8 + sqfx];
 
+		//previous rank plus current rank
+		U64 prc = pr | RankMasks8[square / 8 - 1];
+
+		//flag pawn as passed, isolated, doauble,
+		//unsupported or connected
+		connected   = ourPawns & adjacentFiles[f] & prc;
+		unsupported = !(ourPawns & adjacentFiles[f] & pr);
+		isolated    = !(ourPawns & adjacentFiles[f]);
+		doubled = ourPawns; // & forward bb
 	}
 
 	

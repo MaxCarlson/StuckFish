@@ -21,6 +21,8 @@ std::string boardArr[8][8] = {
 //used for flipping rank to whites relative rank
 const int flipRank[8] = { 8, 7, 6, 5, 4, 3 , 2, 1 };
 
+U64 forwardBB[COLOR][64];
+
 //zero index contains white pawn attacks, 1 black pawns
  //move this somewhere else, preferably not an extern. Maybe into bb object?
 
@@ -45,8 +47,7 @@ void BitBoards::initBoards()
 			bp &= ~FileABB;
 		}
 		PseudoAttacks[PAWN - 1][i] = wp;
-		PseudoAttacks[PAWN][i] = bp;
-		
+		PseudoAttacks[PAWN][i] = bp;		
 
 		if (i > 18) {
 			moves = KNIGHT_SPAN << (i - 18);
@@ -82,6 +83,23 @@ void BitBoards::initBoards()
 		}
 
 		PseudoAttacks[KING][i] = moves;
+	}
+
+	//initialize the forwardBB variable
+	//it holds a computer bitboard relative to side to move
+	//lines forward from a particual square
+	for (int color = 0; color < 2; ++color) {
+		int shift = color == WHITE ? N : S;
+
+		for (int sq = 0; sq < 64; ++sq) {
+
+			forwardBB[color][sq] = squareBB[sq];
+
+			for (int i = 0; i < 8; ++i) {
+				forwardBB[color][sq] |= shift_bb<shift>(forwardBB[color][sq]);
+			}
+			 
+		}
 	}
 }
 

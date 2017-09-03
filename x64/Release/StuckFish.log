@@ -1,6 +1,18 @@
-﻿  Pawns.cpp
-Pawns.cpp(64): error C2065: 'Us': undeclared identifier
-  Pawns.cpp(84): note: see reference to function template instantiation 'Scores evalPawns<WHITE>(const BitBoards &,Pawns *)' being compiled
-Pawns.cpp(65): error C2065: 'Us': undeclared identifier
-Pawns.cpp(66): error C2065: 'Us': undeclared identifier
-Pawns.cpp(67): error C2065: 'Us': undeclared identifier
+﻿  ai_logic.cpp
+  bitboards.cpp
+bitboards.cpp(99): error C2672: 'shift_bb': no matching overloaded function found
+bitboards.cpp(99): error C2971: 'shift_bb': template parameter 'sh': 'shift': a variable with non-static storage duration cannot be used as a non-type argument
+  c:\users\c-60\desktop\cppprograms\stuckfish\defines.h(146): note: see declaration of 'shift_bb'
+  bitboards.cpp(92): note: see declaration of 'shift'
+  Evaluate.cpp
+  evaluatebb.cpp
+  main.cpp
+  movegen.cpp
+  Pawns.cpp
+Pawns.cpp(95): error C2065: 'doubled': undeclared identifier
+  Pawns.cpp(114): note: see reference to function template instantiation 'Scores evalPawns<WHITE>(const BitBoards &,Pawns *)' being compiled
+  TimeManager.cpp
+  TranspositionT.cpp
+  UCI.cpp
+  zobristh.cpp
+  Generating Code...
