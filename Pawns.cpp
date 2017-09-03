@@ -32,6 +32,12 @@ inline Scores operator-(Scores s1, const Scores s2) {
 	return s1;
 };
 
+inline Scores operator-=(Scores s1, const Scores s2) {
+	s1.mg -= s2.mg;
+	s1.eg -= s2.eg;
+	return s1;
+};
+
 inline Scores operator+(Scores s1, const Scores s2) {
 	s1.mg += s2.mg;
 	s1.eg += s2.eg;
@@ -141,6 +147,7 @@ Scores evalPawns(const BitBoards & boards, Pawns *e) {
 	U64 ourPawns = boards.pieces(color, PAWN);
 	U64 enemyPawns = boards.pieces(them, PAWN);
 	U64 doubled;
+	U64 bb;
 
 	//hold a pointer to an array of pawn attacks for our color per square
 	const U64* pawnAttacksBB = boards.PseudoAttacks[PAWN];
@@ -171,7 +178,7 @@ Scores evalPawns(const BitBoards & boards, Pawns *e) {
 		U64 pr = RankMasks8[square / 8 + sqfx]; //!@!@@@!@@!@!@!@!!@!@!@!@!!@@!@ NEED to test and make sure this grabs the right rank, CTRL F to find others if it doesn't
 
 		//previous rank plus current rank
-		U64 bb = pr | RankMasks8[square / 8 - 1];
+		bb = pr | RankMasks8[square / 8 - 1];
 
 		//flag pawn as passed, isolated, doauble,
 		//unsupported or connected
@@ -225,8 +232,38 @@ Scores evalPawns(const BitBoards & boards, Pawns *e) {
 		if (isolated)
 			val -= Isolated[opposed][f]; //NEED TO TEST IF OPERATOR OVERLOADS WORK OR IF THEY NEED CHAGNING
 
+		if (unsupported && !isolated)
+			val -= UnsupportedPawnPenalty;
+
+		if (doubled)
+			val -= Doubled[(int)opposed][f]; // NEED TO ADD ~~~ / rank_distance(square, lsb(doubled));
+
+		if (backward)
+			val -= Backward[opposed][f];
+
+		//if (connected)
+			//val += Connected[f][relative_rank(color, square)];
+
+		if (lever)
+			val += Lever[boards.relativeRank(square, !color)];
+
+		if (candidate)
+		{
+			val += CandidatePassed[boards.relativeRank(square, !color)];
+
+			if (!doubled)
+				e->candidatePawns[color] |= square;
+		}
+
 	}
 
+	bb = e->semiOpenFiles[color] ^ 0xFF; //TEST?????????????????????????????????????????????????
+
+	e->pawnSpan[color] = bb ? (msb(bb) - lsb(bb)) : 0; //ALSO TESTTTTTTTTTTTTTTTTTTTT
+
+	// In endgame it's better to have pawns on both wings. So give a bonus according
+	// to file distance between left and right outermost pawns.
+	val += PawnsFileSpan * e->pawnSpan[color];
 	
 	return val;
 }

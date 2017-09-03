@@ -1,6 +1,13 @@
 ﻿  Pawns.cpp
+c:\users\c-60\desktop\cppprograms\stuckfish\pawns.cpp(239): error C2676: binary '[': 'const Scores' does not define this operator or a conversion to a type acceptable to the predefined operator
+  c:\users\c-60\desktop\cppprograms\stuckfish\pawns.cpp(283): note: see reference to function template instantiation 'Scores evalPawns<WHITE>(const BitBoards &,Pawns *)' being compiled
+c:\users\c-60\desktop\cppprograms\stuckfish\pawns.cpp(248): error C2662: 'int BitBoards::relativeRank(int,bool)': cannot convert 'this' pointer from 'const BitBoards' to 'BitBoards &'
+  c:\users\c-60\desktop\cppprograms\stuckfish\pawns.cpp(248): note: Conversion loses qualifiers
+c:\users\c-60\desktop\cppprograms\stuckfish\pawns.cpp(252): error C2662: 'int BitBoards::relativeRank(int,bool)': cannot convert 'this' pointer from 'const BitBoards' to 'BitBoards &'
+  c:\users\c-60\desktop\cppprograms\stuckfish\pawns.cpp(252): note: Conversion loses qualifiers
+c:\users\c-60\desktop\cppprograms\stuckfish\pawns.cpp(266): error C2676: binary '*': 'const Scores' does not define this operator or a conversion to a type acceptable to the predefined operator
+c:\users\c-60\desktop\cppprograms\stuckfish\pawns.cpp(239): error C2088: '[': illegal for struct
+c:\users\c-60\desktop\cppprograms\stuckfish\pawns.cpp(266): error C2088: '*': illegal for struct
   Generating Code...
   Skipping... (no relevant changes detected)
   bitboards.cpp
-  StuckFish.vcxproj -> C:\Users\C-60\Desktop\cppPrograms\StuckFish\x64\Debug\StuckFish.exe
-  StuckFish.vcxproj -> C:\Users\C-60\Desktop\cppPrograms\StuckFish\x64\Debug\StuckFish.pdb (Partial PDB)
