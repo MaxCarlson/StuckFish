@@ -221,8 +221,8 @@ enum Directions {
 template<int sh> //does not hold west and east shifts, make another that does?
 inline U64 shift_bb(U64 b) { //is shift correct? test
 	return  sh == N ? b >> 8 : sh == S ? b << 8
-		: sh == NE ? (b & ~FileABB) >> 7 : sh == SE ? (b & ~FileABB) << 9
-		: sh == NW ? (b & ~FileHBB) >> 9 : sh == SW ? (b & ~FileHBB) << 7
+		: sh == NE ? (b & ~FileHBB) >> 7 : sh == SE ? (b & ~FileHBB) << 9
+		: sh == NW ? (b & ~FileABB) >> 9 : sh == SW ? (b & ~FileABB) << 7
 		: 0LL;
 }
 

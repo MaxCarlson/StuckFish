@@ -61,7 +61,7 @@ public:
 	U64 pieces(int color)const;
 	U64 pieces(int color, int pt)const;
 	U64 pieces(int color, int pt, int pt1)const;
-	U64 pieces(U8 p1, U8 p2) const; //changed var's to U8 so we can use function again, can't overload more with two ints
+	U64 piecesByType(int p1, int p2) const; //changed var's to U8 so we can use function again, can't overload more with two ints
 	template<int pt> int count(int color) const;
 	bool empty(int sq) const;
 	int pieceOnSq(int sq) const;
@@ -120,7 +120,7 @@ inline U64 BitBoards::pieces(int color, int pt, int pt1) const{
 }
 
 //returns a U64 of both color piece1 | piece 2
-inline U64 BitBoards::pieces(U8 p1, U8 p2) const
+inline U64 BitBoards::piecesByType(int p1, int p2) const
 {
 	return byPieceType[p1] | byPieceType[p2];
 }

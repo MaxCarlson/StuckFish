@@ -1,3 +1,13 @@
 ﻿  Evaluate.cpp
+  Pawns.cpp
+  TimeManager.cpp
+  TranspositionT.cpp
+  ai_logic.cpp
+  bitboards.cpp
+  evaluatebb.cpp
+  main.cpp
+  movegen.cpp
+  zobristh.cpp
+  Generating Code...
   StuckFish.vcxproj -> C:\Users\C-60\Desktop\cppPrograms\StuckFish\x64\Release\StuckFish.exe
   StuckFish.vcxproj -> C:\Users\C-60\Desktop\cppPrograms\StuckFish\x64\Release\StuckFish.pdb (Full PDB)

@@ -64,6 +64,10 @@ const int ROOK_PAIR = 16;
 //const int kingOnPawn[STAGE] = {0, 30};
 //const int kingOnMPawn[STAGE] = {0, 64};
 
+
+//Scores used for ease of use calcuating and 
+//weighting mid and end game scores at the same time.
+//Idea taken from StockFish.
 #define S(mg, eg) make_scores(mg, eg)
 
 const Scores Hanging = S(9, 7);
@@ -71,14 +75,13 @@ const Scores kingOnPawn = S(0, 30);
 const Scores kingOnMPawn = S(0, 64);
 
 
-
 const Scores pawnThreat[PIECES]{
 	S(0, 0), S(0 , 0), S(24, 32), S(25, 32), S(35, 57), S(40, 65)
 };
 
 const Scores threats[2][PIECES]{
-	{ S(0 , 0), S(2, 8), S(6, 10), S(6, 10), S(12, 20), S(12, 20) },
-	{ S(0,  0), S(4, 8), S(4, 10), S(4, 10), S(4,  10), S(6,  11) }
+	{ S(0 , 0), S(2, 8), S(6, 10), S(6, 10), S(12, 20), S(12, 20) }, //Minor
+	{ S(0,  0), S(4, 8), S(4, 10), S(4, 10), S(4,  10), S(6,  11) }  //Major
 };
 
 /*
@@ -395,7 +398,7 @@ int evaluateKing(const BitBoards & boards, EvalInfo & ev, int mgScore) {
 	int score = 0;
 
 	//our king location
-	const int square = msb(boards.byColorPiecesBB[color][KING]);
+	const int square = boards.king_square(color);
 
 	U64 undefended, safe;
 
@@ -427,7 +430,7 @@ int evaluateKing(const BitBoards & boards, EvalInfo & ev, int mgScore) {
 		//rook safe enemy contact checks
 		bb = undefended & ev.attackedBy[them][ROOK] & ~boards.pieces(them);
 
-		//only look at checking squares, & with rook attacks from king location
+		//only look at undefended checking squares, & with rook attacks from king location
 		bb &= boards.psuedoAttacks(ROOK, color, square);
 
 		if (bb) {
@@ -441,9 +444,9 @@ int evaluateKing(const BitBoards & boards, EvalInfo & ev, int mgScore) {
 		//look at enemy safe checks from sliders and knights
 		safe = ~(boards.pieces(them) | ev.attackedBy[color][0]);
 
-					//color doesn't matter here, attacks are the same
-		U64 b1 = boards.psuedoAttacks(ROOK, color, square) & safe;
-		U64 b2 = boards.psuedoAttacks(BISHOP, color, square) & safe;
+		//any enemy safe slider, non contact checks??
+		U64 b1 = slider_attacks.RookAttacks(boards.FullTiles, square) & safe;
+		U64 b2 = slider_attacks.BishopAttacks(boards.FullTiles, square) & safe;
 
 		bb = (b1 | b2) & ev.attackedBy[them][QUEEN];
 
@@ -600,7 +603,7 @@ Scores evaluatePassedPawns(const BitBoards& board, const EvalInfo& ev) {
 
 				defendedSquares = unsafeSquares = squaresToQueen = forwardBB[color][sq];
 
-				U64 bb = forwardBB[them][sq] & board.pieces(ROOK, QUEEN) & slider_attacks.RookAttacks(board.FullTiles, sq); //CHECK FOR pos.attacks_from<ROOK>(s) in stockfish eval to make sure we're using slider attacks when we need to
+				U64 bb = forwardBB[them][sq] & board.piecesByType(ROOK, QUEEN) & slider_attacks.RookAttacks(board.FullTiles, sq); //CHECK FOR pos.attacks_from<ROOK>(s) in stockfish eval to make sure we're using slider attacks when we need to
 
 				if (!(board.pieces(color) & bb))
 					defendedSquares &= ev.attackedBy[color][0]; //attacked by all pieces
@@ -648,11 +651,11 @@ Scores evaluatePassedPawns(const BitBoards& board, const EvalInfo& ev) {
 enum {Mobility,  PawnStructure,  PassedPawns,  Center,  KingSafety};
 
 const struct Weight { int mg, eg; } Weights[] = { //reduce weights by half + for Passed Pawns?
-	{ 289, 344 }, { 233, 201 }, { 160, 195 }, { 50, 0 }, { 318, 0 }
+	{ 289, 344 }, { 175, 145 }, { 221, 273 }, { 50, 0 }, { 318, 0 }
 };
 /*
 const struct Weight { int mg, eg; } Weights[] = { //Test Not Good
-	{ 289, 320 },{ 0, 0 }, { 221, 273 }, <--//orig values for passed{ 50, 0 },{ 290, 0 }
+	{ 289, 320 }, { 233, 201 }, { 221, 273 }, <--//orig values for passed{ 50, 0 },{ 290, 0 }
 };
 */
 //for applying non phase independant scoring.
@@ -711,12 +714,10 @@ int Evaluate::evaluate(const BitBoards & boards, bool isWhite)
 	ev.psqScores[WHITE] += ev.pe->pieceSqTabScores[WHITE];
 	ev.psqScores[BLACK] += ev.pe->pieceSqTabScores[BLACK];
 
-	//evaluate all pieces, except for most pawn info and king. Start at knight once we have
-	//a sepperate class for pawn info, holding a more relevent pawn TT than we have now
-	//right now we're passing it a mobility area that's calcuated mostly inside, later 
-	//we'll have to add exclusion of pawns && pawn attack squares outside the function.
-
-	U64 mobilityArea[COLOR]; //remove our king+our pawns as well as places attacked by enemy pawns  from our color mobility areas
+	
+	// remove our king + our pawns as well as places attacked 
+	// by enemy pawns  from our color mobility areas
+	U64 mobilityArea[COLOR]; 
 	mobilityArea[WHITE] = ~(ev.attackedBy[BLACK][PAWN] | boards.pieces(WHITE, PAWN, KING)); 
 	mobilityArea[BLACK] = ~(ev.attackedBy[WHITE][PAWN] | boards.pieces(BLACK, PAWN, KING)); 
 															
@@ -724,18 +725,19 @@ int Evaluate::evaluate(const BitBoards & boards, bool isWhite)
 	//the next pieces scores of a different color. Return when we reach king.
 	score += evaluatePieces<KNIGHT, WHITE>(boards, ev, mobilityArea);
 
+
 	//can only evaluate threats after piece attack boards have been generated
 	score += evalThreats<WHITE>(boards, ev) - evalThreats<BLACK>(boards, ev);
 
 	//add piece square table scores as well as material scores, WHITE - BLACK
 	score += (ev.psqScores[WHITE] + boards.bInfo.sideMaterial[WHITE]) - (ev.psqScores[BLACK] + boards.bInfo.sideMaterial[BLACK]);
 
-	//evaluate passed pawns. Weights are applied in function itself
-	score += evaluatePassedPawns<WHITE>(boards, ev) - evaluatePassedPawns<BLACK>(boards, ev);
+	//evaluate passed pawns, Weights are applied in function itself 
+	//score += evaluatePassedPawns<WHITE>(boards, ev) - evaluatePassedPawns<BLACK>(boards, ev);
 
 	//get center control data and apply the weights. Only 
 	//minor effect on midgame score
-	int ctrl =  centerControl<WHITE>(boards, ev) - centerControl<BLACK>(boards, ev);
+	int ctrl = centerControl<WHITE>(boards, ev) - centerControl<BLACK>(boards, ev);
 	spaceWeights(score, Weights[Center], ctrl);
 
 	//find game phase based on held material
@@ -773,6 +775,7 @@ int Evaluate::evaluate(const BitBoards & boards, bool isWhite)
 	//evaluate both kings. Function returns a score taken from the king safety array
 	Scores ksf;
 	ksf.mg = evaluateKing<WHITE>(boards, ev, score.mg) - evaluateKing<BLACK>(boards, ev, score.mg);
+
 	score += applyWeights(ksf, Weights[KingSafety]);
 
 	//add weight adjusted mobility score to score

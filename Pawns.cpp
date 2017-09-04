@@ -144,8 +144,6 @@ Scores evalPawns(const BitBoards & boards, PawnsEntry *e) {
 	U64 doubled;
 	U64 bb;
 
-	BitBoards a = boards; // TESTING VARIABLE REMOVE LATER
-
 	//hold a pointer to an array of pawn attacks for our color per square
 	const U64* pawnAttacksBB = boards.PseudoAttacks[PAWN];
 
@@ -158,6 +156,7 @@ Scores evalPawns(const BitBoards & boards, PawnsEntry *e) {
 	e->pawnAttacks[color]			= shift_bb<Right>(ourPawns) | shift_bb<Left>(ourPawns);
 	e->pawnsOnSquares[color][BLACK] = bit_count(ourPawns & DarkSquares);
 	e->pawnsOnSquares[color][WHITE] = boards.pieceCount[color][PAWN] - e->pawnsOnSquares[color][BLACK];
+
 
 	//location of pawn, 
 	int square;
