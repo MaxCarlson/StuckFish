@@ -40,7 +40,6 @@ const U64 LightSquares = 0xAA55AA55AA55AA55ULL;
 U64 forwardBB[COLOR][64]; //line in front of square relative side to move
 U64 PassedPawnMask[COLOR][64]; //line in front & pawnAttackSpan
 U64 PawnAttackSpan[COLOR][64]; //all tiles that can be attacked by a pawn as it moves forward
-int SquareDistance[64][64]; //distance between squares
 
 //function returns a bitboard of all squares ahead of the sq
 //input, realtive to side to move.
@@ -60,6 +59,8 @@ inline U64 passed_pawn_mask(int color, int sq) {
 inline U64 pawn_attack_span(int color, int sq) {
 	return PawnAttackSpan[color][sq];
 }
+
+
 
 #define S(mg, eg) make_scores(mg, eg)
 

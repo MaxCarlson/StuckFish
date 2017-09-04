@@ -10,6 +10,12 @@
 #include "Pawns.h"
 
 
+int SquareDistance[64][64]; //distance between squares // MOVE SOMEWERE ELSE, new .h file for inline functions??
+
+inline int square_distance(int s1, int s2) {
+	return SquareDistance[s1][s2];
+}
+
 const U64 RankMasks8[8] = //from rank 1 - 8 
 {
 	0xFF00000000000000L, 0xFF000000000000L,  0xFF0000000000L, 0xFF00000000L, 0xFF000000L, 0xFF0000L, 0xFF00L, 0xFFL,
@@ -553,16 +559,18 @@ Scores evaluatePassedPawns(const BitBoards& board, const EvalInfo& ev) {
 	
 	const int them = color == WHITE ? BLACK : WHITE;
 
-	U64 bb, squaresToQueen, defendedSquares, unsafeSquares;
+	U64 b, squaresToQueen, defendedSquares, unsafeSquares;
 
-	bb = ev.pe->passedPawns(color);
+	Scores score;
 
-	while (bb) {
+	b = ev.pe->passedPawns[color];
+
+	while (b) {
 
 		//assert pawn_passed check to test here
 
 		//find, remove, record pos of least sig bit
-		int sq = pop_lsb(&bb);
+		int sq = pop_lsb(&b);
 
 		int r = relative_rankSq(color, sq) - 1;
 		int rr = r * (r - 1);
@@ -574,22 +582,77 @@ Scores evaluatePassedPawns(const BitBoards& board, const EvalInfo& ev) {
 
 			int blockSq = sq + pawn_push(color);
 
+			//adjust bonus passed on the king's proximity ///NEED TO CHANGE BONUS STATS TO GAME, THAT OR ADJUST PASSED PAWN WEIGHTING.
+			ebonus += square_distance(board.king_square(them), blockSq) * 5 * rr
+				   - square_distance(board.king_square(color), blockSq) * 2 * rr;
+
+			// If blockSq is not the queening square then consider also a second push
+			if (relative_rankSq(color, blockSq) != 7) {
+				ebonus -= square_distance(board.king_square(color), blockSq + pawn_push(color)) * rr;
+			}
+
+			// If the pawn is free to advance, then increase the bonus
+			if (board.empty(blockSq)) {
+
+				// If there is a rook or queen attacking/defending the pawn from behind,
+				// consider all the squaresToQueen. Otherwise consider only the squares
+				// in the pawn's path attacked or occupied by the enemy.
+
+				defendedSquares = unsafeSquares = squaresToQueen = forwardBB[color][sq];
+
+				U64 bb = forwardBB[them][sq] & board.pieces(ROOK, QUEEN) & slider_attacks.RookAttacks(board.FullTiles, sq); //CHECK FOR pos.attacks_from<ROOK>(s) in stockfish eval to make sure we're using slider attacks when we need to
+
+				if (!(board.pieces(color) & bb))
+					defendedSquares &= ev.attackedBy[color][0]; //attacked by all pieces
 
 
+				if (!(board.pieces(them) & bb))
+					unsafeSquares &= ev.attackedBy[them][0] | board.pieces(them);
+
+
+				// If there aren't any enemy attacks, assign a big bonus. Otherwise
+				// assign a smaller bonus if the block square isn't attacked.
+
+				int k = !unsafeSquares ? 15 : !(unsafeSquares & (1LL << blockSq)) ? 9 : 0;
+
+				// If the path to queen is fully defended, assign a big bonus.
+				// Otherwise assign a smaller bonus if the block square is defended.
+
+				if (defendedSquares == squaresToQueen)
+					k += 6;
+
+				else if (defendedSquares & blockSq)
+					k += 4;
+
+				mBonus += k * rr, ebonus += k * rr;
+
+			}
+
+			else if (board.pieces(color) & (1LL << blockSq)) {
+
+				mBonus += rr * 3 + r * 2 + 3;
+				ebonus += rr + r * 2;
+			}
 		}
 
+		if (board.count<PAWN>(color) < board.count<PAWN>(them))
+			ebonus += ebonus / 4;
 
+
+		score += make_scores(mBonus, ebonus);
 	}
+
+	return applyWeights(score, Weights[PassedPawns]);
 }
 
-enum {Mobility,  PawnStructure,   Center, KingSafety};
+enum {Mobility,  PawnStructure,  PassedPawns,  Center,  KingSafety};
 
-const struct Weight { int mg, eg; } Weights[] = { 
-	{ 289, 344 }, { 233, 201 }, { 50, 0 }, { 318, 0 }
+const struct Weight { int mg, eg; } Weights[] = { //reduce weights by half + for Passed Pawns?
+	{ 289, 344 }, { 233, 201 }, { 160, 195 }, { 50, 0 }, { 318, 0 }
 };
 /*
 const struct Weight { int mg, eg; } Weights[] = { //Test Not Good
-	{ 289, 320 },{ 0, 0 },{ 50, 0 },{ 290, 0 }
+	{ 289, 320 },{ 0, 0 }, { 221, 273 }, <--//orig values for passed{ 50, 0 },{ 290, 0 }
 };
 */
 //for applying non phase independant scoring.
@@ -666,6 +729,9 @@ int Evaluate::evaluate(const BitBoards & boards, bool isWhite)
 
 	//add piece square table scores as well as material scores, WHITE - BLACK
 	score += (ev.psqScores[WHITE] + boards.bInfo.sideMaterial[WHITE]) - (ev.psqScores[BLACK] + boards.bInfo.sideMaterial[BLACK]);
+
+	//evaluate passed pawns. Weights are applied in function itself
+	score += evaluatePassedPawns<WHITE>(boards, ev) - evaluatePassedPawns<BLACK>(boards, ev);
 
 	//get center control data and apply the weights. Only 
 	//minor effect on midgame score

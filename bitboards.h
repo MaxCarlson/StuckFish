@@ -37,11 +37,6 @@ public:
 	//unamke move
 	void unmakeMove(const Move& m, bool isWhite);
 
-	//is this a pawn move on the 5th or higher relative rank?
-	bool isPawnPush(const Move& m, bool isWhite);
-	//is there a pawn on the 7 th rank relative to stm
-	bool pawnOn7th(bool isWhite);
-
 	//Holds board information, struct above
 	BoardInfo bInfo;
 
@@ -61,10 +56,22 @@ public:
 	int pieceCount[2][7]; //count of number of pieces; color, piece type. 0 = no piece, 1 pawn, etc.
 	int pieceOn[64]; // allows us to lookup which piece is on a square
 	
+
+	//helper functions for ease of access to data structures holding info
 	U64 pieces(int color)const;
 	U64 pieces(int color, int pt)const;
 	U64 pieces(int color, int pt, int pt1)const;
+	U64 pieces(U8 p1, U8 p2) const; //changed var's to U8 so we can use function again, can't overload more with two ints
+	template<int pt> int count(int color) const;
+	bool empty(int sq) const;
 	int pieceOnSq(int sq) const;
+	//returns the square the king is on
+	int king_square(int color) const;
+	//is this a pawn move on the 5th or higher relative rank?
+	bool isPawnPush(const Move& m, bool isWhite);
+	//is there a pawn on the 7 th rank relative to stm
+	bool pawnOn7th(bool isWhite);
+
 
 	//return the key for the pawn hash table
 	U64 pawn_key() const;
@@ -112,6 +119,17 @@ inline U64 BitBoards::pieces(int color, int pt, int pt1) const{
 	return (byColorPiecesBB[color][pt] | byColorPiecesBB[color][pt1]);
 }
 
+//returns a U64 of both color piece1 | piece 2
+inline U64 BitBoards::pieces(U8 p1, U8 p2) const
+{
+	return byPieceType[p1] | byPieceType[p2];
+}
+
+inline bool BitBoards::empty(int sq) const
+{
+	return pieceOn[sq] == PIECE_EMPTY;
+}
+
 inline int BitBoards::pieceOnSq(int sq) const
 {
 	return pieceOn[sq];
@@ -120,6 +138,11 @@ inline int BitBoards::pieceOnSq(int sq) const
 //returns the incrementaly updated pawn hash key
 inline U64 BitBoards::pawn_key() const {
 	return bInfo.PawnKey;
+}
+
+inline int BitBoards::king_square(int color) const
+{
+	return pieceLoc[color][KING][0];
 }
 
 //return an attack set for a piece on any square, attacks are generated
@@ -197,3 +220,9 @@ inline void BitBoards::removePiece(int piece, int color, int sq)
 
 
 #endif // BITBOARDS_H
+
+template<int pt>
+inline int BitBoards::count(int color) const
+{
+	return pieceCount[color][pt];
+}
