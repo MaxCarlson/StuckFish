@@ -44,6 +44,7 @@ public:
 
     //used for checking if keys match when generated from scratch ~~ without changing master key
     U64 debugKey(bool isWhite, const BitBoards& BBBoard);
+	U64 debugPawnKey(const BitBoards& BBBoard);
 
 };
 

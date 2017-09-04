@@ -66,11 +66,12 @@ public:
 	U64 pieces(int color, int pt, int pt1)const;
 	int pieceOnSq(int sq) const;
 
+	//return the key for the pawn hash table
 	U64 pawn_key() const;
 
 	//full of attacks all possible attacks for all squares and pieces
 	//on a completely empty board
-	U64 PseudoAttacks[7][64]; //zero index is white pawns
+	U64 PseudoAttacks[7][64]; //zero index is white pawns, 1 black pawns, pieces after are index by their number
 
 	U64 psuedoAttacks(int piece, int color, int sq) const;
 

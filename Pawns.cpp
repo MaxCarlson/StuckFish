@@ -40,6 +40,7 @@ const U64 LightSquares = 0xAA55AA55AA55AA55ULL;
 U64 forwardBB[COLOR][64]; //line in front of square relative side to move
 U64 PassedPawnMask[COLOR][64]; //line in front & pawnAttackSpan
 U64 PawnAttackSpan[COLOR][64]; //all tiles that can be attacked by a pawn as it moves forward
+int SquareDistance[64][64]; //distance between squares
 
 //function returns a bitboard of all squares ahead of the sq
 //input, realtive to side to move.
@@ -125,7 +126,7 @@ namespace Pawns {
 template<int color>
 Scores evalPawns(const BitBoards & boards, PawnsEntry *e) {
 	
-	Scores val; val.mg = 0; val.eg = 0;
+	Scores val;
 
 	//set color and movement info per our side
 	const int them  = color == WHITE  ? BLACK : WHITE;
@@ -142,13 +143,16 @@ Scores evalPawns(const BitBoards & boards, PawnsEntry *e) {
 	U64 doubled;
 	U64 bb;
 
+	BitBoards a = boards; // TESTING VARIABLE REMOVE LATER
+
 	//hold a pointer to an array of pawn attacks for our color per square
 	const U64* pawnAttacksBB = boards.PseudoAttacks[PAWN];
 
 	bool passed, isolated, opposed, connected, backward, candidate, unsupported, lever;
 
+	e->pieceSqTabScores[color]      = make_scores(0, 0);
 	e->passedPawns[color]			= e->candidatePawns[color] = 0LL;
-	e->kingSquares[color]			= SQ_NONE;
+	e->kingSquares[color]			= SQ_NONE; //not used ATM, add to pawn eval so we can hash king safety?
 	e->semiOpenFiles[color]			= 0xFF;
 	e->pawnAttacks[color]			= shift_bb<Right>(ourPawns) | shift_bb<Left>(ourPawns);
 	e->pawnsOnSquares[color][BLACK] = bit_count(ourPawns & DarkSquares);
@@ -156,7 +160,6 @@ Scores evalPawns(const BitBoards & boards, PawnsEntry *e) {
 
 	//location of pawn, 
 	int square;
-
 
 	//draw from the list of our color pawns until there are no more to evaluate
 	while ((square = *list++) != SQ_NONE) {
@@ -178,13 +181,13 @@ Scores evalPawns(const BitBoards & boards, PawnsEntry *e) {
 
 		//flag pawn as passed, isolated, doauble,
 		//unsupported or connected
-		connected   =  ourPawns    & adjacentFiles[f] & bb;
-		unsupported = !(ourPawns   & adjacentFiles[f] & pr);
-		isolated    = !(ourPawns   & adjacentFiles[f]);
-		doubled	    =  ourPawns    & forward_bb(color, square);
-		opposed     =  enemyPawns  & forward_bb(color, square);
-		passed      = !(enemyPawns & passed_pawn_mask(color, square));
-		lever       =  enemyPawns  & pawnAttacksBB[square];
+		connected   =   ourPawns    & adjacentFiles[f] & bb;
+		unsupported = !(ourPawns    & adjacentFiles[f] & pr);
+		isolated    = !(ourPawns    & adjacentFiles[f]);
+		doubled	    =   ourPawns    & forward_bb(color, square);
+		opposed     =   enemyPawns  & forward_bb(color, square);
+		passed      = !(enemyPawns  & passed_pawn_mask(color, square));
+		lever       =   enemyPawns  & pawnAttacksBB[square];
 
 
 		// If the pawn is passed, isolated, or connected it cannot be
@@ -227,10 +230,10 @@ Scores evalPawns(const BitBoards & boards, PawnsEntry *e) {
 		// pawn on each file is considered a true passed pawn.
 
 
-		if (passed && !doubled) {
+		if (passed && !doubled) 
 			e->passedPawns[color] |= boards.squareBB[square];
-		}
-
+		
+		///*
 		if (isolated)
 			val -= Isolated[opposed][f]; 
 
@@ -238,24 +241,25 @@ Scores evalPawns(const BitBoards & boards, PawnsEntry *e) {
 			val -= UnsupportedPawnPenalty;
 
 		if (doubled)
-			val -= Doubled[f]; // NEED TO ADD ~~~ / rank_distance(square, lsb(doubled));
+			val -= Doubled[f] / rank_distance(square, lsb(doubled));
 
 		if (backward)
 			val -= Backward[opposed][f];
 
-		//if (connected)
-			//val += Connected[f][relative_rank(color, square)];
+		if (connected)
+			val += Connected[f][relative_rankSq(color, square)];
 
 		if (lever)
-			val += Lever[relative_rank(color, square)]; // NEED TO TEST AND MAKE SURE ALL RELATIVE RANK FUNCTIOSN WORKS
+			val += Lever[relative_rankSq(color, square)]; 
 
 		if (candidate)
 		{
-			val += CandidatePassed[relative_rank(color, square)];
+			val += CandidatePassed[relative_rankSq(color, square)];
 
 			if (!doubled)
 				e->candidatePawns[color] |= square;
 		}
+		//*/
 		
 	}
 	
@@ -285,10 +289,7 @@ PawnsEntry * Pawns::probe(const BitBoards & boards, Table & entries)
 
 	entry->Key = key;
 
-	Scores s = evalPawns<WHITE>(boards, entry) - evalPawns<BLACK>(boards, entry);
-
-	entry->score[mg] = s.mg;
-	entry->score[eg] = s.eg;
+	entry->score = evalPawns<WHITE>(boards, entry) - evalPawns<BLACK>(boards, entry);
 
 	return entry;
 }

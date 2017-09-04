@@ -14,7 +14,7 @@ namespace Pawns {
 		U64 Key;
 
 		//holds midgame and end game scores for this entry
-		int score[STAGE]; //convert to Scores struct
+		Scores score; 
 
 		Scores pieceSqTabScores[COLOR];
 

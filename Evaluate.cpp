@@ -53,27 +53,46 @@ const int BISHOP_PAIR = 30;
 //used as negatives to incourage bishop pair
 const int KNIGHT_PAIR = 8;
 const int ROOK_PAIR = 16;
-const int Hanging[STAGE] = {9, 7};
-const int kingOnPawn[STAGE] = {0, 30};
-const int kingOnMPawn[STAGE] = {0, 64};
+
+//const int Hanging[STAGE] = {9, 7}; //change to scores
+//const int kingOnPawn[STAGE] = {0, 30};
+//const int kingOnMPawn[STAGE] = {0, 64};
+
+#define S(mg, eg) make_scores(mg, eg)
+
+const Scores Hanging = S(9, 7);
+const Scores kingOnPawn = S(0, 30);
+const Scores kingOnMPawn = S(0, 64);
 
 
+
+const Scores pawnThreat[PIECES]{
+	S(0, 0), S(0 , 0), S(24, 32), S(25, 32), S(35, 57), S(40, 65)
+};
+
+const Scores threats[2][PIECES]{
+	{ S(0 , 0), S(2, 8), S(6, 10), S(6, 10), S(12, 20), S(12, 20) },
+	{ S(0,  0), S(4, 8), S(4, 10), S(4, 10), S(4,  10), S(6,  11) }
+};
+
+/*
 const int threatenedByPawn[STAGE][6] = //midgame/endgame - piece type threatened
 { { 0, 0, 24, 25, 35, 40 }, 
   { 0, 0, 32, 32, 57, 65 } };
-/*
-const int threatenedByPawn[STAGE][6] = //midgame/endgame - piece type threatened
-{ { 0, 0, 10, 13, 23, 32 },
-{ 0, 0, 12, 15, 35, 45 } };
-*/
+
 const int threats[2][2][6] = //minor/major - mid/endgame threats/ piece type
 {   //mid game             //end game
 	{{0, 2, 6, 6, 12, 12}, {0, 8, 10, 10, 20, 20},}, //minor
 	{{0, 4, 4, 4,  4,  6}, {0, 8, 10, 10, 10, 11}}   //major
 };
-
+*/
+/*
 const int rookHalfOpen[STAGE] = {5, 3};
 const int rookOpen[STAGE] = {10, 5};
+*/
+
+const Scores rookHalfOpen = S(5, 3);
+const Scores rookOpen = S(10, 5);
 
 const int QueenContactCheck = 7;
 const int RookContactCheck = 5;
@@ -97,6 +116,21 @@ static const int SafetyTable[100] = {
 	500, 500, 500, 500, 500, 500, 500, 500, 500, 500
 };
 
+const Scores mobilityBonus[PIECES][30]{ //S(midgame, endgame)
+	{}, {},
+	{ S(-20, -17), S(-16, -14), S(-2, -3),  S(3, 0),  S(  6, 3 ), S(10, 6),  S(15, 9),  S(17, 10), S(19, 11), }, //kights mob bonus
+
+	{ S(-17, -15), S(-10, -7),  S( 1,  1),  S( 4,  6), S( 7,  9), S(11, 12), S(14, 14), //bishops
+	  S( 17,  15), S( 19, 17),  S(20, 17),  S(21, 17), S(22, 19), S(22, 19), S(23, 19), },
+
+	{ S(-12, -14), S( -8, -7),  S( -3,  0), S( 1,  4), S( 4,  9), S( 6, 13), S( 9, 17), S(11, 24), //rooks
+	  S( 12,  30), S( 13, 35),  S( 14, 40), S(15, 42), S(15, 43), S(15, 45), S(16, 45), },
+
+	{ S(-14, -14), S(-9,  -8),  S(-3,  -4), S( 0,  0), S( 2,  3), S( 4,  5), S( 5, 10), S( 6, 15), 
+	  S(  7,  16), S( 7,  17),  S( 7,  17), S( 7, 17), S( 8, 17), S( 8, 17), S( 8, 17), S( 8, 17), S(8, 17), S(8, 17), //queens
+	  S(  9,  17), S( 9,  17),  S( 9,  17), S( 9, 17), S( 9, 17), S( 9, 17), S( 9, 17), S( 9, 17), S(9, 17), S(9, 17) }
+}; 
+/*
 //mid game mobility bonus per square of mobiltiy
 const int midGmMobilityBonus[6][28]{
 	{},{}, //no piece and pawn indexs
@@ -130,8 +164,8 @@ const int endGMobilityBonus[6][28]{
 	17, 17, 17, 17, 17, 17, 17, 17,
 	17, 17, 17, 17 }
 };
-
-
+*/
+/*
 struct EvalInfo {
 	int gameScore[COLOR][STAGE] = { { 0 } }; //white, black - mid game = 0, end game = 1
 
@@ -151,7 +185,28 @@ struct EvalInfo {
 	int adjustMaterial[COLOR] = { 0 };
 
 	Pawns::PawnsEntry * pe;
+};*/
+
+struct EvalInfo {
+
+	Scores psqScores[COLOR]; //piece square table scores
+
+	U64 kingZone[COLOR] = { 0LL }; //zone around king, by color
+	int kingAttackers[COLOR] = { 0 }; //number of pieces attacking opponent king
+	int kingAttWeights[COLOR] = { 0 }; //added weight of king attackers
+	int adjacentKingAttckers[COLOR] = { 0 }; //num pieces attacking sqs adjacent to king
+
+	U64 attackedBy[COLOR][7] = { { 0LL } }; //bitboards of attacked squares by color and piece type, 0 for second index is all pieces of that color
+
+	Scores mobility[COLOR]; //color, midgame/endgame scoring
+
+	int blockages[COLOR] = { 0 };
+
+	int adjustMaterial[COLOR] = { 0 };
+
+	Pawns::PawnsEntry * pe;
 };
+
 
 void Evaluate::generateKingZones(const BitBoards & boards, EvalInfo & ev)
 {
@@ -169,8 +224,10 @@ void Evaluate::generateKingZones(const BitBoards & boards, EvalInfo & ev)
 		int psqLoc = side == WHITE ? location : bSQ[location];
 
 		//psq table scoring for king
-		ev.psqScores[side][mg] += pieceSqTab[KING][mg][psqLoc];
-		ev.psqScores[side][eg] += pieceSqTab[KING][eg][psqLoc];
+		//ev.psqScores[side][mg] += pieceSqTab[KING][mg][psqLoc];
+		//ev.psqScores[side][eg] += pieceSqTab[KING][eg][psqLoc];
+		ev.psqScores[side].mg += pieceSqTab[KING][mg][psqLoc]; //change piece square tables to Scores
+		ev.psqScores[side].eg += pieceSqTab[KING][eg][psqLoc];
 
 		//grab pseudo attacks for king on square
 		kZone = boards.psuedoAttacks(KING, side, location);
@@ -196,7 +253,9 @@ void Evaluate::generateKingZones(const BitBoards & boards, EvalInfo & ev)
 }
 
 template<int pT, int color>
-void evaluatePieces(const BitBoards & boards, EvalInfo & ev, U64 * mobilityArea) {
+Scores evaluatePieces(const BitBoards & boards, EvalInfo & ev, U64 * mobilityArea) {
+
+	Scores score;
 
 	const int* piece = boards.pieceLoc[color][pT];
 	const int them = (color == WHITE ? BLACK : WHITE);
@@ -212,13 +271,8 @@ void evaluatePieces(const BitBoards & boards, EvalInfo & ev, U64 * mobilityArea)
 		int adjSq = color == WHITE ? square : bSQ[square];
 
 		//add piece square table scores 
-		ev.psqScores[color][mg] += pieceSqTab[pT][mg][adjSq];
-		ev.psqScores[color][eg] += pieceSqTab[pT][eg][adjSq];		
-
-		//if (pT == PAWN) { //remove later once we have sepperate pawn eval class
-		//	ev.attackedBy[color][0] |= ev.attackedBy[color][PAWN] |= boards.psuedoAttacks(PAWN, color, square);
-		//	continue;
-		//}
+		ev.psqScores[color].mg += pieceSqTab[pT][mg][adjSq];
+		ev.psqScores[color].eg += pieceSqTab[pT][eg][adjSq];		
 		
 		//find attack squares, including xray bishop and rook attacks blocked by queens / rooks/queens
 		U64 bb = pT == BISHOP ? slider_attacks.BishopAttacks(boards.FullTiles ^ boards.pieces(color, QUEEN), square)
@@ -252,17 +306,19 @@ void evaluatePieces(const BitBoards & boards, EvalInfo & ev, U64 * mobilityArea)
 
 		//gather mobility count and record mob scores for mid and end game
 		//don't count squares occupied by our pawns or king, or attacked by their pawns
-		//towards mobility. Additional restrictions for queen mob.
+		//towards mobility. Additional restrictions for queen mob above.
 		int mobility = bit_count(bb & mobilityArea[color]);
 
-		ev.mobility[color][mg] += midGmMobilityBonus[pT][mobility];
-		ev.mobility[color][eg] += endGMobilityBonus[pT][mobility];
+		//ev.mobility[color][mg] += midGmMobilityBonus[pT][mobility];
+		//ev.mobility[color][eg] += endGMobilityBonus[pT][mobility];
+		ev.mobility[color] += mobilityBonus[pT][mobility];
 
 		//if piece is threatened by a pawn, apply penalty
 		//increasing penalty in threatened piece value
 		if (ev.attackedBy[them][PAWN] & square) {
-			ev.gameScore[color][mg] -= threatenedByPawn[mg][pT];
-			ev.gameScore[color][eg] -= threatenedByPawn[eg][pT];
+			//ev.gameScore[color][mg] -= threatenedByPawn[mg][pT];
+			//ev.gameScore[color][eg] -= threatenedByPawn[eg][pT];
+			score -= pawnThreat[pT];
 		}
 
 		//need knight and bishop evals
@@ -284,52 +340,43 @@ void evaluatePieces(const BitBoards & boards, EvalInfo & ev, U64 * mobilityArea)
 
 			if (!ownBlockingPawns) {
 				if (!oppBlockingPawns) {
-					ev.gameScore[color][mg] += rookOpen[mg];
-					ev.gameScore[color][eg] += rookOpen[eg];
+					//ev.gameScore[color][mg] += rookOpen[mg];
+					//ev.gameScore[color][eg] += rookOpen[eg];
+					score += rookOpen;
 				}
 				else {
-					ev.gameScore[color][mg] += rookHalfOpen[mg];
-					ev.gameScore[color][eg] += rookHalfOpen[eg];
+					//ev.gameScore[color][mg] += rookHalfOpen[mg];
+					//ev.gameScore[color][eg] += rookHalfOpen[eg];
+					score += rookHalfOpen;
 				}
 			}
 		}
 	}
 
-	if (pT == PAWN) { //remove this once we get sepperate pawn eval
-		mobilityArea[them] = ~(ev.attackedBy[color][PAWN] | mobilityArea[them]);
-	}
-
-	return evaluatePieces<nextPiece, !color>(boards, ev, mobilityArea);
+	return score - evaluatePieces<nextPiece, !color>(boards, ev, mobilityArea);
 }
 
 template<> //get rid of recursive function too complex error, also return when piece type hits king
-void evaluatePieces<KING, WHITE>(const BitBoards & boards, EvalInfo & ev, U64 * mobility) { return; };
+Scores evaluatePieces<KING, WHITE>(const BitBoards & boards, EvalInfo & ev, U64 * mobility) { return S(0, 0); };
 
 template<int color>
 int centerControl(const BitBoards & boards, const EvalInfo & ev) {
 
 	const int them = color == WHITE ? BLACK : WHITE;
 
-	BitBoards a = boards;
 	//find the safe tiles, safe if not attacked by enemy pawn,
 	//or if it is attacked by an enemy piece and not defended
 	U64 safe = center[color]
 			& ~boards.pieces(color, PAWN)
 			& ~ev.attackedBy[them][PAWN]
 			& (ev.attackedBy[color][0] | ev.attackedBy[them][0]);
-	//a.drawBBA();
-	//a.drawBB(center[color]);
-	//a.drawBB(safe);
+
 
 	//find squares which are between one and three squares behind friendly pawns
 	U64 behind = boards.pieces(color, PAWN);
 
 	behind |= (color == WHITE ? behind <<  8 : behind >>  8);
 	behind |= (color == WHITE ? behind << 16 : behind >> 16);
-
-	//a.drawBB(boards.pieces(color, PAWN));
-	//a.drawBB(behind);
-	//a.drawBB(RankMasks8[1]);
 
 	return bit_count((color == WHITE ? safe >> 32 : safe << 32) | (behind & safe));
 }
@@ -407,7 +454,6 @@ int evaluateKing(const BitBoards & boards, EvalInfo & ev, int mgScore) {
 		if(bb) attackUnits += BishopCheck * bit_count(bb);
 
 		//enemy safe knight checks
-
 		bb = boards.psuedoAttacks(KNIGHT, them, square) & ev.attackedBy[them][KNIGHT] & safe;
 
 		if(bb) attackUnits += KnightCheck * bit_count(bb);
@@ -421,11 +467,13 @@ int evaluateKing(const BitBoards & boards, EvalInfo & ev, int mgScore) {
 }
 
 template<int color>
-void evalThreats(const BitBoards & boards, EvalInfo & ev) {
+Scores evalThreats(const BitBoards & boards, EvalInfo & ev) {
 
 	int them = (color == WHITE ? BLACK : WHITE);
 
 	U64 bb, weakEnemys, protectedEnemys;
+
+	Scores score;
 
 	enum {Minor, Major};
 
@@ -439,8 +487,9 @@ void evalThreats(const BitBoards & boards, EvalInfo & ev) {
 	if (protectedEnemys) {
 		int p = boards.pieceOnSq(lsb(protectedEnemys));
 
-		ev.gameScore[color][mg] += threats[Minor][mg][p];
-		ev.gameScore[color][eg] += threats[Minor][eg][p];
+		//ev.gameScore[color][mg] += threats[Minor][mg][p];
+		//ev.gameScore[color][eg] += threats[Minor][eg][p];
+		score += threats[Minor][p];
 	}
 
 	weakEnemys = boards.pieces(them)
@@ -456,8 +505,9 @@ void evalThreats(const BitBoards & boards, EvalInfo & ev) {
 		if (bb) {
 			int p = boards.pieceOnSq(lsb(bb));
 
-			ev.gameScore[color][mg] += threats[Minor][mg][p];
-			ev.gameScore[color][eg] += threats[Minor][eg][p];
+			//ev.gameScore[color][mg] += threats[Minor][mg][p];
+			//ev.gameScore[color][eg] += threats[Minor][eg][p];
+			score += threats[Minor][p];
 		}
 
 		//enemy piece is attacked by our rook/queen
@@ -466,8 +516,9 @@ void evalThreats(const BitBoards & boards, EvalInfo & ev) {
 		if (bb) {
 			int p = boards.pieceOnSq(lsb(bb));
 
-			ev.gameScore[color][mg] += threats[Major][mg][p];
-			ev.gameScore[color][eg] += threats[Major][eg][p];
+			//ev.gameScore[color][mg] += threats[Major][mg][p];
+			//ev.gameScore[color][eg] += threats[Major][eg][p];
+			score += threats[Major][p];
 		}
 
 		//enemy piece/s aren't supported
@@ -476,8 +527,9 @@ void evalThreats(const BitBoards & boards, EvalInfo & ev) {
 		if (bb) {
 			int pop = bit_count(bb);
 
-			ev.gameScore[color][mg] += pop * Hanging[mg];
-			ev.gameScore[color][eg] += pop * Hanging[eg];
+			//ev.gameScore[color][mg] += pop * Hanging[mg];
+			//ev.gameScore[color][eg] += pop * Hanging[eg];
+			score += Hanging * pop;
 		}
 
 		//enemy pawn/s are attacked by our king
@@ -486,11 +538,47 @@ void evalThreats(const BitBoards & boards, EvalInfo & ev) {
 		if (bb) {
 			pop_lsb(&bb);
 			//one or many pawns?
-			int score = bb ? kingOnMPawn[eg] : kingOnPawn[eg];
+			//int score = bb ? kingOnMPawn[eg] : kingOnPawn[eg];
 
 			//no mid game value for this threat
-			ev.gameScore[color][eg] += score;
+			//ev.gameScore[color][eg] += score;
+			score += bb ? kingOnMPawn : kingOnPawn;
 		}
+	}
+	return score;
+}
+
+template<int color>
+Scores evaluatePassedPawns(const BitBoards& board, const EvalInfo& ev) {
+	
+	const int them = color == WHITE ? BLACK : WHITE;
+
+	U64 bb, squaresToQueen, defendedSquares, unsafeSquares;
+
+	bb = ev.pe->passedPawns(color);
+
+	while (bb) {
+
+		//assert pawn_passed check to test here
+
+		//find, remove, record pos of least sig bit
+		int sq = pop_lsb(&bb);
+
+		int r = relative_rankSq(color, sq) - 1;
+		int rr = r * (r - 1);
+
+		//need to modify bonus values for vals that are appropriate to this engine
+		int mBonus = 17 * rr, ebonus = 7 * (rr + r + 1);
+
+		if (rr) {
+
+			int blockSq = sq + pawn_push(color);
+
+
+
+		}
+
+
 	}
 }
 
@@ -507,16 +595,15 @@ const struct Weight { int mg, eg; } Weights[] = { //Test Not Good
 //for applying non phase independant scoring.
 //Weights are used to modify values in a particular section 
 //compared to those of other sections in overall scoring
-void applyWeights(int* score, const Weight & w, int val) {
-	
-	score[mg] += val * w.mg / 256;
-	score[eg] += val * w.eg / 256;
-}
-//used when there are sepperate values from mid and end game.
-void applyWeights(int* score, const Weight & w, int val, int val1) {
 
-	score[mg] += val  * w.mg / 256;
-	score[eg] += val1 * w.eg / 256;
+void spaceWeights(Scores & s, const Weight & w, int val) {
+	s.mg += val * w.mg / 256;
+}
+
+Scores applyWeights(Scores s, const Weight & w) {
+	s.mg = s.mg * w.mg / 256;
+	s.eg = s.eg * w.eg / 256;
+	return s;
 }
 
 int Evaluate::evaluate(const BitBoards & boards, bool isWhite)
@@ -539,48 +626,55 @@ int Evaluate::evaluate(const BitBoards & boards, bool isWhite)
 	}
 	
 	EvalInfo ev;
-	int result = 0, score[STAGE] = { 0 };
+	int result = 0;
+
+	Scores score;
 
 	//initilize king zones and king attacks for both kings
 	generateKingZones(boards, ev);
 
-	///TEST PAWN CLASS
-	ev.pe = Pawns::probe(boards, pawnsTable); //NEED TO CONVERT ALL SCORING IN THIS FILE TO SCORES STRUCT
+	//probe the pawn hash table for a hit,
+	//if we don't get a hit do full eval and return
+	ev.pe = Pawns::probe(boards, pawnsTable); 
 
-	score[mg] = ev.pe->score[mg];
-	score[eg] = ev.pe->score[eg];
+	//applyWeights(score, Weights[PawnStructure], ev.pe->score);
+	score = applyWeights(ev.pe->score, Weights[PawnStructure]);
 
+	//merge pawn attacks with our attack boards
 	ev.attackedBy[WHITE][0] |= ev.attackedBy[WHITE][PAWN] = ev.pe->pawnAttacks[WHITE];
 	ev.attackedBy[BLACK][0] |= ev.attackedBy[BLACK][PAWN] = ev.pe->pawnAttacks[BLACK];
 
-	ev.psqScores[WHITE][mg] += ev.pe->pieceSqTabScores[WHITE].mg;
-	ev.psqScores[BLACK][mg] += ev.pe->pieceSqTabScores[BLACK].mg;
-	ev.psqScores[WHITE][eg] += ev.pe->pieceSqTabScores[WHITE].eg;
-	ev.psqScores[BLACK][eg] += ev.pe->pieceSqTabScores[BLACK].eg;
+	//grab pawn piece square table values
+	ev.psqScores[WHITE] += ev.pe->pieceSqTabScores[WHITE];
+	ev.psqScores[BLACK] += ev.pe->pieceSqTabScores[BLACK];
 
 	//evaluate all pieces, except for most pawn info and king. Start at knight once we have
 	//a sepperate class for pawn info, holding a more relevent pawn TT than we have now
 	//right now we're passing it a mobility area that's calcuated mostly inside, later 
 	//we'll have to add exclusion of pawns && pawn attack squares outside the function.
 
-	U64 mobilityArea[COLOR]; //remove our king+our pawns from our color mobility areas
-	mobilityArea[WHITE] = boards.pieces(WHITE, PAWN, KING); //remove protected by pawns in evaluate pices function until we have 
-	mobilityArea[BLACK] = boards.pieces(BLACK, PAWN, KING); //a sepperate pawn eval and advanced pawn hash table
-															//mobilityArea[color] = ~(ev.attackedBy[them][PAWN] | mobilityArea[color]);
-	evaluatePieces<KNIGHT, WHITE>(boards, ev, mobilityArea);
+	U64 mobilityArea[COLOR]; //remove our king+our pawns as well as places attacked by enemy pawns  from our color mobility areas
+	mobilityArea[WHITE] = ~(ev.attackedBy[BLACK][PAWN] | boards.pieces(WHITE, PAWN, KING)); 
+	mobilityArea[BLACK] = ~(ev.attackedBy[WHITE][PAWN] | boards.pieces(BLACK, PAWN, KING)); 
+															
+	//loop through all pieces from Knight on, subtracting the first score with that of 
+	//the next pieces scores of a different color. Return when we reach king.
+	score += evaluatePieces<KNIGHT, WHITE>(boards, ev, mobilityArea);
 
 	//can only evaluate threats after piece attack boards have been generated
-	evalThreats<WHITE>(boards, ev);
-	evalThreats<BLACK>(boards, ev);
+	score += evalThreats<WHITE>(boards, ev) - evalThreats<BLACK>(boards, ev);
 
-	score[mg] += boards.bInfo.sideMaterial[WHITE] + ev.psqScores[WHITE][mg] - boards.bInfo.sideMaterial[BLACK] - ev.psqScores[BLACK][mg];
-	score[eg] += boards.bInfo.sideMaterial[WHITE] + ev.psqScores[WHITE][eg] - boards.bInfo.sideMaterial[BLACK] - ev.psqScores[BLACK][eg];
+	//add piece square table scores as well as material scores, WHITE - BLACK
+	score += (ev.psqScores[WHITE] + boards.bInfo.sideMaterial[WHITE]) - (ev.psqScores[BLACK] + boards.bInfo.sideMaterial[BLACK]);
 
+	//get center control data and apply the weights. Only 
+	//minor effect on midgame score
 	int ctrl =  centerControl<WHITE>(boards, ev) - centerControl<BLACK>(boards, ev);
-	applyWeights(score, Weights[Center], ctrl);
+	spaceWeights(score, Weights[Center], ctrl);
 
-	int gamePhase = 0;;
-
+	//find game phase based on held material
+	//REPLACE THIS with something more in depth
+	int gamePhase = 0;
 	for (int color = 1; color < 2; color++) {
 		gamePhase += boards.pieceCount[color][KNIGHT];
 		gamePhase += boards.pieceCount[color][BISHOP];
@@ -588,10 +682,13 @@ int Evaluate::evaluate(const BitBoards & boards, bool isWhite)
 		gamePhase += boards.pieceCount[color][QUEEN] * 4;
 	}
 
+	//score pieces in bad to horrible positions and pieces 
+	//that are blocked into those bad positons by other pieces
 	blockedPieces(WHITE, boards, ev);
 	blockedPieces(BLACK, boards, ev);
 
-	score[mg] += wKingShield(boards) - bKingShield(boards);
+	//add king shield bonus to mid game score, also REPLACE this in pawn eval so we can hash it
+	score.mg += wKingShield(boards) - bKingShield(boards);
 
 	//adjusting material value of pieces bonus for bishop, small penalty for others
 	if (boards.pieceCount[WHITE][BISHOP] > 1) ev.adjustMaterial[WHITE] += BISHOP_PAIR;
@@ -607,30 +704,22 @@ int Evaluate::evaluate(const BitBoards & boards, bool isWhite)
 	ev.adjustMaterial[WHITE] += rook_adj[boards.pieceCount[WHITE][PAWN]] * boards.pieceCount[WHITE][ROOK];
 	ev.adjustMaterial[BLACK] -= rook_adj[boards.pieceCount[BLACK][PAWN]] * boards.pieceCount[BLACK][ROOK];
 
-	//probe pawn hash table for a hit, if we don't get a hit
-	//proceed with pawnEval
-	//result += getPawnScore(boards, ev);
-
 	//evaluate both kings. Function returns a score taken from the king safety array
-	int ksf = evaluateKing<WHITE>(boards, ev, score[mg]) - evaluateKing<BLACK>(boards, ev, score[mg]);
-	applyWeights(score, Weights[KingSafety],  ksf);
+	Scores ksf;
+	ksf.mg = evaluateKing<WHITE>(boards, ev, score.mg) - evaluateKing<BLACK>(boards, ev, score.mg);
+	score += applyWeights(ksf, Weights[KingSafety]);
 
-	//add threat and some other scoring done in eval pieces, etc to scores
-	score[mg] += ev.gameScore[WHITE][mg] - ev.gameScore[BLACK][mg];
-	score[eg] += ev.gameScore[WHITE][eg] - ev.gameScore[BLACK][eg];
+	//add weight adjusted mobility score to score
+	score += applyWeights(ev.mobility[WHITE] - ev.mobility[BLACK], Weights[Mobility]);
 
-	//score[mg] += (ev.mobility[WHITE][mg] - ev.mobility[BLACK][mg]);
-	//score[eg] += (ev.mobility[WHITE][eg] - ev.mobility[BLACK][eg]);
-	int m1 = ev.mobility[WHITE][mg] - ev.mobility[BLACK][mg];
-	int m2 = ev.mobility[WHITE][eg] - ev.mobility[BLACK][eg];
 
-	applyWeights(score, Weights[Mobility], m1, m2);//TEST
-
+	//Interpolate between a mid and end game score based on held material
+	//again Needs To Be REPLACED with something more in depth
 	if (gamePhase > 24) gamePhase = 24;
 	int mgWeight = gamePhase;
 	int egWeight = 24 - gamePhase;
 
-	result += ((score[mg] * mgWeight) + (score[eg] * egWeight)) / 24;
+	result += ((score.mg * mgWeight) + (score.eg * egWeight)) / 24;
 
 	result += (ev.blockages[WHITE] - ev.blockages[BLACK]);
 	result += (ev.adjustMaterial[WHITE] - ev.adjustMaterial[BLACK]);
@@ -639,7 +728,8 @@ int Evaluate::evaluate(const BitBoards & boards, bool isWhite)
 	int strong = result > 0 ? WHITE : BLACK;
 	int weak = !strong;
 
-	if (boards.pieceCount[strong][PAWN] == 0) { // NEED more intensive filters for low material
+	// NEED more intensive filters for low material
+	if (boards.pieceCount[strong][PAWN] == 0) { 
 
 		if (boards.bInfo.sideMaterial[strong] < 400) return 0;
 

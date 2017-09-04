@@ -99,6 +99,7 @@ extern const U64 FILE_GH;
 extern U64 forwardBB[COLOR][64];
 extern U64 PassedPawnMask[COLOR][64];
 extern U64 PawnAttackSpan[COLOR][64];
+extern int SquareDistance[64][64];
 
 //UCI input varibles for "go"
 extern int wtime; //time left on whites clock

@@ -22,7 +22,7 @@
 #endif
 
 //holds mid and end game values
-struct Scores { int mg, eg; };
+struct Scores { int mg = 0, eg = 0; };
 
 inline Scores make_scores(int m, int e) {
 	Scores x;
@@ -45,6 +45,12 @@ inline void operator-=(Scores& s1, const Scores s2) {
 inline Scores operator+(Scores s1, const Scores s2) {
 	s1.mg += s2.mg;
 	s1.eg += s2.eg;
+	return s1;
+};
+
+inline Scores operator+(Scores s1, const int s2) {
+	s1.mg += s2;
+	s1.eg += s2;
 	return s1;
 };
 
@@ -76,10 +82,18 @@ inline Scores operator/(Scores s1, const Scores s2) {
 	return s1;
 }
 
+inline Scores operator/(Scores s1, int s2) {
+	s1.mg /= s2;
+	s1.eg /= s2;
+	return s1;
+}
+
 inline void operator/=(Scores& s1, const Scores s2) {
 	s1.mg /= s2.mg;
 	s1.eg /= s2.eg;
 }
+
+
 
 enum esqare {
     A8=0,  B8, C8, D8, E8, F8, G8, H8,
@@ -100,7 +114,8 @@ enum epiece {
     BISHOP,
     ROOK,
     QUEEN,
-    KING
+    KING,
+	PIECES
 };
 
 #define PAWN_VAL 100
@@ -203,11 +218,11 @@ enum Directions {
 };
 
 //shifts a bitboard in any of the enum directions above. Must use enum values in template
-template<int sh>
+template<int sh> //does not hold west and east shifts, make another that does?
 inline U64 shift_bb(U64 b) { //is shift correct? test
 	return  sh == N ? b >> 8 : sh == S ? b << 8
-		: sh == NE ? (b & ~FileHBB) >> 9 : sh == SE ? (b & ~FileHBB) << 7
-		: sh == NW ? (b & ~FileABB) >> 7 : sh == SW ? (b & ~FileABB) << 9
+		: sh == NE ? (b & ~FileABB) >> 7 : sh == SE ? (b & ~FileABB) << 9
+		: sh == NW ? (b & ~FileHBB) >> 9 : sh == SW ? (b & ~FileHBB) << 7
 		: 0LL;
 }
 
@@ -249,11 +264,20 @@ inline int file_of(int sq) {
 //returns the correct rank of the square for our bitboard layout.
 //with the XOR 7 it returns the reverse correct
 inline int rank_of(int sq) {
-	return (sq >> 3) ^ 7; 
+	return (sq >> 3) ^ 7;
 }
+
+inline int file_distance(int s1, int s2) {
+	return abs(file_of(s1) - file_of(s2));
+}
+
+inline int rank_distance(int s1, int s2) {
+	return abs(rank_of(s1) - rank_of(s2));
+}
+
 //returns a relative rank from an input rank
-inline int relative_rank(int color, int rank) { //POSIBLY NEED TO RETURN U64>?>?>?>?>?
-	return (rank ^ (color * 7));
+inline int relative_rank(int color, int rank) { 
+	return (rank ^ (!color * 7));
 }
 //returns a relative rank from a square location input
 inline int relative_rankSq(int color, int square) {

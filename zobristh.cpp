@@ -245,6 +245,21 @@ U64 ZobristH::debugKey(bool isWhite, const BitBoards& BBBoard)
     return returnZKey;
 }
 
+U64 ZobristH::debugPawnKey(const BitBoards & BBBoard)
+{
+	U64 pke = 0LL;
+	for (int s = 0; s < 64; ++s) {
+		if (((BBBoard.byColorPiecesBB[WHITE][PAWN] >> s ) & 1) == 1) {
+			pke ^= zArray[WHITE][PAWN][s];
+		}
+
+		if (((BBBoard.byColorPiecesBB[BLACK][PAWN] >> s) & 1) == 1 ) {
+			pke ^= zArray[BLACK][PAWN][s];
+		}
+	}
+	return pke;
+}
+
 
 
 

@@ -117,8 +117,16 @@ void BitBoards::initBoards()
 				}
 			}
 
+		}		
+	}
+
+	//find and record the max distance between two square on the game board
+	for (int s1 = 0; s1 < 64; ++s1) {
+		for (int s2 = 0; s2 < 64; ++s2) {
+			if (s1 != s2) {
+				SquareDistance[s1][s2] = std::max(file_distance(s1, s2), rank_distance(s1, s1));
+			}
 		}
-		
 	}
 }
 
@@ -366,7 +374,7 @@ void BitBoards::unmakeMove(const Move & m, bool isWhite)
 		//move piece
 		movePiece(m.piece, color, m.to, m.from);
 
-		if(m.piece == PAWN) bInfo.PawnKey ^= zobrist.zArray[color][PAWN][m.to] ^ zobrist.zArray[color][PAWN][m.to];
+		if(m.piece == PAWN) bInfo.PawnKey ^= zobrist.zArray[color][PAWN][m.to] ^ zobrist.zArray[color][PAWN][m.from];
 	}
 	//pawn promotion
 	else if (m.flag == 'Q'){
