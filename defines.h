@@ -30,6 +30,8 @@ inline Scores make_scores(int m, int e) {
 	return x;
 }
 
+#define SCORE_ZERO make_scores(0, 0)
+
 //overloaded Scores operators
 inline Scores operator-(Scores s1, const Scores s2) {
 	s1.mg -= s2.mg;

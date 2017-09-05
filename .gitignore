@@ -49,3 +49,8 @@ Temporary Items
 /StuckFish.vcxproj.user
 /StuckFish.vcxproj.filters
 /StuckFish.VC.VC.opendb
+
+# Performace Reports
+.psess
+.vspx
+.tmp.merged.etl

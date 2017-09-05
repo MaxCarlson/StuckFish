@@ -71,6 +71,8 @@ public:
 	bool isPawnPush(const Move& m, bool isWhite);
 	//is there a pawn on the 7 th rank relative to stm
 	bool pawnOn7th(bool isWhite);
+	//returns true if side color has any pieces aside from pawn/s or king
+	bool non_pawn_material(int color) const;
 
 
 	//return the key for the pawn hash table
@@ -164,6 +166,13 @@ inline bool BitBoards::isPawnPush(const Move &m, bool isWhite)
 inline bool BitBoards::pawnOn7th(bool isWhite)
 {	//again color is messed up, !isWhite, if white, points to whites index for pieces
 	return (byColorPiecesBB[!isWhite][PAWN] & (isWhite ? 0xFF00L : 0xFF000000000000L));
+}
+
+//returns true if side color has any pieces aside from pawn/s or king
+inline bool BitBoards::non_pawn_material(int color) const
+{
+	return (pieceCount[color][KNIGHT] != 0 || pieceCount[color][BISHOP] != 0
+		&& pieceCount[color][ROOK] != 0 || pieceCount[color][QUEEN] != 0) ? true : false;
 }
 
 //can only be used if there is no piece on landing spot

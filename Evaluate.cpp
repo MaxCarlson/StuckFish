@@ -88,6 +88,7 @@ const Scores kingOnPawn = S(0, 30);
 const Scores kingOnMPawn = S(0, 64);
 const Scores rookHalfOpen = S(5, 3);
 const Scores rookOpen = S(10, 5);
+const Scores Unstoppable = S(0, 6); //might need to play with value since not weighted
 
 //used to value higher value pieces more
 //if they are attacking zone around the king
@@ -595,6 +596,14 @@ Scores evaluatePassedPawns(const BitBoards& board, const EvalInfo& ev) {
 	return applyWeights(score, Weights[PassedPawns]);
 }
 
+template<int color>
+Scores unstoppablePawns(const EvalInfo& ev) {
+
+	U64 bb = ev.pe->passedPawns[color] | ev.pe->candidatePawns[color];
+
+	return bb ? Unstoppable * relative_rank(color, frontmost_sq(color, bb)) : SCORE_ZERO;
+}
+
 enum {Mobility,  PawnStructure,  PassedPawns,  Center,  KingSafety};
 
 const struct Weight { int mg, eg; } Weights[] = { //reduce weights by half + for Passed Pawns?
@@ -728,6 +737,11 @@ int Evaluate::evaluate(const BitBoards & boards, bool isWhite)
 	//add weight adjusted mobility score to score
 	score += applyWeights(ev.mobility[WHITE] - ev.mobility[BLACK], Weights[Mobility]);
 
+	//if both sides only have pawns, score for unstoppable pawns
+	if (!boards.non_pawn_material(WHITE) && !boards.non_pawn_material(BLACK)) {
+
+		score += unstoppablePawns<WHITE>(ev) - unstoppablePawns<BLACK>(ev);
+	}
 
 	//Interpolate between a mid and end game score based on held material
 	//again Needs To Be REPLACED with something more in depth
