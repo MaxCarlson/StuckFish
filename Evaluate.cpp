@@ -43,6 +43,8 @@ static const int bSQ[64] = {
 U64 KingSide = FileMasks8[5] | FileMasks8[6] | FileMasks8[7];
 U64 QueenSide = FileMasks8[2] | FileMasks8[1] | FileMasks8[0];
 
+//used for minor bonus to mid game scoring. for not 
+//attacked area in center of the board that we control
 U64 center[STAGE] = {
 	(FileCBB | FileDBB | FileEBB | FileFBB) & (RankMasks8[1] | RankMasks8[2] | RankMasks8[3]),
 	(FileCBB | FileDBB | FileEBB | FileFBB) & (RankMasks8[6] | RankMasks8[5] | RankMasks8[4])
@@ -70,10 +72,6 @@ const int ROOK_PAIR = 16;
 //Idea taken from StockFish.
 #define S(mg, eg) make_scores(mg, eg)
 
-const Scores Hanging = S(9, 7);
-const Scores kingOnPawn = S(0, 30);
-const Scores kingOnMPawn = S(0, 64);
-
 
 const Scores pawnThreat[PIECES]{
 	S(0, 0), S(0 , 0), S(24, 32), S(25, 32), S(35, 57), S(40, 65)
@@ -84,25 +82,20 @@ const Scores threats[2][PIECES]{
 	{ S(0,  0), S(4, 8), S(4, 10), S(4, 10), S(4,  10), S(6,  11) }  //Major
 };
 
-/*
-const int threatenedByPawn[STAGE][6] = //midgame/endgame - piece type threatened
-{ { 0, 0, 24, 25, 35, 40 }, 
-  { 0, 0, 32, 32, 57, 65 } };
-
-const int threats[2][2][6] = //minor/major - mid/endgame threats/ piece type
-{   //mid game             //end game
-	{{0, 2, 6, 6, 12, 12}, {0, 8, 10, 10, 20, 20},}, //minor
-	{{0, 4, 4, 4,  4,  6}, {0, 8, 10, 10, 10, 11}}   //major
-};
-*/
-/*
-const int rookHalfOpen[STAGE] = {5, 3};
-const int rookOpen[STAGE] = {10, 5};
-*/
-
+//Bonuses and penalties
+const Scores Hanging = S(9, 7);
+const Scores kingOnPawn = S(0, 30);
+const Scores kingOnMPawn = S(0, 64);
 const Scores rookHalfOpen = S(5, 3);
 const Scores rookOpen = S(10, 5);
 
+//used to value higher value pieces more
+//if they are attacking zone around the king
+const int KingAttackerWeights[6] = { 0, 0, 2, 2, 3, 5 };
+
+//numbers used in king safety, representing enemy safe checks.
+//Multiplied by the number of 
+//squares in king zone/adjacent kz
 const int QueenContactCheck = 7;
 const int RookContactCheck = 5;
 const int QueenCheck = 3;
@@ -110,8 +103,8 @@ const int RookCheck = 2;
 const int BishopCheck = 1;
 const int KnightCheck = 1;
 
-const int KingAttackerWeights[6] = { 0, 0, 2, 2, 3, 5 };
-
+//score of evaluate king uses this as a lookup table
+//and subtracts from score for white, adds for black
 static const int SafetyTable[100] = {
 	0,  0,   1,   2,   3,   5,   7,   9,  12,  15,
 	18,  22,  26,  30,  35,  39,  44,  50,  56,  62,
@@ -125,76 +118,23 @@ static const int SafetyTable[100] = {
 	500, 500, 500, 500, 500, 500, 500, 500, 500, 500
 };
 
+//bonus for mid and end game mobility, 
+//by pieces and by squares of mobility
 const Scores mobilityBonus[PIECES][30]{ //S(midgame, endgame)
-	{}, {},
-	{ S(-20, -17), S(-16, -14), S(-2, -3),  S(3, 0),  S(  6, 3 ), S(10, 6),  S(15, 9),  S(17, 10), S(19, 11), }, //kights mob bonus
+	{}, {}, //no piece and pawn, no mobility bonus
 
-	{ S(-17, -15), S(-10, -7),  S( 1,  1),  S( 4,  6), S( 7,  9), S(11, 12), S(14, 14), //bishops
+	{ S(-20, -17), S(-16, -14), S(-2, -3),  S(3, 0),  S(  6, 3 ), S(10, 6),  S(15, 9),  S(17, 10), S(19, 11), }, //Knights
+
+	{ S(-17, -15), S(-10, -7),  S( 1,  1),  S( 4,  6), S( 7,  9), S(11, 12), S(14, 14), //Bishops
 	  S( 17,  15), S( 19, 17),  S(20, 17),  S(21, 17), S(22, 19), S(22, 19), S(23, 19), },
 
-	{ S(-12, -14), S( -8, -7),  S( -3,  0), S( 1,  4), S( 4,  9), S( 6, 13), S( 9, 17), S(11, 24), //rooks
+	{ S(-12, -14), S( -8, -7),  S( -3,  0), S( 1,  4), S( 4,  9), S( 6, 13), S( 9, 17), S(11, 24), //Rooks
 	  S( 12,  30), S( 13, 35),  S( 14, 40), S(15, 42), S(15, 43), S(15, 45), S(16, 45), },
 
 	{ S(-14, -14), S(-9,  -8),  S(-3,  -4), S( 0,  0), S( 2,  3), S( 4,  5), S( 5, 10), S( 6, 15), 
-	  S(  7,  16), S( 7,  17),  S( 7,  17), S( 7, 17), S( 8, 17), S( 8, 17), S( 8, 17), S( 8, 17), S(8, 17), S(8, 17), //queens
+	  S(  7,  16), S( 7,  17),  S( 7,  17), S( 7, 17), S( 8, 17), S( 8, 17), S( 8, 17), S( 8, 17), S(8, 17), S(8, 17), //Queens
 	  S(  9,  17), S( 9,  17),  S( 9,  17), S( 9, 17), S( 9, 17), S( 9, 17), S( 9, 17), S( 9, 17), S(9, 17), S(9, 17) }
 }; 
-/*
-//mid game mobility bonus per square of mobiltiy
-const int midGmMobilityBonus[6][28]{
-	{},{}, //no piece and pawn indexs
-	{ -20, -16, -2, 3, 6, 10, 15, 17, 19 }, //knights 
-
-	{ -17, -10, 1, 4, 7, 11, 14, //bishops
-	17, 19, 20, 21, 22, 22, 23 },
-
-	{ -12, -8, -3, 1, 4, 6, 9, 11, //rooks
-	12, 13, 14, 15, 15, 15, 16 },
-
-	{ -14, -9, -3, 0, 2, 4, 5, 6, 7, 7,//queens
-	7, 8, 8, 8, 8, 8, 8, 9, 9, 9, 9, 9,
-	9, 9, 9, 9, 9, 9 }
-
-};
-
-//end game mobility bonus
-const int endGMobilityBonus[6][28]{
-	{},{},
-	{ -17, -14, -3, 0, 3, 6, 9, 10, 11 }, //knights 
-
-	{ -15, -7, 1, 6, 9, 12, 14, //bishops
-	15, 17, 17, 17, 19, 19, 19 },
-
-	{ -14, -7, 0, 4, 9, 13, 17, 21, //rooks 
-	24, 27, 29, 29, 30, 31, 31 },
-
-	{ -14, -8, -4, 0, 3, 5, 10, 15, //queens
-	16, 17, 17, 17, 17, 17, 17, 17,
-	17, 17, 17, 17, 17, 17, 17, 17,
-	17, 17, 17, 17 }
-};
-*/
-/*
-struct EvalInfo {
-	int gameScore[COLOR][STAGE] = { { 0 } }; //white, black - mid game = 0, end game = 1
-
-	int psqScores[COLOR][STAGE] = { { 0 } }; //piece square table scores
-
-	U64 kingZone[COLOR] = {0LL}; //zone around king, by color
-	int kingAttackers[COLOR] = {0}; //number of pieces attacking opponent king
-	int kingAttWeights[COLOR] = { 0 }; //added weight of king attackers
-	int adjacentKingAttckers[COLOR] = { 0 }; //num pieces attacking sqs adjacent to king
-
-	U64 attackedBy[COLOR][7] = { {0LL} }; //bitboards of attacked squares by color and piece type, 0 for second index is all pieces of that color
-
-	int mobility[COLOR][STAGE] = { { 0 } }; //color, midgame/endgame scoring
-
-	int blockages[COLOR] = { 0 };
-
-	int adjustMaterial[COLOR] = { 0 };
-
-	Pawns::PawnsEntry * pe;
-};*/
 
 struct EvalInfo {
 
@@ -205,9 +145,10 @@ struct EvalInfo {
 	int kingAttWeights[COLOR] = { 0 }; //added weight of king attackers
 	int adjacentKingAttckers[COLOR] = { 0 }; //num pieces attacking sqs adjacent to king
 
-	U64 attackedBy[COLOR][7] = { { 0LL } }; //bitboards of attacked squares by color and piece type, 0 for second index is all pieces of that color
+	//bitboards of attacked squares by color and piece type, 
+	U64 attackedBy[COLOR][7] = { { 0LL } }; //0 for second index is all pieces of that color
 
-	Scores mobility[COLOR]; //color, midgame/endgame scoring
+	Scores mobility[COLOR]; 
 
 	int blockages[COLOR] = { 0 };
 
@@ -280,9 +221,9 @@ Scores evaluatePieces(const BitBoards & boards, EvalInfo & ev, U64 * mobilityAre
 		int adjSq = color == WHITE ? square : bSQ[square];
 
 		//add piece square table scores 
-		ev.psqScores[color].mg += pieceSqTab[pT][mg][adjSq];
-		ev.psqScores[color].eg += pieceSqTab[pT][eg][adjSq];		
-		
+		ev.psqScores[color] += make_scores(pieceSqTab[pT][mg][adjSq], pieceSqTab[pT][eg][adjSq]);
+			
+	
 		//find attack squares, including xray bishop and rook attacks blocked by queens / rooks/queens
 		U64 bb = pT == BISHOP ? slider_attacks.BishopAttacks(boards.FullTiles ^ boards.pieces(color, QUEEN), square)
 			: pT == ROOK ? slider_attacks.RookAttacks(boards.FullTiles ^ boards.pieces(color, QUEEN, ROOK), square)
@@ -387,6 +328,8 @@ int centerControl(const BitBoards & boards, const EvalInfo & ev) {
 	behind |= (color == WHITE ? behind <<  8 : behind >>  8);
 	behind |= (color == WHITE ? behind << 16 : behind >> 16);
 
+	//return the count of number of safe squares behind, relative to stm,
+	//that are within the center. Very minor bonus to mid game
 	return bit_count((color == WHITE ? safe >> 32 : safe << 32) | (behind & safe));
 }
 
@@ -566,6 +509,9 @@ Scores evaluatePassedPawns(const BitBoards& board, const EvalInfo& ev) {
 
 	Scores score;
 
+	//COMMENT OUT WHEN NOT TESTING!!!!!!!!!!!!!!!!!!!!!!!!!
+	BitBoards a = board;
+
 	b = ev.pe->passedPawns[color];
 
 	while (b) {
@@ -583,9 +529,10 @@ Scores evaluatePassedPawns(const BitBoards& board, const EvalInfo& ev) {
 
 		if (rr) {
 
+			//square in front of passed pawn, relative our stm
 			int blockSq = sq + pawn_push(color);
 
-			//adjust bonus passed on the king's proximity ///NEED TO CHANGE BONUS STATS TO GAME, THAT OR ADJUST PASSED PAWN WEIGHTING.
+			//adjust bonus passed on both kings proximity to block square 
 			ebonus += square_distance(board.king_square(them), blockSq) * 5 * rr
 				   - square_distance(board.king_square(color), blockSq) * 2 * rr;
 
@@ -603,7 +550,7 @@ Scores evaluatePassedPawns(const BitBoards& board, const EvalInfo& ev) {
 
 				defendedSquares = unsafeSquares = squaresToQueen = forwardBB[color][sq];
 
-				U64 bb = forwardBB[them][sq] & board.piecesByType(ROOK, QUEEN) & slider_attacks.RookAttacks(board.FullTiles, sq); //CHECK FOR pos.attacks_from<ROOK>(s) in stockfish eval to make sure we're using slider attacks when we need to
+				U64 bb = forwardBB[them][sq] & board.piecesByType(ROOK, QUEEN) & slider_attacks.RookAttacks(board.FullTiles, sq); 
 
 				if (!(board.pieces(color) & bb))
 					defendedSquares &= ev.attackedBy[color][0]; //attacked by all pieces
@@ -651,11 +598,11 @@ Scores evaluatePassedPawns(const BitBoards& board, const EvalInfo& ev) {
 enum {Mobility,  PawnStructure,  PassedPawns,  Center,  KingSafety};
 
 const struct Weight { int mg, eg; } Weights[] = { //reduce weights by half + for Passed Pawns?
-	{ 289, 344 }, { 175, 145 }, { 221, 273 }, { 50, 0 }, { 318, 0 }
+	{ 289, 344 }, { 205, 188 }, { 117, 145 }, { 50, 0 }, { 318, 0 }
 };
 /*
 const struct Weight { int mg, eg; } Weights[] = { //Test Not Good
-	{ 289, 320 }, { 233, 201 }, { 221, 273 }, <--//orig values for passed{ 50, 0 },{ 290, 0 }
+	{ 289, 320 }, { 233, 201 }, { 221, 273 }, <--orig values for passed{ 50, 0 },{ 290, 0 }
 };
 */
 //for applying non phase independant scoring.
@@ -733,7 +680,7 @@ int Evaluate::evaluate(const BitBoards & boards, bool isWhite)
 	score += (ev.psqScores[WHITE] + boards.bInfo.sideMaterial[WHITE]) - (ev.psqScores[BLACK] + boards.bInfo.sideMaterial[BLACK]);
 
 	//evaluate passed pawns, Weights are applied in function itself 
-	//score += evaluatePassedPawns<WHITE>(boards, ev) - evaluatePassedPawns<BLACK>(boards, ev);
+	score += evaluatePassedPawns<WHITE>(boards, ev) - evaluatePassedPawns<BLACK>(boards, ev);
 
 	//get center control data and apply the weights. Only 
 	//minor effect on midgame score

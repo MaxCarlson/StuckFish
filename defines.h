@@ -277,7 +277,7 @@ inline int rank_distance(int s1, int s2) {
 
 //returns a relative rank from an input rank
 inline int relative_rank(int color, int rank) { 
-	return (rank ^ (!color * 7));
+	return (rank ^ (color * 7));
 }
 //returns a relative rank from a square location input
 inline int relative_rankSq(int color, int square) {

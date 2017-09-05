@@ -158,6 +158,10 @@ Scores evalPawns(const BitBoards & boards, PawnsEntry *e) {
 	e->pawnsOnSquares[color][WHITE] = boards.pieceCount[color][PAWN] - e->pawnsOnSquares[color][BLACK];
 
 
+	///!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	//DELETE OR COMMENT OUT WHEN NOT TESTING
+	//BitBoards a = boards;
+
 	//location of pawn, 
 	int square;
 
@@ -225,6 +229,7 @@ Scores evalPawns(const BitBoards & boards, PawnsEntry *e) {
 				 && (bb = pawn_attack_span(them, square + pawn_push(color)) & ourPawns) != 0 //need to test the & to make sure it works
 				 && bit_count(bb) >= bit_count(pawn_attack_span(color, square) & enemyPawns);
 
+
 		// Passed pawns will be properly scored in evaluation because we need
 		// full attack info to evaluate passed pawns. Only the frontmost passed
 		// pawn on each file is considered a true passed pawn.
@@ -233,7 +238,7 @@ Scores evalPawns(const BitBoards & boards, PawnsEntry *e) {
 		if (passed && !doubled) 
 			e->passedPawns[color] |= boards.squareBB[square];
 		
-		///*
+		
 		if (isolated)
 			val -= Isolated[opposed][f]; 
 
@@ -259,7 +264,7 @@ Scores evalPawns(const BitBoards & boards, PawnsEntry *e) {
 			if (!doubled)
 				e->candidatePawns[color] |= square;
 		}
-		//*/
+		
 		
 	}
 	
