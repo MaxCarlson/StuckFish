@@ -7,6 +7,7 @@
 #include "slider_attacks.h"
 #include "externs.h"
 #include "ai_logic.h"
+#include "Pawns.h"
 
 //totally full bitboard
 const U64 full  = 0xffffffffffffffffULL;
@@ -98,6 +99,7 @@ void MoveGen::generatePsMoves(const BitBoards& boards, bool capturesOnly)
         possibleBP(pawns, eking, capturesOnly);
     }
 
+	int color = !isWhite;
     //if we don't want to only generate captures
     U64 capsOnly = full;
     //if we only want to generate captures
@@ -105,6 +107,7 @@ void MoveGen::generatePsMoves(const BitBoards& boards, bool capturesOnly)
 
 	//while there is a piece on the board, grab that pieces location and pop it from the board
 	//then generate moves for a piece on that location, and push those moves the the move array
+/*
 	while (knights) {
 		int loc = pop_lsb(&knights);
 		possibleN(loc, friends, enemys, eking, capsOnly);
@@ -125,7 +128,13 @@ void MoveGen::generatePsMoves(const BitBoards& boards, bool capturesOnly)
 		int loc = pop_lsb(&king);
 		possibleK(loc, friends, enemys, eking, capsOnly);
 	}
+*/
 
+	possibleN(boards, color, capsOnly);
+	possibleB(boards, color, capsOnly);
+	possibleR(boards, color, capsOnly);
+	possibleQ(boards, color, capsOnly);
+	possibleK(boards, color, capsOnly);
 
     return;
 }
@@ -315,206 +324,188 @@ void MoveGen::possibleBP(const U64 &bpawns, const U64 &whiteking, bool capturesO
 }
 
 //other piece moves
-void MoveGen::possibleN(U8 location, const U64 &friends, const U64 &enemys, const U64 &oppositeking, const U64 &capturesOnly)
+void MoveGen::possibleN(const BitBoards& board, int color, const U64 &capturesOnly)
 {
-    char piece = KNIGHT;
-    U64 moves;
 
-    //use the knight span board which holds possible knight moves
-    //and apply a shift to the knights current pos
-    if(location > 18){
-        moves = KNIGHT_SPAN<<(location-18);
-    } else {
-        moves = KNIGHT_SPAN>>(18-location);
-    }
+	const int* list = board.pieceLoc[color][KNIGHT];
+	U64 friends = board.pieces(color);
+	U64 enemys = board.pieces(!color);
+	U64 eking = board.pieces(!color, KING);
 
-    //making sure the moves don't wrap around to other side once shifter
-    //as well as friendly and illegal king capture check
-    if(location % 8 < 4){
-        moves &= ~FILE_GH & ~friends & ~oppositeking & capturesOnly;
-    } else {
-        moves &= ~FILE_AB & ~friends & ~oppositeking & capturesOnly;
-    }
+	int square;
+	while ((square = *list++) != SQ_NONE) {
 
-    //U64 j = moves & ~(moves-1);
-    char captured;
-    while(moves){
-        //store moves
-		int index = pop_lsb(&moves);
+		U64 moves = board.psuedoAttacks(KNIGHT, color, square);
+		moves &= capturesOnly & ~(friends | eking);
 
-        captured = PIECE_EMPTY;
-        U64 landing = 1LL << index;
+		while (moves) {
+			//store moves
+			int index = pop_lsb(&moves);
 
-        if(landing & enemys){
-            captured = whichPieceCaptured(landing);
-        }
+			U64 landing = board.square_bb(index);
 
-        movegen_push(piece, captured, '0', location, index);
-    }
-}
+			int captured = (landing & enemys) ? whichPieceCaptured(landing) : PIECE_EMPTY;
 
-void MoveGen::possibleB(U8 location,  const U64 &friends, const U64 &enemys, const U64 &oppositeking, const U64 &capturesOnly)
-{
-    int piece = BISHOP;
-
-    U64 moves = slider_attacks.BishopAttacks(FullTiles, location);
-    moves &= ~friends & capturesOnly & ~oppositeking;
-
-    //U64 j = moves & ~ (moves-1);
-
-    char captured;
-    while(moves){
-		int index = pop_lsb(&moves);
-
-        captured = PIECE_EMPTY;
-        U64 landing = 1LL << index;
-
-        if(landing & enemys){
-            captured = whichPieceCaptured(landing);
-        }
-
-        movegen_push(piece, captured, '0', location, index);
-
-    }
-}
-
-void MoveGen::possibleR(U8 location,  const U64 &friends, const U64 &enemys, const U64 &oppositeking, const U64 &capturesOnly, const BitBoards& boards)
-{
-    char piece = ROOK;
-    char flag = '0';
-/*
-	if (isWhite) {
-		//has rook moved flags
-		//is rook on initial location and rook hasn't moved yet
-		if (location == A1 && !boards.rookMoved[0]) flag = A1 + 1;
-		else if (location == H1 && !boards.rookMoved[1]) flag = H1 + 1;
+			movegen_push(KNIGHT, captured, '0', square, index);
+		}
 	}
-	else {
-		if (location == A8 && !boards.rookMoved[2]) flag = A8 + 1;
-		else if (location == H8 && !boards.rookMoved[3]) flag = H8 + 1;
-	}  
-*/
-    U64 moves = slider_attacks.RookAttacks(FullTiles, location);
-    moves &= ~friends & capturesOnly & ~oppositeking;
 
-    char captured;
-    while(moves){
-		int index = pop_lsb(&moves);
-        captured = PIECE_EMPTY;
-        //U64 landing = 0LL;
-        U64 landing = 1LL << index;
-        if(landing & enemys){
-            captured = whichPieceCaptured(landing);
-        }
-
-        movegen_push(piece, captured, flag, location, index);
-
-    }
 
 }
 
-void MoveGen::possibleQ(U8 location,  const U64 &friends, const U64 &enemys, const U64 &oppositeking, const U64 &capturesOnly)
+void MoveGen::possibleB(const BitBoards& board, int color, const U64 &capturesOnly)
 {
-    char piece = QUEEN;
 
-    //grab moves from magic bitboards
-    U64 moves = slider_attacks.QueenAttacks(FullTiles, location);
+	const int* list = board.pieceLoc[color][BISHOP];
+	U64 friends = board.pieces(color);
+	U64 enemys = board.pieces(!color);
+	U64 eking = board.pieces(!color, KING);
 
-    //and against friends and a full board if normal move gen, or enemy board if captures only
-    moves &= ~friends & capturesOnly & ~oppositeking;
+	int square;
+	while ((square = *list++) != SQ_NONE) {
+	
+		U64 moves = slider_attacks.BishopAttacks(board.FullTiles, square);
+		moves &= capturesOnly & ~(friends | eking);
 
-    char captured;
-    while(moves){
-		int index = pop_lsb(&moves);
+		while (moves) {
+			int index = pop_lsb(&moves);
 
-        captured = PIECE_EMPTY;
-        U64 landing = 1LL << index;
+			U64 landing = board.square_bb(index);
 
-        if(landing & enemys){
-            captured = whichPieceCaptured(landing);
-        }
+			int captured = (landing & enemys) ? whichPieceCaptured(landing) : PIECE_EMPTY;
 
-        movegen_push(piece, captured, '0', location, index);
-    }
+			movegen_push(BISHOP, captured, '0', square, index);
 
+		}
+
+	}
+
+ 
 }
 
-void MoveGen::possibleK(U8 location,  const U64 &friends, const U64 &enemys, const U64 &oppositeking, const U64 &capturesOnly)
+void MoveGen::possibleR(const BitBoards& board, int color, const U64 &capturesOnly)
 {
-    U64 moves;
-    char piece = KING;
 
-    if(location > 9){
-        moves = KING_SPAN << (location-9);
-
-    } else {
-        moves = KING_SPAN >> (9-location);
-    }
-
-    if(location % 8 < 4){
-        moves &= ~FILE_GH & ~friends & capturesOnly & ~oppositeking;
-
-    } else {
-        moves &= ~FILE_AB & ~friends & capturesOnly& ~oppositeking;
-    }
+	const int* list = board.pieceLoc[color][ROOK];
+	U64 friends = board.pieces(color);
+	U64 enemys = board.pieces(!color);
+	U64 eking = board.pieces(!color, KING);
 
 
+	int square;
+	while ((square = *list++) != SQ_NONE) {
 
-    char captured;
-    while(moves){
-		int index = pop_lsb(&moves);
-        captured = PIECE_EMPTY;
-        U64 landing = 1LL << index;
+		U64 moves = slider_attacks.RookAttacks(board.FullTiles, square);
+		moves &= capturesOnly & ~(friends | eking);
 
-        if(landing & enemys){
-            captured = whichPieceCaptured(landing);
-        }
+		char captured;
+		while (moves) {
+			int index = pop_lsb(&moves);
 
-        movegen_push(piece, captured, '0', location, index);
+			U64 landing = board.square_bb(index);
 
-    }
+			int captured = (landing & enemys) ? whichPieceCaptured(landing) : PIECE_EMPTY;
+
+			movegen_push(ROOK, captured, '0', square, index);
+
+		}
+
+	}
+
+    
 
 }
 
-void MoveGen::movegen_push(char piece, char captured, char flag, U8 from, U8 to)
+void MoveGen::possibleQ(const BitBoards& board, int color, const U64 &capturesOnly)
+{
+	const int* list = board.pieceLoc[color][QUEEN];
+	U64 friends = board.pieces(color);
+	U64 enemys = board.pieces(!color);
+	U64 eking = board.pieces(!color, KING);
+
+	int square;
+	while ((square = *list++) != SQ_NONE) {
+
+		//grab moves from magic bitboards
+		U64 moves = slider_attacks.QueenAttacks(board.FullTiles, square);
+
+		moves &= capturesOnly & ~(friends | eking);
+
+		int captured;
+		while (moves) {
+			int index = pop_lsb(&moves);
+
+			U64 landing = board.square_bb(index);
+
+			int captured = (landing & enemys) ? whichPieceCaptured(landing) : PIECE_EMPTY;
+
+			movegen_push(QUEEN, captured, '0', square, index);
+		}
+	}
+}
+
+void MoveGen::possibleK(const BitBoards& board, int color, const U64 &capturesOnly)
+{
+	const int* list = board.pieceLoc[color][KING];
+	U64 friends = board.pieces(color);
+	U64 enemys = board.pieces(!color);
+	U64 eking = board.pieces(!color, KING);
+
+	int square;
+	while ((square = *list++) != SQ_NONE) {
+
+		U64 moves = board.psuedoAttacks(KING, color, square);
+		moves &= capturesOnly & ~(friends | eking);
+
+		while (moves) {
+			int index = pop_lsb(&moves);
+
+			U64 landing = board.square_bb(index);
+
+			int captured = (landing & enemys) ? whichPieceCaptured(landing) : PIECE_EMPTY;
+
+			movegen_push(KING, captured, '0', square, index);
+		}
+	}   
+}
+
+void MoveGen::movegen_push(int piece, int captured, char flag, int from, int to) //change flags to int eventually
 {
     //store move data to move object array
     moveAr[moveCount].from = from;
     moveAr[moveCount].to = to;
-
     moveAr[moveCount].piece = piece;
     moveAr[moveCount].captured = captured;
     moveAr[moveCount].flag = flag;
-    moveAr[moveCount].score = 0;
 
 
     /**************************************************************************
-    * Quiet moves are sorted by history and gains score.                      *
+    * Quiet moves are sorted by history score.                                *
     **************************************************************************/
 	moveAr[moveCount].score = history.history[isWhite][from][to]; //+ history.gains[isWhite][piece][to] * 10; //find a way to pass historys here instead of using global???
 
     //scoring capture moves
     if(captured){
 
-		int idAr[7] = { 0, 5, 4, 3, 2, 1, 0 }; //higher id value for lower value piece - captures are better if from lower
+		//higher id value for lower value piece,
+		//captures are better if from lower (small bonus for both kinds of captures)
+		//insuring identical captures, lower piece capturing always scores higher.
+		int idAr[7] = { 0, 5, 4, 3, 2, 1, 0 }; 
+		
 
         //Good captures are scored higher, based on BLIND better lower if not defended
         //need to add Static Exchange at somepoint
         if(blind(moveAr[moveCount], SORT_VALUE[piece], SORT_VALUE[captured])) moveAr[moveCount].score = SORT_CAPT + SORT_VALUE[captured] + idAr[piece];
 
         //captures of defended pieces or pieces we know nothing about ~~ better if lower still, by id
-        else moveAr[moveCount].score = SORT_VALUE[captured] + idAr[piece]; // + SORT_CAPT/4 ???
-		
-		/*
-		int see = SEE(moveAr[moveCount], newBoard, isWhite);
-		if(see > 0) moveAr[moveCount].score = SORT_CAPT + see;
-		else moveAr[moveCount].score = see;
-		*/
+        else moveAr[moveCount].score = SORT_VALUE[captured] + idAr[piece]; 
     }
 
     //pawn promotions
     if(moveAr[moveCount].flag == 'Q') moveAr[moveCount].score += SORT_PROM;
 
+	//increment move counter so we know how many
+	//moves we have to search and sort through
     moveCount ++;
 }
 
@@ -582,7 +573,7 @@ int MoveGen::SEE(const Move& m, const BitBoards& b, bool isWhite, bool isCapture
 
 	swapList[0] = SORT_VALUE[m.captured];
 
-	occupied = b.FullTiles ^ b.squareBB[m.from]; //remove capturing piece from occupied bb 
+	occupied = b.FullTiles ^ b.square_bb(m.from); //remove capturing piece from occupied bb 
 
 	//need castling and enpassant logic once implmented
 

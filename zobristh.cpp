@@ -247,17 +247,33 @@ U64 ZobristH::debugKey(bool isWhite, const BitBoards& BBBoard)
 
 U64 ZobristH::debugPawnKey(const BitBoards & BBBoard)
 {
-	U64 pke = 0LL;
+	U64 pkey = 0LL;
 	for (int s = 0; s < 64; ++s) {
 		if (((BBBoard.byColorPiecesBB[WHITE][PAWN] >> s ) & 1) == 1) {
-			pke ^= zArray[WHITE][PAWN][s];
+			pkey ^= zArray[WHITE][PAWN][s];
 		}
 
 		if (((BBBoard.byColorPiecesBB[BLACK][PAWN] >> s) & 1) == 1 ) {
-			pke ^= zArray[BLACK][PAWN][s];
+			pkey ^= zArray[BLACK][PAWN][s];
 		}
 	}
-	return pke;
+	return pkey;
+}
+
+U64 ZobristH::debugMaterialKey(const BitBoards & BBBoard)
+{
+	U64 mkey = 0LL;
+	for (int color = 0; color < COLOR; ++color) {
+		for (int pt = PAWN; pt <= KING; ++pt) {
+			for (int count = 0; count <= BBBoard.pieceCount[color][pt]; ++count) {
+
+				//XOR material key with piece count instead of square location
+				//so we can have a Material Key that represents what material is on the board.
+				mkey ^= zArray[color][pt][count];
+			}
+		}
+	}
+	return mkey;
 }
 
 

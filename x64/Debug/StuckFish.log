@@ -1,13 +1,14 @@
-﻿  movegen.cpp
+﻿  zobristh.cpp
+  movegen.cpp
+  material.cpp
   evaluatebb.cpp
+  bitboards.cpp
+  ai_logic.cpp
   Evaluate.cpp
   Generating Code...
   Compiling...
-  zobristh.cpp
   main.cpp
   hashentry.cpp
-  bitboards.cpp
-  ai_logic.cpp
   UCI.cpp
   TranspositionT.cpp
   TimeManager.cpp

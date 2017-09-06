@@ -86,8 +86,9 @@ void UCI::uciLoop()
 			TT.clearTable(); //need to clear other TTables too at somepoint
 			searchM.initSearch();
 			wtime = btime = 2200000;
-			std::thread thr(&UCI::search, this, newBoard);
-			thr.join();
+			//std::thread thr(&UCI::search, this, newBoard);
+			//thr.join();
+			search(newBoard);
 		}
 		else if (token == "position") {
 			updatePosition(newBoard, is);
@@ -110,8 +111,9 @@ void UCI::uciLoop()
 				else if (token == "depth")     is >> fixedDepthSearch;
 			}
 
-			std::thread thr(&UCI::search, this, newBoard); 
-			thr.join(); //search on new thread -- need to implement so search thread can receive signals to stop from GUI.
+			//std::thread thr(&UCI::search, this, newBoard);  //THREAD CAUSES ERRORS WITH LARGE BTIBOARD OBJECT????
+			//thr.join(); //search on new thread -- need to implement so search thread can receive signals to stop from GUI.
+			search(newBoard);
 			
 		}
 		else if (token == "quit")

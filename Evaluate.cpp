@@ -155,7 +155,11 @@ struct EvalInfo {
 
 	int adjustMaterial[COLOR] = { 0 };
 
+	//pawns and material
+	//hash table * entries
 	Pawns::PawnsEntry * pe;
+
+	Material::Entry * me;
 };
 
 
@@ -275,7 +279,7 @@ Scores evaluatePieces(const BitBoards & boards, EvalInfo & ev, U64 * mobilityAre
 		//need knight and bishop evals
 
 		if (pT == ROOK) {
-			U64 currentFile = FileMasks8[square & 7];
+			U64 currentFile = FileMasks8[square & 7]; //NEED TO SERIOUSLY OPTOMIZE THIS, VERY POORLY DONE ATM
 
 			U64 opawns = boards.byColorPiecesBB[color][PAWN];
 			U64 epawns = boards.byColorPiecesBB[them][PAWN];
@@ -606,12 +610,16 @@ Scores unstoppablePawns(const EvalInfo& ev) {
 
 enum {Mobility,  PawnStructure,  PassedPawns,  Center,  KingSafety};
 
-const struct Weight { int mg, eg; } Weights[] = { //reduce weights by half + for Passed Pawns?
-	{ 289, 344 }, { 205, 188 }, { 117, 145 }, { 50, 0 }, { 318, 0 }
+const struct Weight { int mg, eg; } Weights[] = { //Test Weights
+	{ 289, 344 }, { 205, 188 }, { 65, 86 }, { 50, 0 }, { 318, 0 } //new weights testing
 };
 /*
-const struct Weight { int mg, eg; } Weights[] = { //Test Not Good
-	{ 289, 320 }, { 233, 201 }, { 221, 273 }, <--orig values for passed{ 50, 0 },{ 290, 0 }
+const struct Weight { int mg, eg; } Weights[] = { //LatestStuck Weights Current weights With best ELO SO FAR.
+{ 289, 344 }, { 205, 188 }, { 50, 65 }, { 50, 0 }, { 318, 0 }
+};
+
+const struct Weight { int mg, eg; } Weights[] = {//StockFish Weights.
+{289, 344}, {233, 201}, {221, 273}, {46, 0}, {318, 0}
 };
 */
 //for applying non phase independant scoring.
@@ -630,6 +638,7 @@ Scores applyWeights(Scores s, const Weight & w) {
 
 int Evaluate::evaluate(const BitBoards & boards, bool isWhite)
 {
+	 //is this needed with TT lookup in quiet??
 	int hash = boards.zobrist.zobristKey & 5021982; //REPLACE THIS!!
 	HashEntry entry = transpositionEval[hash];
 	//if we get a hash-table hit, return the evaluation
@@ -646,7 +655,7 @@ int Evaluate::evaluate(const BitBoards & boards, bool isWhite)
 		}
 
 	}
-	
+
 	EvalInfo ev;
 	int result = 0;
 
@@ -654,6 +663,11 @@ int Evaluate::evaluate(const BitBoards & boards, bool isWhite)
 
 	//initilize king zones and king attacks for both kings
 	generateKingZones(boards, ev);
+
+	//probe the material hash table for an end game scenario,
+	//a factor to scale to evaluation score by, and/or
+	//any other bonuses or penalties from material config
+	//ev.me = Material::probe(boards, MaterialTable);
 
 	//probe the pawn hash table for a hit,
 	//if we don't get a hit do full eval and return
@@ -784,7 +798,7 @@ int Evaluate::evaluate(const BitBoards & boards, bool isWhite)
 	return result;
 }
 
-int Evaluate::wKingShield(const BitBoards & boards)
+int Evaluate::wKingShield(const BitBoards & boards) ///MOVE SHIELDS TO PAWN EVAL, NO REASON TO DO HERE. CAN BE HASHED
 {
 	//gather info on defending pawns
 	int result = 0;
@@ -815,7 +829,7 @@ int Evaluate::wKingShield(const BitBoards & boards)
 		else if (pawns & (location << C3)) result += 5;
 	}
 	return result;
-}
+}  
 
 int Evaluate::bKingShield(const BitBoards & boards)
 {
@@ -850,7 +864,7 @@ int Evaluate::bKingShield(const BitBoards & boards)
 	return result;
 }
 
-void Evaluate::saveTT(bool isWhite, int result, int hash, const BitBoards &boards)
+void Evaluate::saveTT(bool isWhite, int result, int hash, const BitBoards &boards) //replace this scheme
 {
 	//store eval into eval hash table
 	transpositionEval[hash].eval = result;
@@ -862,154 +876,7 @@ void Evaluate::saveTT(bool isWhite, int result, int hash, const BitBoards &board
 	else transpositionEval[hash].flag = 1;
 }
 
-int Evaluate::getPawnScore(const BitBoards & boards, EvalInfo & ev)
-{
-
-	//get zobristE/bitboards of current pawn positions
-	U64 pt = boards.byPieceType[PAWN];
-	int hash = pt & 399999;
-
-	//probe pawn hash table using bit-wise OR of white pawns and black pawns as zobrist key
-	if (transpositionPawn[hash].zobrist == pt) {
-		return transpositionPawn[hash].eval;
-	}
-
-	//U64 pt = boards.BBWhitePawns | boards.BBBlackPawns;
-	//const PawnEntry *ttpawnentry;
-	//ttpawnentry = TT.probePawnT(pt);
-	//if (ttpawnentry) return ttpawnentry->eval;
-
-	//if we don't get a hash hit, search through all pawns on boards and return score
-	U64 wPawns = boards.byColorPiecesBB[WHITE][PAWN];
-	U64 bPawns = boards.byColorPiecesBB[BLACK][PAWN];
-
-	int score = 0;
-	while (wPawns) {
-		int loc = pop_lsb(&wPawns);
-		score += pawnEval(boards, WHITE, loc);
-		
-	}
-
-	while (bPawns) {
-		int loc = pop_lsb(&bPawns);
-		score -= pawnEval(boards, BLACK, loc);
-	}
-
-	//store entry to pawn hash table
-	transpositionPawn[hash].eval = score;
-	transpositionPawn[hash].zobrist = pt;
-
-	//TT.savePawnEntry(pt, score);
-
-	return score;
-}
-
-int Evaluate::pawnEval(const BitBoards & boards, int side, int location)
-{
-	int result = 0; // WE will be replacing this entire function soon.
-	int flagIsPassed = 1; // we will be trying to disprove that
-	int flagIsWeak = 1;   // we will be trying to disprove that
-	int flagIsOpposed = 0;
-
-	U64 pawn = boards.squareBB[location];
-	U64 opawns = boards.byColorPiecesBB[side][PAWN];
-	U64 epawns = boards.byColorPiecesBB[!side][PAWN];
-
-
-	int file = location % 8;
-	int rank = location / 8;
-	int flip[8] = {7, 6, 5, 4, 3, 2, 1, 0};
-	rank = flip[rank];
-
-	U64 doubledPassMask = FileMasks8[file]; //mask for finding doubled or passed pawns
-
-	U64 left = 0LL;
-	if (file > 0) left = FileMasks8[file - 1]; //masks are accoring to whites perspective
-
-	U64 right = 0LL;
-	if (file < 7) right = FileMasks8[file + 1]; //files to the left and right of pawn
-
-	U64 supports = right | left, tmpSup = 0LL; //mask for area behind pawn and to the left an right, used to see if weak + mask for holding and values
-
-	opawns &= ~pawn; //remove this pawn from his friendly pawn BB so as not to count himself in doubling
-
-	if (doubledPassMask & opawns) result -= 10; //real value for doubled pawns is -20, because this method counts them twice it's set at half real
-
-	if (!side) { //if is white
-		for (int i = 0; i < rank + 1; i++) {
-			doubledPassMask &= ~RankMasks8[i];
-			left &= ~RankMasks8[i];
-			right &= ~RankMasks8[i];
-			tmpSup |= RankMasks8[i];
-		}
-	}
-	else {		
-		
-		for (int i = 7; i > rank - 1; i--) {
-			doubledPassMask &= ~RankMasks8[i];
-			left &= ~RankMasks8[i];
-			right &= ~RankMasks8[i];
-			tmpSup |= RankMasks8[i];
-		}
-	}
-
-
-	//if there is an enemy pawn ahead of this pawn
-	if (doubledPassMask & epawns) flagIsOpposed = 1;
-
-	//if there is an enemy pawn on the right or left ahead of this pawn
-	if (right & epawns || left & epawns) flagIsPassed = 0;
-
-	opawns |= pawn; // restore real our pawn boards
-
-	tmpSup &= ~RankMasks8[rank]; //remove our rank from supports
-	supports &= tmpSup; // get BB of area whether support pawns could be
-
-						//if there are pawns behing this pawn and to the left or the right pawn is not weak
-	if (supports & opawns) flagIsWeak = 0;
-
-
-	//evaluate passed pawns, scoring them higher if they are protected or
-	//if their advance is supported by friendly pawns
-	if (flagIsPassed) {
-		if (isPawnSupported(side, pawn, opawns)) {
-			result += (passed_pawn_pcsq[side][location] * 10) / 8;
-		}
-		else {
-			result += passed_pawn_pcsq[side][location];
-		}
-	}
-
-	//eval weak pawns, increasing the penalty if they are in a half open file
-	if (flagIsWeak) {
-		result += weak_pawn_pcsq[side][location];
-
-		if (flagIsOpposed) {
-			result -= 4;
-		}
-	}
-
-	return result;
-
-}
-
-int Evaluate::isPawnSupported(int side, U64 pawn, U64 pawns)
-{
-	if ((pawn >> 1) & pawns) return 1;
-	if ((pawn << 1) & pawns) return 1;
-
-	if (side == WHITE) {
-		if ((pawn << 7) & pawns) return 1;
-		if ((pawn << 9) & pawns) return 1;
-	}
-	else {
-		if ((pawn >> 9) & pawns) return 1;
-		if ((pawn >> 7) & pawns) return 1;
-	}
-	return 0;
-}
-
-void Evaluate::blockedPieces(int side, const BitBoards& boards, EvalInfo & ev)
+void Evaluate::blockedPieces(int side, const BitBoards& boards, EvalInfo & ev) //REPLACE THIS SOON, DEF BETTER WAY
 {
 	U64 pawn, epawn, knight, bishop, rook, king;
 	U64 empty = boards.EmptyTiles;

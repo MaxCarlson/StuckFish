@@ -519,7 +519,7 @@ int evaluateBB::pawnEval(const BitBoards & boards, int side, int location)
     int flagIsWeak = 1;   // we will be trying to disprove that
     int flagIsOpposed = 0;
 
-	U64 pawn = boards.squareBB[location];
+	U64 pawn = boards.square_bb(location);
 	U64 opawns = boards.byColorPiecesBB[side][PAWN];
 	U64 epawns = boards.byColorPiecesBB[!side][PAWN];
 

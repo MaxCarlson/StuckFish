@@ -96,19 +96,21 @@ inline void operator/=(Scores& s1, const Scores s2) {
 }
 
 
-
+//squares from whites POV
 enum esqare {
-    A8=0,  B8, C8, D8, E8, F8, G8, H8,
-    A7=8,  B7, C7, D7, E7, F7, G7, H7,
-    A6=16, B6, C6, D6, E6, F6, G6, H6,
-    A5=24, B5, C5, D5, E5, F5, G5, H5,
-    A4=32, B4, C4, D4, E4, F4, G4, H4,
-    A3=40, B3, C3, D3, E3, F3, G3, H3,
-    A2=48, B2, C2, D2, E2, F2, G2, H2,
-    A1=56, B1, C1, D1, E1, F1, G1, H1,
-	SQ_NONE
+	A8 = 0, B8, C8, D8, E8, F8, G8, H8,
+	A7 = 8, B7, C7, D7, E7, F7, G7, H7,
+	A6 = 16, B6, C6, D6, E6, F6, G6, H6,
+	A5 = 24, B5, C5, D5, E5, F5, G5, H5,
+	A4 = 32, B4, C4, D4, E4, F4, G4, H4,
+	A3 = 40, B3, C3, D3, E3, F3, G3, H3,
+	A2 = 48, B2, C2, D2, E2, F2, G2, H2,
+	A1 = 56, B1, C1, D1, E1, F1, G1, H1,
+	SQ_NONE,
+	SQ_ALL = 64
 };
 
+//piece types
 enum epiece {
     PIECE_EMPTY,
     PAWN,
@@ -120,13 +122,25 @@ enum epiece {
 	PIECES
 };
 
-#define PAWN_VAL 100
+#define PAWN_VAL 100 //should pieces have a mid and end game value??
 #define KNIGHT_VAL 325
 #define BISHOP_VAL 335
 #define ROOK_VAL 500
 #define QUEEN_VAL 975
 #define KING_VAL 0 //change later??
 
+
+#define DRAW_OPENING -10 //re define these?
+#define DRAW_ENDGAME 0
+#define END_GAME_MAT 1300
+
+#define MIDGAME_LIMIT 6090 //values subject to serious changes!!!!!!!!!!
+#define ENDGAME_LIMIT 1475
+
+
+//game colors.
+//COLOR used for arrays containing
+//both colors
 enum ecolor {
     WHITE,
     BLACK,
@@ -140,20 +154,13 @@ enum GameStage {
 	STAGE
 };
 
-/*
-//used for chronos flags
-enum etimef {
-	FTIME = 1,
-	FINC = 2,
-	FMOVESTOGO = 4,
-	FDEPTH = 8,
-	FNODES = 16,
-	FMATE = 32,
-	FMOVETIME = 64,
-	FINFINITE = 128
+enum ScaleFactor {
+	SF_DRAW = 0,
+	SF_ONEPAWN = 48,
+	SF_NORMAL = 64,
+	SF_MAX = 128,
+	SF_NONE = 255
 };
-*/
-
 
 typedef unsigned char U8;
 typedef char S8;
@@ -187,10 +194,6 @@ private:
 
 
 #define MAX_PLY 128
-
-#define DRAW_OPENING -10
-#define DRAW_ENDGAME 0
-#define END_GAME_MAT 1300
 
 #define DEPTH_QS 0
 #define DEPTH_QS_NO_CHECK -2 //add qs checks at somepoint, negative values cause errors right now
@@ -269,6 +272,7 @@ inline int rank_of(int sq) {
 	return (sq >> 3) ^ 7;
 }
 
+//distance from one file/rank to another
 inline int file_distance(int s1, int s2) {
 	return abs(file_of(s1) - file_of(s2));
 }
@@ -286,6 +290,16 @@ inline int relative_rankSq(int color, int square) {
 	return relative_rank(color, rank_of(square));
 }
 
+//returns same square if color == white,
+//if black it returns the relative square number.
+//e.g: relative_square(BLACK, H1(63)) == H8(7)
+inline int relative_square(int color, int square) {
+	return (square ^ (color * 56));
+}
+
+//return what a square + pawn_push,
+//would equal the correct square to move for a pawn
+//of that color. e.g: sq 48 + pawn_push(WHITE) = sq 40;
 inline int pawn_push(int color) {
 	return color == WHITE ? -8 : 8;
 }
@@ -307,7 +321,7 @@ inline int  backmost_sq(int color, U64 b)
 inline int mate_in(int ply) {
 	return VALUE_MATE - ply;
 }
-//^^
+//^^ prefering to be mated later than sooner
 inline int mated_in(int ply) {
 	return -VALUE_MATE + ply;
 }

@@ -419,7 +419,6 @@ int Ai_Logic::alphaBeta(BitBoards& newBoard, int depth, int alpha, int beta, sea
     }
 	*/
 
-
 ///*  //Internal iterative deepening search same ply to a shallow depth..
 	//and see if we can get a TT entry to speed up search
 

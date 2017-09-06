@@ -11,6 +11,7 @@ typedef unsigned long long  U64; // supported by MSC 13.00+ and C99
 #include "move.h"
 #include "slider_attacks.h"
 #include "Pawns.h"
+#include "material.h"
 
 class HashEntry;
 class ZobristH;
@@ -21,7 +22,10 @@ extern const int SORT_VALUE[7];
 
 //magics object
 extern SliderAttacks slider_attacks;
+//two hash tables for respective names
 extern Pawns::Table pawnsTable;
+extern Material::Table MaterialTable;
+
 //half turns
 extern int turns;
 
@@ -96,10 +100,11 @@ extern const U64 FILE_GH;
 
 //holds a array of lines "forward" relative from side to move
 //in front of a particualar square
-extern U64 forwardBB[COLOR][64];
-extern U64 PassedPawnMask[COLOR][64];
-extern U64 PawnAttackSpan[COLOR][64];
-extern int SquareDistance[64][64];
+extern U64 forwardBB[COLOR][SQ_ALL];
+extern U64 PassedPawnMask[COLOR][SQ_ALL];
+extern U64 PawnAttackSpan[COLOR][SQ_ALL];
+extern int SquareDistance[SQ_ALL][SQ_ALL];
+
 
 //UCI input varibles for "go"
 extern int wtime; //time left on whites clock

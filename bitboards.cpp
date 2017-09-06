@@ -157,6 +157,8 @@ void BitBoards::constructBoards()
 	
 	FullTiles = 0LL;
 	bInfo.PawnKey = 0LL;
+	bInfo.MaterialKey = 0LL;
+	bInfo.sideToMove = WHITE;
 
 	//seed bitboards
 	for (int i = 0; i < 64; i++) {
@@ -313,6 +315,26 @@ void BitBoards::constructBoards()
 		}
 	}
 
+	for (int color = 0; color < COLOR; ++color) {
+		for (int pt = PAWN; pt <= KING; ++pt) {
+			for (int count = 0; count <= pieceCount[color][pt]; ++count) {
+
+				//XOR material key with piece count instead of square location
+				//so we can have a Material Key that represents what material is on the board.
+				bInfo.MaterialKey ^= zobrist.zArray[color][pt][count];
+			}
+		}
+	}
+
+	//add up non pawn material 
+	for (int c = 0; c < COLOR; ++c) {
+		bInfo.nonPawnMaterial[c] = 0;
+
+		for (int pt = KNIGHT; pt < PIECES; ++pt) {
+			bInfo.nonPawnMaterial[c] += SORT_VALUE[pt] * pieceCount[c][pt];
+		}
+	}
+
 	//mark empty tiles opposite of full tiles
   	EmptyTiles = ~FullTiles;
 
@@ -324,15 +346,21 @@ void BitBoards::makeMove(const Move& m, bool isWhite)
 	//need to change it to an int to remove this sort of thing
 	int color = !isWhite;
 
+	//drawBBA();
+
 	//remove or add captured piece from BB's same as above for moving piece
 	if (m.captured) {
 		//remove captured piece
 		removePiece(m.captured, !color, m.to);
 		//update material
 		bInfo.sideMaterial[!color] -= SORT_VALUE[m.captured];
-
+		
 		//update the pawn hashkey on capture
 		if (m.captured == PAWN) bInfo.PawnKey ^= zobrist.zArray[!color][PAWN][m.to];
+
+		else bInfo.nonPawnMaterial[!color] -= SORT_VALUE[m.captured];
+		//update material key
+		bInfo.MaterialKey ^= zobrist.zArray[!color][m.captured][pieceCount[!color][m.captured]+1];
 	}
 
 	//move the piece from - to
@@ -347,8 +375,13 @@ void BitBoards::makeMove(const Move& m, bool isWhite)
 			addPiece(QUEEN, color, m.to);
 			//update material
 			bInfo.sideMaterial[color] += SORT_VALUE[QUEEN] - SORT_VALUE[PAWN];
+			bInfo.nonPawnMaterial[color] += SORT_VALUE[QUEEN];
 
+			//update pawn key
 			bInfo.PawnKey ^= zobrist.zArray[color][PAWN][m.to];
+			//update material key
+			bInfo.MaterialKey ^= zobrist.zArray[color][QUEEN][pieceCount[color][QUEEN]]
+							  ^ zobrist.zArray[color][PAWN][pieceCount[color][PAWN]+1];
 		}
 		//update the pawn key, if it's a promotion it cancels out and updates correctly
 		bInfo.PawnKey ^= zobrist.zArray[color][PAWN][m.to] ^ zobrist.zArray[color][PAWN][m.from];
@@ -362,6 +395,9 @@ void BitBoards::makeMove(const Move& m, bool isWhite)
 	//update the zobrist key
 	zobrist.UpdateKey(m.from, m.to, m, isWhite);
 	zobrist.UpdateColor();
+
+	//flip internal side to move
+	bInfo.sideToMove = !bInfo.sideToMove;
 
 	//prefetch TT entry into cache
 	_mm_prefetch((char *)TT.first_entry(zobrist.zobristKey), _MM_HINT_NTA);
@@ -386,8 +422,12 @@ void BitBoards::unmakeMove(const Move & m, bool isWhite)
 		removePiece(QUEEN, color, m.to);
 
 		bInfo.sideMaterial[color] += SORT_VALUE[PAWN] - SORT_VALUE[QUEEN];
-
+		bInfo.nonPawnMaterial[color] -= SORT_VALUE[QUEEN];
+		//update pawn key
 		bInfo.PawnKey ^= zobrist.zArray[color][PAWN][m.from];
+		//update material key
+		bInfo.MaterialKey ^= zobrist.zArray[color][QUEEN][pieceCount[color][QUEEN]+1] //plus one because we've already decremented the counter
+			              ^ zobrist.zArray[color][PAWN][pieceCount[color][PAWN]];
 	}
 
 	//add captured piece from BB's similar to above for moving piece
@@ -396,7 +436,12 @@ void BitBoards::unmakeMove(const Move & m, bool isWhite)
 		addPiece(m.captured, !color, m.to);
 		bInfo.sideMaterial[!color] += SORT_VALUE[m.captured];
 
+		//if pawn captured undone, update pawn key
 		if (m.captured == PAWN) bInfo.PawnKey ^= zobrist.zArray[!color][PAWN][m.to];
+
+		else bInfo.nonPawnMaterial[!color] += SORT_VALUE[m.captured];
+		//update material key
+		bInfo.MaterialKey ^= zobrist.zArray[!color][m.captured][pieceCount[!color][m.captured]];
 	}
 
 	//debug catch
@@ -409,14 +454,12 @@ void BitBoards::unmakeMove(const Move & m, bool isWhite)
 	//update the zobrist key
 	zobrist.UpdateKey(m.from, m.to, m, isWhite);
 	zobrist.UpdateColor();
+
+	//flip internal side to move
+	bInfo.sideToMove = !bInfo.sideToMove;
 }
 
-//returns the rank of a square relative to side specified
-int BitBoards::relativeRank(int sq, bool isWhite)
-{ //return reletive rank for side to move.
-	sq /= 8;
-	return isWhite ? flipRank[sq] : sq + 1;
-}
+
 
 //used for drawing a singular bitboard
 void BitBoards::drawBB(U64 board)

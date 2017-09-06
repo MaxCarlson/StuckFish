@@ -21,7 +21,6 @@ public:
 
 	//array of move objects 
 	Move moveAr[256];
-	//std::vector<Move> moveAr;
 
     bool isWhite;
 	//number of moves generated this node
@@ -30,7 +29,7 @@ public:
     void generatePsMoves(const BitBoards& boards, bool capturesOnly);
 
 	//grab bitboard changes after a move, or any change in search. Need to get rid of eventually and just pass constRef to everything
-    void grab_boards(const BitBoards &BBBoard, bool wOrB);
+    void grab_boards(const BitBoards &BBBoard, bool wOrB); //remove this function and just pass const ref BitBoards to all functions that need it
 
     bool isAttacked(U64 pieceLoc, bool wOrB, bool isSearchKingCheck);
 	
@@ -77,7 +76,7 @@ public:
 private:
 
         //assigns a score to moves and adds them to the move array
-        void movegen_push(char piece, char captured, char flag, U8 from, U8 to);
+        void movegen_push(int piece, int captured, char flag, int from, int to);
         bool blind(const Move &move, int pieceVal, int captureVal);	
 
 		//used in static exchange eval
@@ -93,11 +92,11 @@ private:
         //psuedo legal move gen for indvidual pieces
         void possibleWP(const U64 &wpawns, const U64 &blackking, bool capturesOnly);
         void possibleBP(const U64 &bpawns, const U64 &whiteking, bool capturesOnly);
-        void possibleN(U8 location, const U64 &friends, const U64 &enemys, const U64 &oppositeking, const U64 &capturesOnly);
-        void possibleB(U8 location, const U64 &friends, const U64 &enemys, const U64 &oppositeking, const U64 &capturesOnly);
-        void possibleR(U8 location, const U64 &friends, const U64 &enemys, const U64 &oppositeking, const U64 &capturesOnly, const BitBoards& boards);
-        void possibleQ(U8 location, const U64 &friends, const U64 &enemys, const U64 &oppositeking, const U64 &capturesOnly);
-        void possibleK(U8 location, const U64 &friends, const U64 &enemys, const U64 &oppositeking, const U64 &capturesOnly);
+        void possibleN(const BitBoards& board, int color, const U64 &capturesOnly);
+        void possibleB(const BitBoards& board, int color, const U64 &capturesOnly);
+        void possibleR(const BitBoards& board, int color, const U64 &capturesOnly);
+        void possibleQ(const BitBoards& board, int color, const U64 &capturesOnly);
+        void possibleK(const BitBoards& board, int color, const U64 &capturesOnly);
 
 
         //void undoCapture(U64 location, char piece, char whiteOrBlack);

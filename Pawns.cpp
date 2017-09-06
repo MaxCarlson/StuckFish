@@ -61,7 +61,6 @@ inline U64 pawn_attack_span(int color, int sq) {
 }
 
 
-
 #define S(mg, eg) make_scores(mg, eg)
 
 // Doubled pawn penalty by file
@@ -236,7 +235,7 @@ Scores evalPawns(const BitBoards & boards, PawnsEntry *e) {
 
 
 		if (passed && !doubled) 
-			e->passedPawns[color] |= boards.squareBB[square];
+			e->passedPawns[color] |= boards.square_bb(square);
 		
 		
 		if (isolated)
