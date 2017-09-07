@@ -608,14 +608,14 @@ Scores unstoppablePawns(const EvalInfo& ev) {
 	return bb ? Unstoppable * relative_rank(color, frontmost_sq(color, bb)) : SCORE_ZERO;
 }
 
-enum {Mobility,  PawnStructure,  PassedPawns,  Center,  KingSafety};
+enum {Mobility,  PawnStructure,  PassedPawns,  Center,  KingSafety, Imbalence};
 
 const struct Weight { int mg, eg; } Weights[] = { //Test Weights
-	{ 289, 344 }, { 205, 188 }, { 65, 86 }, { 50, 0 }, { 318, 0 } //new weights testing
+	{ 289, 344 }, { 205, 188 }, { 65, 86 }, { 50, 0 }, { 318, 0 }, { 40, 40} //new weights testing
 };
 /*
 const struct Weight { int mg, eg; } Weights[] = { //LatestStuck Weights Current weights With best ELO SO FAR.
-{ 289, 344 }, { 205, 188 }, { 50, 65 }, { 50, 0 }, { 318, 0 }
+{ 289, 344 }, { 205, 188 }, { 65, 86 }, { 50, 0 }, { 318, 0 }, { 40, 100}
 };
 
 const struct Weight { int mg, eg; } Weights[] = {//StockFish Weights.
@@ -667,14 +667,16 @@ int Evaluate::evaluate(const BitBoards & boards, bool isWhite)
 	//probe the material hash table for an end game scenario,
 	//a factor to scale to evaluation score by, and/or
 	//any other bonuses or penalties from material config
-	//ev.me = Material::probe(boards, MaterialTable);
+	ev.me = Material::probe(boards, MaterialTable);
+
+	score += applyWeights(ev.me->material_value(), Weights[Imbalence]);
 
 	//probe the pawn hash table for a hit,
 	//if we don't get a hit do full eval and return
 	ev.pe = Pawns::probe(boards, pawnsTable); 
 
 	//applyWeights(score, Weights[PawnStructure], ev.pe->score);
-	score = applyWeights(ev.pe->score, Weights[PawnStructure]);
+	score += applyWeights(ev.pe->score, Weights[PawnStructure]);
 
 	//merge pawn attacks with our attack boards
 	ev.attackedBy[WHITE][0] |= ev.attackedBy[WHITE][PAWN] = ev.pe->pawnAttacks[WHITE];
@@ -729,18 +731,18 @@ int Evaluate::evaluate(const BitBoards & boards, bool isWhite)
 	score.mg += wKingShield(boards) - bKingShield(boards);
 
 	//adjusting material value of pieces bonus for bishop, small penalty for others
-	if (boards.pieceCount[WHITE][BISHOP] > 1) ev.adjustMaterial[WHITE] += BISHOP_PAIR;
-	if (boards.pieceCount[BLACK][BISHOP] > 1) ev.adjustMaterial[BLACK] -= BISHOP_PAIR;
-	if (boards.pieceCount[WHITE][KNIGHT] > 1) ev.adjustMaterial[WHITE] -= KNIGHT_PAIR;
-	if (boards.pieceCount[BLACK][KNIGHT] > 1) ev.adjustMaterial[BLACK] += KNIGHT_PAIR;
-	if (boards.pieceCount[WHITE][ROOK] > 1) ev.adjustMaterial[WHITE] -= ROOK_PAIR;
-	if (boards.pieceCount[BLACK][ROOK] > 1) ev.adjustMaterial[BLACK] += ROOK_PAIR;
+	//if (boards.pieceCount[WHITE][BISHOP] > 1) ev.adjustMaterial[WHITE] += BISHOP_PAIR;
+	//if (boards.pieceCount[BLACK][BISHOP] > 1) ev.adjustMaterial[BLACK] -= BISHOP_PAIR;
+	//if (boards.pieceCount[WHITE][KNIGHT] > 1) ev.adjustMaterial[WHITE] -= KNIGHT_PAIR;
+	//if (boards.pieceCount[BLACK][KNIGHT] > 1) ev.adjustMaterial[BLACK] += KNIGHT_PAIR;
+	//if (boards.pieceCount[WHITE][ROOK] > 1) ev.adjustMaterial[WHITE] -= ROOK_PAIR;
+	//if (boards.pieceCount[BLACK][ROOK] > 1) ev.adjustMaterial[BLACK] += ROOK_PAIR;
 
 
-	ev.adjustMaterial[WHITE] += knight_adj[(boards.pieceCount[WHITE][PAWN])] * boards.pieceCount[WHITE][KNIGHT];
-	ev.adjustMaterial[BLACK] -= knight_adj[boards.pieceCount[BLACK][PAWN]] * boards.pieceCount[BLACK][KNIGHT];
-	ev.adjustMaterial[WHITE] += rook_adj[boards.pieceCount[WHITE][PAWN]] * boards.pieceCount[WHITE][ROOK];
-	ev.adjustMaterial[BLACK] -= rook_adj[boards.pieceCount[BLACK][PAWN]] * boards.pieceCount[BLACK][ROOK];
+	//ev.adjustMaterial[WHITE] += knight_adj[(boards.pieceCount[WHITE][PAWN])] * boards.pieceCount[WHITE][KNIGHT];
+	//ev.adjustMaterial[BLACK] -= knight_adj[boards.pieceCount[BLACK][PAWN]] * boards.pieceCount[BLACK][KNIGHT];
+	//ev.adjustMaterial[WHITE] += rook_adj[boards.pieceCount[WHITE][PAWN]] * boards.pieceCount[WHITE][ROOK];
+	//ev.adjustMaterial[BLACK] -= rook_adj[boards.pieceCount[BLACK][PAWN]] * boards.pieceCount[BLACK][ROOK];
 
 	//evaluate both kings. Function returns a score taken from the king safety array
 	Scores ksf;

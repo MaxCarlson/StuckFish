@@ -37,16 +37,16 @@ int materialImbalence(const int pieceCount[][PIECES]) {
 	int bonus = 0;
 
 	// Second-degree polynomial material imbalance by Tord Romstad
-	for (int pt1 = 0; pt1 <= QUEEN; ++pt1) {
+	for (int pt1 = PIECE_EMPTY; pt1 <= QUEEN; ++pt1) {
 
 		if (!pieceCount[color][pt1]) continue;
 
 		int v = Linear[pt1];
 
-		for (int pt2 = 0; pt2 <= pt1; ++pt2) {
+		for (int pt2 = PIECE_EMPTY; pt2 <= pt1; ++pt2) {
 
-			v += QuadraticSameSide[pt1][pt2] * pieceCount[color][pt2]
-				+ QuadraticOppositeSide[pt1][pt2] * pieceCount[them][pt2];
+			v += QuadraticSameSide[pt1][pt2]     * pieceCount[color][pt2]
+			  +  QuadraticOppositeSide[pt1][pt2] *  pieceCount[them][pt2];
 
 		}
 
@@ -81,10 +81,21 @@ Entry * probe(const BitBoards& boards, Table& entries)
 	//probe end game for a specific scaling factor
 
 
+	// Evaluate the material imbalance. We use PIECE_EMPTY(0) as a place holder
+	// for the bishop pair "extended piece", which allows us to be more flexible
+	// in defining bishop pair bonuses.
 
+	const int pieceCount[COLOR][PIECES] = {
 
-	e->value = (U16)(())
+	   { boards.count<BISHOP>(WHITE) > 1, boards.count<PAWN>(WHITE), boards.count<KNIGHT>(WHITE),
+		 boards.count<BISHOP>(WHITE)    , boards.count<ROOK>(WHITE), boards.count<QUEEN>(WHITE)   },
+	   { boards.count<BISHOP>(BLACK) > 1, boards.count<PAWN>(BLACK), boards.count<KNIGHT>(BLACK),
+		 boards.count<BISHOP>(BLACK)    , boards.count<ROOK>(BLACK), boards.count<QUEEN >(BLACK)  } 
+	};
+
+	e->value = (S16)((materialImbalence<WHITE>(pieceCount) - materialImbalence<BLACK>(pieceCount)) / 16);
 	
+	return e;
 }
 
 

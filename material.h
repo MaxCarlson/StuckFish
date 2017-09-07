@@ -10,12 +10,12 @@ class Entry
 {
 public:
 
-
+	Scores material_value() { return make_scores(value, value); };
 
 	//material hash key
 	U64 Key;
 
-	U16 value;
+	S16 value;
 	U8 factor[COLOR];
 
 	//weight we're going to be using for space weight?
