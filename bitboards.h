@@ -173,7 +173,7 @@ inline int BitBoards::game_phase() const
 
 	npm = std::max(ENDGAME_LIMIT, std::min(npm, MIDGAME_LIMIT));
 
-	return (((npm - ENDGAME_LIMIT) * 128) / (MIDGAME_LIMIT - ENDGAME_LIMIT));
+	return (((npm - ENDGAME_LIMIT) * 64) / (MIDGAME_LIMIT - ENDGAME_LIMIT));
 }
 
 //returns the incrementaly updated pawn hash key

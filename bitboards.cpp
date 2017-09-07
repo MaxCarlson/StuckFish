@@ -342,6 +342,7 @@ void BitBoards::constructBoards()
 
 void BitBoards::makeMove(const Move& m, bool isWhite) 
 {
+
 	//color is stupid because I started the program with a bool is white, which (int)'s to 1
 	//need to change it to an int to remove this sort of thing
 	int color = !isWhite;
@@ -399,11 +400,13 @@ void BitBoards::makeMove(const Move& m, bool isWhite)
 	//flip internal side to move
 	bInfo.sideToMove = !bInfo.sideToMove;
 
-	//prefetch TT entry into cache
-	_mm_prefetch((char *)TT.first_entry(zobrist.zobristKey), _MM_HINT_NTA);
+	//prefetch TT entry into cache THIS IS WAY TOO TIME INTENSIVE? 6.1% on just this call from here. SWITCH TT to single address lookup instead of cluster of two?
+	//_mm_prefetch((char *)TT.first_entry(zobrist.zobristKey), _MM_HINT_NTA);
+
 }
 void BitBoards::unmakeMove(const Move & m, bool isWhite)
 {
+	
 	int color = !isWhite;
 
 	if (m.flag == '0') {
@@ -457,6 +460,8 @@ void BitBoards::unmakeMove(const Move & m, bool isWhite)
 
 	//flip internal side to move
 	bInfo.sideToMove = !bInfo.sideToMove;
+
+	return;
 }
 
 

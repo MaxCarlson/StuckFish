@@ -408,7 +408,7 @@ int Ai_Logic::alphaBeta(BitBoards& newBoard, int depth, int alpha, int beta, sea
 		if (val <= alpha) return val;
 	}
 
-	/* //Still a bit slow?
+	///* //Still a bit slow?
 //do we want to futility prune?
 	int fmargin[4] = { 0, 200, 300, 500 };
     //int fmargin[8] = {0, 100, 150, 200, 250, 300, 400, 500};
@@ -417,7 +417,7 @@ int Ai_Logic::alphaBeta(BitBoards& newBoard, int depth, int alpha, int beta, sea
 		&& ss->staticEval + fmargin[depth] <= alpha){
         f_prune = 1;
     }
-	*/
+	//*/
 
 ///*  //Internal iterative deepening search same ply to a shallow depth..
 	//and see if we can get a TT entry to speed up search
@@ -532,7 +532,7 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 				continue;
 			}
 		}
-		*/		
+		//*/		
 
 		/* //This futility pruning works in conjuction with futile conditions above move loop, slight speed boost, unsure on ELO gain
 		//futility pruning ~~ is not a promotion or hashmove, is not a capture, and does not give check, and we've tried one move already
@@ -540,13 +540,12 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 			&& !captureOrPromotion && legalMoves
 			&& !givesCheck){
 
-			newBoard.unmakeMove(newMove, zobrist, isWhite);
+			newBoard.unmakeMove(newMove, isWhite);
 			gen_moves.grab_boards(newBoard, isWhite);
 			futileMoves = true; //flag so we know we skipped a move/not checkmate
-			futileC++;
 			continue;
 		}
-		*/
+		//*/
 
 		//late move reductions, reduce the depth of the search in non dangerous situations. 
 		if (newDepth > 3

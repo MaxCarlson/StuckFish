@@ -18,9 +18,9 @@ public:
 	S16 value;
 	U8 factor[COLOR];
 
-	//weight we're going to be using for space weight?
-	//or just a bool check?
-	Scores spaceWeight;
+	//just how important is center control
+	//during this phase?
+	Scores centerWeight;
 
 
 	int gamePhase; //change to Phase struct??

@@ -72,13 +72,27 @@ Entry * probe(const BitBoards& boards, Table& entries)
 	std::memset(e, 0, sizeof(Entry));
 	e->Key = key;
 	e->factor[WHITE] = e->factor[BLACK] = (U8)SF_NORMAL;
-
+	e->centerWeight = SCORE_ZERO;
 	e->gamePhase = boards.game_phase();
+
+	//material value of side, excluding queen
+	int whiteNonPawnMat = boards.non_pawn_material(WHITE);
+	int blackNonPawnMat = boards.non_pawn_material(BLACK);
 
 	//probe end game for material config
 
 
 	//probe end game for a specific scaling factor
+
+
+	//compute center control weight, based on total number and type of pieces.
+	if (whiteNonPawnMat + blackNonPawnMat >= 2 * QUEEN_VAL + 4 * ROOK_VAL + 2 * KNIGHT_VAL) {
+
+		int minorPieceCount = boards.count<KNIGHT>(WHITE) + boards.count<BISHOP>(WHITE)
+						    + boards.count<KNIGHT>(BLACK) + boards.count<BISHOP>(BLACK);
+		//midgame score only
+		e->centerWeight = make_scores(minorPieceCount * minorPieceCount, 0);
+	}
 
 
 	// Evaluate the material imbalance. We use PIECE_EMPTY(0) as a place holder

@@ -615,7 +615,7 @@ const struct Weight { int mg, eg; } Weights[] = { //Test Weights
 };
 /*
 const struct Weight { int mg, eg; } Weights[] = { //LatestStuck Weights Current weights With best ELO SO FAR.
-{ 289, 344 }, { 205, 188 }, { 65, 86 }, { 50, 0 }, { 318, 0 }, { 40, 100}
+{ 289, 344 }, { 205, 188 }, { 65, 86 }, { 50, 0 }, { 318, 0 }, { 40, 40}
 };
 
 const struct Weight { int mg, eg; } Weights[] = {//StockFish Weights.
@@ -626,9 +626,6 @@ const struct Weight { int mg, eg; } Weights[] = {//StockFish Weights.
 //Weights are used to modify values in a particular section 
 //compared to those of other sections in overall scoring
 
-void spaceWeights(Scores & s, const Weight & w, int val) {
-	s.mg += val * w.mg / 256;
-}
 
 Scores applyWeights(Scores s, const Weight & w) {
 	s.mg = s.mg * w.mg / 256;
@@ -709,9 +706,14 @@ int Evaluate::evaluate(const BitBoards & boards, bool isWhite)
 
 	//get center control data and apply the weights. Only 
 	//minor effect on midgame score
-	int ctrl = centerControl<WHITE>(boards, ev) - centerControl<BLACK>(boards, ev);
-	spaceWeights(score, Weights[Center], ctrl);
+	if (ev.me->centerWeight.mg) {
+		int ctrl = centerControl<WHITE>(boards, ev) - centerControl<BLACK>(boards, ev);
+		
+		score += applyWeights(ev.me->centerWeight * ctrl, Weights[Center]);
+	}
+	
 
+/*
 	//find game phase based on held material
 	//REPLACE THIS with something more in depth
 	int gamePhase = 0;
@@ -721,7 +723,7 @@ int Evaluate::evaluate(const BitBoards & boards, bool isWhite)
 		gamePhase += boards.pieceCount[color][ROOK] * 2;
 		gamePhase += boards.pieceCount[color][QUEEN] * 4;
 	}
-
+*/
 	//score pieces in bad to horrible positions and pieces 
 	//that are blocked into those bad positons by other pieces
 	blockedPieces(WHITE, boards, ev);
@@ -730,19 +732,6 @@ int Evaluate::evaluate(const BitBoards & boards, bool isWhite)
 	//add king shield bonus to mid game score, also REPLACE this in pawn eval so we can hash it
 	score.mg += wKingShield(boards) - bKingShield(boards);
 
-	//adjusting material value of pieces bonus for bishop, small penalty for others
-	//if (boards.pieceCount[WHITE][BISHOP] > 1) ev.adjustMaterial[WHITE] += BISHOP_PAIR;
-	//if (boards.pieceCount[BLACK][BISHOP] > 1) ev.adjustMaterial[BLACK] -= BISHOP_PAIR;
-	//if (boards.pieceCount[WHITE][KNIGHT] > 1) ev.adjustMaterial[WHITE] -= KNIGHT_PAIR;
-	//if (boards.pieceCount[BLACK][KNIGHT] > 1) ev.adjustMaterial[BLACK] += KNIGHT_PAIR;
-	//if (boards.pieceCount[WHITE][ROOK] > 1) ev.adjustMaterial[WHITE] -= ROOK_PAIR;
-	//if (boards.pieceCount[BLACK][ROOK] > 1) ev.adjustMaterial[BLACK] += ROOK_PAIR;
-
-
-	//ev.adjustMaterial[WHITE] += knight_adj[(boards.pieceCount[WHITE][PAWN])] * boards.pieceCount[WHITE][KNIGHT];
-	//ev.adjustMaterial[BLACK] -= knight_adj[boards.pieceCount[BLACK][PAWN]] * boards.pieceCount[BLACK][KNIGHT];
-	//ev.adjustMaterial[WHITE] += rook_adj[boards.pieceCount[WHITE][PAWN]] * boards.pieceCount[WHITE][ROOK];
-	//ev.adjustMaterial[BLACK] -= rook_adj[boards.pieceCount[BLACK][PAWN]] * boards.pieceCount[BLACK][ROOK];
 
 	//evaluate both kings. Function returns a score taken from the king safety array
 	Scores ksf;
@@ -758,7 +747,7 @@ int Evaluate::evaluate(const BitBoards & boards, bool isWhite)
 
 		score += unstoppablePawns<WHITE>(ev) - unstoppablePawns<BLACK>(ev);
 	}
-
+/*
 	//Interpolate between a mid and end game score based on held material
 	//again Needs To Be REPLACED with something more in depth
 	if (gamePhase > 24) gamePhase = 24;
@@ -766,6 +755,12 @@ int Evaluate::evaluate(const BitBoards & boards, bool isWhite)
 	int egWeight = 24 - gamePhase;
 
 	result += ((score.mg * mgWeight) + (score.eg * egWeight)) / 24;
+*/
+
+	result = score.mg * (ev.me->gamePhase)	   //replace with a calcualted scale factor from mat/endgames
+		   + score.eg * (64 - ev.me->gamePhase) * SF_NORMAL / SF_NORMAL; 
+
+	result /= 64;
 
 	result += (ev.blockages[WHITE] - ev.blockages[BLACK]);
 	result += (ev.adjustMaterial[WHITE] - ev.adjustMaterial[BLACK]);
