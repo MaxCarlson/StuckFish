@@ -615,7 +615,7 @@ const struct Weight { int mg, eg; } Weights[] = { //Test Weights
 };
 /*
 const struct Weight { int mg, eg; } Weights[] = { //LatestStuck Weights Current weights With best ELO SO FAR.
-{ 289, 344 }, { 205, 188 }, { 65, 86 }, { 50, 0 }, { 318, 0 }, { 40, 40}
+{ 289, 344 }, { 205, 188 }, { 65, 86 }, { 50, 0 }, { 318, 0 }, { 40, 40} //CenterControlWeight Needs adjusting!!!!
 };
 
 const struct Weight { int mg, eg; } Weights[] = {//StockFish Weights.
@@ -632,7 +632,8 @@ Scores applyWeights(Scores s, const Weight & w) {
 	s.eg = s.eg * w.eg / 256;
 	return s;
 }
-
+#include <mutex>
+#include <thread>
 int Evaluate::evaluate(const BitBoards & boards, bool isWhite)
 {
 	 //is this needed with TT lookup in quiet??
@@ -657,6 +658,7 @@ int Evaluate::evaluate(const BitBoards & boards, bool isWhite)
 	int result = 0;
 
 	Scores score;
+	
 
 	//initilize king zones and king attacks for both kings
 	generateKingZones(boards, ev);
