@@ -40,7 +40,6 @@ public:
 	//clear historys, for new games
 	void clearHistorys();
 
-
 private:
 	
 	//root of search ~~ experimental

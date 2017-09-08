@@ -65,7 +65,6 @@ MoveGen::MoveGen()
 */
 void MoveGen::generatePsMoves(const BitBoards& boards, bool capturesOnly)
 {
-
     //counts total moves generated
     moveCount = 0;
     U64 friends, enemys, pawns, knights, rooks, bishops, queens, king, eking;
@@ -450,6 +449,8 @@ void MoveGen::possibleK(const BitBoards& board, int color, const U64 &capturesOn
 	U64 friends = board.pieces(color);
 	U64 enemys = board.pieces(!color);
 	U64 eking = board.pieces(!color, KING);
+	char flag = '0';
+	
 
 	int square;
 	while ((square = *list++) != SQ_NONE) {
@@ -464,8 +465,9 @@ void MoveGen::possibleK(const BitBoards& board, int color, const U64 &capturesOn
 
 			int captured = (landing & enemys) ? whichPieceCaptured(landing) : PIECE_EMPTY;
 
-			movegen_push(KING, captured, '0', square, index);
+			movegen_push(KING, captured, flag, square, index);
 		}
+
 	}   
 }
 

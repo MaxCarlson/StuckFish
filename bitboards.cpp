@@ -133,16 +133,13 @@ void BitBoards::initBoards()
 void BitBoards::constructBoards()
 {
 
-	for (int i = 0; i < 4; ++i) {
-		rookMoved[i] = false;
-		castled[i] = false;
-	}
-
 	//reset piece and color BitBoards to 0;
 	for (int i = 0; i < 2; ++i) {
 		allPiecesColorBB[i] = 0LL;
 		//reset side material values
 		bInfo.sideMaterial[i] = 0; 
+		//reset castling rights
+		castlingRights[i] = 0LL;
 
 		for (int j = 0; j < 7; ++j) {
 			byColorPiecesBB[i][j] = 0LL;
@@ -387,6 +384,15 @@ void BitBoards::makeMove(const Move& m, bool isWhite)
 		//update the pawn key, if it's a promotion it cancels out and updates correctly
 		bInfo.PawnKey ^= zobrist.zArray[color][PAWN][m.to] ^ zobrist.zArray[color][PAWN][m.from];
 	}
+	else if (m.piece == ROOK) {
+		castlingRights[color] |= relative_square(color, m.from) == A1 ? (1LL) : relative_square(color, m.from) == H1 ? (2LL) : 0LL;
+	}
+	else if (m.piece == KING) {
+		//castling code here
+
+		castlingRights[color] |= 3LL;
+	}
+	
 
 	//debug catch
 	if (allPiecesColorBB[color] & allPiecesColorBB[!color]) {
@@ -409,11 +415,13 @@ void BitBoards::unmakeMove(const Move & m, bool isWhite)
 	
 	int color = !isWhite;
 
-	if (m.flag == '0') {
+	if (m.flag != 'Q') {
 		//move piece
 		movePiece(m.piece, color, m.to, m.from);
 
 		if(m.piece == PAWN) bInfo.PawnKey ^= zobrist.zArray[color][PAWN][m.to] ^ zobrist.zArray[color][PAWN][m.from];
+
+		
 	}
 	//pawn promotion
 	else if (m.flag == 'Q'){

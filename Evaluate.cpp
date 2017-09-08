@@ -52,21 +52,6 @@ U64 center[STAGE] = {
 
 const U64 full = 0xffffffffffffffffULL;
 
-//adjustments of piece value based on our color pawn count
-const int knight_adj[9] = { -20, -16, -12, -8, -4,  0,  4,  8, 10 };
-const int rook_adj[9] = { 15,  12,   9,  6,  3,  0, -3, -6, -9 };
-
-//positive value
-const int BISHOP_PAIR = 30;
-//used as negatives to incourage bishop pair
-const int KNIGHT_PAIR = 8;
-const int ROOK_PAIR = 16;
-
-//const int Hanging[STAGE] = {9, 7}; //change to scores
-//const int kingOnPawn[STAGE] = {0, 30};
-//const int kingOnMPawn[STAGE] = {0, 64};
-
-
 //Scores used for ease of use calcuating and 
 //weighting mid and end game scores at the same time.
 //Idea taken from StockFish.
@@ -83,12 +68,15 @@ const Scores threats[2][PIECES]{
 };
 
 //Bonuses and penalties
-const Scores Hanging = S(9, 7);
-const Scores kingOnPawn = S(0, 30);
-const Scores kingOnMPawn = S(0, 64);
-const Scores rookHalfOpen = S(5, 3);
-const Scores rookOpen = S(10, 5);
-const Scores Unstoppable = S(0, 6); //might need to play with value since not weighted
+const Scores Hanging		 = S( 9,  7); //all values need to be tested against changes for ELO gain
+const Scores KingOnPawn      = S( 0, 30);
+const Scores KingOnMPawn     = S( 0, 64);
+const Scores RookOnPawn		 = S( 4, 13);
+const Scores RookHalfOpen    = S( 5,  3);
+const Scores RookOpen	     = S(10,  5);
+const Scores Unstoppable     = S( 0,  6); //might need to play with value since not weighted could easily be worth more
+const Scores MinorBehindPawn = S( 7,  0);
+const Scores BishopPawns     = S( 3,  6);
 
 //used to value higher value pieces more
 //if they are attacking zone around the king
@@ -97,7 +85,7 @@ const int KingAttackerWeights[6] = { 0, 0, 2, 2, 3, 5 };
 //numbers used in king safety, representing enemy safe checks.
 //Multiplied by the number of 
 //squares in king zone/adjacent kz
-const int QueenContactCheck = 7;
+const int QueenContactCheck = 7; //values probably should be changed to more accurate values and WEIGHTING adjusted instead
 const int RookContactCheck = 5;
 const int QueenCheck = 3;
 const int RookCheck = 2;
@@ -105,11 +93,12 @@ const int BishopCheck = 1;
 const int KnightCheck = 1;
 
 //score of evaluate king uses this as a lookup table
-//and subtracts from score for white, adds for black
+//and subtracts from score for white, adds for black 
+				//Possibly create larger range of values, and a logrithmic amp up when evaluating/weighting king safety scoring
 static const int SafetyTable[100] = {
-	0,  0,   1,   2,   3,   5,   7,   9,  12,  15,
-	18,  22,  26,  30,  35,  39,  44,  50,  56,  62,
-	68,  75,  82,  85,  89,  97, 105, 113, 122, 131,
+	0,     0,   1,   2,   3,   5,   7,   9,  12,  15,
+	18,   22,  26,  30,  35,  39,  44,  50,  56,  62,
+	68,   75,  82,  85,  89,  97, 105, 113, 122, 131,
 	140, 150, 169, 180, 191, 202, 213, 225, 237, 248,
 	260, 272, 283, 295, 307, 319, 330, 342, 354, 366,
 	377, 389, 401, 412, 424, 436, 448, 459, 471, 483,
@@ -277,38 +266,47 @@ Scores evaluatePieces(const BitBoards & boards, EvalInfo & ev, U64 * mobilityAre
 		}
 
 		//need knight and bishop evals
+		if (pT == KNIGHT || pT == BISHOP) {
+
+			//penalty for bishop with our pawns on same color squares
+			if (pT == BISHOP) score -= BishopPawns * ev.pe->pawns_on_same_color_squares(color, square); //NOT working Is value - too high? slows down search signifcantly@!
+			
+			if (relative_rankSq(color, square) < 5 // HAVEN"T TESTED!!!!!!!!!!!!!!!
+				&& boards.piecesByType(PAWN) & (1LL << (square + pawn_push(color))))
+				score += MinorBehindPawn;
+			/*
+			BitBoards a = boards;
+			a.drawBBA();
+			int f = ev.pe->pawns_on_same_color_squares(color, square);
+			a.drawBB(Pawns::DarkSquares);
+			a.drawBBA();
+			*/
+
+		}
 
 		if (pT == ROOK) {
-			U64 currentFile = FileMasks8[square & 7]; //NEED TO SERIOUSLY OPTOMIZE THIS, VERY POORLY DONE ATM
 
-			U64 opawns = boards.byColorPiecesBB[color][PAWN];
-			U64 epawns = boards.byColorPiecesBB[them][PAWN];
+			// is our rook on a semi open file?
+			// if so, is it semi open from enemys pov as well? then it's an open file,
+			// else if it's open from our POV only it's semi open.
+			if (ev.pe->semi_open_file(color, file_of(square)))
+				score += ev.pe->semi_open_file(them, file_of(square)) ? RookOpen : RookHalfOpen;
 
-			bool ownBlockingPawns = false, oppBlockingPawns = false;
-			//open and half open file detection add bonus to score of side
-			if (currentFile & opawns) {
-				ownBlockingPawns = true;
-			}
-			if (currentFile & epawns) { //move inside if above???
-				oppBlockingPawns = true;
+			// if our rook is past the 5th rank, relative to stm
+			// and our rook is attacking(or just could attack if a piece moved)
+			// a pawn, or multiple pawns increase score.
+			if (relative_rankSq(color, square) >= 5) {
+				U64 pawns = boards.pieces(them, PAWN) & boards.psuedoAttacks(ROOK, color, square);
+
+				if (pawns) score += RookOnPawn * bit_count(pawns);
 			}
 
-			if (!ownBlockingPawns) {
-				if (!oppBlockingPawns) {
-					//ev.gameScore[color][mg] += rookOpen[mg];
-					//ev.gameScore[color][eg] += rookOpen[eg];
-					score += rookOpen;
-				}
-				else {
-					//ev.gameScore[color][mg] += rookHalfOpen[mg];
-					//ev.gameScore[color][eg] += rookHalfOpen[eg];
-					score += rookHalfOpen;
-				}
-			}
+			//move rook trapped by king to here, out of cumbersome blocked pieces check
+			//add penalty if rook is trapped AND can't caslte
 		}
 	}
 
-	return score - evaluatePieces<nextPiece, !color>(boards, ev, mobilityArea);
+	return score - evaluatePieces<nextPiece, them>(boards, ev, mobilityArea);
 }
 
 template<> //get rid of recursive function too complex error, also return when piece type hits king
@@ -499,7 +497,7 @@ Scores evalThreats(const BitBoards & boards, EvalInfo & ev) {
 
 			//no mid game value for this threat
 			//ev.gameScore[color][eg] += score;
-			score += bb ? kingOnMPawn : kingOnPawn;
+			score += bb ? KingOnMPawn : KingOnPawn;
 		}
 	}
 	return score;
@@ -515,7 +513,7 @@ Scores evaluatePassedPawns(const BitBoards& board, const EvalInfo& ev) {
 	Scores score;
 
 	//COMMENT OUT WHEN NOT TESTING!!!!!!!!!!!!!!!!!!!!!!!!!
-	BitBoards a = board;
+	//BitBoards a = board;
 
 	b = ev.pe->passedPawns[color];
 
@@ -608,32 +606,28 @@ Scores unstoppablePawns(const EvalInfo& ev) {
 	return bb ? Unstoppable * relative_rank(color, frontmost_sq(color, bb)) : SCORE_ZERO;
 }
 
-enum {Mobility,  PawnStructure,  PassedPawns,  Center,  KingSafety, Imbalence};
+//Weights are used to modify values in a particular section 
+//compared to those of other sections in overall scoring
+enum {Mobility,  PawnStructure,  PassedPawns, Center,  KingSafety, Imbalence};
 
 const struct Weight { int mg, eg; } Weights[] = { //Test Weights
-	{ 289, 344 }, { 205, 188 }, { 65, 86 }, { 50, 0 }, { 318, 0 }, { 40, 40} //new weights testing
+	{ 289, 344 }, { 205, 188 }, { 65, 86 }, { 25, 0 }, { 318, 0 }, { 40, 40 } //new weights testing
 };
 /*
 const struct Weight { int mg, eg; } Weights[] = { //LatestStuck Weights Current weights With best ELO SO FAR.
-{ 289, 344 }, { 205, 188 }, { 65, 86 }, { 50, 0 }, { 318, 0 }, { 40, 40} //CenterControlWeight Needs adjusting!!!!
-};
+{ 289, 344 }, { 205, 188 }, { 65, 86 }, { 25, 0 }, { 318, 0 }, { 40, 40} //CenterControlWeight Needs adjusting!!!!
+}; ^^mob should be ^^pawn adjusted down
 
 const struct Weight { int mg, eg; } Weights[] = {//StockFish Weights.
 {289, 344}, {233, 201}, {221, 273}, {46, 0}, {318, 0}
 };
 */
-//for applying non phase independant scoring.
-//Weights are used to modify values in a particular section 
-//compared to those of other sections in overall scoring
-
-
 Scores applyWeights(Scores s, const Weight & w) {
 	s.mg = s.mg * w.mg / 256;
 	s.eg = s.eg * w.eg / 256;
 	return s;
 }
-#include <mutex>
-#include <thread>
+
 int Evaluate::evaluate(const BitBoards & boards, bool isWhite)
 {
 	 //is this needed with TT lookup in quiet??
@@ -654,11 +648,11 @@ int Evaluate::evaluate(const BitBoards & boards, bool isWhite)
 
 	}
 
+
 	EvalInfo ev;
 	int result = 0;
 
-	Scores score;
-	
+	Scores score;	
 
 	//initilize king zones and king attacks for both kings
 	generateKingZones(boards, ev);
@@ -671,10 +665,11 @@ int Evaluate::evaluate(const BitBoards & boards, bool isWhite)
 	score += applyWeights(ev.me->material_value(), Weights[Imbalence]);
 
 	//probe the pawn hash table for a hit,
-	//if we don't get a hit do full eval and return
+	//if we don't get a hit do full pawn eval and return
 	ev.pe = Pawns::probe(boards, pawnsTable); 
 
-	//applyWeights(score, Weights[PawnStructure], ev.pe->score);
+	//Weights are used to modify the scoring of a section of the 
+	//evaluation, without modifying the values inside the subsection
 	score += applyWeights(ev.pe->score, Weights[PawnStructure]);
 
 	//merge pawn attacks with our attack boards
@@ -697,10 +692,10 @@ int Evaluate::evaluate(const BitBoards & boards, bool isWhite)
 	score += evaluatePieces<KNIGHT, WHITE>(boards, ev, mobilityArea);
 
 
-	//can only evaluate threats after piece attack boards have been generated
+	//can only evaluate threats after piece attacked by boards have been generated
 	score += evalThreats<WHITE>(boards, ev) - evalThreats<BLACK>(boards, ev);
 
-	//add piece square table scores as well as material scores, WHITE - BLACK
+	//add piece square table scores as well as material scores
 	score += (ev.psqScores[WHITE] + boards.bInfo.sideMaterial[WHITE]) - (ev.psqScores[BLACK] + boards.bInfo.sideMaterial[BLACK]);
 
 	//evaluate passed pawns, Weights are applied in function itself 
@@ -713,19 +708,7 @@ int Evaluate::evaluate(const BitBoards & boards, bool isWhite)
 		
 		score += applyWeights(ev.me->centerWeight * ctrl, Weights[Center]);
 	}
-	
 
-/*
-	//find game phase based on held material
-	//REPLACE THIS with something more in depth
-	int gamePhase = 0;
-	for (int color = 1; color < 2; color++) {
-		gamePhase += boards.pieceCount[color][KNIGHT];
-		gamePhase += boards.pieceCount[color][BISHOP];
-		gamePhase += boards.pieceCount[color][ROOK] * 2;
-		gamePhase += boards.pieceCount[color][QUEEN] * 4;
-	}
-*/
 	//score pieces in bad to horrible positions and pieces 
 	//that are blocked into those bad positons by other pieces
 	blockedPieces(WHITE, boards, ev);
@@ -749,18 +732,12 @@ int Evaluate::evaluate(const BitBoards & boards, bool isWhite)
 
 		score += unstoppablePawns<WHITE>(ev) - unstoppablePawns<BLACK>(ev);
 	}
-/*
-	//Interpolate between a mid and end game score based on held material
-	//again Needs To Be REPLACED with something more in depth
-	if (gamePhase > 24) gamePhase = 24;
-	int mgWeight = gamePhase;
-	int egWeight = 24 - gamePhase;
 
-	result += ((score.mg * mgWeight) + (score.eg * egWeight)) / 24;
-*/
-
+	//Interpolate between a mid and end game score based on 
+	//total material held as well as predetermined values for
+	//finding game phase.
 	result = score.mg * (ev.me->gamePhase)	   //replace with a calcualted scale factor from mat/endgames
-		   + score.eg * (64 - ev.me->gamePhase) * SF_NORMAL / SF_NORMAL; 
+		   + score.eg * (64 - ev.me->gamePhase) * SF_NORMAL / SF_NORMAL; //change scale factor norm to 32
 
 	result /= 64;
 

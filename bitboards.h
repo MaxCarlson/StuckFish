@@ -75,7 +75,8 @@ public:
 	U64 pieces(int color)const;
 	U64 pieces(int color, int pt)const;
 	U64 pieces(int color, int pt, int pt1)const;
-	U64 piecesByType(int p1, int p2) const; //changed var's to U8 so we can use function again, can't overload more with two ints
+	U64 piecesByType(int p1) const;
+	U64 piecesByType(int p1, int p2) const; 
 	template<int pt> int count(int color) const;
 	bool empty(int sq) const;
 	int pieceOnSq(int sq) const;
@@ -110,9 +111,12 @@ public:
 	//piece material arrays for sides, using piece values
  //MOVE TO STRUCT ALONG WITH OTHER INFO?
 
-	//array used to denote if castling has occured
-	bool castled[4]; //wqs, wks, bqs, bks
-	bool rookMoved[4]; //wqR, wkR, bqr, bkr
+	//array used to denote if castling has occured for color.
+	//We use three set bits, 1, 2, 4 to represent queen-rook + king + king-rook
+	//if(2 & castlingRights) king has moved/both rooks - no castling
+	//if 1 & cR queen-rook has moved, 4 &cR king-rook has moved
+	U64 castlingRights[COLOR];
+
 
 
 //helper funtction to draw out bitboards like chess boards
@@ -144,6 +148,11 @@ inline U64 BitBoards::pieces(int color, int pt) const{
 
 inline U64 BitBoards::pieces(int color, int pt, int pt1) const{
 	return (byColorPiecesBB[color][pt] | byColorPiecesBB[color][pt1]);
+}
+
+inline U64 BitBoards::piecesByType(int p1) const
+{
+	return byPieceType[p1];
 }
 
 //returns a U64 of both color piece1 | piece 2

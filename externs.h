@@ -80,7 +80,7 @@ struct Historys { //holds history info for search
 	}
 
 };
-extern Historys history;
+extern Historys history; 
 
 //Bitboard of all king movements that can then be shifted
 extern const U64 KING_SPAN;
@@ -97,6 +97,7 @@ extern const U64 FileHBB;
 //files for keeping knight moves from wrapping
 extern const U64 FILE_AB;
 extern const U64 FILE_GH;
+
 
 //holds a array of lines "forward" relative from side to move
 //in front of a particualar square

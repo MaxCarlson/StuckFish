@@ -12,28 +12,15 @@ public:
 
 	int evaluate(const BitBoards & boards, bool isWhite);
 
-	
-
-	
-
-	
-
-
-
-	
 
 private:
 	void generateKingZones(const BitBoards & boards, EvalInfo & ev);
 	int wKingShield(const BitBoards & boards);
 	int bKingShield(const BitBoards & boards);
 
-	int pawnEval(const BitBoards & boards, int side, int location);
 
 	void saveTT(bool isWhite, int result, int hash, const BitBoards & boards);
 
-	int getPawnScore(const BitBoards & boards, EvalInfo & ev);
-
-	int isPawnSupported(int side, U64 pawn, U64 pawns);
 
 	void blockedPieces(int side, const BitBoards & boards, EvalInfo & ev);
 

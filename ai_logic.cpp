@@ -21,7 +21,6 @@
 #define IS_PV      true //is this search in a principal variation
 #define NO_PV      false
 #define ASP        50  //aspiration windows size
-#define Move_None   Move n //possible to use this to identify a non move submited?
 
 //holds historys and killers + eventually nodes searched + other data
 searchDriver sd;
@@ -115,8 +114,6 @@ Move Ai_Logic::iterativeDeep(BitBoards& newBoard, int depth, bool isWhite)
     int bestScore, alpha = -INF, beta = INF;
 	int delta = 8;
 	sd.depth = 1;
-
-    //std::cout << zobrist.zobristKey << std::endl;
 
     //iterative deepening loop starts at depth 1, iterates up till max depth or time cutoff
     while(sd.depth <= depth){
@@ -503,9 +500,9 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 
 			bool shouldSkip = false;
 			
-			if (depth < 10 && legalMoves >= futileMoveCounts[improving][depth]) {
-				shouldSkip = true;
-			}
+			//if (depth < 10 && legalMoves >= futileMoveCounts[improving][depth]) {
+			//	shouldSkip = true;
+			//}
 						
 			predictedDepth = newDepth - reductions[is_pv][improving][depth][legalMoves];
 
@@ -514,7 +511,7 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 				//int a = history.gains[isWhite][newMove.piece][newMove.to];
 				//if (predictedDepth < 0) predictedDepth = 0;
 				//use predicted depth? Need to play with numbers!!
-				futileVal = ss->staticEval + history.gains[isWhite][newMove.piece][newMove.to] + (predictedDepth * 200) + 150; //
+				futileVal = ss->staticEval + history.gains[isWhite][newMove.piece][newMove.to] + (predictedDepth * 200) + 150; 
 
 				if (futileVal <= alpha) {
 					//bestScore = std::max(futileVal, bestScore);

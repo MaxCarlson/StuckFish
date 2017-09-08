@@ -3,15 +3,14 @@
   Evaluate.cpp
   Generating Code...
   Compiling...
-  zobristh.cpp
-  material.cpp
-  main.cpp
-  bitboards.cpp
   ai_logic.cpp
-  UCI.cpp
-  Pawns.cpp
   Generating Code...
   Skipping... (no relevant changes detected)
+  zobristh.cpp
+  main.cpp
+  bitboards.cpp
+  UCI.cpp
   TimeManager.cpp
+  Pawns.cpp
   StuckFish.vcxproj -> C:\Users\C-60\Desktop\cppPrograms\StuckFish\x64\Debug\StuckFish.exe
   StuckFish.vcxproj -> C:\Users\C-60\Desktop\cppPrograms\StuckFish\x64\Debug\StuckFish.pdb (Partial PDB)

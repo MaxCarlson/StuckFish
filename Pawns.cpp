@@ -33,8 +33,6 @@ static const U64 adjacentFiles[8] = {
 	0x2828282828282828L, 0x5050505050505050L, 0xa0a0a0a0a0a0a0a0L, 0x4040404040404040L
 };
 
-const U64 DarkSquares = 0x55aa55aa55aa55aaULL;
-const U64 LightSquares = 0xAA55AA55AA55AA55ULL; 
 
 //masks used for pawn eval, possibly other things too
 U64 forwardBB[COLOR][64]; //line in front of square relative side to move

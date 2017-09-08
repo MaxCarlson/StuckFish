@@ -9,10 +9,13 @@ typedef unsigned long long  U64; // supported by MSC 13.00+ and C99
 #include <vector>
 
 #include "move.h"
+
 class BitBoards;
 class Historys;
 class HashEntry;
 class searchStack;
+
+
 
 class MoveGen
 {
