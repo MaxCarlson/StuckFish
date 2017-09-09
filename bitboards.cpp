@@ -392,13 +392,8 @@ void BitBoards::makeMove(const Move& m, bool isWhite)
 
 		castlingRights[color] |= 3LL;
 	}
+
 	
-
-	//debug catch
-	if (allPiecesColorBB[color] & allPiecesColorBB[!color]) {
-		drawBBA();
-	}
-
 	//update the zobrist key
 	zobrist.UpdateKey(m.from, m.to, m, isWhite);
 	zobrist.UpdateColor();
