@@ -199,10 +199,10 @@ int Ai_Logic::searchRoot(BitBoards& newBoard, int depth, int alpha, int beta, se
 			newBoard.unmakeMove(newMove, isWhite);
 			gen_moves.grab_boards(newBoard, isWhite);
 			continue;
-		}											   /// !~!~!~!~!~!~!~!~!~! try SWITCHing from a move gen object having a local array to the psuedo movegen funcion
-        gen_moves.grab_boards(newBoard, isWhite);      /// returning a vector or a pointer to an array that's stored in the search, so we can stop constructing movegen
- /*                                                      /// objects and instead just have a local global for the duration of the searchistory. sort could return the index of the best move
-        //is move legal? if not skip it                ///and take the array or vector as a const refrence argument
+		}											   
+        gen_moves.grab_boards(newBoard, isWhite);     
+ /*                                                      
+        //is move legal? if not skip it                
         if(gen_moves.isAttacked(king, isWhite, true)){
             newBoard.unmakeMove(newMove, isWhite);
             gen_moves.grab_boards(newBoard, isWhite);
@@ -210,7 +210,7 @@ int Ai_Logic::searchRoot(BitBoards& newBoard, int depth, int alpha, int beta, se
         }
 		*/
 
-		if (!(gen_moves.isLegal(newBoard, newMove, isWhite))) {
+		if (!gen_moves.isLegal(newBoard, newMove, isWhite)) {
 			newBoard.unmakeMove(newMove, isWhite);
 			gen_moves.grab_boards(newBoard, isWhite);
 			continue;
@@ -284,7 +284,6 @@ int Ai_Logic::alphaBeta(BitBoards& newBoard, int depth, int alpha, int beta, sea
 	int R = 2;
 	int newDepth;
 	int predictedDepth = 0;
-    //U8 newDepth; //use with futility + other pruning later
     int queitSD = 25, f_prune = 0;
 	Move queits[64]; //container holding quiet moves so we can reduce their score 
 	int quietsC = 0;
@@ -473,11 +472,18 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 		gen_moves.grab_boards(newBoard, isWhite);
 
 		//is move legal? if not skip it
+		if (!gen_moves.isLegal(newBoard, newMove, isWhite)) {
+			newBoard.unmakeMove(newMove, isWhite);
+			gen_moves.grab_boards(newBoard, isWhite);
+			continue;
+		}
+		/*
 		if (gen_moves.isAttacked(king, isWhite, true)) { ///CHANGE METHOD OF UPDATING BOARDS, TOO INEFFICIENT
 			newBoard.unmakeMove(newMove, isWhite);
 			gen_moves.grab_boards(newBoard, isWhite);
 			continue;
 		}
+		*/
 		legalMoves++;
 		newDepth = depth - 1;
 		history.cutoffs[isWhite][newMove.from][newMove.to] -= 1;
@@ -766,12 +772,19 @@ int Ai_Logic::quiescent(BitBoards& newBoard, int alpha, int beta, bool isWhite, 
         newBoard.makeMove(newMove, isWhite);
         gen_moves.grab_boards(newBoard, isWhite);
 
+		if (!gen_moves.isLegal(newBoard, newMove, isWhite)) {
+			newBoard.unmakeMove(newMove, isWhite);
+			gen_moves.grab_boards(newBoard, isWhite);
+			continue;
+		}
+		/*
         //is move legal? if not skip it 
         if(gen_moves.isAttacked(king, isWhite, true)){
             newBoard.unmakeMove(newMove, isWhite);
             gen_moves.grab_boards(newBoard, isWhite);
             continue;
         }
+		*/
 
         score = -quiescent(newBoard, -beta, -alpha, !isWhite, ss, quietDepth-1, is_pv);
 

@@ -1,2 +1,12 @@
-﻿  ai_logic.cpp
+﻿  Evaluate.cpp
+  Pawns.cpp
+  UCI.cpp
+  ai_logic.cpp
+  bitboards.cpp
+  evaluatebb.cpp
+  main.cpp
+  material.cpp
+  movegen.cpp
+  zobristh.cpp
+  Generating Code...
   StuckFish.vcxproj -> C:\Users\C-60\Desktop\cppPrograms\StuckFish\x64\Release\StuckFish.exe

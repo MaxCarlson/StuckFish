@@ -354,22 +354,23 @@ void BitBoards::makeMove(const Move& m, bool isWhite)
 	//color is stupid because I started the program with a bool is white, which (int)'s to 1
 	//need to change it to an int to remove this sort of thing
 	int color = !isWhite;
+	int them = isWhite;
 
 	//drawBBA();
 
 	//remove or add captured piece from BB's same as above for moving piece
 	if (m.captured) {
 		//remove captured piece
-		removePiece(m.captured, !color, m.to);
+		removePiece(m.captured, them, m.to);
 		//update material
-		bInfo.sideMaterial[!color] -= SORT_VALUE[m.captured];
+		bInfo.sideMaterial[them] -= SORT_VALUE[m.captured];
 		
 		//update the pawn hashkey on capture
-		if (m.captured == PAWN) bInfo.PawnKey ^= zobrist.zArray[!color][PAWN][m.to];
+		if (m.captured == PAWN) bInfo.PawnKey ^= zobrist.zArray[them][PAWN][m.to];
 
-		else bInfo.nonPawnMaterial[!color] -= SORT_VALUE[m.captured];
+		else bInfo.nonPawnMaterial[them] -= SORT_VALUE[m.captured];
 		//update material key
-		bInfo.MaterialKey ^= zobrist.zArray[!color][m.captured][pieceCount[!color][m.captured]+1];
+		bInfo.MaterialKey ^= zobrist.zArray[them][m.captured][pieceCount[them][m.captured]+1];
 	}
 
 	//move the piece from - to
@@ -407,14 +408,14 @@ void BitBoards::makeMove(const Move& m, bool isWhite)
 	}
 	//do castling. We've already moved the king, so we need to 
 	//deal with the rook, castling rights, and the zobrist keys
-/*	else if (m.flag == 'C') {
+	else if (m.flag == 'C') {
 		//BitBoards * a = this;
 		//a->drawBBA();
-
+		
 		castlingRights[color] |= 2LL;
 
-		int rookFrom = relative_square(color, m.to)     == C1 ? relative_square(color, A1) : relative_square(color, H1);
-		int rookTo   = rookFrom == relative_square(color, A1) ? relative_square(color, D1) : relative_square(color, F1);
+		int rookFrom = relative_square(color, m.to)     == C1  ? relative_square(color, A1) : relative_square(color, H1);
+		int rookTo   = rookFrom == relative_square(color,  A1) ? relative_square(color, D1) : relative_square(color, F1);
 
 		movePiece(ROOK, color, rookFrom, rookTo);
 
@@ -425,7 +426,7 @@ void BitBoards::makeMove(const Move& m, bool isWhite)
 		//a = this;
 		//a->drawBBA();
 	}
-*/
+//*/
 	
 	//update the zobrist key
 	zobrist.UpdateKey(m.from, m.to, m, isWhite);
@@ -442,6 +443,7 @@ void BitBoards::unmakeMove(const Move & m, bool isWhite)
 {
 	
 	int color = !isWhite;
+	int them = isWhite;
 
 	if (m.flag != 'Q') {
 		//move piece
@@ -464,56 +466,56 @@ void BitBoards::unmakeMove(const Move & m, bool isWhite)
 		//remove queen
 		removePiece(QUEEN, color, m.to);
 
-		bInfo.sideMaterial[color] += SORT_VALUE[PAWN] - SORT_VALUE[QUEEN];
+		bInfo.sideMaterial[color]    += SORT_VALUE[PAWN ] - SORT_VALUE[QUEEN];
 		bInfo.nonPawnMaterial[color] -= SORT_VALUE[QUEEN];
 		//update pawn key
 		bInfo.PawnKey ^= zobrist.zArray[color][PAWN][m.from];
 		//update material key
 		bInfo.MaterialKey ^= zobrist.zArray[color][QUEEN][pieceCount[color][QUEEN]+1] //plus one because we've already decremented the counter
-			              ^  zobrist.zArray[color][PAWN ][pieceCount[color][PAWN]];
+			              ^  zobrist.zArray[color][PAWN ][pieceCount[color][PAWN ]  ];
 	}
 	//unmake castling
-/*	if (m.flag == 'C') {
+	if (m.flag == 'C') {
 		//BitBoards * a = this;
 		//a->drawBBA();
 
 		castlingRights[color] ^= 2;
 
-		int rookFrom = relative_square(color, m.to) == C1 ? relative_square(color, A1) : relative_square(color, H1);
-		int rookTo = rookFrom == relative_square(color, A1) ? relative_square(color, D1) : relative_square(color, F1);
+		int rookFrom = relative_square(color, m.to)    == C1  ? relative_square(color, A1) : relative_square(color, H1);
+		int rookTo   = rookFrom == relative_square(color, A1) ? relative_square(color, D1) : relative_square(color, F1);
 
 		movePiece(ROOK, color, rookTo, rookFrom);
 
 		int zCast = color == WHITE ? rookFrom == A1 ? 0 : 1 : rookFrom == A1 ? 2 : 3;
 		zobrist.zobristKey ^= zobrist.zCastle[zCast]
-			^ zobrist.zArray[color][ROOK][rookFrom]
-			^ zobrist.zArray[color][ROOK][rookTo];
+						   ^  zobrist.zArray[ color][ROOK][rookFrom]
+						   ^  zobrist.zArray[ color][ROOK][rookTo];
 
 		//a = this;
 		//a->drawBBA();
 		//a->drawBBA();
 	}
-	*/
+	//*/
 
 	//add captured piece from BB's similar to above for moving piece
 	if (m.captured) {
 		//add captured piece to to square
-		addPiece(m.captured, !color, m.to);
-		bInfo.sideMaterial[!color] += SORT_VALUE[m.captured];
+		addPiece(m.captured, them, m.to);
+		bInfo.sideMaterial[them] += SORT_VALUE[m.captured];
 
 		//if pawn captured undone, update pawn key
-		if (m.captured == PAWN) bInfo.PawnKey ^= zobrist.zArray[!color][PAWN][m.to];
+		if (m.captured == PAWN) bInfo.PawnKey ^= zobrist.zArray[them][PAWN][m.to];
 
-		else bInfo.nonPawnMaterial[!color] += SORT_VALUE[m.captured];
+		else bInfo.nonPawnMaterial[them] += SORT_VALUE[m.captured];
 		//update material key
-		bInfo.MaterialKey ^= zobrist.zArray[!color][m.captured][pieceCount[!color][m.captured]];
+		bInfo.MaterialKey ^= zobrist.zArray[them][m.captured][pieceCount[them][m.captured]];
 	}
 
 	//debug catch
-	if (allPiecesColorBB[color] & allPiecesColorBB[!color]) {
+	if (allPiecesColorBB[color] & allPiecesColorBB[them]) {
 		drawBBA();
 		drawBB(allPiecesColorBB[color]);
-		drawBB(allPiecesColorBB[!color]);
+		drawBB(allPiecesColorBB[them]);
 	}
 
 	//update the zobrist key

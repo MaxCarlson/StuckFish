@@ -866,24 +866,40 @@ bool MoveGen::isLegal(const BitBoards & b, const Move & m, bool isWhite)
 	const int them = isWhite;
 	const int kingLoc = lsb(b.pieces(color, KING));
 
-	bool retIfNormal = isSquareAttacked(b, kingLoc, color);
+	bool kAttacked = isSquareAttacked(b, kingLoc, color);
 
 	// if move is not a castling move and
 	// has passed all legality checks 
 	// move is legal
-	if (retIfNormal && m.flag != 'C') return true;
+	if (m.flag != 'C') return !kAttacked;
+	
+	U64 rookSq = color == WHITE ? m.to == C1  ? (1LL << A1) : (1LL << H1)
+							    : m.to == C8  ? (1LL << A8) : (1LL << H8);
+
+	//if we don't have our rook in the right spot, 
+	//castling isn't legal
+	if (!(rookSq & b.pieces(color, ROOK))) return false;
+	
+
+
+	//if we don't have the appropriate castling rights, 
+	//then castling isn't legal
+	int relRook = relative_square(color, pop_lsb(&rookSq));
+	U64 index = relRook == A1 ? 3LL : 6LL;
+
+	if (index & b.castlingRights[color]) return false;
 
 	//set the appropriate squares that we need to
 	//test for legality depending on castling color, qs/ks
 	U64 castleSqs = color == WHITE ? m.to == C1 ? 0xc00000000000000ULL : 0x6000000000000000ULL
-				  : m.to  == C8    ?  0xcULL    : 0x60ULL;
-
+		                           : m.to == C8 ? 0xcULL : 0x60ULL;
 
 	for (int i = 0; i < 2; ++i) {
 		int loc = pop_lsb(&castleSqs);
 
 		if (isSquareAttacked(b, loc, color)) return false;
 	}
+
 
 	return true;
 }
