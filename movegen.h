@@ -34,6 +34,8 @@ public:
 	//grab bitboard changes after a move, or any change in search. Need to get rid of eventually and just pass constRef to everything
     void grab_boards(const BitBoards &BBBoard, bool wOrB); //remove this function and just pass const ref BitBoards to all functions that need it
 
+	bool isLegal(const BitBoards & b, const Move & m, bool isWhite);
+
     bool isAttacked(U64 pieceLoc, bool wOrB, bool isSearchKingCheck);
 	
 
@@ -101,8 +103,8 @@ private:
         void possibleQ(const BitBoards& board, int color, const U64 &capturesOnly);
         void possibleK(const BitBoards& board, int color, const U64 &capturesOnly);
 
-
-        //void undoCapture(U64 location, char piece, char whiteOrBlack);
+		//helper function for isLegal 
+		bool isSquareAttacked(const BitBoards & b, const int square, const int color);
 
 };
 

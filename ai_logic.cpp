@@ -201,13 +201,20 @@ int Ai_Logic::searchRoot(BitBoards& newBoard, int depth, int alpha, int beta, se
 			continue;
 		}											   /// !~!~!~!~!~!~!~!~!~! try SWITCHing from a move gen object having a local array to the psuedo movegen funcion
         gen_moves.grab_boards(newBoard, isWhite);      /// returning a vector or a pointer to an array that's stored in the search, so we can stop constructing movegen
-                                                       /// objects and instead just have a local global for the duration of the searchistory. sort could return the index of the best move
+ /*                                                      /// objects and instead just have a local global for the duration of the searchistory. sort could return the index of the best move
         //is move legal? if not skip it                ///and take the array or vector as a const refrence argument
         if(gen_moves.isAttacked(king, isWhite, true)){
             newBoard.unmakeMove(newMove, isWhite);
             gen_moves.grab_boards(newBoard, isWhite);
             continue;
         }
+		*/
+
+		if (!(gen_moves.isLegal(newBoard, newMove, isWhite))) {
+			newBoard.unmakeMove(newMove, isWhite);
+			gen_moves.grab_boards(newBoard, isWhite);
+			continue;
+		}
         legalMoves ++;
         history.cutoffs[isWhite][newMove.from][newMove.to] -= 1;
 

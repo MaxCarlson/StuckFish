@@ -9,6 +9,7 @@
 #include "ai_logic.h"
 #include "Pawns.h"
 
+
 //totally full bitboard
 const U64 full  = 0xffffffffffffffffULL;
 //files to keep pieces from moving left or right off board
@@ -39,6 +40,13 @@ const U64 FileHBB = FileABB << 7;
 //files for keeping knight moves from wrapping
 const U64 FILE_AB = FileABB + FileBBB;
 const U64 FILE_GH = FileGBB + FileHBB;
+
+
+//[white/black][queenside/kingside]
+const U64 castlingMasks[COLOR][2] = {
+	{ { 0xe00000000000000ULL },{ 0x6000000000000000ULL } },
+	{ { 0xeULL               },{ 0x60ULL               } }
+};
 
 static const U64 RankMasks8[8] =/*from rank 1 to 8 ?*/
 {
@@ -420,12 +428,6 @@ void MoveGen::possibleR(const BitBoards& board, int color, const U64 &capturesOn
 
 }
 
-//[white/black][queenside/kingside]
-U64 castlingMasks[COLOR][2] = {
-	{{0x1c00000000000000ULL }, {0x7000000000000000ULL}},
-	{{0x1cULL}, {0x70ULL}}
-};
-
 void MoveGen::possibleQ(const BitBoards& board, int color, const U64 &capturesOnly)
 {
 	const int* list = board.pieceLoc[color][QUEEN];
@@ -460,7 +462,7 @@ void MoveGen::possibleK(const BitBoards& board, int color, const U64 &capturesOn
 	U64 enemys = board.pieces(!color);
 	U64 eking = board.pieces(!color, KING);
 	char flag = '0';
-	
+
 
 	int square;
 	while ((square = *list++) != SQ_NONE) {
@@ -483,14 +485,16 @@ void MoveGen::possibleK(const BitBoards& board, int color, const U64 &capturesOn
 		}
 
 		if (flag == 'M') {
-			if (!(castlingMasks[color][0] & board.FullTiles)) movegen_push(KING, PIECE_EMPTY, 'C', square, relative_square(color, C1));
-			if (!(castlingMasks[color][1] & board.FullTiles)) movegen_push(KING, PIECE_EMPTY, 'C', square, relative_square(color, G1));
-			if (square == 3 || square == 52) {
-				int a = 5;
+			if (!(castlingMasks[color][0] & board.FullTiles)) {
+				movegen_push(KING, PIECE_EMPTY, 'C', square, relative_square(color, C1));
 			}
+			if (!(castlingMasks[color][1] & board.FullTiles)) {
+				movegen_push(KING, PIECE_EMPTY, 'C', square, relative_square(color, G1));
+			}
+
 		}
 
-	}   
+	}
 }
 
 void MoveGen::movegen_push(int piece, int captured, char flag, int from, int to) //change flags to int eventually
@@ -527,7 +531,7 @@ void MoveGen::movegen_push(int piece, int captured, char flag, int from, int to)
 
     //pawn promotions
     if(moveAr[moveCount].flag == 'Q') moveAr[moveCount].score += SORT_PROM;
-	else if (moveAr[moveCount].flag == 'C') moveAr[moveCount].score += SORT_PROM; //SORT_CAPT-1; //TEST THIS VALUE FOR ELO LOSS GAIN
+	else if (moveAr[moveCount].flag == 'C') moveAr[moveCount].score += SORT_CAPT-1; //TEST THIS VALUE FOR ELO LOSS GAIN
 
 	//increment move counter so we know how many
 	//moves we have to search and sort through
@@ -829,29 +833,13 @@ int MoveGen::whichPieceCaptured(U64 landing)
     return '0';
 }
 
-void MoveGen::grab_boards(const BitBoards &BBBoard, bool wOrB)
+void MoveGen::grab_boards(const BitBoards &BBBoard, bool wOrB) //REPLACE THIS FUNCTION AND JUST PASS CONST REF BITBOARDS TO EVERYTHING THAT NEEDS IT
 {
 	
     isWhite = wOrB;
     FullTiles = BBBoard.FullTiles;
     EmptyTiles = BBBoard.EmptyTiles;
-	/*
-    BBWhitePieces = BBBoard.BBWhitePieces;
-    BBWhitePawns = BBBoard.BBWhitePawns;
-    BBWhiteKnights = BBBoard.BBWhiteKnights;
-    BBWhiteBishops = BBBoard.BBWhiteBishops;
-    BBWhiteRooks = BBBoard.BBWhiteRooks;
-    BBWhiteQueens = BBBoard.BBWhiteQueens;
-    BBWhiteKing = BBBoard.BBWhiteKing;
 
-    BBBlackPieces = BBBoard.BBBlackPieces;
-    BBBlackPawns = BBBoard.BBBlackPawns;
-    BBBlackKnights = BBBoard.BBBlackKnights;
-    BBBlackBishops = BBBoard.BBBlackBishops;
-    BBBlackRooks = BBBoard.BBBlackRooks;
-    BBBlackQueens = BBBoard.BBBlackQueens;
-    BBBlackKing = BBBoard.BBBlackKing;
-	*/
 	BBWhitePieces = BBBoard.allPiecesColorBB[0];
 	BBWhitePawns = BBBoard.byColorPiecesBB[0][1];
 	BBWhiteKnights = BBBoard.byColorPiecesBB[0][2];
@@ -868,6 +856,58 @@ void MoveGen::grab_boards(const BitBoards &BBBoard, bool wOrB)
 	BBBlackQueens = BBBoard.byColorPiecesBB[1][5];
 	BBBlackKing = BBBoard.byColorPiecesBB[1][6];
 
+}
+
+bool MoveGen::isLegal(const BitBoards & b, const Move & m, bool isWhite) 
+{
+	//color is stupid right now with 0 being a lookup for
+	//white with bitboards and other arrays. Hence the flip.
+	const int color = !isWhite;
+	const int them = isWhite;
+	const int kingLoc = lsb(b.pieces(color, KING));
+
+	bool retIfNormal = isSquareAttacked(b, kingLoc, color);
+
+	// if move is not a castling move and
+	// has passed all legality checks 
+	// move is legal
+	if (retIfNormal && m.flag != 'C') return true;
+
+	//set the appropriate squares that we need to
+	//test for legality depending on castling color, qs/ks
+	U64 castleSqs = color == WHITE ? m.to == C1 ? 0xc00000000000000ULL : 0x6000000000000000ULL
+				  : m.to  == C8    ?  0xcULL    : 0x60ULL;
+
+
+	for (int i = 0; i < 2; ++i) {
+		int loc = pop_lsb(&castleSqs);
+
+		if (isSquareAttacked(b, loc, color)) return false;
+	}
+
+	return true;
+}
+
+inline bool MoveGen::isSquareAttacked(const BitBoards & b, const int square, const int color) {
+
+	const int them = !color;
+	U64 attacks = b.psuedoAttacks(PAWN, color, square);
+
+	if (attacks & b.pieces(them, PAWN)) return true;
+
+	attacks = b.psuedoAttacks(KNIGHT, color, square);
+
+	if (attacks & b.pieces(them, KNIGHT)) return true;
+
+	attacks = slider_attacks.BishopAttacks(b.FullTiles, square);
+
+	if (attacks & b.pieces(them, BISHOP, QUEEN)) return true;
+
+	attacks = slider_attacks.RookAttacks(b.FullTiles, square);
+
+	if (attacks & b.pieces(them, ROOK, QUEEN)) return true;
+
+	return false;
 }
 
 bool MoveGen::isAttacked(U64 pieceLoc, bool wOrB, bool isSearchKingCheck)
@@ -1048,7 +1088,7 @@ void MoveGen::drawBB(U64 board) const
     std::cout<< std::endl;
 }
 
-U64 MoveGen::northOne(U64 b)
+U64 MoveGen::northOne(U64 b) //DELETE THESE FUNCTIONS AND JUST USE shift<UP>(U64 bb)
 {
     return b >> 8;
 }

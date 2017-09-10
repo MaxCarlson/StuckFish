@@ -233,7 +233,7 @@ inline U64 BitBoards::square_bb(int sq) const
 
 inline bool BitBoards::can_castle(int color) const
 {
-	return (castlingRights[color] < 5 && castlingRights[color] != 2 && castlingRights[color] != 3);
+	return (castlingRights[color] < 5 && castlingRights[color] != 2LL && castlingRights[color] != 3LL);
 }
 
 //can only be used if there is no piece on landing spot

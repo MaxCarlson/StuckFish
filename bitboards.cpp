@@ -7,7 +7,7 @@
 #include "zobristh.h"
 #include "TranspositionT.h"
 
-
+/*
 std::string boardArr[8][8] = {
 	{ "r", "n", "b", "q", "k", "b", "n", "r" },
 	{ "p", "p", "p", "p", "p", "p", "p", "p", },
@@ -17,6 +17,17 @@ std::string boardArr[8][8] = {
 	{ " ", " ", " ", " ", " ", " ", " ", " " },
 	{ "P", "P", "P", "P", "P", "P", "P", "P" },
 	{ "R", "N", "B", "Q", "K", "B", "N", "R" },
+};
+*/
+std::string boardArr[8][8] = {
+	{ "r", " ", " ", " ", "k", " ", " ", "r" },
+	{ "p", "p", "p", "p", "p", "p", "p", "p", },
+	{ " ", " ", " ", " ", " ", " ", " ", " " },
+	{ " ", " ", " ", " ", " ", " ", " ", " " },
+	{ " ", " ", " ", " ", " ", " ", " ", " " },
+	{ " ", " ", " ", " ", " ", " ", " ", " " },
+	{ "P", "P", "P", "P", "P", "P", "P", "P" },
+	{ "R", " ", " ", " ", "K", " ", " ", "R" },
 };
 
 //used for flipping rank to whites relative rank
@@ -389,17 +400,18 @@ void BitBoards::makeMove(const Move& m, bool isWhite)
 		//BitBoards * a = this;
 		//a->drawBB(castlingRights[color]);
 
-		castlingRights[color] |= m.piece == ROOK ? relative_square(color, m.from) == A1 ? 1 : 4 : 2;	
+		castlingRights[color] |= m.piece == ROOK ? relative_square(color, m.from) == A1 ? 1LL : 4LL : 2LL;	
 		//a->drawBB(castlingRights[color]);
 		//int aa = 5;
+
 	}
 	//do castling. We've already moved the king, so we need to 
 	//deal with the rook, castling rights, and the zobrist keys
-	else if (m.flag == 'C') {
-		BitBoards * a = this;
-		a->drawBBA();
+/*	else if (m.flag == 'C') {
+		//BitBoards * a = this;
+		//a->drawBBA();
 
-		castlingRights[color] |= 2;
+		castlingRights[color] |= 2LL;
 
 		int rookFrom = relative_square(color, m.to)     == C1 ? relative_square(color, A1) : relative_square(color, H1);
 		int rookTo   = rookFrom == relative_square(color, A1) ? relative_square(color, D1) : relative_square(color, F1);
@@ -410,10 +422,10 @@ void BitBoards::makeMove(const Move& m, bool isWhite)
 		zobrist.zobristKey ^= zobrist.zCastle[zCast]
 			               ^  zobrist.zArray[color][ROOK][rookFrom] 
 			               ^  zobrist.zArray[color][ROOK][rookTo];
-		a = this;
-		a->drawBBA();
+		//a = this;
+		//a->drawBBA();
 	}
-
+*/
 	
 	//update the zobrist key
 	zobrist.UpdateKey(m.from, m.to, m, isWhite);
@@ -439,8 +451,8 @@ void BitBoards::unmakeMove(const Move & m, bool isWhite)
 		if(m.piece == PAWN) bInfo.PawnKey ^= zobrist.zArray[color][PAWN][m.to] ^ zobrist.zArray[color][PAWN][m.from];
 
 		//restore castling rights if we're unmaking the rooks first move and the king hasn't moved.
-		else if (m.flag == 'M' && castlingRights[color] != 7) {
-			castlingRights[color] ^= m.piece == ROOK ? relative_square(color, m.from) == A1 ? 1 : 4 : 2;
+		else if (m.flag == 'M') {
+			castlingRights[color] ^= m.piece == ROOK ? relative_square(color, m.from) == A1 ? 1LL : 4LL : 2LL;
 		}
 	}
 	//pawn promotion
@@ -458,12 +470,12 @@ void BitBoards::unmakeMove(const Move & m, bool isWhite)
 		bInfo.PawnKey ^= zobrist.zArray[color][PAWN][m.from];
 		//update material key
 		bInfo.MaterialKey ^= zobrist.zArray[color][QUEEN][pieceCount[color][QUEEN]+1] //plus one because we've already decremented the counter
-			              ^ zobrist.zArray[color][PAWN][pieceCount[color][PAWN]];
+			              ^  zobrist.zArray[color][PAWN ][pieceCount[color][PAWN]];
 	}
 	//unmake castling
-	if (m.flag == 'C') {
-		BitBoards * a = this;
-		a->drawBBA();
+/*	if (m.flag == 'C') {
+		//BitBoards * a = this;
+		//a->drawBBA();
 
 		castlingRights[color] ^= 2;
 
@@ -477,10 +489,11 @@ void BitBoards::unmakeMove(const Move & m, bool isWhite)
 			^ zobrist.zArray[color][ROOK][rookFrom]
 			^ zobrist.zArray[color][ROOK][rookTo];
 
-		a = this;
-		a->drawBBA();
-		a->drawBBA();
+		//a = this;
+		//a->drawBBA();
+		//a->drawBBA();
 	}
+	*/
 
 	//add captured piece from BB's similar to above for moving piece
 	if (m.captured) {
