@@ -37,6 +37,8 @@ public:
 	bool isLegal(const BitBoards & b, const Move & m, bool isWhite);
 
     bool isAttacked(U64 pieceLoc, bool wOrB, bool isSearchKingCheck);
+	//helper function for isLegal + for finding if in check
+	bool isSquareAttacked(const BitBoards & b, const int square, const int color);
 	
 
 	//static exhange eval
@@ -102,10 +104,8 @@ private:
         void possibleR(const BitBoards& board, int color, const U64 &capturesOnly);
         void possibleQ(const BitBoards& board, int color, const U64 &capturesOnly);
         void possibleK(const BitBoards& board, int color, const U64 &capturesOnly);
-
-		//helper function for isLegal 
-		bool isSquareAttacked(const BitBoards & b, const int square, const int color);
-
+		template<int color>
+		void pawnMoves(const BitBoards & boards, bool capturesOnly);
 };
 
 

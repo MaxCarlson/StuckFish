@@ -73,7 +73,7 @@ void Ai_Logic::initSearch()
 	}
 }
 
-Move Ai_Logic::search(BitBoards& newBoard, bool isWhite) {
+Move Ai_Logic::search(BitBoards& board, bool isWhite) {
 	
 	//max depth
 	int depth = MAX_PLY;
@@ -83,10 +83,10 @@ Move Ai_Logic::search(BitBoards& newBoard, bool isWhite) {
 	if (fixedDepthSearch) depth = fixedDepthSearch;
 
 	//generate accurate zobrist key based on bitboards
-	newBoard.zobrist.getZobristHash(newBoard);
+	board.zobrist.getZobristHash(board);
 
 	//update color only applied on black turn
-	//if (!isWhite) newBoard.zobrist.UpdateColor();
+	//if (!isWhite) board.zobrist.UpdateColor();
 
 	//decrease history values and clear gains stats after a search
 	ageHistorys();
@@ -94,12 +94,12 @@ Move Ai_Logic::search(BitBoards& newBoard, bool isWhite) {
 	//calc move time for us, send to search driver
 	timeM.calcMoveTime(isWhite);
 
-	Move m = iterativeDeep(newBoard, depth, isWhite);
+	Move m = iterativeDeep(board, depth, isWhite);
 	
 	return m;
 }
 
-Move Ai_Logic::iterativeDeep(BitBoards& newBoard, int depth, bool isWhite)
+Move Ai_Logic::iterativeDeep(BitBoards& board, int depth, bool isWhite)
 {
 	//reset ply
     int ply = 0;
@@ -121,7 +121,7 @@ Move Ai_Logic::iterativeDeep(BitBoards& newBoard, int depth, bool isWhite)
 		if (timeM.timeStopRoot() || timeOver) break;
 
         //main search
-        bestScore = searchRoot(newBoard, sd.depth, alpha, beta, ss, isWhite);
+        bestScore = searchRoot(board, sd.depth, alpha, beta, ss, isWhite);
 /*
         if(bestScore <= alpha){ //ISSUES WITH ASPIRATION WINDOWS
 			alpha = std::max(bestScore - delta, -INF);			
@@ -151,17 +151,17 @@ Move Ai_Logic::iterativeDeep(BitBoards& newBoard, int depth, bool isWhite)
 
 
     //make final move on bitboards + draw board
-    newBoard.makeMove(bestMove, isWhite);
-    newBoard.drawBBA();
-	//std::cout << newBoard.sideMaterial[0] << " " << newBoard.sideMaterial[1] <<std::endl;
+    board.makeMove(bestMove, isWhite);
+    board.drawBBA();
+	//std::cout << board.sideMaterial[0] << " " << board.sideMaterial[1] <<std::endl;
 
     //evaluateBB ev; //used for prininting static eval after move
-    //std::cout << "Board evalutes to: " << ev.evalBoard(true, newBoard, zobrist) << " for white." << std::endl;
+    //std::cout << "Board evalutes to: " << ev.evalBoard(true, board, zobrist) << " for white." << std::endl;
 
     return bestMove;
 }
 
-int Ai_Logic::searchRoot(BitBoards& newBoard, int depth, int alpha, int beta, searchStack *ss, bool isWhite)
+int Ai_Logic::searchRoot(BitBoards& board, int depth, int alpha, int beta, searchStack *ss, bool isWhite)
 {
     bool flagInCheck;
     int score = 0;
@@ -171,48 +171,49 @@ int Ai_Logic::searchRoot(BitBoards& newBoard, int depth, int alpha, int beta, se
 	Move quiets[64];
 	int quietsCount = 0;
 
-	const HashEntry* ttentry = TT.probe(newBoard.zobrist.zobristKey);
+	const HashEntry* ttentry = TT.probe(board.zobrist.zobristKey);
 
 	sd.nodes++;
 	ss->ply = 1;
 	(ss + 1)->skipNull = false;
 
     MoveGen gen_moves;
-    //grab bitboards from newBoard object and store color and board to var
-    gen_moves.grab_boards(newBoard, isWhite);
-    gen_moves.generatePsMoves(newBoard, false);
+    //grab bitboards from board object and store color and board to var
+    gen_moves.grab_boards(board, isWhite);
+    gen_moves.generatePsMoves(board, false);
 	gen_moves.reorderMoves(ss, ttentry);
 
     //who's our king?
 	//color is messed up here, the boards are indexed by opposite 0 = white
-	U64 king = newBoard.byColorPiecesBB[!isWhite][KING];
-	flagInCheck = gen_moves.isAttacked(king, isWhite, true);
+	//U64 king = board.byColorPiecesBB[!isWhite][KING];
+	//flagInCheck = gen_moves.isAttacked(king, isWhite, true);
+	flagInCheck = gen_moves.isSquareAttacked(board, board.king_square(!isWhite), !isWhite);
 
     int moveNum = gen_moves.moveCount;
 
     for(int i = 0; i < moveNum; ++i){
         //find best move generated
         Move newMove = gen_moves.movegen_sort(ss->ply, &gen_moves.moveAr[0]);
-        newBoard.makeMove(newMove, isWhite);  
+        board.makeMove(newMove, isWhite);  
 
-		if (isRepetition(newBoard, newMove)) { //if position from root move is a two fold repetition, discard that move
-			newBoard.unmakeMove(newMove, isWhite);
-			gen_moves.grab_boards(newBoard, isWhite);
+		if (isRepetition(board, newMove)) { //if position from root move is a two fold repetition, discard that move
+			board.unmakeMove(newMove, isWhite);
+			gen_moves.grab_boards(board, isWhite);
 			continue;
 		}											   
-        gen_moves.grab_boards(newBoard, isWhite);     
+        gen_moves.grab_boards(board, isWhite);     
  /*                                                      
         //is move legal? if not skip it                
         if(gen_moves.isAttacked(king, isWhite, true)){
-            newBoard.unmakeMove(newMove, isWhite);
-            gen_moves.grab_boards(newBoard, isWhite);
+            board.unmakeMove(newMove, isWhite);
+            gen_moves.grab_boards(board, isWhite);
             continue;
         }
 		*/
 
-		if (!gen_moves.isLegal(newBoard, newMove, isWhite)) {
-			newBoard.unmakeMove(newMove, isWhite);
-			gen_moves.grab_boards(newBoard, isWhite);
+		if (!gen_moves.isLegal(board, newMove, isWhite)) {
+			board.unmakeMove(newMove, isWhite);
+			gen_moves.grab_boards(board, isWhite);
 			continue;
 		}
         legalMoves ++;
@@ -221,21 +222,21 @@ int Ai_Logic::searchRoot(BitBoards& newBoard, int depth, int alpha, int beta, se
         //PV search at root
         if(best == -INF){
             //full window PV search
-            score = -alphaBeta(newBoard, depth-1, -beta, -alpha, ss+1, !isWhite, DO_NULL, IS_PV);
+            score = -alphaBeta(board, depth-1, -beta, -alpha, ss + 1, !isWhite, DO_NULL, IS_PV);
 
        } else {
             //zero window search
-            score = -alphaBeta(newBoard, depth-1, -alpha -1, -alpha, ss + 1, !isWhite, DO_NULL, NO_PV);
+            score = -alphaBeta(board, depth-1, -alpha -1, -alpha, ss + 1, !isWhite, DO_NULL, NO_PV);
 
             //if we've gained a new alpha we need to do a full window search
             if(score > alpha){
-                score = -alphaBeta(newBoard, depth-1, -beta, -alpha, ss + 1, !isWhite, DO_NULL, IS_PV);
+                score = -alphaBeta(board, depth-1, -beta, -alpha, ss + 1, !isWhite, DO_NULL, IS_PV);
             }
         }
 
         //undo move on BB's
-        newBoard.unmakeMove(newMove, isWhite);
-        gen_moves.grab_boards(newBoard, isWhite);
+        board.unmakeMove(newMove, isWhite);
+        gen_moves.grab_boards(board, isWhite);
 
 		if (newMove.captured == PIECE_EMPTY && newMove.flag != 'Q' && quietsCount < 64) {
 			quiets[quietsCount] = newMove;
@@ -263,7 +264,7 @@ int Ai_Logic::searchRoot(BitBoards& newBoard, int depth, int alpha, int beta, se
     }
 
 	//save info and move to TT
-	TT.save(sd.PV[ss->ply], newBoard.zobrist.zobristKey, depth, valueToTT(alpha, ss->ply), hashFlag);
+	TT.save(sd.PV[ss->ply], board.zobrist.zobristKey, depth, valueToTT(alpha, ss->ply), hashFlag);
 
 	if (alpha >= beta && !flagInCheck && sd.PV[1].captured == PIECE_EMPTY && sd.PV[1].flag != 'Q') {
 		updateStats(sd.PV[1], ss, depth, quiets, quietsCount, isWhite);
@@ -272,7 +273,7 @@ int Ai_Logic::searchRoot(BitBoards& newBoard, int depth, int alpha, int beta, se
     return alpha;
 }
 
-int Ai_Logic::alphaBeta(BitBoards& newBoard, int depth, int alpha, int beta, searchStack *ss, bool isWhite, bool allowNull, bool is_pv)
+int Ai_Logic::alphaBeta(BitBoards& board, int depth, int alpha, int beta, searchStack *ss, bool isWhite, bool allowNull, bool is_pv)
 {
     bool FlagInCheck = false;
     bool raisedAlpha = false; 
@@ -306,7 +307,7 @@ int Ai_Logic::alphaBeta(BitBoards& newBoard, int depth, int alpha, int beta, sea
 	bool ttMove;
 	int ttValue;
 
-	ttentry = TT.probe(newBoard.zobrist.zobristKey);
+	ttentry = TT.probe(board.zobrist.zobristKey);
 	ttMove = ttentry ? ttentry->move.tried : false; //is there a move stored in transposition table?
 	ttValue = ttentry ? valueFromTT(ttentry->eval, ss->ply) : INVALID; //if there is a TT entry, grab its value
 
@@ -325,28 +326,29 @@ int Ai_Logic::alphaBeta(BitBoards& newBoard, int depth, int alpha, int beta, sea
     int score;
     if(depth < 1 || timeOver){
         //run capture search to max depth of queitSD
-        score = quiescent(newBoard, alpha, beta, isWhite, ss, queitSD, is_pv);
+        score = quiescent(board, alpha, beta, isWhite, ss, queitSD, is_pv);
         return score;
     }
 
     MoveGen gen_moves;
-    //grab bitboards from newBoard object and store color and board to var
-    gen_moves.grab_boards(newBoard, isWhite);
+    //grab bitboards from board object and store color and board to var
+    gen_moves.grab_boards(board, isWhite);
 
 
 	int color = !isWhite; //color is messed up here, the boards are indexed by opposite 0 = white
-	U64 king = newBoard.byColorPiecesBB[color][KING];
-	U64 eking = newBoard.byColorPiecesBB[!color][KING];
+	//U64 king = board.byColorPiecesBB[color][KING];
+	U64 eking = board.byColorPiecesBB[!color][KING];
 
     //are we in check?
-    FlagInCheck = gen_moves.isAttacked(king, isWhite, true);
+    //FlagInCheck = gen_moves.isAttacked(king, isWhite, true);
+	FlagInCheck = gen_moves.isSquareAttacked(board, board.king_square(!isWhite), !isWhite);
 
 //if in check, or in reduced search extension: skip nulls, statics evals, razoring, etc to moves_loop:
     if(FlagInCheck || (ss-1)->excludedMove.tried || sd.skipEarlyPruning) goto moves_loop;
 
 	//evaluateBB eval;
 	Evaluate eval;
-	ss->staticEval = eval.evaluate(newBoard, isWhite);//eval.evalBoard(isWhite, newBoard);
+	ss->staticEval = eval.evaluate(board, isWhite);//eval.evalBoard(isWhite, board);
 
 	//update gain from previous ply stats for previous move
 	if ((ss - 1)->currentMove.captured == PIECE_EMPTY
@@ -370,10 +372,10 @@ int Ai_Logic::alphaBeta(BitBoards& newBoard, int depth, int alpha, int beta, sea
 //Null move heuristics, disabled if in PV, check, or depth is too low
     if(allowNull && !is_pv && depth > R){
         if(depth > 6) R = 3;
-        newBoard.zobrist.UpdateColor();
+        board.zobrist.UpdateColor();
 
-        score = -alphaBeta(newBoard, depth -R -1, -beta, -beta +1, ss+1, !isWhite, NO_NULL, NO_PV);
-        newBoard.zobrist.UpdateColor();
+        score = -alphaBeta(board, depth -R -1, -beta, -beta +1, ss+1, !isWhite, NO_NULL, NO_PV);
+        board.zobrist.UpdateColor();
         //if after getting a free move the score is too good, prune this branch
         if(score >= beta){
             return score;
@@ -389,7 +391,7 @@ int Ai_Logic::alphaBeta(BitBoards& newBoard, int depth, int alpha, int beta, sea
         
 		if(ss->staticEval < threshold){
 
-            score = quiescent(newBoard, alpha, beta, isWhite, ss, queitSD, is_pv);
+            score = quiescent(board, alpha, beta, isWhite, ss, queitSD, is_pv);
 
             if(score < threshold) return alpha;
         }
@@ -399,15 +401,15 @@ int Ai_Logic::alphaBeta(BitBoards& newBoard, int depth, int alpha, int beta, sea
 		&& depth < 4
 		&& ss->staticEval + 300 * (depth - 1) * 60 <= alpha
 		&& !ttMove
-		&& !newBoard.pawnOn7th(isWhite)) { //need to add no pawn on 7th rank
+		&& !board.pawnOn7th(isWhite)) { //need to add no pawn on 7th rank
 		
 		if (depth <= 1 && ss->staticEval + 300 * 3 * 60 <= alpha) {
-			return quiescent(newBoard, alpha, beta, isWhite, ss, queitSD, NO_PV);
+			return quiescent(board, alpha, beta, isWhite, ss, queitSD, NO_PV);
 		}
 
 		int ralpha = alpha - 300  * (depth-1) * 60;
 
-		int val = quiescent(newBoard, ralpha, ralpha+1, isWhite, ss, queitSD, NO_PV);
+		int val = quiescent(board, ralpha, ralpha+1, isWhite, ss, queitSD, NO_PV);
 
 		if (val <= alpha) return val;
 	}
@@ -430,10 +432,10 @@ int Ai_Logic::alphaBeta(BitBoards& newBoard, int depth, int alpha, int beta, sea
 		&& (is_pv || ss->staticEval + 100 >= beta)) {
 		int d = (int)(3 * depth / 4 - 2);
 		sd.skipEarlyPruning = true;
-		alphaBeta(newBoard, d, alpha, beta, ss, isWhite, NO_NULL, is_pv);
+		alphaBeta(board, d, alpha, beta, ss, isWhite, NO_NULL, is_pv);
 		sd.skipEarlyPruning = false;
 
-		ttentry = TT.probe(newBoard.zobrist.zobristKey);
+		ttentry = TT.probe(board.zobrist.zobristKey);
 		
 	}
 
@@ -448,7 +450,7 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 */
 
 //generate psuedo legal moves (not just captures)
-    gen_moves.generatePsMoves(newBoard, false);
+    gen_moves.generatePsMoves(board, false);
 
     //add killers scores and hash moves scores to moves if there are any
     gen_moves.reorderMoves(ss, ttentry);
@@ -468,19 +470,19 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 		//if (sd.excludedMove && newMove.score >= SORT_HASH) continue;
 
 		//make move on BB's store data to string so move can be undone
-		newBoard.makeMove(newMove, isWhite);
-		gen_moves.grab_boards(newBoard, isWhite);
+		board.makeMove(newMove, isWhite);
+		gen_moves.grab_boards(board, isWhite);
 
 		//is move legal? if not skip it
-		if (!gen_moves.isLegal(newBoard, newMove, isWhite)) {
-			newBoard.unmakeMove(newMove, isWhite);
-			gen_moves.grab_boards(newBoard, isWhite);
+		if (!gen_moves.isLegal(board, newMove, isWhite)) {
+			board.unmakeMove(newMove, isWhite);
+			gen_moves.grab_boards(board, isWhite);
 			continue;
 		}
 		/*
 		if (gen_moves.isAttacked(king, isWhite, true)) { ///CHANGE METHOD OF UPDATING BOARDS, TOO INEFFICIENT
-			newBoard.unmakeMove(newMove, isWhite);
-			gen_moves.grab_boards(newBoard, isWhite);
+			board.unmakeMove(newMove, isWhite);
+			gen_moves.grab_boards(board, isWhite);
 			continue;
 		}
 		*/
@@ -488,7 +490,8 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 		newDepth = depth - 1;
 		history.cutoffs[isWhite][newMove.from][newMove.to] -= 1;
 		captureOrPromotion = (newMove.captured != PIECE_EMPTY || newMove.flag == 'Q');
-		givesCheck = gen_moves.isAttacked(eking, !isWhite, true);
+		//givesCheck = gen_moves.isAttacked(eking, !isWhite, true);
+		givesCheck = gen_moves.isSquareAttacked(board, board.king_square(isWhite), isWhite);
 
 		/* //ELO loss with singular extensions so far
 		if (singularExtension && newMove.score >= SORT_HASH) {
@@ -509,7 +512,7 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 			&& !captureOrPromotion
 			&& !FlagInCheck
 			&& !givesCheck
-			&& !newBoard.isPawnPush(newMove, isWhite)
+			&& !board.isPawnPush(newMove, isWhite)
 			&& bestScore > VALUE_MATED_IN_MAX_PLY) {
 
 			bool shouldSkip = false;
@@ -534,11 +537,11 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 			}
 			
 			//don't search moves with negative SEE at low depths
-			//if (!shouldSkip && depth < 4 && gen_moves.SEE(newMove, newBoard, isWhite, true) < 0) shouldSkip = true;
+			//if (!shouldSkip && depth < 4 && gen_moves.SEE(newMove, board, isWhite, true) < 0) shouldSkip = true;
 
 			if (shouldSkip) {
-				newBoard.unmakeMove(newMove, isWhite);
-				gen_moves.grab_boards(newBoard, isWhite);
+				board.unmakeMove(newMove, isWhite);
+				gen_moves.grab_boards(board, isWhite);
 				futileMoves = true; //flag so we know we skipped a move/not checkmate
 				continue;
 			}
@@ -551,8 +554,8 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 			&& !captureOrPromotion && legalMoves
 			&& !givesCheck){
 
-			newBoard.unmakeMove(newMove, isWhite);
-			gen_moves.grab_boards(newBoard, isWhite);
+			board.unmakeMove(newMove, isWhite);
+			gen_moves.grab_boards(board, isWhite);
 			futileMoves = true; //flag so we know we skipped a move/not checkmate
 			continue;
 		}
@@ -576,24 +579,24 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 			//reduce reductions for moves that escape capture
 			if (ss->reduction) {
 				//reverse move and pass SEE a reversed move to and from
-				newBoard.unmakeMove(newMove, isWhite);
+				board.unmakeMove(newMove, isWhite);
 				Move n; n.from = newMove.to; n.to = newMove.from; n.piece = newMove.piece;
 
-				if (gen_moves.SEE(n, newBoard, isWhite, false) < 0) {
+				if (gen_moves.SEE(n, board, isWhite, false) < 0) {
 					ss->reduction = std::max(1, ss->reduction - 2); //play with reduction value
 				}
-				newBoard.makeMove(newMove, isWhite);
+				board.makeMove(newMove, isWhite);
 			}
 
 			int d1 = std::max(newDepth - ss->reduction, 1);
 
-			int val = -alphaBeta(newBoard, d1, -(alpha + 1), -alpha, ss + 1, !isWhite, DO_NULL, NO_PV);
+			int val = -alphaBeta(board, d1, -(alpha + 1), -alpha, ss + 1, !isWhite, DO_NULL, NO_PV);
 
 			//if reduction is very high, and we fail high above, re-search with a lower reduction
 			if (val > alpha && ss->reduction >= 4) {
 
 				int d2 = std::max(newDepth - 2, 1);
-				val = -alphaBeta(newBoard, d2, -(alpha + 1), -alpha, ss + 1, !isWhite, DO_NULL, NO_PV);
+				val = -alphaBeta(board, d2, -(alpha + 1), -alpha, ss + 1, !isWhite, DO_NULL, NO_PV);
 			}
 			//if we still fail high, do a full depth search
 			if (val > alpha && ss->reduction != 0) {
@@ -606,7 +609,7 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 		ss->currentMove = newMove;
 
 		//load the (most likely) next entry in the TTable into cache near cpu
-		_mm_prefetch((char *)TT.first_entry(newBoard.zobrist.fetchKey(newMove, !isWhite)), _MM_HINT_NTA);
+		_mm_prefetch((char *)TT.first_entry(board.zobrist.fetchKey(newMove, !isWhite)), _MM_HINT_NTA);
 
 		//jump back here if our LMR raises Alpha
 	re_search:
@@ -614,15 +617,15 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 
 		if (!raisedAlpha) {
 			//we're in princiapl variation search or full window search
-			score = -alphaBeta(newBoard, newDepth, -beta, -alpha, ss + 1, !isWhite, DO_NULL, is_pv);
+			score = -alphaBeta(board, newDepth, -beta, -alpha, ss + 1, !isWhite, DO_NULL, is_pv);
 		}
 		else {
 			//zero window search
-			score = -alphaBeta(newBoard, newDepth, -alpha - 1, -alpha, ss + 1, !isWhite, DO_NULL, NO_PV);
+			score = -alphaBeta(board, newDepth, -alpha - 1, -alpha, ss + 1, !isWhite, DO_NULL, NO_PV);
 			//if our zero window search failed, do a full window search
 			if (score > alpha) {
 				//PV search after failed zero window
-				score = -alphaBeta(newBoard, newDepth, -beta, -alpha, ss + 1, !isWhite, DO_NULL, IS_PV);
+				score = -alphaBeta(board, newDepth, -beta, -alpha, ss + 1, !isWhite, DO_NULL, IS_PV);
 			}
 		}
 /*u
@@ -641,8 +644,8 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 		}
 
 		//undo move on BB's
-		newBoard.unmakeMove(newMove, isWhite);
-		gen_moves.grab_boards(newBoard, isWhite);
+		board.unmakeMove(newMove, isWhite);
+		gen_moves.grab_boards(board, isWhite);
 
 		if (timeOver) return 0;
 
@@ -675,7 +678,7 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 		//if there are no legal moves and we are in checkmate this node
         if(FlagInCheck) alpha = mated_in(ss->ply);
 		//else it's a stalemate, return contempt score - prefering mate to draw
-        else alpha = contempt(newBoard, isWhite); 
+        else alpha = contempt(board, isWhite); 
 
 	}
 	else if (alpha >= beta && !FlagInCheck && hashMove.captured == PIECE_EMPTY && hashMove.flag != 'Q') {
@@ -691,14 +694,14 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 
 	if (!ss->excludedMove.tried) { //only write to TTable if we're not in partial search
 		//save info + move to transposition table 
-		TT.save(hashMove, newBoard.zobrist.zobristKey, depth, valueToTT(alpha, ss->ply), hashFlag);
+		TT.save(hashMove, board.zobrist.zobristKey, depth, valueToTT(alpha, ss->ply), hashFlag);
 	}
 
 
     return alpha;
 }
 
-int Ai_Logic::quiescent(BitBoards& newBoard, int alpha, int beta, bool isWhite, searchStack *ss, int quietDepth, bool is_pv)
+int Ai_Logic::quiescent(BitBoards& board, int alpha, int beta, bool isWhite, searchStack *ss, int quietDepth, bool is_pv)
 {
     //node count, sepperate q count needed?
 	sd.nodes++;
@@ -709,7 +712,7 @@ int Ai_Logic::quiescent(BitBoards& newBoard, int alpha, int beta, bool isWhite, 
 	int oldAlpha, bestScore, score;
 	ss->ply = (ss - 1)->ply + 1;
 
-	ttentry = TT.probe(newBoard.zobrist.zobristKey);
+	ttentry = TT.probe(board.zobrist.zobristKey);
 	ttMove = ttentry ? ttentry->move.flag : false; //is there a move stored in transposition table?
 	ttValue = ttentry ? valueFromTT(ttentry->eval, ss->ply) : INVALID; //if there is a TT entry, grab its value
 
@@ -726,9 +729,9 @@ int Ai_Logic::quiescent(BitBoards& newBoard, int alpha, int beta, bool isWhite, 
 //*/
     //evaluateBB eval;
     //evaluate board position
-    //int standingPat = eval.evalBoard(isWhite, newBoard);
+    //int standingPat = eval.evalBoard(isWhite, board);
 	Evaluate eval;
-	int standingPat = eval.evaluate(newBoard, isWhite);
+	int standingPat = eval.evaluate(board, isWhite);
 
     if(quietDepth <= 0 || timeOver){		
         return standingPat;
@@ -736,7 +739,7 @@ int Ai_Logic::quiescent(BitBoards& newBoard, int alpha, int beta, bool isWhite, 
 
     if(standingPat >= beta){
 
-		if (!ttentry) TT.save(newBoard.zobrist.zobristKey, DEPTH_QS, valueToTT(standingPat, ss->ply), TT_BETA); //save to TT if there's no entry MAJOR PROBLEMS WITH THIS 
+		if (!ttentry) TT.save(board.zobrist.zobristKey, DEPTH_QS, valueToTT(standingPat, ss->ply), TT_BETA); //save to TT if there's no entry MAJOR PROBLEMS WITH THIS 
 		return beta;
     }
 
@@ -746,8 +749,8 @@ int Ai_Logic::quiescent(BitBoards& newBoard, int alpha, int beta, bool isWhite, 
 
     //generate only captures with true capture gen var
     MoveGen gen_moves;
-    gen_moves.grab_boards(newBoard, isWhite);
-    gen_moves.generatePsMoves(newBoard, true);
+    gen_moves.grab_boards(board, isWhite);
+    gen_moves.generatePsMoves(board, true);
     gen_moves.reorderMoves(ss, ttentry);
 
     //set hash flag equal to alpha Flag
@@ -755,7 +758,7 @@ int Ai_Logic::quiescent(BitBoards& newBoard, int alpha, int beta, bool isWhite, 
 
 
     Move hashMove;
-	U64 king = newBoard.byColorPiecesBB[!isWhite][KING];
+	//U64 king = board.byColorPiecesBB[!isWhite][KING];
 
     for(int i = 0; i < moveNum; ++i)
     {        
@@ -763,33 +766,33 @@ int Ai_Logic::quiescent(BitBoards& newBoard, int alpha, int beta, bool isWhite, 
 	
 		//delta pruning
 		if ((standingPat + SORT_VALUE[newMove.captured] + 200 < alpha)
-			&& (newBoard.bInfo.sideMaterial[!isWhite] - SORT_VALUE[newMove.captured] > END_GAME_MAT)
+			&& (board.bInfo.sideMaterial[!isWhite] - SORT_VALUE[newMove.captured] > END_GAME_MAT)
 			&& newMove.flag != 'Q') continue;
 					
 		//Don't search losing capture moves if not in PV
-		if (!is_pv && gen_moves.SEE(newMove, newBoard, isWhite, true) < 0) continue;
+		if (!is_pv && gen_moves.SEE(newMove, board, isWhite, true) < 0) continue;
 
-        newBoard.makeMove(newMove, isWhite);
-        gen_moves.grab_boards(newBoard, isWhite);
+        board.makeMove(newMove, isWhite);
+        gen_moves.grab_boards(board, isWhite);
 
-		if (!gen_moves.isLegal(newBoard, newMove, isWhite)) {
-			newBoard.unmakeMove(newMove, isWhite);
-			gen_moves.grab_boards(newBoard, isWhite);
+		if (!gen_moves.isLegal(board, newMove, isWhite)) {
+			board.unmakeMove(newMove, isWhite);
+			gen_moves.grab_boards(board, isWhite);
 			continue;
 		}
 		/*
         //is move legal? if not skip it 
         if(gen_moves.isAttacked(king, isWhite, true)){
-            newBoard.unmakeMove(newMove, isWhite);
-            gen_moves.grab_boards(newBoard, isWhite);
+            board.unmakeMove(newMove, isWhite);
+            gen_moves.grab_boards(board, isWhite);
             continue;
         }
 		*/
 
-        score = -quiescent(newBoard, -beta, -alpha, !isWhite, ss, quietDepth-1, is_pv);
+        score = -quiescent(board, -beta, -alpha, !isWhite, ss, quietDepth-1, is_pv);
 
-        newBoard.unmakeMove(newMove, isWhite);
-        gen_moves.grab_boards(newBoard, isWhite);
+        board.unmakeMove(newMove, isWhite);
+        gen_moves.grab_boards(board, isWhite);
 
         if(score > alpha){
 
@@ -807,12 +810,12 @@ int Ai_Logic::quiescent(BitBoards& newBoard, int alpha, int beta, bool isWhite, 
 
     }
 
-	//TT.save(hashMove, newBoard.zobrist.zobristKey, DEPTH_QS, valueToTT(alpha, ss->ply), hashFlag);
+	//TT.save(hashMove, board.zobrist.zobristKey, DEPTH_QS, valueToTT(alpha, ss->ply), hashFlag);
 
     return alpha;
 }
 
-int Ai_Logic::contempt(const BitBoards& newBoard, bool isWhite)
+int Ai_Logic::contempt(const BitBoards& board, bool isWhite)
 {
 	//used to make engine prefer checkmate over stalemate, escpecially if not in end game
     //NEED TO TEST VARIABLES MIGHT NOT BE ACCURATE
@@ -820,7 +823,7 @@ int Ai_Logic::contempt(const BitBoards& newBoard, bool isWhite)
 	int value = DRAW_OPENING;
 
 	//if my sides material is below endgame mat, use DRAW_ENDGAME val sideMat[0] is white
-	if (newBoard.bInfo.sideMaterial[!isWhite] < END_GAME_MAT) {
+	if (board.bInfo.sideMaterial[!isWhite] < END_GAME_MAT) {
 		value = DRAW_ENDGAME;
 	}
 
@@ -830,7 +833,7 @@ int Ai_Logic::contempt(const BitBoards& newBoard, bool isWhite)
 	return 0;
 }
 
-bool Ai_Logic::isRepetition(const BitBoards& newBoard, const Move& m)
+bool Ai_Logic::isRepetition(const BitBoards& board, const Move& m)
 {
 	if (m.piece == PAWN) return false;
 	//add in castling logic to quit early
@@ -838,7 +841,7 @@ bool Ai_Logic::isRepetition(const BitBoards& newBoard, const Move& m)
 	int repCount = 0;
 
 	for (int i = 0; i < history.twoFoldRep.size(); ++i) {
-		if (newBoard.zobrist.zobristKey == history.twoFoldRep[i]) repCount++;
+		if (board.zobrist.zobristKey == history.twoFoldRep[i]) repCount++;
 	}
 
 	if (repCount >= 2) {
@@ -943,7 +946,7 @@ void Ai_Logic::print(bool isWhite, int bestScore)
 /*
 	if (sd.depth == 1) { //only eval board once a turn
 		evaluateBB ev;
-		ss << " score cp " << ev.evalBoard(isWhite, newBoard, zobrist);
+		ss << " score cp " << ev.evalBoard(isWhite, board, zobrist);
 	}
 */
 	std::cout << ss.str() << std::endl;

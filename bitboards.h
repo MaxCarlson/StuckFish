@@ -210,7 +210,7 @@ inline U64 BitBoards::psuedoAttacks(int piece, int color, int sq) const
 //is there a pawn past their relative 4th rank?
 inline bool BitBoards::isPawnPush(const Move &m, bool isWhite) 
 {	
-	return (m.piece == PAWN && relative_rank(!isWhite, m.from) > 4);
+	return (m.piece == PAWN && relative_rankSq(!isWhite, m.from) > 4);
 }
 
 //is there a pawn on the 7th rank for side to move?
@@ -230,7 +230,7 @@ inline U64 BitBoards::square_bb(int sq) const
 {
 	return squareBB[sq];
 }
-
+//not yet working castling legal check
 inline bool BitBoards::can_castle(int color) const
 {
 	return (castlingRights[color] < 5 && castlingRights[color] != 2LL && castlingRights[color] != 3LL

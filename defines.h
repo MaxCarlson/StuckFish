@@ -210,21 +210,22 @@ private:
 
 //CACHE_LINE_ALIGNMENT
 
-
+//also values correspond to actual squares changed when
+// wanting to shift a board 1 over in the listed direction
 enum Directions {
-	N,
-	NE,
-	NW,
-	W,
-	S,
-	SW,
-	SE,
-	E
+	N  = - 8,
+	NE = - 7,
+	NW = - 9,
+	W  = - 1,
+	S  =   8,
+	SW =   7,
+	SE =   9,
+	E  =   1 
 };
 
 //shifts a bitboard in any of the enum directions above. Must use enum values in template
 template<int sh> //does not hold west and east shifts, make another that does?
-inline U64 shift_bb(U64 b) { //is shift correct? test
+inline U64 shift_bb(U64 b) { 
 	return  sh == N ? b >> 8 : sh == S ? b << 8
 		: sh == NE ? (b & ~FileHBB) >> 7 : sh == SE ? (b & ~FileHBB) << 9
 		: sh == NW ? (b & ~FileABB) >> 9 : sh == SW ? (b & ~FileABB) << 7
