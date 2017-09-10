@@ -66,7 +66,6 @@ inline void ZobristH::UpdateKey(int start, int end, const Move& moveKey, bool is
 		zobristKey ^= zArray[color][QUEEN][moveKey.to];
 	}
 
-
 	//need caslting code
 }
 

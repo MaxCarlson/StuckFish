@@ -103,7 +103,7 @@ public:
 
 	//full of attacks all possible attacks for all squares and pieces
 	//on a completely empty board
-	U64 PseudoAttacks[PIECES][SQ_ALL]; //zero index is white pawns, 1 black pawns, pieces after are index by their number
+	U64 PseudoAttacks[PIECES][SQ_ALL]; //zero index is white pawns, 1 black pawns, pieces after are index by their number ~~ Move Outside Object
 
 	U64 psuedoAttacks(int piece, int color, int sq) const;
 
@@ -111,11 +111,9 @@ public:
 	//piece material arrays for sides, using piece values
  //MOVE TO STRUCT ALONG WITH OTHER INFO?
 
-	//array used to denote if castling has occured for color.
-	//We use three set bits, 1, 2, 4 to represent queen-rook + king + king-rook
-	//if(2 & castlingRights) king has moved/both rooks - no castling
-	//if 1 & cR queen-rook has moved, 4 &cR king-rook has moved
+	//Bitboard array used to denote if castling has occured for color.
 	U64 castlingRights[COLOR];
+	bool can_castle(int color) const;
 
 
 
@@ -231,6 +229,11 @@ inline bool BitBoards::non_pawn_material(int color) const
 inline U64 BitBoards::square_bb(int sq) const
 {
 	return squareBB[sq];
+}
+
+inline bool BitBoards::can_castle(int color) const
+{
+	return (castlingRights[color] < 5 && castlingRights[color] != 2 && castlingRights[color] != 3);
 }
 
 //can only be used if there is no piece on landing spot

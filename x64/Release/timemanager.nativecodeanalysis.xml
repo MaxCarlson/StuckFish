@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DEFECTS>
+  <DEFECT>
+    <SFA>
+      <FILEPATH>c:\users\c-60\desktop\cppprograms\stuckfish\</FILEPATH>
+      <FILENAME>timemanager.cpp</FILENAME>
+      <LINE>100</LINE>
+      <COLUMN>6</COLUMN>
+    </SFA>
+    <DEFECTCODE>6244</DEFECTCODE>
+    <DESCRIPTION>Local declaration of 'movestogo' hides previous declaration at line '115' of 'c:\users\c-60\desktop\cppprograms\stuckfish\externs.h'.</DESCRIPTION>
+    <FUNCTION>TimeManager::timeStopSearch</FUNCTION>
+    <DECORATED>?timeStopSearch@TimeManager@@QEAA_NXZ</DECORATED>
+    <FUNCLINE>92</FUNCLINE>
+    <PATH>
+      <SFA>
+        <FILEPATH>c:\users\c-60\desktop\cppprograms\stuckfish\</FILEPATH>
+        <FILENAME>externs.h</FILENAME>
+        <LINE>115</LINE>
+        <COLUMN>20</COLUMN>
+      </SFA>
+    </PATH>
+  </DEFECT>
+</DEFECTS>

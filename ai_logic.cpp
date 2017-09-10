@@ -286,6 +286,7 @@ int Ai_Logic::alphaBeta(BitBoards& newBoard, int depth, int alpha, int beta, sea
 	ss->reduction = 0; 
 	(ss + 1)->skipNull = false;
 
+
 	//checks if time over is true everytime if( nodes & 4095 ) ///NEED METHOD THAT CHECKS MUCH LESS
 	checkInput();
 
@@ -329,7 +330,7 @@ int Ai_Logic::alphaBeta(BitBoards& newBoard, int depth, int alpha, int beta, sea
 
 	int color = !isWhite; //color is messed up here, the boards are indexed by opposite 0 = white
 	U64 king = newBoard.byColorPiecesBB[color][KING];
-	U64 eking = newBoard.byColorPiecesBB[~color][KING];
+	U64 eking = newBoard.byColorPiecesBB[!color][KING];
 
     //are we in check?
     FlagInCheck = gen_moves.isAttacked(king, isWhite, true);

@@ -97,9 +97,9 @@ bool TimeManager::timeStopSearch()
 	//if ((int)(gettime() - sd.startTime) > sd.moveTime) return true;
 
 	if ((int)(gettime() - sd.startTime) > sd.moveTime) {
-		int movestogo = MOVESTOGO;
+		int movesToGo = MOVESTOGO;
 
-		if ((movestogo > 5) &&
+		if ((movesToGo > 5) &&
 			((int)(gettime() - sd.startTime) < (sd.moveTime * 2)) &&
 			(sd.moveTime > 5000)) {
 			return false;
@@ -115,8 +115,7 @@ bool TimeManager::timeStopSearch()
 int TimeManager::getNPS()
 {
 	std::cout << (double)(gettime() - sd.startTime) / 1000 << std::endl;
-	if (!((gettime() - sd.startTime)/1000)) return 0;
-	return (sd.nodes / (int)((gettime() - sd.startTime)/1000));
+	return (sd.nodes / ((double)(gettime() - sd.startTime)/1000));
 }
 
 

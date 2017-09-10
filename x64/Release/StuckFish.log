@@ -1,2 +1,2 @@
-﻿  bitboards.cpp
-LINK : fatal error LNK1168: cannot open C:\Users\C-60\Desktop\cppPrograms\StuckFish\x64\Release\StuckFish.exe for writing
+﻿  movegen.cpp
+  StuckFish.vcxproj -> C:\Users\C-60\Desktop\cppPrograms\StuckFish\x64\Release\StuckFish.exe

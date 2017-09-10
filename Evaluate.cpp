@@ -611,7 +611,7 @@ Scores unstoppablePawns(const EvalInfo& ev) {
 enum {Mobility,  PawnStructure,  PassedPawns, Center,  KingSafety, Imbalence};
 
 const struct Weight { int mg, eg; } Weights[] = { //Test Weights
-	{ 289, 344 }, { 205, 188 }, { 65, 86 }, { 25, 0 }, { 318, 0 }, { 40, 40 } //new weights testing
+	{ 300, 355 }, { 205, 188 }, { 65, 86 }, { 25, 0 }, { 318, 0 }, { 40, 40 } //new weights testing (217, 200)~~testPawnStructureWeight
 };
 /*
 const struct Weight { int mg, eg; } Weights[] = { //LatestStuck Weights Current weights With best ELO SO FAR.

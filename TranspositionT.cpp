@@ -37,6 +37,7 @@ void TranspositionT::clearTable()
 
 const HashEntry * TranspositionT::probe(const U64 key) const
 {
+
 	HashEntry *tte = first_entry(key);
 
 	//is there an entry with the same key inside the cluster?

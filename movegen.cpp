@@ -390,14 +390,19 @@ void MoveGen::possibleR(const BitBoards& board, int color, const U64 &capturesOn
 	U64 enemys = board.pieces(!color);
 	U64 eking = board.pieces(!color, KING);
 
-
 	int square;
 	while ((square = *list++) != SQ_NONE) {
 
 		U64 moves = slider_attacks.RookAttacks(board.FullTiles, square);
 		moves &= capturesOnly & ~(friends | eking);
-
-		char captured;
+		char flag = '0';
+		
+		//flag first movement of rook so we can remove castling rights for that move, as well as put them back if unmakeing move
+		if (board.can_castle(color)) {
+			if ((board.castlingRights[color] == 0LL || 1LL) && relative_square(color, square) == A1) flag = 'M';
+			else if ((board.castlingRights[color] == 0LL || 4LL) && relative_square(color, square) == H1) flag = 'M';
+		}
+		
 		while (moves) {
 			int index = pop_lsb(&moves);
 
@@ -405,7 +410,7 @@ void MoveGen::possibleR(const BitBoards& board, int color, const U64 &capturesOn
 
 			int captured = (landing & enemys) ? whichPieceCaptured(landing) : PIECE_EMPTY;
 
-			movegen_push(ROOK, captured, '0', square, index);
+			movegen_push(ROOK, captured, flag, square, index);
 
 		}
 
@@ -414,6 +419,12 @@ void MoveGen::possibleR(const BitBoards& board, int color, const U64 &capturesOn
     
 
 }
+
+//[white/black][queenside/kingside]
+U64 castlingMasks[COLOR][2] = {
+	{{0x1c00000000000000ULL }, {0x7000000000000000ULL}},
+	{{0x1cULL}, {0x70ULL}}
+};
 
 void MoveGen::possibleQ(const BitBoards& board, int color, const U64 &capturesOnly)
 {
@@ -430,7 +441,6 @@ void MoveGen::possibleQ(const BitBoards& board, int color, const U64 &capturesOn
 
 		moves &= capturesOnly & ~(friends | eking);
 
-		int captured;
 		while (moves) {
 			int index = pop_lsb(&moves);
 
@@ -458,6 +468,10 @@ void MoveGen::possibleK(const BitBoards& board, int color, const U64 &capturesOn
 		U64 moves = board.psuedoAttacks(KING, color, square);
 		moves &= capturesOnly & ~(friends | eking);
 
+		if (board.can_castle(color)) { //flag first movement for king
+			flag = 'M';
+		}
+		//non castling moves
 		while (moves) {
 			int index = pop_lsb(&moves);
 
@@ -466,6 +480,14 @@ void MoveGen::possibleK(const BitBoards& board, int color, const U64 &capturesOn
 			int captured = (landing & enemys) ? whichPieceCaptured(landing) : PIECE_EMPTY;
 
 			movegen_push(KING, captured, flag, square, index);
+		}
+
+		if (flag == 'M') {
+			if (!(castlingMasks[color][0] & board.FullTiles)) movegen_push(KING, PIECE_EMPTY, 'C', square, relative_square(color, C1));
+			if (!(castlingMasks[color][1] & board.FullTiles)) movegen_push(KING, PIECE_EMPTY, 'C', square, relative_square(color, G1));
+			if (square == 3 || square == 52) {
+				int a = 5;
+			}
 		}
 
 	}   
@@ -505,6 +527,7 @@ void MoveGen::movegen_push(int piece, int captured, char flag, int from, int to)
 
     //pawn promotions
     if(moveAr[moveCount].flag == 'Q') moveAr[moveCount].score += SORT_PROM;
+	else if (moveAr[moveCount].flag == 'C') moveAr[moveCount].score += SORT_PROM; //SORT_CAPT-1; //TEST THIS VALUE FOR ELO LOSS GAIN
 
 	//increment move counter so we know how many
 	//moves we have to search and sort through
@@ -592,7 +615,7 @@ int MoveGen::SEE(const Move& m, const BitBoards& b, bool isWhite, bool isCapture
 
 	//switch sides
 	isWhite = !isWhite;
-	color = ~color;
+	color = !color;
 	stmAttackers = attackers & b.allPiecesColorBB[color];
 	//if(isWhite) stmAttackers = attackers & b.BBWhitePieces; 
 	//else  stmAttackers = attackers & b.BBBlackPieces;
@@ -619,7 +642,7 @@ int MoveGen::SEE(const Move& m, const BitBoards& b, bool isWhite, bool isCapture
 
 		isWhite = !isWhite;
 
-		color = ~color;
+		color = !color;
 		stmAttackers = attackers & b.allPiecesColorBB[color];
 		//if (isWhite) stmAttackers = attackers & b.BBWhitePieces;
 		//else stmAttackers = attackers & b.BBBlackPieces;
