@@ -18,9 +18,10 @@
 
 #define DO_NULL    true //allow null moves or not
 #define NO_NULL    false
-#define IS_PV      true //is this search in a principal variation
-#define NO_PV      false
+#define IS_PV      1 //is this search in a principal variation
+#define NO_PV      0
 #define ASP        50  //aspiration windows size
+
 
 //holds historys and killers + eventually nodes searched + other data
 searchDriver sd;
@@ -46,6 +47,7 @@ int futileMoveCounts[2][32];
 
 //holds history and cutoff info for search, global
 Historys history;
+
 
 void Ai_Logic::initSearch()
 {
@@ -73,7 +75,7 @@ void Ai_Logic::initSearch()
 	}
 }
 
-Move Ai_Logic::search(BitBoards& board, bool isWhite) {
+Move Ai_Logic::searchStart(BitBoards& board, bool isWhite) {
 	
 	//max depth
 	int depth = MAX_PLY;
@@ -86,7 +88,7 @@ Move Ai_Logic::search(BitBoards& board, bool isWhite) {
 	board.zobrist.getZobristHash(board);
 
 	//update color only applied on black turn
-	//if (!isWhite) board.zobrist.UpdateColor();
+	//if (!isWhite) board.zobrist.UpdateColor(); ///NEEDED????
 
 	//decrease history values and clear gains stats after a search
 	ageHistorys();
@@ -266,10 +268,10 @@ int Ai_Logic::searchRoot(BitBoards& board, int depth, int alpha, int beta, searc
     return alpha;
 }
 
-int Ai_Logic::alphaBeta(BitBoards& board, int depth, int alpha, int beta, searchStack *ss, bool isWhite, bool allowNull, bool is_pv)
+int Ai_Logic::alphaBeta(BitBoards& board, int depth, int alpha, int beta, searchStack *ss, bool isWhite, bool allowNull, int isPV)
 {
-    bool FlagInCheck = false;
-    bool raisedAlpha = false; 
+	bool FlagInCheck = false;
+	bool raisedAlpha = false;
 	bool doFullDepthSearch = false;
 	bool futileMoves = false; //have any moves been futile?
 	bool singularExtension = false;
@@ -278,12 +280,12 @@ int Ai_Logic::alphaBeta(BitBoards& board, int depth, int alpha, int beta, search
 	int R = 2;
 	int newDepth;
 	int predictedDepth = 0;
-    int queitSD = 25, f_prune = 0;
+	int f_prune = 0;
 	Move queits[64]; //container holding quiet moves so we can reduce their score 
 	int quietsC = 0;
 	sd.nodes++;
 	ss->ply = (ss - 1)->ply + 1; //increment ply
-	ss->reduction = 0; 
+	ss->reduction = 0;
 	(ss + 1)->skipNull = false;
 
 
@@ -293,7 +295,7 @@ int Ai_Logic::alphaBeta(BitBoards& board, int depth, int alpha, int beta, search
 	//mate distance pruning, prevents looking for mates longer than one we've already found
 	// NEED to add is draw detection
 	alpha = std::max(mated_in(ss->ply), alpha);
-	beta = std::min(mate_in(ss->ply+1), beta);
+	beta = std::min(mate_in(ss->ply + 1), beta);
 	if (alpha >= beta) return alpha;
 
 	const HashEntry *ttentry;
@@ -308,7 +310,7 @@ int Ai_Logic::alphaBeta(BitBoards& board, int depth, int alpha, int beta, search
 	//accept all if the entry has a equal or greater depth compared to our depth.
 	if (ttentry
 		&& ttentry->depth >= depth
-		&& (is_pv ? ttentry->flag == TT_EXACT
+		&& (isPV ? ttentry->flag == TT_EXACT
 			: ttValue >= beta ? ttentry->flag == TT_BETA
 			: ttentry->flag == TT_ALPHA)
 		) {
@@ -316,90 +318,89 @@ int Ai_Logic::alphaBeta(BitBoards& board, int depth, int alpha, int beta, search
 		return ttValue;
 	}
 
-    int score;
-    if(depth < 1 || timeOver){
-        //run capture search to max depth of queitSD
-        score = quiescent(board, alpha, beta, isWhite, ss, queitSD, is_pv);
-        return score;
-    }
+	int score;
+	if (depth < 1 || timeOver) {
+		//run capture search to max depth of queitSD
+		score = quiescent(board, alpha, beta, isWhite, ss, isPV);
+		return score;
+	}
 
-    MoveGen gen_moves;
+	MoveGen gen_moves;
 
-	int color = !isWhite; //color is messed up here, the boards are indexed by opposite 0 = white
-	//U64 king = board.byColorPiecesBB[color][KING];
+	int color = !isWhite; //color is messed up here, the boards are indexed by opposite 0 = white /// REPLACEREPLACE IS WHITE WITH INTERNAL STM FROM BitBoards
 	U64 eking = board.byColorPiecesBB[!color][KING];
 
-    //are we in check?
-    //FlagInCheck = gen_moves.isAttacked(king, isWhite, true);
+	//are we in check?
+	//FlagInCheck = gen_moves.isAttacked(king, isWhite, true);
 	FlagInCheck = gen_moves.isSquareAttacked(board, board.king_square(!isWhite), !isWhite);
 
-//if in check, or in reduced search extension: skip nulls, statics evals, razoring, etc to moves_loop:
-    if(FlagInCheck || (ss-1)->excludedMove.tried || sd.skipEarlyPruning) goto moves_loop;
+	//if in check, or in reduced search extension: skip nulls, statics evals, razoring, etc to moves_loop:
+	if (FlagInCheck || (ss - 1)->excludedMove.tried || sd.skipEarlyPruning) goto moves_loop;
 
 	//evaluateBB eval;
 	Evaluate eval;
-	ss->staticEval = eval.evaluate(board, isWhite);//eval.evalBoard(isWhite, board);
+	ss->staticEval = eval.evaluate(board, isWhite);
 
 	//update gain from previous ply stats for previous move
 	if ((ss - 1)->currentMove.captured == PIECE_EMPTY
 		&& (ss - 1)->currentMove.flag != 'Q'
 		&& ss->staticEval != 0 && (ss - 1)->staticEval != 0
-		&& (ss-1)->currentMove.tried) {
+		&& (ss - 1)->currentMove.tried) {
 
 		history.updateGain((ss - 1)->currentMove, -(ss - 1)->staticEval - ss->staticEval, !isWhite);
 	}
 
 
-//eval pruning / static null move
-    if(depth < 3 && !is_pv && abs(beta - 1) > -INF + 100){
-  
-        int eval_margin = 120 * depth;
-        if(ss->staticEval - eval_margin >= beta){
-            return ss->staticEval - eval_margin;
-        }
-    }
+	//eval pruning / static null move
+	if (depth < 3 && !isPV && abs(beta - 1) > -INF + 100) {
 
-//Null move heuristics, disabled if in PV, check, or depth is too low
-    if(allowNull && !is_pv && depth > R){
-        if(depth > 6) R = 3;
-        board.zobrist.UpdateColor();
+		int eval_margin = 120 * depth;
+		if (ss->staticEval - eval_margin >= beta) {
+			return ss->staticEval - eval_margin;
+		}
+	}
 
-        score = -alphaBeta(board, depth -R -1, -beta, -beta +1, ss+1, !isWhite, NO_NULL, NO_PV);
-        board.zobrist.UpdateColor();
-        //if after getting a free move the score is too good, prune this branch
-        if(score >= beta){
-            return score;
-        }
-    }
+	//Null move heuristics, disabled if in PV, check, or depth is too low
+	if (allowNull && !isPV && depth > R) {
+		if (depth > 6) R = 3;
+		board.zobrist.UpdateColor();
+
+		score = -alphaBeta(board, depth - R - 1, -beta, -beta + 1, ss + 1, !isWhite, NO_NULL, NO_PV);
+		board.zobrist.UpdateColor();
+		//if after getting a free move the score is too good, prune this branch
+		if (score >= beta) {
+			return score;
+		}
+	}
 
 
-/*
-//razoring if not PV and is close to leaf and has a low score drop directly into quiescence 512 + 32 * depth
-    if(!is_pv && allowNull && depth <= 3){
+	/*
+	//razoring if not PV and is close to leaf and has a low score drop directly into quiescence 512 + 32 * depth
+		if(!is_pv && allowNull && depth <= 3){
 
-        int threshold = alpha - 300 - (depth - 1) * 60;        
-        
-		if(ss->staticEval < threshold){
+			int threshold = alpha - 300 - (depth - 1) * 60;
 
-            score = quiescent(board, alpha, beta, isWhite, ss, queitSD, is_pv);
+			if(ss->staticEval < threshold){
 
-            if(score < threshold) return alpha;
-        }
-    }
-*/
-	if (!is_pv ///TESTTESTTESTTEST
+				score = quiescent(board, alpha, beta, isWhite, ss, queitSD, is_pv);
+
+				if(score < threshold) return alpha;
+			}
+		}
+	*/
+	if (!isPV ///TESTTESTTESTTEST
 		&& depth < 4
 		&& ss->staticEval + 300 * (depth - 1) * 60 <= alpha
 		&& !ttMove
 		&& !board.pawnOn7th(isWhite)) { //need to add no pawn on 7th rank
-		
+
 		if (depth <= 1 && ss->staticEval + 300 * 3 * 60 <= alpha) {
-			return quiescent(board, alpha, beta, isWhite, ss, queitSD, NO_PV);
+			return quiescent(board, alpha, beta, isWhite, ss, NO_PV);
 		}
 
-		int ralpha = alpha - 300  * (depth-1) * 60;
+		int ralpha = alpha - 300 * (depth - 1) * 60;
 
-		int val = quiescent(board, ralpha, ralpha+1, isWhite, ss, queitSD, NO_PV);
+		int val = quiescent(board, ralpha, ralpha + 1, isWhite, ss, NO_PV);
 
 		if (val <= alpha) return val;
 	}
@@ -407,29 +408,30 @@ int Ai_Logic::alphaBeta(BitBoards& board, int depth, int alpha, int beta, search
 	///* //Still a bit slow?
 //do we want to futility prune?
 	int fmargin[4] = { 0, 200, 300, 500 };
-    //int fmargin[8] = {0, 100, 150, 200, 250, 300, 400, 500};
-    if(depth < 4 && !is_pv
+	//int fmargin[8] = {0, 100, 150, 200, 250, 300, 400, 500};
+	if (depth < 4 && !isPV
 		&& abs(alpha) < 9000
-		&& ss->staticEval + fmargin[depth] <= alpha){
-        f_prune = 1;
-    }
+		&& ss->staticEval + fmargin[depth] <= alpha) {
+		f_prune = 1;
+	}
 	//*/
 
 ///*  //Internal iterative deepening search same ply to a shallow depth..
 	//and see if we can get a TT entry to speed up search
 
 	if (depth >= 6 && !ttMove
-		&& (is_pv || ss->staticEval + 100 >= beta)) {
+		&& (isPV || ss->staticEval + 100 >= beta)) {
 		int d = (int)(3 * depth / 4 - 2);
 		sd.skipEarlyPruning = true;
-		alphaBeta(board, d, alpha, beta, ss, isWhite, NO_NULL, is_pv);
+
+		alphaBeta(board, d, alpha, beta, ss, isWhite, NO_NULL, isPV);
 		sd.skipEarlyPruning = false;
 
 		ttentry = TT.probe(board.zobrist.zobristKey);
-		
+
 	}
 
-//*/
+	//*/
 moves_loop: //jump to here if in check or in a search extension or skip early pruning is true
 /*
 	singularExtension = depth >= 8
@@ -440,19 +442,19 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 */
 
 //generate psuedo legal moves (not just captures)
-    gen_moves.generatePsMoves(board, isWhite, false);
+	gen_moves.generatePsMoves(board, isWhite, false);
 
-    //add killers scores and hash moves scores to moves if there are any
-    gen_moves.reorderMoves(ss, ttentry);
+	//add killers scores and hash moves scores to moves if there are any
+	gen_moves.reorderMoves(ss, ttentry);
 
-    int hashFlag = TT_ALPHA, movesNum = gen_moves.moveCount, legalMoves = 0, bestScore = -INF;
+	int hashFlag = TT_ALPHA, movesNum = gen_moves.moveCount, legalMoves = 0, bestScore = -INF;
 
 	//has this current node variation improved our static_eval ?
 	bool improving = ss->staticEval >= (ss - 2)->staticEval
 		|| ss->staticEval == 0
 		|| (ss - 2)->staticEval == 0;
 
-    Move hashMove; //move to store alpha in and pass to TTable
+	Move hashMove; //move to store alpha in and pass to TTable
 	for (int i = 0; i < movesNum; ++i) {
 		//grab best scoring move
 		Move newMove = gen_moves.movegen_sort(ss->ply, gen_moves.moveAr);
@@ -467,12 +469,7 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 			board.unmakeMove(newMove, isWhite);
 			continue;
 		}
-		/*
-		if (gen_moves.isAttacked(king, isWhite, true)) { ///CHANGE METHOD OF UPDATING BOARDS, TOO INEFFICIENT
-			board.unmakeMove(newMove, isWhite);
-			continue;
-		}
-		*/
+
 		legalMoves++;
 		newDepth = depth - 1;
 		history.cutoffs[isWhite][newMove.from][newMove.to] -= 1;
@@ -492,8 +489,8 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 			}
 		}
 		*/
-		/* 
-		 //new futility pruning really looks like it's pruning way to much right now, maybe adjust futile move counts until we have better move ordering!!!!
+		/*
+			//new futility pruning really looks like it's pruning way to much right now, maybe adjust futile move counts until we have better move ordering!!!!
 		if (!is_pv
 			&& newMove.score < SORT_HASH
 			&& !captureOrPromotion
@@ -503,11 +500,11 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 			&& bestScore > VALUE_MATED_IN_MAX_PLY) {
 
 			bool shouldSkip = false;
-			
+
 			//if (depth < 10 && legalMoves >= futileMoveCounts[improving][depth]) {
 			//	shouldSkip = true;
 			//}
-						
+
 			predictedDepth = newDepth - reductions[is_pv][improving][depth][legalMoves];
 
 			int futileVal;
@@ -515,14 +512,14 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 				//int a = history.gains[isWhite][newMove.piece][newMove.to];
 				//if (predictedDepth < 0) predictedDepth = 0;
 				//use predicted depth? Need to play with numbers!!
-				futileVal = ss->staticEval + history.gains[isWhite][newMove.piece][newMove.to] + (predictedDepth * 200) + 150; 
+				futileVal = ss->staticEval + history.gains[isWhite][newMove.piece][newMove.to] + (predictedDepth * 200) + 150;
 
 				if (futileVal <= alpha) {
 					//bestScore = std::max(futileVal, bestScore);
 					shouldSkip = true;
 				}
 			}
-			
+
 			//don't search moves with negative SEE at low depths
 			//if (!shouldSkip && depth < 4 && gen_moves.SEE(newMove, board, isWhite, true) < 0) shouldSkip = true;
 
@@ -532,7 +529,7 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 				continue;
 			}
 		}
-		//*/		
+		//*/
 
 		/* //This futility pruning works in conjuction with futile conditions above move loop, slight speed boost, unsure on ELO gain
 		//futility pruning ~~ is not a promotion or hashmove, is not a capture, and does not give check, and we've tried one move already
@@ -553,13 +550,13 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 			&& !captureOrPromotion
 			&& !givesCheck
 			//&& history.cutoffs[isWhite][newMove.from][newMove.to] < 50 //test with commented in!			           
-			&& newMove != ss->killers[0] 
-			&& newMove != ss->killers[1] 
+			&& newMove != ss->killers[0]
+			&& newMove != ss->killers[1]
 			&& newMove.score < SORT_HASH) { //comment out? should already be tested by having on move already
 
 			history.cutoffs[isWhite][newMove.from][newMove.to] = 50; //NEED to test, makes it about 50% faster from start node with it commented out
 
-			ss->reduction = reductions[is_pv][improving][depth][i]; //TRY CHANGING I TO LEGAL MOVES , SEE IF ELO GAINS
+			ss->reduction = reductions[isPV][improving][depth][i]; //TRY CHANGING I TO LEGAL MOVES , SEE IF ELO GAINS
 
 			//reduce reductions for moves that escape capture
 			if (ss->reduction) {
@@ -602,7 +599,7 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 
 		if (!raisedAlpha) {
 			//we're in princiapl variation search or full window search
-			score = -alphaBeta(board, newDepth, -beta, -alpha, ss + 1, !isWhite, DO_NULL, is_pv);
+			score = -alphaBeta(board, newDepth, -beta, -alpha, ss + 1, !isWhite, DO_NULL, isPV);
 		}
 		else {
 			//zero window search
@@ -613,15 +610,15 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 				score = -alphaBeta(board, newDepth, -beta, -alpha, ss + 1, !isWhite, DO_NULL, IS_PV);
 			}
 		}
-/*u
-		//if a reduced search brings us above alpha, do a full non-reduced search
-		if (ss->reduction && score > alpha) {
-			newDepth += ss->reduction;
-			ss->reduction = 0;
+		/*u
+				//if a reduced search brings us above alpha, do a full non-reduced search
+				if (ss->reduction && score > alpha) {
+					newDepth += ss->reduction;
+					ss->reduction = 0;
 
-			goto re_search;
-		}
-*/
+					goto re_search;
+				}
+		*/
 		//store queit moves so we can decrease their value later
 		if (!captureOrPromotion && quietsC < 64) {
 			queits[quietsC] = newMove;
@@ -658,11 +655,11 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 		}
 	}
 
-    if(!legalMoves){
+	if (!legalMoves) {
 		//if there are no legal moves and we are in checkmate this node
-        if(FlagInCheck) alpha = mated_in(ss->ply);
+		if (FlagInCheck) alpha = mated_in(ss->ply);
 		//else it's a stalemate, return contempt score - prefering mate to draw
-        else alpha = contempt(board, isWhite); 
+		else alpha = contempt(board, isWhite);
 
 	}
 	else if (alpha >= beta && !FlagInCheck && hashMove.captured == PIECE_EMPTY && hashMove.flag != 'Q') {
@@ -672,7 +669,7 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 
 	if (futileMoves && !raisedAlpha && hashFlag != TT_BETA) {
 
-		if(!legalMoves) alpha = ss->staticEval; //testing needed as well
+		if (!legalMoves) alpha = ss->staticEval; //testing needed as well
 		hashFlag = TT_EXACT; //NEED TO TEST
 	}
 
@@ -682,12 +679,12 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 	}
 
 
-    return alpha;
+	return alpha;
 }
 
-int Ai_Logic::quiescent(BitBoards& board, int alpha, int beta, bool isWhite, searchStack *ss, int quietDepth, bool is_pv)
+int Ai_Logic::quiescent(BitBoards& board, int alpha, int beta, bool isWhite, searchStack *ss, int isPV)
 {
-    //node count, sepperate q count needed?
+	//node count, sepperate q count needed?
 	sd.nodes++;
 
 	const HashEntry *ttentry;
@@ -703,88 +700,88 @@ int Ai_Logic::quiescent(BitBoards& board, int alpha, int beta, bool isWhite, sea
 ///*
 	if (ttentry
 		&& ttentry->depth >= DEPTH_QS
-		&& (is_pv ? ttentry->flag == TT_EXACT
+		&& (isPV ? ttentry->flag == TT_EXACT
 			: ttValue >= beta ? ttentry->flag == TT_BETA
 			: ttentry->flag == TT_ALPHA)
 		) {
 
 		return ttValue;
 	}
-//*/
-    //evaluateBB eval;
-    //evaluate board position
-    //int standingPat = eval.evalBoard(isWhite, board);
+	//*/
+		//evaluateBB eval;
+		//evaluate board position
+		//int standingPat = eval.evalBoard(isWhite, board);
 	Evaluate eval;
 	int standingPat = eval.evaluate(board, isWhite);
 
-    if(quietDepth <= 0 || timeOver){		
-        return standingPat;
-    }
+	if (timeOver) {
+		return standingPat;
+	}
 
-    if(standingPat >= beta){
+	if (standingPat >= beta) {
 
 		if (!ttentry) TT.save(board.zobrist.zobristKey, DEPTH_QS, valueToTT(standingPat, ss->ply), TT_BETA); //save to TT if there's no entry MAJOR PROBLEMS WITH THIS 
 		return beta;
-    }
+	}
 
-    if(alpha < standingPat){
-       alpha = standingPat;
-    }
+	if (alpha < standingPat) {
+		alpha = standingPat;
+	}
 
-    //generate only captures with true capture gen var
-    MoveGen gen_moves;
-    gen_moves.generatePsMoves(board, isWhite, true);
-    gen_moves.reorderMoves(ss, ttentry);
+	//generate only captures with true capture gen var
+	MoveGen gen_moves;
+	gen_moves.generatePsMoves(board, isWhite, true);
+	gen_moves.reorderMoves(ss, ttentry);
 
-    //set hash flag equal to alpha Flag
-    int hashFlag = TT_ALPHA, moveNum = gen_moves.moveCount;
+	//set hash flag equal to alpha Flag
+	int hashFlag = TT_ALPHA, moveNum = gen_moves.moveCount;
 
 
-    Move hashMove;
+	Move hashMove;
 	//U64 king = board.byColorPiecesBB[!isWhite][KING];
 
-    for(int i = 0; i < moveNum; ++i)
-    {        
-        Move newMove = gen_moves.movegen_sort(ss->ply, gen_moves.moveAr);
-	
+	for (int i = 0; i < moveNum; ++i)
+	{
+		Move newMove = gen_moves.movegen_sort(ss->ply, gen_moves.moveAr);
+
 		//delta pruning
 		if ((standingPat + SORT_VALUE[newMove.captured] + 200 < alpha)
 			&& (board.bInfo.sideMaterial[!isWhite] - SORT_VALUE[newMove.captured] > END_GAME_MAT)
 			&& newMove.flag != 'Q') continue;
-					
-		//Don't search losing capture moves if not in PV
-		if (!is_pv && gen_moves.SEE(newMove, board, isWhite, true) < 0) continue;
 
-        board.makeMove(newMove, isWhite);
+		//Don't search losing capture moves if not in PV
+		if (!isPV && gen_moves.SEE(newMove, board, isWhite, true) < 0) continue;
+
+		board.makeMove(newMove, isWhite);
 
 		if (!gen_moves.isLegal(board, newMove, isWhite)) {
 			board.unmakeMove(newMove, isWhite);
 			continue;
 		}
 
-        score = -quiescent(board, -beta, -alpha, !isWhite, ss, quietDepth-1, is_pv);
+		score = -quiescent(board, -beta, -alpha, !isWhite, ss, isPV);
 
-        board.unmakeMove(newMove, isWhite);
+		board.unmakeMove(newMove, isWhite);
 
-        if(score > alpha){
+		if (score > alpha) {
 
-            if(score >= beta){
+			if (score >= beta) {
 				hashFlag = TT_BETA;
 				hashMove = newMove;
 				alpha = beta;
 				break;
-            }
+			}
 
 			hashFlag = TT_EXACT;
-            alpha = score;
+			alpha = score;
 			hashMove = newMove;
-        }
+		}
 
-    }
+	}
 
 	//TT.save(hashMove, board.zobrist.zobristKey, DEPTH_QS, valueToTT(alpha, ss->ply), hashFlag);
 
-    return alpha;
+	return alpha;
 }
 
 int Ai_Logic::contempt(const BitBoards& board, bool isWhite)
@@ -805,7 +802,7 @@ int Ai_Logic::contempt(const BitBoards& board, bool isWhite)
 	return 0;
 }
 
-bool Ai_Logic::isRepetition(const BitBoards& board, const Move& m)
+bool Ai_Logic::isRepetition(const BitBoards& board, const Move& m) //Ai_Logic::
 {
 	if (m.piece == PAWN) return false;
 	//add in castling logic to quit early
@@ -923,4 +920,6 @@ void Ai_Logic::print(bool isWhite, int bestScore)
 */
 	std::cout << ss.str() << std::endl;
 }
+
+
 

@@ -23,6 +23,7 @@ int binc;
 int movestogo;
 int fixedDepthSearch = 0;
 
+
 UCI::UCI()
 {
 	TT.resize(1024); //change later to be an input option for TT!!!!!
@@ -76,6 +77,7 @@ void UCI::uciLoop()
 		else if (token == "ucinewgame")
 		{
 			newGame(newBoard); //add function to reset TTables ? plus / only
+			//searchM.clearHistorys();
 			searchM.clearHistorys();
 			TT.clearTable(); //need to clear other TTables too at somepoint
 			searchM.initSearch();
@@ -213,7 +215,7 @@ void UCI::setOption(std::istringstream & input)
 
 void UCI::search(BitBoards& newBoard)
 {	
-	Move m = searchM.search(newBoard, isWhite);
+	Move m = searchM.searchStart(newBoard, isWhite); //searchM.searchStart(newBoard, isWhite);
 
 	std::cout << "bestmove " << moveToStr(m) << std::endl; //send move to std output for UCI GUI to pickup
 
