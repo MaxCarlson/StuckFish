@@ -29,7 +29,7 @@ public:
 	//number of moves generated this node
     int moveCount;
 
-    void generatePsMoves(const BitBoards& boards, bool capturesOnly);
+    void generatePsMoves(const BitBoards& boards, bool isWhite, bool capturesOnly);
 
 	//grab bitboard changes after a move, or any change in search. Need to get rid of eventually and just pass constRef to everything
     void grab_boards(const BitBoards &BBBoard, bool wOrB); //remove this function and just pass const ref BitBoards to all functions that need it

@@ -69,48 +69,118 @@ const int SORT_VALUE[7] = { 0, 100, 325, 335, 500, 975, 0 };
 template<int color>
 void MoveGen::pawnMoves(const BitBoards& boards, bool capturesOnly) {
 	
-	const int them  = color == WHITE ? BLACK : WHITE;
-	const int Up    = color == WHITE ? N     :     S;
-	const int Down  = color == WHITE ? S     :     N;
-	const int Right = color == WHITE ? NE    :    SE;
-	const int Left  = color == WHITE ? NW    :    SW;
+	const int them   = color == WHITE ?  BLACK : WHITE;
+	const int Up     = color == WHITE ?  N     :     S;
+	const int Down   = color == WHITE ?  S     :     N;
+	const int Right  = color == WHITE ?  NE    :    SE;
+	const int Left   = color == WHITE ?  NW    :    SW;
+	const int dpush  = color == WHITE ?  16	   :   -16;
 
-	const U64 pawns = boards.pieces(color, PAWN);
+	const U64 pawns  = boards.pieces(color, PAWN);
+	const U64 enemys = boards.pieces(them) ^ boards.pieces(them, KING);
 	U64 moves;
 
-	//DELETE WHEN DONE TESTING!!!!!!!!!!!!!!!!!!!!!!!!!!
-	BitBoards a = boards;
-
 	if (!capturesOnly) {
-		//up one
+		// up one
 		moves = shift_bb<Up>(pawns) & boards.EmptyTiles;
 		while (moves) {
-			int to = pop_lsb(&moves);
+			int index = pop_lsb(&moves);
 
-			movegen_push(PAWN, PIECE_EMPTY, '0', to + Down, to);
+			movegen_push(PAWN, PIECE_EMPTY, '0', index + Down, index);
 		}
 
-		//up two
-		const U64 rrank = RankMasks8[relative_rank(color, 4)];
-		moves = shift_bb<Up>((shift_bb<Up>(pawns) & boards.EmptyTiles)) & boards.EmptyTiles & rrank;
-		a.drawBBA();
-		a.drawBB(moves);
+		// up two
+		const int dpushrank = relative_rank(color, 3);
+		moves = shift_bb<Up>((shift_bb<Up>(pawns) & boards.EmptyTiles)) & boards.EmptyTiles & RankMasks8[dpushrank];
+		while (moves) {
+			int index = pop_lsb(&moves);
+
+			movegen_push(PAWN, PIECE_EMPTY, '0', index + dpush, index);
+		}
+
 	}
 
+	// used to revise the index of the start location 
+	// of our pawn depending on shift direction
+	const int revRight = color == WHITE ? 7 : -9;
+	const int revLeft  = color == WHITE ? 9 : -7;
+
+	//capture right
+	moves = shift_bb<Right>(pawns) & enemys;
+	while (moves) {
+		int index = pop_lsb(&moves);
+
+		int captured = boards.pieceOnSq(index);
+
+		movegen_push(PAWN, captured, '0', index + revRight, index);
+	}
+
+	// capture left
+	moves = shift_bb<Left>(pawns) & enemys;
+	while (moves) {
+		int index = pop_lsb(&moves);
+
+		int captured = boards.pieceOnSq(index);
+
+		movegen_push(PAWN, captured, '0', index + revLeft, index);
+	}
+
+	//rank mask of 7th rank relative side to move
+	const U64 seventhRank = RankMasks8[relative_rank(color, 6)];
+
+	// Pawn promotions, if we have pawns on the 7th..
+	// generate promotions
+	if (pawns & seventhRank) {
+
+		const U64 eighthRank = RankMasks8[relative_rank(color, 7)];
+
+		// moving forward one
+		moves = shift_bb<Up>(pawns) & EmptyTiles & eighthRank; //NEED TO DRAW TEST FOR WHITE AND BLACK
+
+		while (moves) {
+			int index = pop_lsb(&moves);
+
+			movegen_push(PAWN, PIECE_EMPTY, 'Q', index + Down, index);
+		}
+
+		// pawn capture promotions
+		// capture right
+		moves = shift_bb<Right>(pawns) & enemys & eighthRank;
+
+		while (moves) {
+			int index = pop_lsb(&moves);
+
+			int	captured = boards.pieceOnSq(index);
+
+			movegen_push(PAWN, captured, 'Q', index + revRight, index);
+		}
+
+
+		// capture left
+		moves = shift_bb<Left>(pawns) & enemys & eighthRank;
+
+		while (moves) {
+			int index = pop_lsb(&moves);
+
+			int	captured = boards.pieceOnSq(index);
+
+			movegen_push(PAWN, captured, 'Q', index + revLeft, index);
+		}
+	}
 }
 
-void MoveGen::generatePsMoves(const BitBoards& boards, bool capturesOnly)
+void MoveGen::generatePsMoves(const BitBoards& boards, bool isWhite, bool capturesOnly)
 {
     //counts total moves generated
     moveCount = 0;
     const int color = !isWhite;
 
-
-	pawnMoves<WHITE>(boards, capturesOnly);
-
+	if(isWhite) pawnMoves<WHITE>(boards, capturesOnly);
+	else		pawnMoves<BLACK>(boards, capturesOnly);
 
     //if we don't want to only generate captures
     U64 capsOnly = full;
+
     //if we only want to generate captures
     if(capturesOnly) capsOnly = boards.pieces(!color);
 
@@ -330,9 +400,9 @@ void MoveGen::possibleN(const BitBoards& board, int color, const U64 &capturesOn
 			//store moves
 			int index = pop_lsb(&moves);
 
-			U64 landing = board.square_bb(index);
-
-			int captured = (landing & enemys) ? whichPieceCaptured(landing) : PIECE_EMPTY;
+			//U64 landing = board.square_bb(index);
+			//int captured = (landing & enemys) ? whichPieceCaptured(landing) : PIECE_EMPTY;
+			int	captured = board.pieceOnSq(index);
 
 			movegen_push(KNIGHT, captured, '0', square, index);
 		}
@@ -358,9 +428,9 @@ void MoveGen::possibleB(const BitBoards& board, int color, const U64 &capturesOn
 		while (moves) {
 			int index = pop_lsb(&moves);
 
-			U64 landing = board.square_bb(index);
-
-			int captured = (landing & enemys) ? whichPieceCaptured(landing) : PIECE_EMPTY;
+			//U64 landing = board.square_bb(index);
+			//int captured = (landing & enemys) ? whichPieceCaptured(landing) : PIECE_EMPTY;
+			int	captured = board.pieceOnSq(index);
 
 			movegen_push(BISHOP, captured, '0', square, index);
 
@@ -397,9 +467,9 @@ void MoveGen::possibleR(const BitBoards& board, int color, const U64 &capturesOn
 		while (moves) {
 			int index = pop_lsb(&moves);
 
-			U64 landing = board.square_bb(index);
-
-			int captured = (landing & enemys) ? whichPieceCaptured(landing) : PIECE_EMPTY;
+			//U64 landing = board.square_bb(index);
+			//int captured = (landing & enemys) ? whichPieceCaptured(landing) : PIECE_EMPTY;
+			int	captured = board.pieceOnSq(index);
 
 			movegen_push(ROOK, captured, flag, square, index);
 
@@ -429,9 +499,9 @@ void MoveGen::possibleQ(const BitBoards& board, int color, const U64 &capturesOn
 		while (moves) {
 			int index = pop_lsb(&moves);
 
-			U64 landing = board.square_bb(index);
-
-			int captured = (landing & enemys) ? whichPieceCaptured(landing) : PIECE_EMPTY;
+			//U64 landing = board.square_bb(index);
+			//int captured = (landing & enemys) ? whichPieceCaptured(landing) : PIECE_EMPTY;
+			int	captured = board.pieceOnSq(index);
 
 			movegen_push(QUEEN, captured, '0', square, index);
 		}
@@ -462,9 +532,9 @@ void MoveGen::possibleK(const BitBoards& board, int color, const U64 &capturesOn
 		while (moves) {
 			int index = pop_lsb(&moves);
 
-			U64 landing = board.square_bb(index);
-
-			int captured = (landing & enemys) ? whichPieceCaptured(landing) : PIECE_EMPTY;
+			//U64 landing = board.square_bb(index);
+			//int captured = (landing & enemys) ? whichPieceCaptured(landing) : PIECE_EMPTY;
+			int	captured = board.pieceOnSq(index);
 
 			movegen_push(KING, captured, flag, square, index);
 		}

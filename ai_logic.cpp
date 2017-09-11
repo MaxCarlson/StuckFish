@@ -180,7 +180,7 @@ int Ai_Logic::searchRoot(BitBoards& board, int depth, int alpha, int beta, searc
     MoveGen gen_moves;
     //grab bitboards from board object and store color and board to var
     gen_moves.grab_boards(board, isWhite);
-    gen_moves.generatePsMoves(board, false);
+    gen_moves.generatePsMoves(board, isWhite, false);
 	gen_moves.reorderMoves(ss, ttentry);
 
     //who's our king?
@@ -450,7 +450,7 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 */
 
 //generate psuedo legal moves (not just captures)
-    gen_moves.generatePsMoves(board, false);
+    gen_moves.generatePsMoves(board, isWhite, false);
 
     //add killers scores and hash moves scores to moves if there are any
     gen_moves.reorderMoves(ss, ttentry);
@@ -750,7 +750,7 @@ int Ai_Logic::quiescent(BitBoards& board, int alpha, int beta, bool isWhite, sea
     //generate only captures with true capture gen var
     MoveGen gen_moves;
     gen_moves.grab_boards(board, isWhite);
-    gen_moves.generatePsMoves(board, true);
+    gen_moves.generatePsMoves(board, isWhite, true);
     gen_moves.reorderMoves(ss, ttentry);
 
     //set hash flag equal to alpha Flag
