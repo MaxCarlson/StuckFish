@@ -49,63 +49,35 @@ public:
 
     void reorderMoves(searchStack *ss, const HashEntry *entry);
 
-    //bitboards
-        U64 FullTiles;
-        U64 EmptyTiles;
-        U64 BBWhitePieces;
-        U64 BBWhitePawns;
-        U64 BBWhiteRooks;
-        U64 BBWhiteKnights;
-        U64 BBWhiteBishops;
-        U64 BBWhiteQueens;
-        U64 BBWhiteKing;
-        U64 BBBlackPieces;
-        U64 BBBlackPawns;
-        U64 BBBlackRooks;
-        U64 BBBlackKnights;
-        U64 BBBlackBishops;
-        U64 BBBlackQueens;
-        U64 BBBlackKing;
-
-        
-        U64 noWeOne(U64 b);
-        U64 soWeOne(U64 b);
-        U64 westOne(U64 b);
-        U64 soEaOne(U64 b);
-        U64 noEaOne(U64 b);
-        U64 eastOne(U64 b);
-        U64 southOne(U64 b);
-        U64 northOne(U64 b);
-
-        void drawBBA() const;
-        void drawBB(U64 board) const;		
-
 private:
 
-        //assigns a score to moves and adds them to the move array
-        void movegen_push(int piece, int captured, char flag, int from, int to);
-        bool blind(const Move &move, int pieceVal, int captureVal);	
+	int whichPieceCaptured(const BitBoards& board, int location, int color);
 
-		//used in static exchange eval
-		U64 attackersTo(int sq, const BitBoards& b, const U64 occ) const;
-		//finds the smallest attacker for side to move, out of the stm attackers board,
-		//removes the attacker from the attackers and occuied board, then finds any x-ray attackers behind that piece
-		//and returns the int representing the piece
-		FORCE_INLINE int min_attacker(bool isWhite, const BitBoards & b, const int &to, const U64 &stmAttackers, U64 &occupied, U64 &attackers);
+    //assigns a score to moves and adds them to the move array
+    void movegen_push(const BitBoards & board, int color, int piece, int captured, char flag, int from, int to);
+    bool blind(const BitBoards & board, const Move &move, int color, int pieceVal, int captureVal);
 
-        int whichPieceCaptured(U64 landing);
+	//used in static exchange eval
+	U64 attackersTo(int sq, const BitBoards& b, const U64 occ) const;
+
+	//finds the smallest attacker for side to move, out of the stm attackers board,
+	//removes the attacker from the attackers and occuied board, then finds any x-ray attackers behind that piece
+	//and returns the int representing the piece
+	inline int min_attacker(bool isWhite, const BitBoards & b, const int &to, const U64 &stmAttackers, U64 &occupied, U64 &attackers);
+
+    int whichPieceCaptured(U64 landing);
 
 
-        //psuedo legal move gen for indvidual pieces
-        void possibleWP(const U64 &wpawns, const U64 &blackking, bool capturesOnly);
-        void possibleBP(const U64 &bpawns, const U64 &whiteking, bool capturesOnly);
-        void possibleN(const BitBoards& board, int color, const U64 &capturesOnly);
-        void possibleB(const BitBoards& board, int color, const U64 &capturesOnly);
-        void possibleR(const BitBoards& board, int color, const U64 &capturesOnly);
-        void possibleQ(const BitBoards& board, int color, const U64 &capturesOnly);
-        void possibleK(const BitBoards& board, int color, const U64 &capturesOnly);
-		template<int color>
-		void pawnMoves(const BitBoards & boards, bool capturesOnly);
+    //psuedo legal move gen for indvidual pieces
+	template<int color>
+	void pawnMoves(const BitBoards & boards, bool capturesOnly);
+
+    void possibleN(const BitBoards& board, int color, const U64 &capturesOnly);
+    void possibleB(const BitBoards& board, int color, const U64 &capturesOnly);
+    void possibleR(const BitBoards& board, int color, const U64 &capturesOnly);
+    void possibleQ(const BitBoards& board, int color, const U64 &capturesOnly);
+    void possibleK(const BitBoards& board, int color, const U64 &capturesOnly);
+
 };
 
 

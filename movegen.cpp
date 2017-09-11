@@ -69,12 +69,13 @@ const int SORT_VALUE[7] = { 0, 100, 325, 335, 500, 975, 0 };
 template<int color>
 void MoveGen::pawnMoves(const BitBoards& boards, bool capturesOnly) {
 	
-	const int them   = color == WHITE ?  BLACK : WHITE;
-	const int Up     = color == WHITE ?  N     :     S;
-	const int Down   = color == WHITE ?  S     :     N;
-	const int Right  = color == WHITE ?  NE    :    SE;
-	const int Left   = color == WHITE ?  NW    :    SW;
-	const int dpush  = color == WHITE ?  16	   :   -16;
+	const int them     = color == WHITE ?  BLACK : WHITE;
+	const int Up       = color == WHITE ?  N     :     S;
+	const int Down     = color == WHITE ?  S     :     N;
+	const int Right    = color == WHITE ?  NE    :    SE;
+	const int Left     = color == WHITE ?  NW    :    SW;
+	const int dpush    = color == WHITE ?  16    :   -16;
+
 
 	const U64 pawns  = boards.pieces(color, PAWN);
 	const U64 enemys = boards.pieces(them) ^ boards.pieces(them, KING);
@@ -86,7 +87,7 @@ void MoveGen::pawnMoves(const BitBoards& boards, bool capturesOnly) {
 		while (moves) {
 			int index = pop_lsb(&moves);
 
-			movegen_push(PAWN, PIECE_EMPTY, '0', index + Down, index);
+			movegen_push(boards, color, PAWN, PIECE_EMPTY, '0', index + Down, index);
 		}
 
 		// up two
@@ -95,15 +96,10 @@ void MoveGen::pawnMoves(const BitBoards& boards, bool capturesOnly) {
 		while (moves) {
 			int index = pop_lsb(&moves);
 
-			movegen_push(PAWN, PIECE_EMPTY, '0', index + dpush, index);
+			movegen_push(boards, color, PAWN, PIECE_EMPTY, '0', index + dpush, index);
 		}
 
 	}
-
-	// used to revise the index of the start location 
-	// of our pawn depending on shift direction
-	const int revRight = color == WHITE ? 7 : -9;
-	const int revLeft  = color == WHITE ? 9 : -7;
 
 	//capture right
 	moves = shift_bb<Right>(pawns) & enemys;
@@ -112,7 +108,7 @@ void MoveGen::pawnMoves(const BitBoards& boards, bool capturesOnly) {
 
 		int captured = boards.pieceOnSq(index);
 
-		movegen_push(PAWN, captured, '0', index + revRight, index);
+		movegen_push(boards, color, PAWN, captured, '0', index - Right, index);
 	}
 
 	// capture left
@@ -122,7 +118,7 @@ void MoveGen::pawnMoves(const BitBoards& boards, bool capturesOnly) {
 
 		int captured = boards.pieceOnSq(index);
 
-		movegen_push(PAWN, captured, '0', index + revLeft, index);
+		movegen_push(boards, color, PAWN, captured, '0', index - Left, index);
 	}
 
 	//rank mask of 7th rank relative side to move
@@ -135,12 +131,12 @@ void MoveGen::pawnMoves(const BitBoards& boards, bool capturesOnly) {
 		const U64 eighthRank = RankMasks8[relative_rank(color, 7)];
 
 		// moving forward one
-		moves = shift_bb<Up>(pawns) & EmptyTiles & eighthRank; //NEED TO DRAW TEST FOR WHITE AND BLACK
+		moves = shift_bb<Up>(pawns) & boards.EmptyTiles & eighthRank; //NEED TO DRAW TEST FOR WHITE AND BLACK
 
 		while (moves) {
 			int index = pop_lsb(&moves);
 
-			movegen_push(PAWN, PIECE_EMPTY, 'Q', index + Down, index);
+			movegen_push(boards, color, PAWN, PIECE_EMPTY, 'Q', index + Down, index);
 		}
 
 		// pawn capture promotions
@@ -152,7 +148,7 @@ void MoveGen::pawnMoves(const BitBoards& boards, bool capturesOnly) {
 
 			int	captured = boards.pieceOnSq(index);
 
-			movegen_push(PAWN, captured, 'Q', index + revRight, index);
+			movegen_push(boards, color, PAWN, captured, 'Q', index - Right, index);
 		}
 
 
@@ -164,7 +160,7 @@ void MoveGen::pawnMoves(const BitBoards& boards, bool capturesOnly) {
 
 			int	captured = boards.pieceOnSq(index);
 
-			movegen_push(PAWN, captured, 'Q', index + revLeft, index);
+			movegen_push(boards, color, PAWN, captured, 'Q', index - Left, index);
 		}
 	}
 }
@@ -404,7 +400,7 @@ void MoveGen::possibleN(const BitBoards& board, int color, const U64 &capturesOn
 			//int captured = (landing & enemys) ? whichPieceCaptured(landing) : PIECE_EMPTY;
 			int	captured = board.pieceOnSq(index);
 
-			movegen_push(KNIGHT, captured, '0', square, index);
+			movegen_push(board, color, KNIGHT, captured, '0', square, index);
 		}
 	}
 
@@ -428,11 +424,9 @@ void MoveGen::possibleB(const BitBoards& board, int color, const U64 &capturesOn
 		while (moves) {
 			int index = pop_lsb(&moves);
 
-			//U64 landing = board.square_bb(index);
-			//int captured = (landing & enemys) ? whichPieceCaptured(landing) : PIECE_EMPTY;
 			int	captured = board.pieceOnSq(index);
 
-			movegen_push(BISHOP, captured, '0', square, index);
+			movegen_push(board, color, BISHOP, captured, '0', square, index);
 
 		}
 
@@ -471,7 +465,7 @@ void MoveGen::possibleR(const BitBoards& board, int color, const U64 &capturesOn
 			//int captured = (landing & enemys) ? whichPieceCaptured(landing) : PIECE_EMPTY;
 			int	captured = board.pieceOnSq(index);
 
-			movegen_push(ROOK, captured, flag, square, index);
+			movegen_push(board, color, ROOK, captured, flag, square, index);
 
 		}
 
@@ -499,11 +493,9 @@ void MoveGen::possibleQ(const BitBoards& board, int color, const U64 &capturesOn
 		while (moves) {
 			int index = pop_lsb(&moves);
 
-			//U64 landing = board.square_bb(index);
-			//int captured = (landing & enemys) ? whichPieceCaptured(landing) : PIECE_EMPTY;
 			int	captured = board.pieceOnSq(index);
 
-			movegen_push(QUEEN, captured, '0', square, index);
+			movegen_push(board, color, QUEEN, captured, '0', square, index);
 		}
 	}
 }
@@ -536,7 +528,7 @@ void MoveGen::possibleK(const BitBoards& board, int color, const U64 &capturesOn
 			//int captured = (landing & enemys) ? whichPieceCaptured(landing) : PIECE_EMPTY;
 			int	captured = board.pieceOnSq(index);
 
-			movegen_push(KING, captured, flag, square, index);
+			movegen_push(board, color, KING, captured, flag, square, index);
 		}
 
 		/*
@@ -554,7 +546,15 @@ void MoveGen::possibleK(const BitBoards& board, int color, const U64 &capturesOn
 	}
 }
 
-void MoveGen::movegen_push(int piece, int captured, char flag, int from, int to) //change flags to int eventually
+int MoveGen::whichPieceCaptured(const BitBoards & board, int location, int color)
+{
+	for (int i = PAWN; i < KING; ++i) {
+		if (board.pieces(!color, i) & board.square_bb(location)) return i;
+	}
+	return PIECE_EMPTY;
+}
+
+void MoveGen::movegen_push(const BitBoards & board, int color, int piece, int captured, char flag, int from, int to) //change flags to int eventually
 {
     //store move data to move object array
     moveAr[moveCount].from = from;
@@ -580,7 +580,7 @@ void MoveGen::movegen_push(int piece, int captured, char flag, int from, int to)
 
         //Good captures are scored higher, based on BLIND better lower if not defended
         //need to add Static Exchange at somepoint
-        if(blind(moveAr[moveCount], SORT_VALUE[piece], SORT_VALUE[captured])) moveAr[moveCount].score = SORT_CAPT + SORT_VALUE[captured] + idAr[piece];
+        if(blind(board, moveAr[moveCount], color, SORT_VALUE[piece], SORT_VALUE[captured])) moveAr[moveCount].score = SORT_CAPT + SORT_VALUE[captured] + idAr[piece];
 
         //captures of defended pieces or pieces we know nothing about ~~ better if lower still, by id
         else moveAr[moveCount].score = SORT_VALUE[captured] + idAr[piece]; 
@@ -594,11 +594,11 @@ void MoveGen::movegen_push(int piece, int captured, char flag, int from, int to)
 	//moves we have to search and sort through
     moveCount ++;
 }
-
-bool MoveGen::blind(const Move &move, int pieceVal, int captureVal)
+/*
+bool MoveGen::blind(const BitBoards & board, const Move &move, int pieceVal, int captureVal)
 {
     //approx static eval, Better Lower if not Defended
-    char piece = move.piece;
+    int piece = move.piece;
     //get bitboards containing start and landing spot
     U64 sLoc = 1LL << move.from;
     U64 eLoc = 1LL << move.to;
@@ -645,6 +645,24 @@ bool MoveGen::blind(const Move &move, int pieceVal, int captureVal)
     if(!defended) return true;
 
     return 0; //of other captures we know not
+}
+*/
+bool MoveGen::blind(const BitBoards & board, const Move &move, int color, int pieceVal, int captureVal) {
+	
+	//better lower if not defeneded scoring
+
+	const int piece = move.piece;
+
+	//captures from pawns don't lose material
+	if (piece == PAWN) return true;
+
+	//capture lower takes higher
+	if (captureVal >= pieceVal - 50) return true;
+
+	//is our capture attacked by enemys?
+	bool defended = isSquareAttacked(board, move.to, !color);
+
+	return !defended;
 }
 
 int MoveGen::SEE(const Move& m, const BitBoards& b, bool isWhite, bool isCapture)
@@ -777,7 +795,7 @@ U64 MoveGen::attackersTo(int sq, const BitBoards& b, const U64 occ) const
 	return attackers;
 }
 
-FORCE_INLINE int MoveGen::min_attacker(bool isWhite, const BitBoards & b, const int & to, const U64 & stmAttackers, U64 & occupied, U64 & attackers)
+inline int MoveGen::min_attacker(bool isWhite, const BitBoards & b, const int & to, const U64 & stmAttackers, U64 & occupied, U64 & attackers)
 {
 	U64 pawns, knights, rooks, bishops, queens, king, loc;
 
@@ -867,54 +885,6 @@ void MoveGen::reorderMoves(searchStack *ss, const HashEntry *entry)
     }
 }
 
-int MoveGen::whichPieceCaptured(U64 landing)
-{
-    if(isWhite){
-        if(landing & BBBlackPawns) return PAWN;
-        else if(landing & BBBlackKnights) return KNIGHT;
-		else if(landing & BBBlackBishops) return BISHOP;
-		else if(landing & BBBlackRooks) return ROOK;
-		else if(landing & BBBlackQueens) return QUEEN;
-		else if(landing & BBBlackKing) return KING;
-    } else {
-		if(landing & BBWhitePawns) return PAWN;
-		else if(landing & BBWhiteKnights) return KNIGHT;
-		else if(landing & BBWhiteBishops) return BISHOP;
-		else if(landing & BBWhiteRooks) return ROOK;
-		else if(landing & BBWhiteQueens) return QUEEN;
-		else if(landing & BBWhiteKing) return KING;
-    }
-	
-    drawBBA();
-	std::cout << "which piece captured error" << std::endl;
-    return INVALID;
-}
-
-void MoveGen::grab_boards(const BitBoards &BBBoard, bool wOrB) //REPLACE THIS FUNCTION AND JUST PASS CONST REF BITBOARDS TO EVERYTHING THAT NEEDS IT
-{
-	
-    isWhite = wOrB;
-    FullTiles = BBBoard.FullTiles;
-    EmptyTiles = BBBoard.EmptyTiles;
-
-	BBWhitePieces = BBBoard.allPiecesColorBB[0];
-	BBWhitePawns = BBBoard.byColorPiecesBB[0][1];
-	BBWhiteKnights = BBBoard.byColorPiecesBB[0][2];
-	BBWhiteBishops = BBBoard.byColorPiecesBB[0][3];
-	BBWhiteRooks = BBBoard.byColorPiecesBB[0][4];
-	BBWhiteQueens = BBBoard.byColorPiecesBB[0][5];
-	BBWhiteKing = BBBoard.byColorPiecesBB[0][6];
-
-	BBBlackPieces = BBBoard.allPiecesColorBB[1];
-	BBBlackPawns = BBBoard.byColorPiecesBB[1][1];
-	BBBlackKnights = BBBoard.byColorPiecesBB[1][2];
-	BBBlackBishops = BBBoard.byColorPiecesBB[1][3];
-	BBBlackRooks = BBBoard.byColorPiecesBB[1][4];
-	BBBlackQueens = BBBoard.byColorPiecesBB[1][5];
-	BBBlackKing = BBBoard.byColorPiecesBB[1][6];
-
-}
-
 bool MoveGen::isLegal(const BitBoards & b, const Move & m, bool isWhite) 
 {
 	//color is stupid right now with 0 being a lookup for
@@ -928,8 +898,9 @@ bool MoveGen::isLegal(const BitBoards & b, const Move & m, bool isWhite)
 	// if move is not a castling move and
 	// has passed all legality checks 
 	// move is legal
-	if (m.flag != 'C') return !kAttacked;
-	
+	//if (m.flag != 'C') return !kAttacked;
+	return !kAttacked;
+/*	
 	U64 rookSq = color == WHITE ? m.to == C1  ? (1LL << A1) : (1LL << H1)
 							    : m.to == C8  ? (1LL << A8) : (1LL << H8);
 
@@ -957,8 +928,8 @@ bool MoveGen::isLegal(const BitBoards & b, const Move & m, bool isWhite)
 		if (isSquareAttacked(b, loc, color)) return false;
 	}
 
-
 	return true;
+	*/
 }
 
 inline bool MoveGen::isSquareAttacked(const BitBoards & b, const int square, const int color) {
@@ -980,224 +951,9 @@ inline bool MoveGen::isSquareAttacked(const BitBoards & b, const int square, con
 
 	if (attacks & b.pieces(them, ROOK, QUEEN)) return true;
 
+	attacks = b.psuedoAttacks(KING, color, square);
+
+	if (attacks & b.pieces(them, KING)) return true;
+
 	return false;
-}
-
-bool MoveGen::isAttacked(U64 pieceLoc, bool wOrB, bool isSearchKingCheck)
-{
-    U64 attacks = 0LL, friends, enemys, pawns, knights, rooks, bishops, queens, king, ourking;
-    //int x, y, x1, y1;
-
-    if(wOrB){
-        friends = BBWhitePieces;
-        enemys = BBBlackPieces;
-        pawns = BBBlackPawns;
-        knights = BBBlackKnights;
-        bishops = BBBlackBishops;
-        rooks = BBBlackRooks;
-        queens = BBBlackQueens;
-        king = BBBlackKing;
-        ourking = BBWhiteKing;
-
-        //pawns
-        //capture right
-        attacks = soEaOne(pawns);
-        //capture left
-        attacks |= soWeOne(pawns);
-
-    } else {
-        friends = BBBlackPieces;
-        enemys = BBWhitePieces;
-        pawns = BBWhitePawns;
-        knights = BBWhiteKnights;
-        bishops = BBWhiteBishops;
-        rooks = BBWhiteRooks;
-        queens = BBWhiteQueens;
-        king = BBWhiteKing;
-        ourking = BBBlackKing;
-
-        //capture right
-        attacks = noEaOne(pawns);
-        //capture left
-        attacks |= noWeOne(pawns);
-    }
-
-    if(isSearchKingCheck) pieceLoc = ourking; //used for search king in check checking, so kings pos is not out of date
-
-    if(attacks & pieceLoc) return true;
-
-    //int is piece/square attacked location on board
-    int location = lsb(pieceLoc);
-
-//very similar to move generation code just ending with generated bitboards of attacks
-    //knight attacks
-    if(location > 18){
-        attacks = KNIGHT_SPAN<<(location-18);
-    } else {
-        attacks = KNIGHT_SPAN>>(18-location);
-    }
-
-    if(location % 8 < 4){
-        attacks &= ~FILE_GH & ~friends;
-    } else {
-        attacks &= ~FILE_AB & ~friends;
-    }
-
-    if(attacks & knights) return true;
-
-    //diagonal of bishops and queens attack check
-    U64 BQ = bishops | queens;    
-
-    attacks = slider_attacks.BishopAttacks(FullTiles, location);
-
-    if(attacks & BQ) return true;
-
-    //horizontal of rooks and queens attack check
-    U64 RQ = rooks | queens;
-
-    attacks = slider_attacks.RookAttacks(FullTiles, location);
-
-    if(attacks & RQ) return true;
-
-    //king attack checks
-	if (location > 9) {
-		attacks = KING_SPAN << (location - 9);
-	}
-	else {
-		attacks = KING_SPAN >> (9 - location);
-	}
-	if (location % 8 < 4) {
-		attacks &= ~FILE_GH;
-
-	}
-	else {
-		attacks &= ~FILE_AB;
-	}
-
-    if(attacks & king) return true;
-
-return false;
-}
-
-void MoveGen::drawBBA() const
-{
-    char flips[8] = {'8', '7', '6', '5', '4', '3', '2', '1'};
-    char flipsL[8] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'};
-    int c = 0;
-
-    for(int i = 0; i < 64; i++){
-        if((i)%8 == 0){
-            std::cout<< std::endl;
-            std::cout << flips[c] << " | ";
-            c++;
-        }
-
-        if(BBWhitePawns & (1ULL<<i)){
-            std::cout << "P" << ", ";
-        }
-        if(BBWhiteRooks & (1ULL<<i)){
-            std::cout << "R" << ", ";
-        }
-        if(BBWhiteKnights & (1ULL<<i)){
-            std::cout << "N" << ", ";
-        }
-        if(BBWhiteBishops & (1ULL<<i)){
-            std::cout << "B" << ", ";
-        }
-        if(BBWhiteQueens & (1ULL<<i)){
-            std::cout << "Q" << ", ";
-        }
-        if(BBWhiteKing & (1ULL<<i)){
-            std::cout << "K" << ", ";
-        }
-        if(BBBlackPawns & (1ULL<<i)){
-            std::cout << "p" << ", ";
-        }
-        if(BBBlackRooks & (1ULL<<i)){
-            std::cout << "r" << ", ";
-        }
-        if(BBBlackKnights & (1ULL<<i)){
-            std::cout << "n" << ", ";
-        }
-        if(BBBlackBishops & (1ULL<<i)){
-            std::cout << "b" << ", ";
-        }
-        if(BBBlackQueens & (1ULL<<i)){
-            std::cout << "q" << ", ";
-        }
-        if(BBBlackKing & (1ULL<<i)){
-            std::cout << "k" << ", ";
-        }
-        if(EmptyTiles & (1ULL<<i)){
-            std::cout << " " << ", ";
-        }
-
-        //if(i % 8 == 7){
-        //    std::cout << "| " << flips[c] ;
-       //     c++;
-       // }
-    }
-
-    std::cout << std::endl << "    ";
-    for(int i = 0; i < 8; i++){
-        std::cout << flipsL[i] << "  ";
-    }
-
-    std::cout << std::endl << std::endl;;
-}
-
-void MoveGen::drawBB(U64 board) const
-{
-    for(int i = 0; i < 64; i++){
-        if(board & (1ULL << i)){
-            std::cout<< 1 <<", ";
-        } else {
-            std::cout << 0 << ", ";
-        }
-        if((i+1)%8 == 0){
-            std::cout<< std::endl;
-        }
-    }
-    std::cout<< std::endl;
-}
-
-U64 MoveGen::northOne(U64 b) //DELETE THESE FUNCTIONS AND JUST USE shift<UP>(U64 bb)
-{
-    return b >> 8;
-}
-
-U64 MoveGen::southOne(U64 b)
-{
-    return b << 8;
-}
-
-U64 MoveGen::eastOne (U64 b)
-{
-    return (b << 1) & notHFile;
-}
-
-U64 MoveGen::noEaOne(U64 b)
-{
-    return (b >> 7) & notHFile;;
-}
-
-U64 MoveGen::soEaOne(U64 b)
-{
-    return (b << 9) & notHFile;
-}
-
-U64 MoveGen::westOne(U64 b)
-{
-    return (b >> 1) & notAFile;
-}
-
-U64 MoveGen::soWeOne(U64 b)
-{
-
-    return (b << 7) & notAFile;
-}
-
-U64 MoveGen::noWeOne(U64 b)
-{
-    return (b >> 9) & notAFile;
 }

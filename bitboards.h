@@ -39,6 +39,9 @@ public:
 	//this is only called once at program startup
 	void initBoards();
 
+	//debug method
+	bool posOkay();
+
 	//holds zobrist key and arrays neccasary for modifying key
 	ZobristH zobrist;
 
@@ -250,7 +253,7 @@ inline void BitBoards::movePiece(int piece, int color, int from, int to)
 	EmptyTiles ^= from_to;
 
 	pieceOn[from] = PIECE_EMPTY;
-	pieceOn[to] = piece;
+	pieceOn[to]   = piece;
 
 	//update the pieces location
 	pieceIndex[to] = pieceIndex[from];
@@ -259,7 +262,7 @@ inline void BitBoards::movePiece(int piece, int color, int from, int to)
 //also can only be used to add piece if no piece is on destination sq
 inline void BitBoards::addPiece(int piece, int color, int sq)
 {
-	byColorPiecesBB[color][piece] ^= square_bb(sq);
+	byColorPiecesBB[color][piece] ^= square_bb(sq); 
 	allPiecesColorBB[color] ^= square_bb(sq);
 	byPieceType[piece] ^= square_bb(sq);
 	FullTiles ^= square_bb(sq);

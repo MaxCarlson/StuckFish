@@ -178,8 +178,6 @@ int Ai_Logic::searchRoot(BitBoards& board, int depth, int alpha, int beta, searc
 	(ss + 1)->skipNull = false;
 
     MoveGen gen_moves;
-    //grab bitboards from board object and store color and board to var
-    gen_moves.grab_boards(board, isWhite);
     gen_moves.generatePsMoves(board, isWhite, false);
 	gen_moves.reorderMoves(ss, ttentry);
 
@@ -198,22 +196,18 @@ int Ai_Logic::searchRoot(BitBoards& board, int depth, int alpha, int beta, searc
 
 		if (isRepetition(board, newMove)) { //if position from root move is a two fold repetition, discard that move
 			board.unmakeMove(newMove, isWhite);
-			gen_moves.grab_boards(board, isWhite);
 			continue;
-		}											   
-        gen_moves.grab_boards(board, isWhite);     
+		}											     
  /*                                                      
         //is move legal? if not skip it                
         if(gen_moves.isAttacked(king, isWhite, true)){
             board.unmakeMove(newMove, isWhite);
-            gen_moves.grab_boards(board, isWhite);
             continue;
         }
 		*/
 
 		if (!gen_moves.isLegal(board, newMove, isWhite)) {
 			board.unmakeMove(newMove, isWhite);
-			gen_moves.grab_boards(board, isWhite);
 			continue;
 		}
         legalMoves ++;
@@ -236,7 +230,6 @@ int Ai_Logic::searchRoot(BitBoards& board, int depth, int alpha, int beta, searc
 
         //undo move on BB's
         board.unmakeMove(newMove, isWhite);
-        gen_moves.grab_boards(board, isWhite);
 
 		if (newMove.captured == PIECE_EMPTY && newMove.flag != 'Q' && quietsCount < 64) {
 			quiets[quietsCount] = newMove;
@@ -331,9 +324,6 @@ int Ai_Logic::alphaBeta(BitBoards& board, int depth, int alpha, int beta, search
     }
 
     MoveGen gen_moves;
-    //grab bitboards from board object and store color and board to var
-    gen_moves.grab_boards(board, isWhite);
-
 
 	int color = !isWhite; //color is messed up here, the boards are indexed by opposite 0 = white
 	//U64 king = board.byColorPiecesBB[color][KING];
@@ -471,18 +461,15 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 
 		//make move on BB's store data to string so move can be undone
 		board.makeMove(newMove, isWhite);
-		gen_moves.grab_boards(board, isWhite);
 
 		//is move legal? if not skip it
 		if (!gen_moves.isLegal(board, newMove, isWhite)) {
 			board.unmakeMove(newMove, isWhite);
-			gen_moves.grab_boards(board, isWhite);
 			continue;
 		}
 		/*
 		if (gen_moves.isAttacked(king, isWhite, true)) { ///CHANGE METHOD OF UPDATING BOARDS, TOO INEFFICIENT
 			board.unmakeMove(newMove, isWhite);
-			gen_moves.grab_boards(board, isWhite);
 			continue;
 		}
 		*/
@@ -541,7 +528,6 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 
 			if (shouldSkip) {
 				board.unmakeMove(newMove, isWhite);
-				gen_moves.grab_boards(board, isWhite);
 				futileMoves = true; //flag so we know we skipped a move/not checkmate
 				continue;
 			}
@@ -555,7 +541,6 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 			&& !givesCheck){
 
 			board.unmakeMove(newMove, isWhite);
-			gen_moves.grab_boards(board, isWhite);
 			futileMoves = true; //flag so we know we skipped a move/not checkmate
 			continue;
 		}
@@ -645,7 +630,6 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 
 		//undo move on BB's
 		board.unmakeMove(newMove, isWhite);
-		gen_moves.grab_boards(board, isWhite);
 
 		if (timeOver) return 0;
 
@@ -749,7 +733,6 @@ int Ai_Logic::quiescent(BitBoards& board, int alpha, int beta, bool isWhite, sea
 
     //generate only captures with true capture gen var
     MoveGen gen_moves;
-    gen_moves.grab_boards(board, isWhite);
     gen_moves.generatePsMoves(board, isWhite, true);
     gen_moves.reorderMoves(ss, ttentry);
 
@@ -773,26 +756,15 @@ int Ai_Logic::quiescent(BitBoards& board, int alpha, int beta, bool isWhite, sea
 		if (!is_pv && gen_moves.SEE(newMove, board, isWhite, true) < 0) continue;
 
         board.makeMove(newMove, isWhite);
-        gen_moves.grab_boards(board, isWhite);
 
 		if (!gen_moves.isLegal(board, newMove, isWhite)) {
 			board.unmakeMove(newMove, isWhite);
-			gen_moves.grab_boards(board, isWhite);
 			continue;
 		}
-		/*
-        //is move legal? if not skip it 
-        if(gen_moves.isAttacked(king, isWhite, true)){
-            board.unmakeMove(newMove, isWhite);
-            gen_moves.grab_boards(board, isWhite);
-            continue;
-        }
-		*/
 
         score = -quiescent(board, -beta, -alpha, !isWhite, ss, quietDepth-1, is_pv);
 
         board.unmakeMove(newMove, isWhite);
-        gen_moves.grab_boards(board, isWhite);
 
         if(score > alpha){
 

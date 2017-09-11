@@ -1,8 +1,17 @@
-#ifndef DEFINES_H
-#define DEFINES_H
+#pragma once
 
 #include <intrin.h>
 #include <vector>
+
+#define NDEBUG
+
+#ifdef NDEBUG
+#define assert(EXPRESSION) ((void)0)
+#else
+#define assert(EXPRESSION) ((EXPRESSION) ? (void)0 : _assert(#EXPRESSION, __FILE__, __LINE__))
+#endif
+
+#include <assert.h>
 
 #define ENGINE_NAME "StuckFish 0.2"
 
@@ -330,4 +339,3 @@ inline int mated_in(int ply) {
 
 
 
-#endif // DEFINES_H

@@ -3,9 +3,11 @@
 #include <random>
 #include <iostream>
 #include <cstdio>
+
 #include "externs.h"
 #include "zobristh.h"
 #include "TranspositionT.h"
+
 
 
 std::string boardArr[8][8] = {
@@ -139,6 +141,8 @@ void BitBoards::initBoards()
 	}
 }
 
+
+
 void BitBoards::constructBoards()
 {
 
@@ -173,151 +177,68 @@ void BitBoards::constructBoards()
 		pieceOn[i] = PIECE_EMPTY;
 
 		if (boardArr[i / 8][i % 8] == "P") {
-			byColorPiecesBB[0][1] += 1LL << i;
-			allPiecesColorBB[0] += 1LL << i;
-			byPieceType[1] += 1LL << i;
+			addPiece(PAWN, WHITE, i);
 
-			FullTiles += 1LL << i;
+
 			bInfo.sideMaterial[0] += PAWN_VAL;
-
-			//record square piece is located at and increment the piece count
-			pieceLoc[WHITE][PAWN][pieceCount[WHITE][PAWN]] = i;
-			pieceIndex[i] = pieceCount[WHITE][PAWN]; //store the piece loc list index of this particular piece, indexed by square it's on
-			pieceCount[WHITE][PAWN] ++;
 			bInfo.PawnKey ^= zobrist.zArray[WHITE][PAWN][i];
 		}
 		else if (boardArr[i / 8][i % 8] == "N") {
-			byColorPiecesBB[0][2] += 1LL << i;
-			allPiecesColorBB[0] += 1LL << i;
-			byPieceType[2] += 1LL << i;
+			addPiece(KNIGHT, WHITE, i);
 
-			FullTiles += 1LL << i;
 			bInfo.sideMaterial[0] += KNIGHT_VAL;
-
-			pieceLoc[WHITE][KNIGHT][pieceCount[WHITE][KNIGHT]] = i;
-			pieceIndex[i] = pieceCount[WHITE][KNIGHT];
-			pieceCount[WHITE][KNIGHT]++;
 		}
 		else if (boardArr[i / 8][i % 8] == "B") {
-			byColorPiecesBB[0][3] += 1LL << i;
-			allPiecesColorBB[0] += 1LL << i;
-			byPieceType[3] += 1LL << i;
 
-			FullTiles += 1LL << i;
+			addPiece(BISHOP, WHITE, i);
 			bInfo.sideMaterial[0] += BISHOP_VAL;
-
-			pieceLoc[WHITE][BISHOP][pieceCount[WHITE][BISHOP]] = i;
-			pieceIndex[i] = pieceCount[WHITE][BISHOP];
-			pieceCount[WHITE][BISHOP]++;
 		}
 		else if (boardArr[i / 8][i % 8] == "R") {
-			byColorPiecesBB[0][4] += 1LL << i;
-			allPiecesColorBB[0] += 1LL << i;
-			byPieceType[4] += 1LL << i;
 
-			FullTiles += 1LL << i;
+			addPiece(ROOK, WHITE, i);
 			bInfo.sideMaterial[0] += ROOK_VAL;
-			pieceLoc[WHITE][ROOK][pieceCount[WHITE][ROOK]] = i;
-			pieceIndex[i] = pieceCount[WHITE][ROOK];
-			pieceCount[WHITE][ROOK]++;
 		}
 		else if (boardArr[i / 8][i % 8] == "Q") {
-			byColorPiecesBB[0][5] += 1LL << i;
-			allPiecesColorBB[0] += 1LL << i;
-			byPieceType[5] += 1LL << i;
 
-			FullTiles += 1LL << i;
+			addPiece(QUEEN, WHITE, i);
 			bInfo.sideMaterial[0] += QUEEN_VAL;
-
-			pieceLoc[WHITE][QUEEN][pieceCount[WHITE][QUEEN]] = i;
-			pieceIndex[i] = pieceCount[WHITE][QUEEN];
-			pieceCount[WHITE][QUEEN]++;
 		}
 		else if (boardArr[i / 8][i % 8] == "K") {
-			byColorPiecesBB[0][6] += 1LL << i;
-			allPiecesColorBB[0] += 1LL << i;
-			byPieceType[6] += 1LL << i;
 
-			FullTiles += 1LL << i;
+			addPiece(KING, WHITE, i);
 			bInfo.sideMaterial[0] += KING_VAL;
-
-			pieceLoc[WHITE][KING][pieceCount[WHITE][KING]] = i;
-			pieceIndex[i] = pieceCount[WHITE][KING];
-			pieceCount[WHITE][KING]++;
 		}
 		//black pieces
 		else if (boardArr[i / 8][i % 8] == "p") {
-			byColorPiecesBB[1][1] += 1LL << i;
-			allPiecesColorBB[1] += 1LL << i;
-			byPieceType[1] += 1LL << i;
 
-			FullTiles += 1LL << i;
+			addPiece(PAWN, BLACK, i);
 			bInfo.sideMaterial[1] += PAWN_VAL;
-
-			pieceLoc[BLACK][PAWN][pieceCount[BLACK][PAWN]] = i;
-			pieceIndex[i] = pieceCount[BLACK][PAWN];
-			pieceCount[BLACK][PAWN]++;
 			bInfo.PawnKey ^= zobrist.zArray[BLACK][PAWN][i];
 		}
 		else if (boardArr[i / 8][i % 8] == "n") {
-			byColorPiecesBB[1][2] += 1LL << i;
-			allPiecesColorBB[1] += 1LL << i;
-			byPieceType[2] += 1LL << i;
 
-			FullTiles += 1LL << i;
+			addPiece(KNIGHT, BLACK, i);
 			bInfo.sideMaterial[1] += KNIGHT_VAL;
-
-			pieceLoc[BLACK][KNIGHT][pieceCount[BLACK][KNIGHT]] = i;
-			pieceIndex[i] = pieceCount[BLACK][KNIGHT];
-			pieceCount[BLACK][KNIGHT]++;
 		}
 		else if (boardArr[i / 8][i % 8] == "b") {
-			byColorPiecesBB[1][3] += 1LL << i;
-			allPiecesColorBB[1] += 1LL << i;
-			byPieceType[3] += 1LL << i;
 
-			FullTiles += 1LL << i;
+			addPiece(BISHOP, BLACK, i);
 			bInfo.sideMaterial[1] += BISHOP_VAL;
-
-			pieceLoc[BLACK][BISHOP][pieceCount[BLACK][BISHOP]] = i;
-			pieceIndex[i] = pieceCount[BLACK][BISHOP];
-			pieceCount[BLACK][BISHOP]++;
 		}
 		else if (boardArr[i / 8][i % 8] == "r") {
-			byColorPiecesBB[1][4] += 1LL << i;
-			allPiecesColorBB[1] += 1LL << i;
-			byPieceType[4] += 1LL << i;
 
-			FullTiles += 1LL << i;
+			addPiece(ROOK, BLACK, i);
 			bInfo.sideMaterial[1] += ROOK_VAL;
-
-			pieceLoc[BLACK][ROOK][pieceCount[BLACK][ROOK]] = i;
-			pieceIndex[i] = pieceCount[BLACK][ROOK];
-			pieceCount[BLACK][ROOK]++;
 		}
 		else if (boardArr[i / 8][i % 8] == "q") {
-			byColorPiecesBB[1][5] += 1LL << i;
-			allPiecesColorBB[1] += 1LL << i;
-			byPieceType[5] += 1LL << i;
 
-			FullTiles += 1LL << i;
+			addPiece(QUEEN, BLACK, i);
 			bInfo.sideMaterial[1] += QUEEN_VAL;
-
-			pieceLoc[BLACK][QUEEN][pieceCount[BLACK][QUEEN]] = i;
-			pieceIndex[i] = pieceCount[BLACK][QUEEN];
-			pieceCount[BLACK][QUEEN]++;
 		}
 		else if (boardArr[i / 8][i % 8] == "k") {
-			byColorPiecesBB[1][6] += 1LL << i;
-			allPiecesColorBB[1] += 1LL << i;
-			byPieceType[6] += 1LL << i;
-			
-			FullTiles += 1LL << i;
-			bInfo.sideMaterial[1] += KING_VAL;
 
-			pieceLoc[BLACK][KING][pieceCount[BLACK][KING]] = i;
-			pieceIndex[i] = pieceCount[BLACK][KING];
-			pieceCount[BLACK][KING]++;
+			addPiece(KING, BLACK, i);
+			bInfo.sideMaterial[1] += KING_VAL;
 		}
 	}
 
@@ -353,6 +274,8 @@ void BitBoards::makeMove(const Move& m, bool isWhite)
 	int color = !isWhite;
 	int them = isWhite;
 
+	assert(posOkay());
+
 	//remove or add captured piece from BB's same as above for moving piece
 	if (m.captured) {
 		//remove captured piece
@@ -386,7 +309,7 @@ void BitBoards::makeMove(const Move& m, bool isWhite)
 			bInfo.PawnKey ^= zobrist.zArray[color][PAWN][m.to];
 			//update material key
 			bInfo.MaterialKey ^= zobrist.zArray[color][QUEEN][pieceCount[color][QUEEN]]
-							  ^ zobrist.zArray[color][PAWN][pieceCount[color][PAWN]+1];
+							  ^ zobrist.zArray[color ][PAWN][pieceCount[color][PAWN]+1];
 		}
 		//update the pawn key, if it's a promotion it cancels out and updates correctly
 		bInfo.PawnKey ^= zobrist.zArray[color][PAWN][m.to] ^ zobrist.zArray[color][PAWN][m.from];
@@ -415,7 +338,8 @@ void BitBoards::makeMove(const Move& m, bool isWhite)
 		//a = this;
 		//a->drawBBA();
 	}*/
-
+	
+	assert(posOkay());
 	
 	//update the zobrist key
 	zobrist.UpdateKey(m.from, m.to, m, isWhite);
@@ -433,6 +357,8 @@ void BitBoards::unmakeMove(const Move & m, bool isWhite)
 	
 	int color = !isWhite;
 	int them = isWhite;
+
+	assert(posOkay());
 
 	if (m.flag != 'Q') {
 		//move piece
@@ -499,12 +425,7 @@ void BitBoards::unmakeMove(const Move & m, bool isWhite)
 		bInfo.MaterialKey ^= zobrist.zArray[them][m.captured][pieceCount[them][m.captured]];
 	}
 
-	//debug catch
-	if (allPiecesColorBB[color] & allPiecesColorBB[them]) {
-		drawBBA();
-		drawBB(allPiecesColorBB[color]);
-		drawBB(allPiecesColorBB[them]);
-	}
+	assert(posOkay());
 
 	//update the zobrist key
 	zobrist.UpdateKey(m.from, m.to, m, isWhite);
@@ -600,8 +521,34 @@ void BitBoards::drawBBA()
 	std::cout << std::endl << std::endl;;
 }
 
+//method used for checking if
+//everything is okay within the boards
+//will need more added to it
+bool BitBoards::posOkay()
+{
 
 
+	for (int i = PAWN; i < PIECES; ++i) {
+		for (int j = PAWN; j < PIECES; ++j) {
+			if (pieces(WHITE, i) & pieces(BLACK, j)) {
+				drawBB(pieces(WHITE, i));
+				drawBB(pieces(BLACK, j));
+				goto End;
+			}
+		}
+	}
+
+	if (EmptyTiles & FullTiles) goto End;
+
+
+	return true;
+
+End:
+	drawBB(EmptyTiles);
+	drawBB(FullTiles);
+	drawBBA();
+	return false;
+}
 
 
 
