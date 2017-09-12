@@ -1,3 +1,11 @@
 ﻿  movegen.cpp
+  evaluatebb.cpp
+  Generating Code...
+  Compiling...
+  ai_logic.cpp
+  Generating Code...
+  Skipping... (no relevant changes detected)
+  zobristh.cpp
+  main.cpp
   StuckFish.vcxproj -> C:\Users\C-60\Desktop\cppPrograms\StuckFish\x64\Debug\StuckFish.exe
   StuckFish.vcxproj -> C:\Users\C-60\Desktop\cppPrograms\StuckFish\x64\Debug\StuckFish.pdb (Partial PDB)

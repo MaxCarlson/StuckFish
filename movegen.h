@@ -55,17 +55,22 @@ private:
 
     //assigns a score to moves and adds them to the move array
     void movegen_push(const BitBoards & board, int color, int piece, int captured, char flag, int from, int to);
-    bool blind(const BitBoards & board, const Move &move, int color, int pieceVal, int captureVal);
+    bool blind(const BitBoards & board, int to, int color, int pieceVal, int captureVal);
 
 	//used in static exchange eval
 	U64 attackersTo(int sq, const BitBoards& b, const U64 occ) const;
+
+	U64 attackersTo(const BitBoards & b, const U64 occ, int square);
 
 	//finds the smallest attacker for side to move, out of the stm attackers board,
 	//removes the attacker from the attackers and occuied board, then finds any x-ray attackers behind that piece
 	//and returns the int representing the piece
 	inline int min_attacker(bool isWhite, const BitBoards & b, const int &to, const U64 &stmAttackers, U64 &occupied, U64 &attackers);
 
-    int whichPieceCaptured(U64 landing);
+	template<int Pt> FORCE_INLINE
+	int min_attacker(const BitBoards & b, int color, const int & to, const U64 & stmAttackers, U64 & occupied, U64 & attackers);
+
+    int whichPieceCaptured(U64 landing); //Retest move generation with this !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! WE are in ELO loss since last revision, not using this function might be the cause
 
 
     //psuedo legal move gen for indvidual pieces

@@ -580,10 +580,11 @@ void MoveGen::movegen_push(const BitBoards & board, int color, int piece, int ca
 
         //Good captures are scored higher, based on BLIND better lower if not defended
         //need to add Static Exchange at somepoint
-        if(blind(board, moveAr[moveCount], color, SORT_VALUE[piece], SORT_VALUE[captured])) moveAr[moveCount].score = SORT_CAPT + SORT_VALUE[captured] + idAr[piece];
+        if(blind(board, to, color, SORT_VALUE[piece], SORT_VALUE[captured])) moveAr[moveCount].score = SORT_CAPT + SORT_VALUE[captured] + idAr[piece];
 
         //captures of defended pieces or pieces we know nothing about ~~ better if lower still, by id
         else moveAr[moveCount].score = SORT_VALUE[captured] + idAr[piece]; 
+
     }
 
     //pawn promotions
@@ -647,28 +648,27 @@ bool MoveGen::blind(const BitBoards & board, const Move &move, int pieceVal, int
     return 0; //of other captures we know not
 }
 */
-bool MoveGen::blind(const BitBoards & board, const Move &move, int color, int pieceVal, int captureVal) {
+bool MoveGen::blind(const BitBoards & board, int to, int color, int pieceVal, int captureVal) { //REplace move with just to square? use piece val to see if it equals PAWN val
 	
-	//better lower if not defeneded scoring
-
-	const int piece = move.piece;
+	//better lower if not defeneded 
 
 	//captures from pawns don't lose material
-	if (piece == PAWN) return true;
+	if (pieceVal == SORT_VALUE[PAWN]) return true;
 
 	//capture lower takes higher
 	if (captureVal >= pieceVal - 50) return true;
 
 	//is our capture attacked by enemys?
-	bool defended = isSquareAttacked(board, move.to, !color);
+	//bool defended = isSquareAttacked(board, move.to, !color);
 
-	return !defended;
+	return !isSquareAttacked(board, to, color);
 }
 
 int MoveGen::SEE(const Move& m, const BitBoards& b, bool isWhite, bool isCapture)
 {
 	U64 attackers, occupied, stmAttackers;
 	int swapList[32], index = 1; //play with swap val for speed?
+	int color = !isWhite;
 
 	//early return, SEE can't be a losing capture
 	//is capture flag is used for when we're checking to see if the move is escaping capture
@@ -682,22 +682,17 @@ int MoveGen::SEE(const Move& m, const BitBoards& b, bool isWhite, bool isCapture
 	//need castling and enpassant logic once implmented
 
 	//finds all attackers to the square
-	attackers = attackersTo(m.to, b, occupied) & occupied;
+	//attackers = attackersTo(m.to, b, occupied) & occupied;
+	attackers = attackersTo(b, occupied, m.to) & occupied;
 
 	//if there are no attacking pieces, return
-	int color = !isWhite;
 	if(!(attackers & b.allPiecesColorBB[color])) return swapList[0];
 
 
-	//if (isWhite && !(attackers & b.BBBlackPieces)) return swapList[0];
-	//else if (!isWhite && !(attackers & b.BBWhitePieces))  return swapList[0];
-
 	//switch sides
-	isWhite = !isWhite;
 	color = !color;
 	stmAttackers = attackers & b.allPiecesColorBB[color];
-	//if(isWhite) stmAttackers = attackers & b.BBWhitePieces; 
-	//else  stmAttackers = attackers & b.BBBlackPieces;
+
 
 	if (!stmAttackers) return swapList[0];
 	
@@ -710,7 +705,8 @@ int MoveGen::SEE(const Move& m, const BitBoards& b, bool isWhite, bool isCapture
 		//add entry to swap list
 		swapList[index] = -swapList[index - 1] + SORT_VALUE[captured];
 
-		captured = min_attacker(isWhite, b, m.to, stmAttackers, occupied, attackers);
+	
+		captured = min_attacker<PAWN>(b, color, m.to, stmAttackers, occupied, attackers);
 
 		if (captured == KING) {
 			if (stmAttackers == attackers) {
@@ -719,12 +715,11 @@ int MoveGen::SEE(const Move& m, const BitBoards& b, bool isWhite, bool isCapture
 			break;
 		}
 
-		isWhite = !isWhite;
+		//isWhite = !isWhite; remove if new min_attackers function is solid
+		//captured = min_attacker(isWhite, b, m.to, stmAttackers, occupied, attackers);
 
 		color = !color;
 		stmAttackers = attackers & b.allPiecesColorBB[color];
-		//if (isWhite) stmAttackers = attackers & b.BBWhitePieces;
-		//else stmAttackers = attackers & b.BBBlackPieces;
 
 		index++;
 	} while (stmAttackers);
@@ -736,131 +731,64 @@ int MoveGen::SEE(const Move& m, const BitBoards& b, bool isWhite, bool isCapture
 
 	return swapList[0];
 }
-//returns a bitboard of all attackers of sq locations
-U64 MoveGen::attackersTo(int sq, const BitBoards& b, const U64 occ) const
-{
-	U64 attackers = 0LL, loc = 1LL << sq, kingA;
 
-	//drawBB(occ);
+//finds all attackers to a location
+U64 MoveGen::attackersTo(const BitBoards& b, const U64 occ, int square) {
 
-	//knights
-	if (sq > 18) {
-		attackers = KNIGHT_SPAN << (sq - 18);
-	}
-	else {
-		attackers = KNIGHT_SPAN >> (18 - sq);
-	}
+	U64 attackers;
 
-	if (sq % 8 < 4) {
-		attackers &= ~FILE_GH;
-	}
-	else {
-		attackers &= ~FILE_AB;
-	}
-	attackers &= b.byPieceType[KNIGHT]; //knights
+	// Note. Color does not matter on b.psuedoAttacks(KING) / KNIGHT
 
-	//drawBB(attackers);
+	attackers  = b.psuedoAttacks(PAWN, BLACK, square)      & b.pieces(WHITE, PAWN);
+	attackers |= b.psuedoAttacks(PAWN, WHITE, square)      & b.pieces(BLACK, PAWN);
 
-	//pawns
-	attackers |= (loc << 9) & notHFile & b.byColorPiecesBB[WHITE][PAWN];
-	attackers |= (loc << 7) & notAFile & b.byColorPiecesBB[WHITE][PAWN];
-	//drawBB(attackers);
-	attackers |= (loc >> 9) & notHFile & b.byColorPiecesBB[BLACK][PAWN];
-	attackers |= (loc >> 7) &  notAFile & b.byColorPiecesBB[BLACK][PAWN];
-	//drawBB(attackers);
+	attackers |= b.psuedoAttacks(KNIGHT, WHITE, square)    & b.piecesByType(KNIGHT);
 
-	//bishop and queens
-	attackers |= slider_attacks.BishopAttacks(occ, sq) & (b.byPieceType[BISHOP] | b.byPieceType[QUEEN]);
-	//drawBB(attackers);
+	attackers |= slider_attacks.BishopAttacks(occ, square) & b.piecesByType(BISHOP, QUEEN);
 
-	//rooks and queens
-	attackers |= slider_attacks.RookAttacks(occ, sq) & (b.byPieceType[ROOK] | b.byPieceType[QUEEN]);
-	//drawBB(attackers);
+	attackers |= slider_attacks.RookAttacks(occ, square)   & b.piecesByType(ROOK, QUEEN);
 
-	if (sq > 9) {
-		kingA = KING_SPAN << (sq - 9);
-	}
-	else {
-		kingA = KING_SPAN >> (9 - sq);
-	}
-	if (sq % 8 < 4) {
-		kingA &= ~FILE_GH;
+	attackers |= b.psuedoAttacks(KING, WHITE, square)      & b.piecesByType(KING);
 
-	}
-	else {
-		kingA &= ~FILE_AB;
-	}
-	attackers |= kingA & (b.byPieceType[KING]);
-		
 	return attackers;
 }
 
-inline int MoveGen::min_attacker(bool isWhite, const BitBoards & b, const int & to, const U64 & stmAttackers, U64 & occupied, U64 & attackers)
-{
-	U64 pawns, knights, rooks, bishops, queens, king, loc;
+template<int Pt> FORCE_INLINE
+int MoveGen::min_attacker(const BitBoards & b, int color, const int & to, const U64 & stmAttackers, U64 & occupied, U64 & attackers) {
 
-	if (isWhite) { //NEED TO CHANGE to make recursive and use piece type to return and search again
-		pawns = b.byColorPiecesBB[0][1];
-		knights = b.byColorPiecesBB[0][2];
-		bishops = b.byColorPiecesBB[0][3];
-		rooks = b.byColorPiecesBB[0][4];
-		queens = b.byColorPiecesBB[0][5];
-		king = b.byColorPiecesBB[0][6];
-	}
-	else {
-		pawns = b.byColorPiecesBB[1][1];
-		knights = b.byColorPiecesBB[1][2];
-		bishops = b.byColorPiecesBB[1][3];
-		rooks = b.byColorPiecesBB[1][4];
-		queens = b.byColorPiecesBB[1][5];
-		king = b.byColorPiecesBB[1][6];
-	}
+	// is there a piece of this Pt that we've previously found
+	// attacking the square?
+	U64 bb = stmAttackers & b.pieces(color, Pt);
 
-	//drawBB(stmAttackers);
+	// if not, increment piece type and re-search
+	if (!bb)
+		return min_attacker<Pt + 1>(b, color, to, stmAttackers, occupied, attackers);
 
-	int piece;
-	//find smallest attacker
-	if (pawns & stmAttackers) { 
-		piece = PAWN; loc = pawns & stmAttackers;
-	}
-	else if (knights & stmAttackers) { 
-		piece = KNIGHT; loc = knights & stmAttackers;
-	}
-	else if (bishops & stmAttackers) { 
-		piece = BISHOP; loc = bishops & stmAttackers;
-	}
-	else if (rooks & stmAttackers) { 
-		piece = ROOK; loc = rooks & stmAttackers;
-	}
-	else if (queens & stmAttackers) { 
-		piece = QUEEN; loc = queens & stmAttackers;
-	}
-	else if (king & stmAttackers) { 
-		piece = KING; loc = king & stmAttackers;
-	}
-	else { //early cutoff if no stm attackers
-		return PIECE_EMPTY;
-	}
-
-	//remove piece from occupied board
-	occupied ^= loc & ~(loc - 1);
-	//drawBB(occupied);
+	// We've found a attackerr!
+	// remove piece from occupied board
+	occupied ^= bb & ~(bb - 1);
 
 	//find xray attackers behind piece once it's been removed and add to attackers
-	if (piece == PAWN || piece == BISHOP || piece == QUEEN) {                       //ADD BY TYPE BOARD REPRESENTATION TO BITBOARDS
-		attackers |= slider_attacks.BishopAttacks(occupied, to) & (b.byPieceType[3] | b.byPieceType[5]);
+	if (Pt == PAWN || Pt == BISHOP || Pt == QUEEN) {                       
+		attackers |= slider_attacks.BishopAttacks(occupied, to) & (b.pieces(color, BISHOP, QUEEN));
 	}
 
-	if (piece == ROOK || piece == QUEEN) {
-		attackers |= slider_attacks.RookAttacks(occupied, to) & (b.byPieceType[4] | b.byPieceType[5]);
+	if (Pt == ROOK || Pt == QUEEN) {
+		attackers |= slider_attacks.RookAttacks(occupied, to) & (b.pieces(color, ROOK, QUEEN));
 	}
+
 	//add new attackers to board
 	attackers &= occupied;
-	//drawBB(attackers);
 
-
-	return piece;
+	//return attacker
+	return Pt;
 }
+
+template<> FORCE_INLINE // If we've checked all the pieces, return KING and stop SEE search
+int MoveGen::min_attacker<KING>(const BitBoards & b, int color, const int & to, const U64 & stmAttackers, U64 & occupied, U64 & attackers) {
+	return KING;
+}
+
 
 void MoveGen::reorderMoves(searchStack *ss, const HashEntry *entry)
 {
@@ -891,15 +819,15 @@ bool MoveGen::isLegal(const BitBoards & b, const Move & m, bool isWhite)
 	//white with bitboards and other arrays. Hence the flip.
 	const int color = !isWhite;
 	const int them = isWhite;
-	const int kingLoc = lsb(b.pieces(color, KING));
+	const int kingLoc = b.king_square(color);
 
-	bool kAttacked = isSquareAttacked(b, kingLoc, color);
+	return !isSquareAttacked(b, kingLoc, color);
 
-	// if move is not a castling move and
+	// if move is not a castling move and ///CASTLING LEGALITY CHECKS REMOVED WHILE TESTING FOR BUGS
 	// has passed all legality checks 
 	// move is legal
 	//if (m.flag != 'C') return !kAttacked;
-	return !kAttacked;
+	//return !kAttacked;
 /*	
 	U64 rookSq = color == WHITE ? m.to == C1  ? (1LL << A1) : (1LL << H1)
 							    : m.to == C8  ? (1LL << A8) : (1LL << H8);
@@ -935,11 +863,12 @@ bool MoveGen::isLegal(const BitBoards & b, const Move & m, bool isWhite)
 inline bool MoveGen::isSquareAttacked(const BitBoards & b, const int square, const int color) {
 
 	const int them = !color;
-	U64 attacks = b.psuedoAttacks(PAWN, color, square);
+
+	U64 attacks = b.psuedoAttacks(PAWN, color, square); //reverse color pawn attacks so we can find enemy pawns
 
 	if (attacks & b.pieces(them, PAWN)) return true;
 
-	attacks = b.psuedoAttacks(KNIGHT, color, square);
+	attacks = b.psuedoAttacks(KNIGHT, them, square);
 
 	if (attacks & b.pieces(them, KNIGHT)) return true;
 
@@ -951,9 +880,141 @@ inline bool MoveGen::isSquareAttacked(const BitBoards & b, const int square, con
 
 	if (attacks & b.pieces(them, ROOK, QUEEN)) return true;
 
-	attacks = b.psuedoAttacks(KING, color, square);
+	attacks = b.psuedoAttacks(KING, them, square);
 
 	if (attacks & b.pieces(them, KING)) return true;
 
 	return false;
 }
+
+
+/* //TEST new min_attacker function for ELO loss/gain before deleting this!!!!!!!!!!!!!!!!!!!!!!!!!!
+inline int MoveGen::min_attacker(bool isWhite, const BitBoards & b, const int & to, const U64 & stmAttackers, U64 & occupied, U64 & attackers)
+{
+U64 pawns, knights, rooks, bishops, queens, king, loc;
+
+if (isWhite) { //NEED TO CHANGE to make recursive and use piece type to return and search again
+pawns = b.byColorPiecesBB[0][1];
+knights = b.byColorPiecesBB[0][2];
+bishops = b.byColorPiecesBB[0][3];
+rooks = b.byColorPiecesBB[0][4];
+queens = b.byColorPiecesBB[0][5];
+king = b.byColorPiecesBB[0][6];
+}
+else {
+pawns = b.byColorPiecesBB[1][1];
+knights = b.byColorPiecesBB[1][2];
+bishops = b.byColorPiecesBB[1][3];
+rooks = b.byColorPiecesBB[1][4];
+queens = b.byColorPiecesBB[1][5];
+king = b.byColorPiecesBB[1][6];
+}
+
+//drawBB(stmAttackers);
+
+int piece;
+//find smallest attacker
+if (pawns & stmAttackers) {
+piece = PAWN; loc = pawns & stmAttackers;
+}
+else if (knights & stmAttackers) {
+piece = KNIGHT; loc = knights & stmAttackers;
+}
+else if (bishops & stmAttackers) {
+piece = BISHOP; loc = bishops & stmAttackers;
+}
+else if (rooks & stmAttackers) {
+piece = ROOK; loc = rooks & stmAttackers;
+}
+else if (queens & stmAttackers) {
+piece = QUEEN; loc = queens & stmAttackers;
+}
+else if (king & stmAttackers) {
+piece = KING; loc = king & stmAttackers;
+}
+else { //early cutoff if no stm attackers
+return PIECE_EMPTY;
+}
+
+//remove piece from occupied board
+occupied ^= loc & ~(loc - 1);
+//drawBB(occupied);
+
+//find xray attackers behind piece once it's been removed and add to attackers
+if (piece == PAWN || piece == BISHOP || piece == QUEEN) {                       //ADD BY TYPE BOARD REPRESENTATION TO BITBOARDS
+attackers |= slider_attacks.BishopAttacks(occupied, to) & (b.byPieceType[3] | b.byPieceType[5]);
+}
+
+if (piece == ROOK || piece == QUEEN) {
+attackers |= slider_attacks.RookAttacks(occupied, to) & (b.byPieceType[4] | b.byPieceType[5]);
+}
+//add new attackers to board
+attackers &= occupied;
+//drawBB(attackers);
+
+
+return piece;
+}
+
+//returns a bitboard of all attackers of sq locations
+U64 MoveGen::attackersTo(int sq, const BitBoards& b, const U64 occ) const
+{
+U64 attackers = 0LL, loc = 1LL << sq, kingA;
+
+//drawBB(occ);
+
+//knights
+if (sq > 18) {
+attackers = KNIGHT_SPAN << (sq - 18);
+}
+else {
+attackers = KNIGHT_SPAN >> (18 - sq);
+}
+
+if (sq % 8 < 4) {
+attackers &= ~FILE_GH;
+}
+else {
+attackers &= ~FILE_AB;
+}
+attackers &= b.byPieceType[KNIGHT]; //knights
+
+//drawBB(attackers);
+
+//pawns
+attackers |= (loc << 9) & notHFile & b.byColorPiecesBB[WHITE][PAWN];
+attackers |= (loc << 7) & notAFile & b.byColorPiecesBB[WHITE][PAWN];
+//drawBB(attackers);
+attackers |= (loc >> 9) & notHFile & b.byColorPiecesBB[BLACK][PAWN];
+attackers |= (loc >> 7) &  notAFile & b.byColorPiecesBB[BLACK][PAWN];
+//drawBB(attackers);
+
+//bishop and queens
+attackers |= slider_attacks.BishopAttacks(occ, sq) & (b.byPieceType[BISHOP] | b.byPieceType[QUEEN]);
+//drawBB(attackers);
+
+//rooks and queens
+attackers |= slider_attacks.RookAttacks(occ, sq) & (b.byPieceType[ROOK] | b.byPieceType[QUEEN]);
+//drawBB(attackers);
+
+if (sq > 9) {
+kingA = KING_SPAN << (sq - 9);
+}
+else {
+kingA = KING_SPAN >> (9 - sq);
+}
+if (sq % 8 < 4) {
+kingA &= ~FILE_GH;
+
+}
+else {
+kingA &= ~FILE_AB;
+}
+attackers |= kingA & (b.byPieceType[KING]);
+
+return attackers;
+}
+
+
+
+*/
