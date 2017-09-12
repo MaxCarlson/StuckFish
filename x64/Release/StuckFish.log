@@ -1,7 +1,6 @@
-﻿  ai_logic.cpp
-  evaluatebb.cpp
-  main.cpp
-  movegen.cpp
-  zobristh.cpp
-  Generating Code...
+﻿  bitboards.cpp
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\move.h(9): warning #945: type qualifier ignored
+        const Move();
+        ^
+  
   StuckFish.vcxproj -> C:\Users\C-60\Desktop\cppPrograms\StuckFish\x64\Release\StuckFish.exe

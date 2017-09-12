@@ -10,6 +10,8 @@
 #include "Pawns.h"
 
 
+
+
 int SquareDistance[64][64]; //distance between squares // MOVE SOMEWERE ELSE, new .h file for inline functions??
 
 inline int square_distance(int s1, int s2) {

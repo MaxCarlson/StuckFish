@@ -7,7 +7,6 @@
 #include <sstream>
 
 #include "externs.h"
-#include "evaluatebb.h" //remove once we debug evaluate
 #include "Evaluate.h"
 #include "bitboards.h"
 #include "movegen.h"
@@ -15,6 +14,8 @@
 #include "hashentry.h"
 #include "TimeManager.h"
 #include "TranspositionT.h"
+
+//#include <advisor-annotate.h> // INTEL ADVISOR FOR THREAD ANNOTATION
 
 #define DO_NULL    true //allow null moves or not
 #define NO_NULL    false
@@ -200,13 +201,6 @@ int Ai_Logic::searchRoot(BitBoards& board, int depth, int alpha, int beta, searc
 			board.unmakeMove(newMove, isWhite);
 			continue;
 		}											     
- /*                                                      
-        //is move legal? if not skip it                
-        if(gen_moves.isAttacked(king, isWhite, true)){
-            board.unmakeMove(newMove, isWhite);
-            continue;
-        }
-		*/
 
 		if (!gen_moves.isLegal(board, newMove, isWhite)) {
 			board.unmakeMove(newMove, isWhite);
@@ -267,6 +261,8 @@ int Ai_Logic::searchRoot(BitBoards& board, int depth, int alpha, int beta, searc
 	
     return alpha;
 }
+
+
 
 int Ai_Logic::alphaBeta(BitBoards& board, int depth, int alpha, int beta, searchStack *ss, bool isWhite, bool allowNull, int isPV)
 {
@@ -454,9 +450,13 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 		|| ss->staticEval == 0
 		|| (ss - 2)->staticEval == 0;
 
+
+
+
 	Move hashMove; //move to store alpha in and pass to TTable
 	for (int i = 0; i < movesNum; ++i) {
-		//grab best scoring move
+
+		//grab best scoring move	
 		Move newMove = gen_moves.movegen_sort(ss->ply, gen_moves.moveAr);
 
 		//if (sd.excludedMove && newMove.score >= SORT_HASH) continue;
@@ -474,7 +474,6 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 		newDepth = depth - 1;
 		history.cutoffs[isWhite][newMove.from][newMove.to] -= 1;
 		captureOrPromotion = (newMove.captured != PIECE_EMPTY || newMove.flag == 'Q');
-		//givesCheck = gen_moves.isAttacked(eking, !isWhite, true);
 		givesCheck = gen_moves.isSquareAttacked(board, board.king_square(isWhite), isWhite);
 
 		/* //ELO loss with singular extensions so far
@@ -594,12 +593,14 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 		_mm_prefetch((char *)TT.first_entry(board.zobrist.fetchKey(newMove, !isWhite)), _MM_HINT_NTA);
 
 		//jump back here if our LMR raises Alpha
-	re_search:
-
-
+	//re_search:
 		if (!raisedAlpha) {
 			//we're in princiapl variation search or full window search
+			
+			
 			score = -alphaBeta(board, newDepth, -beta, -alpha, ss + 1, !isWhite, DO_NULL, isPV);
+
+			
 		}
 		else {
 			//zero window search
@@ -610,14 +611,15 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 				score = -alphaBeta(board, newDepth, -beta, -alpha, ss + 1, !isWhite, DO_NULL, IS_PV);
 			}
 		}
-		/*u
-				//if a reduced search brings us above alpha, do a full non-reduced search
-				if (ss->reduction && score > alpha) {
-					newDepth += ss->reduction;
-					ss->reduction = 0;
 
-					goto re_search;
-				}
+		/*u
+		//if a reduced search brings us above alpha, do a full non-reduced search
+		if (ss->reduction && score > alpha) {
+			newDepth += ss->reduction;       // NEED TO TEST FOR ELO IF THIS IS USE FULL OR NOT
+			ss->reduction = 0;
+
+			goto re_search;
+		}
 		*/
 		//store queit moves so we can decrease their value later
 		if (!captureOrPromotion && quietsC < 64) {

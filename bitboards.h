@@ -52,7 +52,6 @@ public:
 	void makeMove(const Move& m, bool isWhite);
 	//unamke move
 	void unmakeMove(const Move& m, bool isWhite);
-	void makeNullMove();
 
 	//Holds board information, struct above
 	BoardInfo bInfo;
@@ -288,15 +287,6 @@ inline void BitBoards::removePiece(int piece, int color, int sq)
 	pieceIndex[lSq] = pieceIndex[sq];
 	pieceLoc[color][piece][pieceIndex[lSq]] = lSq;
 	pieceLoc[color][piece][pieceCount[color][piece]] = SQ_NONE;
-}
-
-
-//flip internal side to move and XOR zobrist
-// key by side to move ran num
-inline void BitBoards::makeNullMove()
-{
-//	bInfo.sideToMove = !bInfo.sideToMove;
-	zobrist.UpdateColor();
 }
 
 //returns a count of the number of pieces

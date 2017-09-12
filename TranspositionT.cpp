@@ -3,7 +3,7 @@
 #include <iostream>
 
 TranspositionT TT; //global transposition table
-TranspositionT TTPawn; //global pawn TTable
+//TranspositionT TTPawn; //global pawn TTable
 
 
 void TranspositionT::resize(size_t mbSize)

@@ -51,6 +51,13 @@ Temporary Items
 /StuckFish.VC.VC.opendb
 
 # Performace Reports
-.psess
-.vspx
-.tmp.merged.etl
+
+/My Advisor Results - StuckFish/
+/My Amplifier XE Results - StuckFish/*
+/My Inspector Results - StuckFish/*
+*.psess
+*.vspx
+*.tmp.merged.etl
+*.tlog
+
+

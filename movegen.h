@@ -25,22 +25,19 @@ public:
 	//array of move objects 
 	Move moveAr[256];
 
-    bool isWhite;
 	//number of moves generated this node
     int moveCount;
 
+	// called from search, calls individual move functions 
+	// and fills array above with moves with each function
+	// pushing moves to movegen_push which stores info and scores with BLIND
     void generatePsMoves(const BitBoards& boards, bool isWhite, bool capturesOnly);
-
-	//grab bitboard changes after a move, or any change in search. Need to get rid of eventually and just pass constRef to everything
-    void grab_boards(const BitBoards &BBBoard, bool wOrB); //remove this function and just pass const ref BitBoards to all functions that need it
 
 	bool isLegal(const BitBoards & b, const Move & m, bool isWhite);
 
-    bool isAttacked(U64 pieceLoc, bool wOrB, bool isSearchKingCheck);
 	//helper function for isLegal + for finding if in check
 	bool isSquareAttacked(const BitBoards & b, const int square, const int color);
 	
-
 	//static exhange eval
 	int SEE(const Move& m, const BitBoards& b, bool isWhite, bool isCapture);
 
@@ -58,20 +55,16 @@ private:
     bool blind(const BitBoards & board, int to, int color, int pieceVal, int captureVal);
 
 	//used in static exchange eval
-	U64 attackersTo(int sq, const BitBoards& b, const U64 occ) const;
+	//U64 attackersTo(int sq, const BitBoards& b, const U64 occ) const;
 
 	U64 attackersTo(const BitBoards & b, const U64 occ, int square);
 
 	//finds the smallest attacker for side to move, out of the stm attackers board,
 	//removes the attacker from the attackers and occuied board, then finds any x-ray attackers behind that piece
 	//and returns the int representing the piece
-	inline int min_attacker(bool isWhite, const BitBoards & b, const int &to, const U64 &stmAttackers, U64 &occupied, U64 &attackers);
 
 	template<int Pt> FORCE_INLINE
 	int min_attacker(const BitBoards & b, int color, const int & to, const U64 & stmAttackers, U64 & occupied, U64 & attackers);
-
-    int whichPieceCaptured(U64 landing); //Retest move generation with this !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! WE are in ELO loss since last revision, not using this function might be the cause
-
 
     //psuedo legal move gen for indvidual pieces
 	template<int color>

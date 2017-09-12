@@ -60,7 +60,7 @@ struct Historys { //holds history info for search
 	int history[2][64][64] = { { { 0 } } };
 
 	//TEST THIS FOR SPEED/ELO below ///NOT IN USE
-	int hist[2][7][64] = { { { 0 } } }; //color, piece, square to
+	//int hist[2][7][64] = { { { 0 } } }; //color, piece, square to
 
 	int cutoffs[2][64][64] = { { { 0 } } };
 
