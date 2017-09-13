@@ -69,14 +69,14 @@ struct Historys { //holds history info for search
 
 	std::vector<U64> twoFoldRep; //stores zobrist keys of all positions encountered thus far
 
-	void updateHist(Move m, int v, bool isWhite) {
-		if (abs(history[isWhite][m.from][m.to]) < SORT_KILL) {
-			history[isWhite][m.from][m.to] += v;
+	void updateHist(Move m, int v, int color) {
+		if (abs(history[color][m.from][m.to]) < SORT_KILL) {
+			history[color][m.from][m.to] += v;
 		}
 	}
 
-	void updateGain(Move m, int v, bool isWhite) { 
-		gains[isWhite][m.piece][m.to] = std::max(v, gains[isWhite][m.piece][m.to] - 1);
+	void updateGain(Move m, int v, int color) {
+		gains[color][m.piece][m.to] = std::max(v, gains[color][m.piece][m.to] - 1);
 	}
 
 };

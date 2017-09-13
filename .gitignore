@@ -53,11 +53,14 @@ Temporary Items
 # Performace Reports
 
 /My Advisor Results - StuckFish/
-/My Amplifier XE Results - StuckFish/*
-/My Inspector Results - StuckFish/*
+/My Amplifier XE Results - StuckFish/
+/My Inspector Results - StuckFish/
 *.psess
 *.vspx
 *.tmp.merged.etl
 *.tlog
+
+#object files
+*.obj
 
 

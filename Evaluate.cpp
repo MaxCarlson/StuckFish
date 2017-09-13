@@ -630,14 +630,16 @@ Scores applyWeights(Scores s, const Weight & w) {
 	return s;
 }
 
-int Evaluate::evaluate(const BitBoards & boards, bool isWhite)
+int Evaluate::evaluate(const BitBoards & boards)
 {
+	const int color = boards.stm();
+
 	 //is this needed with TT lookup in quiet??
 	int hash = boards.zobrist.zobristKey & 5021982; //REPLACE THIS!!
 	HashEntry entry = transpositionEval[hash];
 	//if we get a hash-table hit, return the evaluation
 	if (entry.zobrist == boards.zobrist.zobristKey) {
-		if (isWhite) {
+		if (color == WHITE) {
 			//if eval was from blacks POV, return -eval
 			if (entry.flag) return -entry.eval;
 			else return entry.eval; //if eval was from our side, return normally
@@ -767,10 +769,10 @@ int Evaluate::evaluate(const BitBoards & boards, bool isWhite)
 
 
 	//switch score for color
-	result = isWhite ? result : -result;
+	result = color == WHITE ? result : -result;
 
 	//save to TT eval table
-	saveTT(isWhite, result, hash, boards);
+	saveTT(color, result, hash, boards);
 
 	return result;
 }
@@ -841,7 +843,7 @@ int Evaluate::bKingShield(const BitBoards & boards)
 	return result;
 }
 
-void Evaluate::saveTT(bool isWhite, int result, int hash, const BitBoards &boards) //replace this scheme
+void Evaluate::saveTT(int color, int result, int hash, const BitBoards &boards) //replace this scheme
 {
 	//store eval into eval hash table
 	transpositionEval[hash].eval = result;
@@ -849,7 +851,7 @@ void Evaluate::saveTT(bool isWhite, int result, int hash, const BitBoards &board
 
 	//set flag for TT so we can switch value if we get a TT hit but
 	//the color of the eval was opposite
-	if (isWhite) transpositionEval[hash].flag = 0;
+	if (color == WHITE) transpositionEval[hash].flag = 0;
 	else transpositionEval[hash].flag = 1;
 }
 

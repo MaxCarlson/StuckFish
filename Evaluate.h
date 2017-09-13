@@ -10,7 +10,7 @@ class Evaluate
 {
 public:
 
-	int evaluate(const BitBoards & boards, bool isWhite);
+	int evaluate(const BitBoards & boards);
 
 
 private:
@@ -19,7 +19,7 @@ private:
 	int bKingShield(const BitBoards & boards);
 
 
-	void saveTT(bool isWhite, int result, int hash, const BitBoards & boards);
+	void saveTT(int color, int result, int hash, const BitBoards & boards);
 
 
 	void blockedPieces(int side, const BitBoards & boards, EvalInfo & ev);

@@ -49,9 +49,11 @@ public:
     void constructBoards();
 
 	//make the move
-	void makeMove(const Move& m, bool isWhite);
+	void makeMove(const Move& m, int color);
 	//unamke move
-	void unmakeMove(const Move& m, bool isWhite);
+	void unmakeMove(const Move& m, int color);
+
+	void makeNullMove();
 
 	//Holds board information, struct above
 	BoardInfo bInfo;
@@ -87,7 +89,7 @@ public:
 	//is this a pawn move on the 5th or higher relative rank?
 	bool isPawnPush(const Move& m, bool isWhite);
 	//is there a pawn on the 7 th rank relative to stm
-	bool pawnOn7th(bool isWhite);
+	bool pawnOn7th(int color);
 	//returns true if side color has any pieces aside from pawn/s or king
 	bool non_pawn_material(int color) const;
 	U64 square_bb(int sq) const;
@@ -216,9 +218,9 @@ inline bool BitBoards::isPawnPush(const Move &m, bool isWhite)
 }
 
 //is there a pawn on the 7th rank for side to move?
-inline bool BitBoards::pawnOn7th(bool isWhite)
-{	//again color is messed up, !isWhite, if white, points to whites index for pieces
-	return (byColorPiecesBB[!isWhite][PAWN] & (isWhite ? 0xFF00L : 0xFF000000000000L));
+inline bool BitBoards::pawnOn7th(int color)
+{	
+	return (byColorPiecesBB[color][PAWN] & (color ? 0xFF000000000000L : 0xFF00L));
 }
 
 //returns true if side color has any pieces aside from pawn/s or king
@@ -237,6 +239,12 @@ inline bool BitBoards::can_castle(int color) const
 {
 	return (castlingRights[color] < 5 && castlingRights[color] != 2LL && castlingRights[color] != 3LL
 		&& (pieces(color, ROOK) & (1LL << relative_square(color, A1))) || (pieces(color, ROOK) & (1LL << relative_square(color, H1)))  );
+}
+
+inline void BitBoards::makeNullMove() 
+{
+	zobrist.UpdateColor();
+	bInfo.sideToMove = !bInfo.sideToMove;
 }
 
 //can only be used if there is no piece on landing spot

@@ -165,13 +165,13 @@ void MoveGen::pawnMoves(const BitBoards& boards, bool capturesOnly) {
 	}
 }
 
-void MoveGen::generatePsMoves(const BitBoards& boards, bool isWhite, bool capturesOnly)
+void MoveGen::generatePsMoves(const BitBoards& boards, bool capturesOnly)
 {
     //counts total moves generated
     moveCount = 0;
-    const int color = !isWhite;
+	int color = boards.stm();
 
-	if(isWhite) pawnMoves<WHITE>(boards, capturesOnly);
+	if(color == WHITE) pawnMoves<WHITE>(boards, capturesOnly);
 	else		pawnMoves<BLACK>(boards, capturesOnly);
 
     //if we don't want to only generate captures
@@ -382,7 +382,7 @@ void MoveGen::movegen_push(const BitBoards & board, int color, int piece, int ca
     /**************************************************************************
     * Quiet moves are sorted by history score.                                *
     **************************************************************************/
-	moveAr[moveCount].score = history.history[!color][from][to]; //+ history.gains[isWhite][piece][to] * 10; //find a way to pass historys here instead of using global???
+	moveAr[moveCount].score = history.history[color][from][to]; //+ history.gains[isWhite][piece][to] * 10; //find a way to pass historys here instead of using global???
 
     //scoring capture moves
     if(captured){
@@ -505,11 +505,10 @@ bool MoveGen::blind(const BitBoards & board, int to, int color, int pieceVal, in
 	return !isSquareAttacked(board, to, color);
 }
 
-int MoveGen::SEE(const Move& m, const BitBoards& b, bool isWhite, bool isCapture)
+int MoveGen::SEE(const Move& m, const BitBoards& b, int color, bool isCapture)
 {
 	U64 attackers, occupied, stmAttackers;
-	int swapList[32], index = 1; //play with swap val for speed?
-	int color = !isWhite;
+	int swapList[32], index = 1; 
 
 	//early return, SEE can't be a losing capture
 	//is capture flag is used for when we're checking to see if the move is escaping capture
@@ -653,12 +652,9 @@ void MoveGen::reorderMoves(searchStack *ss, const HashEntry *entry)
     }
 }
 
-bool MoveGen::isLegal(const BitBoards & b, const Move & m, bool isWhite) 
+bool MoveGen::isLegal(const BitBoards & b, const Move & m, int color) 
 {
-	//color is stupid right now with 0 being a lookup for
-	//white with bitboards and other arrays. Hence the flip.
-	const int color = !isWhite;
-	const int them = isWhite;
+	const int them = !color;
 	const int kingLoc = b.king_square(color);
 
 	return !isSquareAttacked(b, kingLoc, color);

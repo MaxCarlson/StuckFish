@@ -31,15 +31,15 @@ public:
 	// called from search, calls individual move functions 
 	// and fills array above with moves with each function
 	// pushing moves to movegen_push which stores info and scores with BLIND
-    void generatePsMoves(const BitBoards& boards, bool isWhite, bool capturesOnly);
+    void generatePsMoves(const BitBoards& boards, bool capturesOnly);
 
-	bool isLegal(const BitBoards & b, const Move & m, bool isWhite);
+	bool isLegal(const BitBoards & b, const Move & m, int color);
 
 	//helper function for isLegal + for finding if in check
 	bool isSquareAttacked(const BitBoards & b, const int square, const int color);
 	
 	//static exhange eval
-	int SEE(const Move& m, const BitBoards& b, bool isWhite, bool isCapture);
+	int SEE(const Move& m, const BitBoards& b, int color, bool isCapture);
 
 	//grab the best scoring move and return it
 	inline Move movegen_sort(int ply, Move * moveAr) const;

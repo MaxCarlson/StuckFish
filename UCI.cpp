@@ -164,7 +164,7 @@ void UCI::updatePosition(BitBoards& newBoard, std::istringstream& input)
 			m = strToMove(newBoard, token);
 
 			//make move + increment turns
-			newBoard.makeMove(m, isWhite);
+			newBoard.makeMove(m, !isWhite);
 			turns += 1;
 			
 			//push board position U64 to search driver.two fold repeitions
@@ -300,6 +300,8 @@ Move UCI::strToMove(BitBoards& newBoard, std::string& input)
 		else if (input[4] == 'b') m.flag = 'B';
 		else if (input[4] == 'n') m.flag = 'N';
 	}	
+
+	//NEED CASTLING CODE ONCE IMPLEMENTED
 	
 	return m;
 }

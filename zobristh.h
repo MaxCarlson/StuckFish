@@ -32,7 +32,7 @@ public:
     U64 getZobristHash(const BitBoards& BBBoard);
 
 	//used for prefetching a very probable match to the next transposition entry
-	U64 fetchKey(const Move& m, bool isWhite);
+	U64 fetchKey(const Move& m, int color);
 
     //Update zobrist key by XOR ing rand numbers in zArray
     void UpdateKey(int start, int end, const Move& moveKey, bool isWhite);

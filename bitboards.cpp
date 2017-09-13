@@ -264,12 +264,11 @@ void BitBoards::constructBoards()
 
 }
 
-void BitBoards::makeMove(const Move& m, bool isWhite) 
+void BitBoards::makeMove(const Move& m, int color)
 {
 	//color is stupid because I started the program with a bool is white, which (int)'s to 1
 	//need to change it to an int to remove this sort of thing
-	int color = !isWhite;
-	int them = isWhite;
+	int them = !color;
 
 	assert(posOkay());
 
@@ -281,7 +280,7 @@ void BitBoards::makeMove(const Move& m, bool isWhite)
 		bInfo.sideMaterial[them] -= SORT_VALUE[m.captured];
 		
 		//update the pawn hashkey on capture
-		if (m.captured == PAWN) { bInfo.PawnKey ^= zobrist.zArray[them][PAWN][m.to]; _mm_prefetch((char *)pawnsTable[bInfo.PawnKey], _MM_HINT_NTA);}
+		if (m.captured == PAWN)  bInfo.PawnKey ^= zobrist.zArray[them][PAWN][m.to]; 
 
 		else bInfo.nonPawnMaterial[them] -= SORT_VALUE[m.captured];
 		//update material key
@@ -310,14 +309,14 @@ void BitBoards::makeMove(const Move& m, bool isWhite)
 		}
 		//update the pawn key, if it's a promotion it cancels out and updates correctly
 		bInfo.PawnKey ^= zobrist.zArray[color][PAWN][m.to] ^ zobrist.zArray[color][PAWN][m.from];
-		_mm_prefetch((char *)pawnsTable[bInfo.PawnKey], _MM_HINT_NTA);
+		//_mm_prefetch((char *)pawnsTable[bInfo.PawnKey], _MM_HINT_NTA); // TEST for ELO GAIN, BOTH PLACES WITH PREFETCH HAD ELO LOSS
 	}
 
 	
 	assert(posOkay());
 	
 	//update the zobrist key
-	zobrist.UpdateKey(m.from, m.to, m, isWhite);
+	zobrist.UpdateKey(m.from, m.to, m, !color);
 	zobrist.UpdateColor();
 
 	//flip internal side to move
@@ -327,11 +326,9 @@ void BitBoards::makeMove(const Move& m, bool isWhite)
 	_mm_prefetch((char *)TT.first_entry(zobrist.zobristKey), _MM_HINT_NTA);
 
 }
-void BitBoards::unmakeMove(const Move & m, bool isWhite)
+void BitBoards::unmakeMove(const Move & m, int color)
 {
-	
-	int color = !isWhite;
-	int them = isWhite;
+	int them = !color;
 
 	assert(posOkay());
 
@@ -377,7 +374,7 @@ void BitBoards::unmakeMove(const Move & m, bool isWhite)
 	assert(posOkay());
 
 	//update the zobrist key
-	zobrist.UpdateKey(m.from, m.to, m, isWhite);
+	zobrist.UpdateKey(m.from, m.to, m, !color);
 	zobrist.UpdateColor();
 
 	//flip internal side to move

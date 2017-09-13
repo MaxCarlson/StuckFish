@@ -63,11 +63,10 @@ void ZobristH::UpdateColor()
 
 
 
-U64 ZobristH::fetchKey(const Move & m, bool isWhite)
+U64 ZobristH::fetchKey(const Move & m, int color)
 {
 	//get an idea of what most keys will be after moves..
 	//so we can prefetch that info
-	int color = !isWhite;
 
 	U64 key = zobristKey;
 
