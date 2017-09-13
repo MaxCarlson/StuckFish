@@ -274,21 +274,13 @@ Move UCI::strToMove(BitBoards& newBoard, std::string& input)
 	U64 f = newBoard.squareBB[xyI]; //create bitboards of initial 
 	U64 t = newBoard.squareBB[xyE]; //and landing pos
 
-						//very ugly, better way to do it?
-	if (f & newBoard.byPieceType[PAWN]) m.piece = PAWN; 
-	else if (f & newBoard.byPieceType[KNIGHT]) m.piece = KNIGHT;
-	else if (f & newBoard.byPieceType[BISHOP]) m.piece = BISHOP;
-	else if (f & newBoard.byPieceType[ROOK]) m.piece = ROOK;
-	else if (f & newBoard.byPieceType[QUEEN]) m.piece = QUEEN;
-	else if (f & newBoard.byPieceType[KING]) m.piece = KING;
+	m.captured = PIECE_EMPTY;
 
-	if (t & newBoard.byPieceType[PAWN]) m.captured = PAWN;
-	else if (t & newBoard.byPieceType[KNIGHT]) m.captured = KNIGHT;
-	else if (t & newBoard.byPieceType[BISHOP]) m.captured = BISHOP;
-	else if (t & newBoard.byPieceType[ROOK]) m.captured = ROOK;
-	else if (t & newBoard.byPieceType[QUEEN]) m.captured = QUEEN;
-	else if (t & newBoard.byPieceType[KING]) m.captured = KING;
-	else m.captured = PIECE_EMPTY; //no capture
+	for (int i = PIECE_EMPTY; i < PIECES; ++i) {
+
+		if (f & newBoard.piecesByType(i)) m.piece = i;
+		if (t & newBoard.piecesByType(i)) m.captured = i;
+	}
 
 	m.flag = '0';
 
@@ -296,12 +288,16 @@ Move UCI::strToMove(BitBoards& newBoard, std::string& input)
 	if (input.length() == 5) {
 		if (input[4] == 'q') m.flag = 'Q';
 		//below not implemented!!!!!!!!!!!
-		else if (input[4] == 'r') m.flag = 'R';
-		else if (input[4] == 'b') m.flag = 'B';
-		else if (input[4] == 'n') m.flag = 'N';
+		//else if (input[4] == 'r') m.flag = 'R';
+		//else if (input[4] == 'b') m.flag = 'B';
+		//else if (input[4] == 'n') m.flag = 'N';
 	}	
 
 	//NEED CASTLING CODE ONCE IMPLEMENTED
+	if (m.piece == KING && !m.captured) {
+		if (newBoard.psuedoAttacks(KING, 0, xyI) & newBoard.squareBB[xyE]) return m;
+		else m.flag = 'C';
+	}
 	
 	return m;
 }

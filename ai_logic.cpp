@@ -471,9 +471,9 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 		}
 		*/
 		/*
-			//new futility pruning really looks like it's pruning way to much right now, maybe adjust futile move counts until we have better move ordering!!!!
-		if (!is_pv
-			&& newMove.score < SORT_HASH
+		//new futility pruning really looks like it's pruning way to much right now, maybe adjust futile move counts until we have better move ordering!!!!
+		if (!isPV
+			&& newMove.score <= SORT_HASH
 			&& !captureOrPromotion
 			&& !FlagInCheck
 			&& !givesCheck
@@ -482,18 +482,18 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 
 			bool shouldSkip = false;
 
-			//if (depth < 10 && legalMoves >= futileMoveCounts[improving][depth]) {
-			//	shouldSkip = true;
-			//}
+			if (depth < 10 && legalMoves >= futileMoveCounts[improving][depth]+7) {
+				shouldSkip = true;
+			}
 
-			predictedDepth = newDepth - reductions[is_pv][improving][depth][legalMoves];
+			predictedDepth = newDepth - reductions[isPV][improving][depth][legalMoves];
 
 			int futileVal;
 			if (!shouldSkip && predictedDepth < 7) {
 				//int a = history.gains[color][newMove.piece][newMove.to];
 				//if (predictedDepth < 0) predictedDepth = 0;
 				//use predicted depth? Need to play with numbers!!
-				futileVal = ss->staticEval + history.gains[color][newMove.piece][newMove.to] + (predictedDepth * 200) + 150;
+				futileVal = ss->staticEval + history.gains[color][newMove.piece][newMove.to] + (predictedDepth * 200) + 140;
 
 				if (futileVal <= alpha) {
 					//bestScore = std::max(futileVal, bestScore);

@@ -311,7 +311,17 @@ void BitBoards::makeMove(const Move& m, int color)
 		bInfo.PawnKey ^= zobrist.zArray[color][PAWN][m.to] ^ zobrist.zArray[color][PAWN][m.from];
 		//_mm_prefetch((char *)pawnsTable[bInfo.PawnKey], _MM_HINT_NTA); // TEST for ELO GAIN, BOTH PLACES WITH PREFETCH HAD ELO LOSS
 	}
+	else if (m.flag == 'C') {
+		int rookFrom = relative_square(color, m.to) == C1 ? relative_square(color, A1) : relative_square(color, H1);
+		int rookTo = rookFrom == relative_square(color, A1) ? relative_square(color, D1) : relative_square(color, F1);
 
+		movePiece(ROOK, color, rookFrom, rookTo);
+
+		int zCast = color == WHITE ? rookFrom == A1 ? 0 : 1 : rookFrom == A1 ? 2 : 3;
+		zobrist.zobristKey ^= zobrist.zCastle[zCast]
+			^ zobrist.zArray[color][ROOK][rookFrom]
+			^ zobrist.zArray[color][ROOK][rookTo];
+	}
 	
 	assert(posOkay());
 	
@@ -355,7 +365,9 @@ void BitBoards::unmakeMove(const Move & m, int color)
 		bInfo.MaterialKey ^= zobrist.zArray[color][QUEEN][pieceCount[color][QUEEN]+1] //plus one because we've already decremented the counter
 			              ^  zobrist.zArray[color][PAWN ][pieceCount[color][PAWN ]  ];
 	}
-
+	else if (m.flag == 'C') {
+		
+	}
 
 	//add captured piece from BB's similar to above for moving piece
 	if (m.captured) {
