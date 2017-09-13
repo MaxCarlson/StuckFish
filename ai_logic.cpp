@@ -27,10 +27,6 @@
 //holds historys and killers + eventually nodes searched + other data
 searchDriver sd;
 
-//constructed once so as to pass to eval where constructing was slow
-//for quiet search
-MoveGen evalGenMoves;
-
 //value to determine if time for search has run out
 bool timeOver;
 
@@ -87,9 +83,6 @@ Move Ai_Logic::searchStart(BitBoards& board, bool isWhite) {
 
 	//generate accurate zobrist key based on bitboards
 	board.zobrist.getZobristHash(board);
-
-	//update color only applied on black turn
-	//if (!isWhite) board.zobrist.UpdateColor(); ///NEEDED????
 
 	//decrease history values and clear gains stats after a search
 	ageHistorys();
@@ -369,7 +362,7 @@ int Ai_Logic::alphaBeta(BitBoards& board, int depth, int alpha, int beta, search
 
 			if(ss->staticEval < threshold){
 
-				score = quiescent(board, alpha, beta, isWhite, ss, queitSD, is_pv);
+				score = quiescent(board, alpha, beta, ss, queitSD, is_pv);
 
 				if(score < threshold) return alpha;
 			}
@@ -462,7 +455,7 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 		legalMoves++;
 		newDepth = depth - 1;
 		history.cutoffs[color][newMove.from][newMove.to] -= 1;
-		captureOrPromotion = (newMove.captured != PIECE_EMPTY || newMove.flag == 'Q');
+		captureOrPromotion = (newMove.captured || newMove.flag == 'Q');
 		givesCheck = gen_moves.isSquareAttacked(board, board.king_square(!color), !color);
 
 		/* //ELO loss with singular extensions so far
@@ -470,7 +463,7 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 			int rBeta = std::max(ttValue - 2 * depth, -mateValue);
 			int d = depth / 2;
 			sd.excludedMove = true;
-			int s = -alphaBeta(d, rBeta - 1, rBeta, isWhite, ply, DO_NULL, NO_PV);
+			int s = -alphaBeta(d, rBeta - 1, rBeta, ply, DO_NULL, NO_PV);
 			sd.excludedMove = false;
 			if (s < rBeta) {
 				newDepth++;
@@ -484,7 +477,7 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 			&& !captureOrPromotion
 			&& !FlagInCheck
 			&& !givesCheck
-			&& !board.isPawnPush(newMove, isWhite)
+			&& !board.isPawnPush(newMove, color)
 			&& bestScore > VALUE_MATED_IN_MAX_PLY) {
 
 			bool shouldSkip = false;
@@ -497,10 +490,10 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 
 			int futileVal;
 			if (!shouldSkip && predictedDepth < 7) {
-				//int a = history.gains[isWhite][newMove.piece][newMove.to];
+				//int a = history.gains[color][newMove.piece][newMove.to];
 				//if (predictedDepth < 0) predictedDepth = 0;
 				//use predicted depth? Need to play with numbers!!
-				futileVal = ss->staticEval + history.gains[isWhite][newMove.piece][newMove.to] + (predictedDepth * 200) + 150;
+				futileVal = ss->staticEval + history.gains[color][newMove.piece][newMove.to] + (predictedDepth * 200) + 150;
 
 				if (futileVal <= alpha) {
 					//bestScore = std::max(futileVal, bestScore);
@@ -509,10 +502,10 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 			}
 
 			//don't search moves with negative SEE at low depths
-			//if (!shouldSkip && depth < 4 && gen_moves.SEE(newMove, board, isWhite, true) < 0) shouldSkip = true;
+			//if (!shouldSkip && depth < 4 && gen_moves.SEE(newMove, board, color, true) < 0) shouldSkip = true;
 
 			if (shouldSkip) {
-				board.unmakeMove(newMove, isWhite);
+				board.unmakeMove(newMove, color);
 				futileMoves = true; //flag so we know we skipped a move/not checkmate
 				continue;
 			}
@@ -525,7 +518,7 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 			&& !captureOrPromotion && legalMoves
 			&& !givesCheck){
 
-			board.unmakeMove(newMove, isWhite);
+			board.unmakeMove(newMove, color);
 			futileMoves = true; //flag so we know we skipped a move/not checkmate
 			continue;
 		}
@@ -582,7 +575,7 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 
 
 
-		//jump back here if our LMR raises Alpha
+		//jump back here if our LMR raises Alpha ~~ NOT IN USE
 	//re_search:
 		if (!raisedAlpha) {
 			//we're in princiapl variation search or full window search
@@ -611,7 +604,7 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 			goto re_search;
 		}
 		*/
-		//store queit moves so we can decrease their value later
+		//store queit moves so we can decrease their value later, find a more effecient way or storing than a huge move array?, possibly 2D array by ply?
 		if (!captureOrPromotion && quietsC < 64) {
 			queits[quietsC] = newMove;
 			quietsC++;

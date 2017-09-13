@@ -1,0 +1,271 @@
+﻿  ai_logic.cpp
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(6): warning #47: incompatible redefinition of macro "NDEBUG"
+    #define NDEBUG
+            ^
+  
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(247): error : identifier "_BitScanForward64" is undefined
+    	_BitScanForward64(&idx, b);
+    	^
+  
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(253): error : identifier "_BitScanReverse64" is undefined
+    	_BitScanReverse64(&idx, b);
+    	^
+  
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\move.h(9): warning #945: type qualifier ignored
+        const Move();
+        ^
+  
+ai_logic.cpp(317): warning #589: transfer of control bypasses initialization of:
+              variable "fmargin" (declared at line 390)
+    	if (FlagInCheck || (ss - 1)->excludedMove.tried || sd.skipEarlyPruning) goto moves_loop;
+    	                                                                        ^
+  
+ai_logic.cpp(808): warning #2415: variable "limit" of static storage duration was declared but never referenced
+    	static const int limit = SORT_KILL;
+    	                 ^
+  
+  bitboards.cpp
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(6): warning #47: incompatible redefinition of macro "NDEBUG"
+    #define NDEBUG
+            ^
+  
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(247): error : identifier "_BitScanForward64" is undefined
+    	_BitScanForward64(&idx, b);
+    	^
+  
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(253): error : identifier "_BitScanReverse64" is undefined
+    	_BitScanReverse64(&idx, b);
+    	^
+  
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\move.h(9): warning #945: type qualifier ignored
+        const Move();
+        ^
+  
+  EndGame.cpp
+EndGame.cpp(5): warning #2415: variable "PushToEdges" of static storage duration was declared but never referenced
+    const int PushToEdges[64] = {
+              ^
+  
+EndGame.cpp(18): warning #2415: variable "PushToCorners" of static storage duration was declared but never referenced
+    const int PushToCorners[64] = {
+              ^
+  
+  Evaluate.cpp
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(6): warning #47: incompatible redefinition of macro "NDEBUG"
+    #define NDEBUG
+            ^
+  
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(247): error : identifier "_BitScanForward64" is undefined
+    	_BitScanForward64(&idx, b);
+    	^
+  
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(253): error : identifier "_BitScanReverse64" is undefined
+    	_BitScanReverse64(&idx, b);
+    	^
+  
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\move.h(9): warning #945: type qualifier ignored
+        const Move();
+        ^
+  
+Evaluate.cpp(55): warning #2415: variable "full" of static storage duration was declared but never referenced
+    const U64 full = 0xffffffffffffffffULL;
+              ^
+  
+  hashentry.cpp
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(6): warning #47: incompatible redefinition of macro "NDEBUG"
+    #define NDEBUG
+            ^
+  
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(247): error : identifier "_BitScanForward64" is undefined
+    	_BitScanForward64(&idx, b);
+    	^
+  
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(253): error : identifier "_BitScanReverse64" is undefined
+    	_BitScanReverse64(&idx, b);
+    	^
+  
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\move.h(9): warning #945: type qualifier ignored
+        const Move();
+        ^
+  
+  main.cpp
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(6): warning #47: incompatible redefinition of macro "NDEBUG"
+    #define NDEBUG
+            ^
+  
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(247): error : identifier "_BitScanForward64" is undefined
+    	_BitScanForward64(&idx, b);
+    	^
+  
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(253): error : identifier "_BitScanReverse64" is undefined
+    	_BitScanReverse64(&idx, b);
+    	^
+  
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\move.h(9): warning #945: type qualifier ignored
+        const Move();
+        ^
+  
+  material.cpp
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(6): warning #47: incompatible redefinition of macro "NDEBUG"
+    #define NDEBUG
+            ^
+  
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(247): error : identifier "_BitScanForward64" is undefined
+    	_BitScanForward64(&idx, b);
+    	^
+  
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(253): error : identifier "_BitScanReverse64" is undefined
+    	_BitScanReverse64(&idx, b);
+    	^
+  
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\move.h(9): warning #945: type qualifier ignored
+        const Move();
+        ^
+  
+  movegen.cpp
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(6): warning #47: incompatible redefinition of macro "NDEBUG"
+    #define NDEBUG
+            ^
+  
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(247): error : identifier "_BitScanForward64" is undefined
+    	_BitScanForward64(&idx, b);
+    	^
+  
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(253): error : identifier "_BitScanReverse64" is undefined
+    	_BitScanReverse64(&idx, b);
+    	^
+  
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\move.h(9): warning #945: type qualifier ignored
+        const Move();
+        ^
+  
+movegen.cpp(47): warning #1119: extra braces are nonstandard
+    	{ { 0xe00000000000000ULL },{ 0x6000000000000000ULL } },
+    	  ^
+  
+movegen.cpp(47): warning #1119: extra braces are nonstandard
+    	{ { 0xe00000000000000ULL },{ 0x6000000000000000ULL } },
+    	                           ^
+  
+movegen.cpp(48): warning #1119: extra braces are nonstandard
+    	{ { 0xeULL               },{ 0x60ULL               } }
+    	  ^
+  
+movegen.cpp(48): warning #1119: extra braces are nonstandard
+    	{ { 0xeULL               },{ 0x60ULL               } }
+    	                           ^
+  
+movegen.cpp(16): warning #2415: variable "notAFile" of static storage duration was declared but never referenced
+    const U64 notAFile = 0x7f7f7f7f7f7f7f7f; // ~0x8080808080808080
+              ^
+  
+movegen.cpp(17): warning #2415: variable "notHFile" of static storage duration was declared but never referenced
+    const U64 notHFile = 0xfefefefefefefefe; // ~0x0101010101010101
+              ^
+  
+movegen.cpp(22): warning #2415: variable "rank8" of static storage duration was declared but never referenced
+    const U64 rank8 = rank7 >> 8;
+              ^
+  
+movegen.cpp(26): warning #2415: variable "rank1" of static storage duration was declared but never referenced
+    const U64 rank1 = rank2 << 8;
+              ^
+  
+movegen.cpp(46): warning #2415: variable "castlingMasks" of static storage duration was declared but never referenced
+    const U64 castlingMasks[COLOR][2] = {
+              ^
+  
+movegen.cpp(56): warning #2415: variable "FileMasks8" of static storage duration was declared but never referenced
+    static const U64 FileMasks8[8] =/*from fileA to FileH*/
+                     ^
+  
+  Pawns.cpp
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(6): warning #47: incompatible redefinition of macro "NDEBUG"
+    #define NDEBUG
+            ^
+  
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(247): error : identifier "_BitScanForward64" is undefined
+    	_BitScanForward64(&idx, b);
+    	^
+  
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(253): error : identifier "_BitScanReverse64" is undefined
+    	_BitScanReverse64(&idx, b);
+    	^
+  
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\move.h(9): warning #945: type qualifier ignored
+        const Move();
+        ^
+  
+Pawns.cpp(23): warning #2415: variable "FileMasks8" of static storage duration was declared but never referenced
+    static const U64 FileMasks8[8] =/*from fileA to FileH*/
+                     ^
+  
+  slider_attacks.cpp
+  TimeManager.cpp
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(6): warning #47: incompatible redefinition of macro "NDEBUG"
+    #define NDEBUG
+            ^
+  
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(247): error : identifier "_BitScanForward64" is undefined
+    	_BitScanForward64(&idx, b);
+    	^
+  
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(253): error : identifier "_BitScanReverse64" is undefined
+    	_BitScanReverse64(&idx, b);
+    	^
+  
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\move.h(9): warning #945: type qualifier ignored
+        const Move();
+        ^
+  
+  TranspositionT.cpp
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(6): warning #47: incompatible redefinition of macro "NDEBUG"
+    #define NDEBUG
+            ^
+  
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(247): error : identifier "_BitScanForward64" is undefined
+    	_BitScanForward64(&idx, b);
+    	^
+  
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(253): error : identifier "_BitScanReverse64" is undefined
+    	_BitScanReverse64(&idx, b);
+    	^
+  
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\move.h(9): warning #945: type qualifier ignored
+        const Move();
+        ^
+  
+  UCI.cpp
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(6): warning #47: incompatible redefinition of macro "NDEBUG"
+    #define NDEBUG
+            ^
+  
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(247): error : identifier "_BitScanForward64" is undefined
+    	_BitScanForward64(&idx, b);
+    	^
+  
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(253): error : identifier "_BitScanReverse64" is undefined
+    	_BitScanReverse64(&idx, b);
+    	^
+  
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\move.h(9): warning #945: type qualifier ignored
+        const Move();
+        ^
+  
+  zobristh.cpp
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(6): warning #47: incompatible redefinition of macro "NDEBUG"
+    #define NDEBUG
+            ^
+  
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(247): error : identifier "_BitScanForward64" is undefined
+    	_BitScanForward64(&idx, b);
+    	^
+  
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(253): error : identifier "_BitScanReverse64" is undefined
+    	_BitScanReverse64(&idx, b);
+    	^
+  
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\move.h(9): warning #945: type qualifier ignored
+        const Move();
+        ^
+  
