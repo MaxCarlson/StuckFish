@@ -9,7 +9,7 @@ static const int kSquares = 64;
 
 //paths to magics file locations
 
-/*
+///* //For release builds used on other systems
 static const char kRookMagics[] = "Magics/rook_magics.magic";
 static const char kRookMasks[] = "Magics/rook_masks.magic";
 static const char kRookShifts[] = "Magics/rook_shifts.magic";
@@ -23,7 +23,7 @@ static const char kBishopOffsets[] = "Magics/bishop_offsets.magic";
 static const char kBishopAttackTable[] = "Magics/bishop_attack_table.magic";
 //*/
 
- ///*//for standalone on my local system
+ /*//for standalone on my local system
 static const char kRookMagics[] = "C:/Users/C-60/Desktop/QtPrograms/Advanced-Qt-Chess/Magics/rook_magics.magic";
 static const char kRookMasks[] = "C:/Users/C-60/Desktop/QtPrograms/Advanced-Qt-Chess/Magics/rook_masks.magic";
 static const char kRookShifts[] = "C:/Users/C-60/Desktop/QtPrograms/Advanced-Qt-Chess/Magics/rook_shifts.magic";

@@ -38,6 +38,11 @@ C:\Users\C-60\Desktop\cppPrograms\StuckFish\move.h(9): warning #945: type qualif
         const Move();
         ^
   
+  material.cpp
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\move.h(9): warning #945: type qualifier ignored
+        const Move();
+        ^
+  
   movegen.cpp
 C:\Users\C-60\Desktop\cppPrograms\StuckFish\move.h(9): warning #945: type qualifier ignored
         const Move();

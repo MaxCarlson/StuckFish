@@ -20,7 +20,8 @@ public:
 	U64 zCastle[4];
 	//used to change color of move
 	U64 zBlackMove;
-    //U64 zEnPassasnt[8]; ~~restore once implemented
+
+    U64 zEnPassant[8]; 
 
     //generate unsigned 64 bit ints for hash mapping
     U64 random64();

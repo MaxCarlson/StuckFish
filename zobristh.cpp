@@ -28,7 +28,7 @@ void ZobristH::zobristFill()
 
     //fill zorbist array with random unisgned 64 bit ints
     for(int color = 0; color < 2; color++){
-        for(int pieceType = 0; pieceType < 6; pieceType ++){
+        for(int pieceType = 0; pieceType <= KING; pieceType ++){
             for(int square = 0; square < 64; square ++){
 				//fill the zero spot with 0LL's so we can XOR captures without worrying about if there is one
 				if (pieceType == 0) zArray[color][pieceType][square] = 0LL;
@@ -38,14 +38,13 @@ void ZobristH::zobristFill()
         }
 
     }
-    /*
+    
     //enpassant and castle filling below
-
     for (int column = 0; column < 8; column++)
     {
         zEnPassant[column] = random64();
     }
-    */
+    
 
     for (int i = 0; i < 4; i++)
     {
