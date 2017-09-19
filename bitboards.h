@@ -15,7 +15,7 @@ class ZobristH;
 class Move;
 class MoveGen;
 
-struct BoardInfo {
+struct BoardInfo { //possibly remove this and move this info to bitboards object?
 	int sideMaterial[COLOR]; //updated on make/unmake moves	
 	int nonPawnMaterial[COLOR];
 
@@ -29,6 +29,15 @@ struct BoardInfo {
 	//is going to make the next move. Access through function
 	int sideToMove; 
 
+};
+
+struct StateInfo {
+
+	int epSquare;
+
+	int castlingRights;
+
+	StateInfo* previous;
 };
 
 class BitBoards
@@ -49,11 +58,12 @@ public:
     void constructBoards();
 
 	//make the move
-	void makeMove(const Move& m, int color);
+	void makeMove(const Move& m, StateInfo& newSt, int color);
 	//unamke move
 	void unmakeMove(const Move& m, int color);
 
-	void makeNullMove();
+	void makeNullMove(StateInfo& newSt);
+	void undoNullMove();
 
 	//Holds board information, struct above
 	BoardInfo bInfo;
@@ -95,6 +105,10 @@ public:
 	U64 square_bb(int sq) const;
 
 
+	bool can_enpassant() const;
+	int  ep_square() const;
+
+
 	//Board Info Functions
 	//return the key for the pawn hash table
 	int stm() const; //returns side to move
@@ -127,6 +141,8 @@ public:
 	void drawBBA();
 
 private:
+
+	StateInfo* st;
 
 	void movePiece(int piece, int color, int from, int to);
 
@@ -234,17 +250,19 @@ inline U64 BitBoards::square_bb(int sq) const
 {
 	return squareBB[sq];
 }
+inline bool BitBoards::can_enpassant() const
+{
+	return (st->epSquare != SQ_NONE);
+}
+inline int BitBoards::ep_square() const
+{
+	return st->epSquare;
+}
 //not yet working castling legal check
 inline bool BitBoards::can_castle(int color) const
 {
 	return (castlingRights[color] < 5 && castlingRights[color] != 2LL && castlingRights[color] != 3LL
 		&& (pieces(color, ROOK) & (1LL << relative_square(color, A1))) || (pieces(color, ROOK) & (1LL << relative_square(color, H1)))  );
-}
-
-inline void BitBoards::makeNullMove() 
-{
-	zobrist.UpdateColor();
-	bInfo.sideToMove = !bInfo.sideToMove;
 }
 
 //can only be used if there is no piece on landing spot

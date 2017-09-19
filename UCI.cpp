@@ -88,8 +88,7 @@ void UCI::uciLoop()
 			TT.clearTable(); //need to clear other TTables too at somepoint
 			searchM.initSearch();
 			wtime = btime = 2200000;
-			//std::thread thr(&UCI::search, this, newBoard);
-			//thr.join();
+
 			search(newBoard);
 		}
 		else if (token == "position") {
@@ -136,11 +135,13 @@ void UCI::updatePosition(BitBoards& newBoard, std::istringstream& input)
 
 	input >> token;
 
+	StateInfo st;
+
 	if (token == "startpos")
 	{
 		newGame(newBoard);
 
-		//create zobrist hash for startpos that is used to check repetitions
+		//create zobrist hash for startpos that is used to check repetitions and TT entrys
 		newBoard.zobrist.getZobristHash(newBoard);
 	}
 	else if (token == "fen")
@@ -164,7 +165,7 @@ void UCI::updatePosition(BitBoards& newBoard, std::istringstream& input)
 			m = strToMove(newBoard, token);
 
 			//make move + increment turns
-			newBoard.makeMove(m, !isWhite);
+			newBoard.makeMove(m, st, !isWhite);
 			turns += 1;
 			
 			//push board position U64 to search driver.two fold repeitions

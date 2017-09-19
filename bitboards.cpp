@@ -262,18 +262,31 @@ void BitBoards::constructBoards()
 	//mark empty tiles opposite of full tiles
   	EmptyTiles = ~FullTiles;
 
+	st = new StateInfo; //this is a memory leak currently. Figure out a better way!!!!!
+	st->epSquare = SQ_NONE;
+	st->castlingRights = 0;
+
+	//st->previous->castlingRights = 0;
+	//st->previous->epSquare = SQ_NONE;
+
+
 }
 
-void BitBoards::makeMove(const Move& m, int color)
+void BitBoards::makeMove(const Move& m, StateInfo& newSt, int color)
 {
-	//color is stupid because I started the program with a bool is white, which (int)'s to 1
-	//need to change it to an int to remove this sort of thing
 	int them = !color;
 
 	assert(posOkay());
 
+	//copy current board state to board state stored on ply
+	std::memcpy(&newSt, st, sizeof(StateInfo));
+	//set previous state on ply to current state
+	newSt.previous = st;
+	//use st to modify values on ply
+	st = &newSt;
+
 	//remove or add captured piece from BB's same as above for moving piece
-	if (m.captured) {
+	if (m.captured && m.flag != 'E') {
 		//remove captured piece
 		removePiece(m.captured, them, m.to);
 		//update material
@@ -290,7 +303,33 @@ void BitBoards::makeMove(const Move& m, int color)
 	//move the piece from - to
 	movePiece(m.piece, color, m.from, m.to);	
 
+	if (st->epSquare != SQ_NONE) {
+		zobrist.zobristKey ^= zobrist.zEnPassant[file_of(st->epSquare)];
+		st->epSquare = SQ_NONE;
+	}
+
 	if (m.piece == PAWN) {
+
+		//if the pawn move is two forward,
+		//and there is an enemy pawn positioned to en passant
+		if ((m.to ^ m.from) == 16 
+			&& (psuedoAttacks(PAWN, color, m.from + pawn_push(color)) & pieces(them, PAWN))) {
+			
+			st->epSquare = (m.from + m.to) / 2;
+			zobrist.zobristKey ^= zobrist.zEnPassant[file_of(st->epSquare)];
+
+		} 
+		//en passant
+		else if (m.flag == 'E') {
+			int ePawnSq = ep_square() + pawn_push(them);
+			//remove the pawn captured by ep
+			removePiece(PAWN, them, ePawnSq);
+
+			zobrist.zobristKey ^= zobrist.zArray[them][PAWN][ePawnSq];
+			bInfo.PawnKey      ^= zobrist.zArray[them][PAWN][ePawnSq];
+			bInfo.sideMaterial[them] -= SORT_VALUE[PAWN];
+		}
+
 		//pawn promotion
 		if (m.flag == 'Q') {
 			//remove pawn placed
@@ -307,10 +346,13 @@ void BitBoards::makeMove(const Move& m, int color)
 			bInfo.MaterialKey ^= zobrist.zArray[color][QUEEN][pieceCount[color][QUEEN]]
 							  ^ zobrist.zArray[color ][PAWN][pieceCount[color][PAWN]+1];
 		}
+		
+
 		//update the pawn key, if it's a promotion it cancels out and updates correctly
 		bInfo.PawnKey ^= zobrist.zArray[color][PAWN][m.to] ^ zobrist.zArray[color][PAWN][m.from];
 		//_mm_prefetch((char *)pawnsTable[bInfo.PawnKey], _MM_HINT_NTA); // TEST for ELO GAIN, BOTH PLACES WITH PREFETCH HAD ELO LOSS
 	}
+	//castling
 	else if (m.flag == 'C') {
 		int rookFrom = relative_square(color, m.to) == C1 ? relative_square(color, A1) : relative_square(color, H1);
 		int rookTo = rookFrom == relative_square(color, A1) ? relative_square(color, D1) : relative_square(color, F1);
@@ -343,10 +385,28 @@ void BitBoards::unmakeMove(const Move & m, int color)
 	assert(posOkay());
 
 	if (m.flag != 'Q') {
-		//move piece
+		// move piece
 		movePiece(m.piece, color, m.to, m.from);
 
-		if(m.piece == PAWN) bInfo.PawnKey ^= zobrist.zArray[color][PAWN][m.to] ^ zobrist.zArray[color][PAWN][m.from];
+		if (m.piece == PAWN) { 
+			bInfo.PawnKey ^= zobrist.zArray[color][PAWN][m.to] ^ zobrist.zArray[color][PAWN][m.from]; //ADD ALL KEYS TO ST so we don't need to unmake the keys, just restore info stored on ply/stack
+
+			if (st->epSquare != SQ_NONE) { //this is possibly working?
+
+				// undo zobrist key ep square designation if pawn on previous move put itself into possible ep
+				zobrist.zobristKey ^= zobrist.zEnPassant[file_of(st->epSquare)];
+			}
+			// unmake en passant
+			else if (m.flag == 'E') {
+				int ePawnSq = ep_square() + pawn_push(them);
+
+				addPiece(PAWN, them, ePawnSq);
+				zobrist.zobristKey ^= zobrist.zArray[them][PAWN][ePawnSq];
+				bInfo.PawnKey      ^= zobrist.zArray[them][PAWN][ePawnSq];
+				bInfo.sideMaterial[them] += SORT_VALUE[PAWN];
+			}
+			
+		}
 	}
 	//pawn promotion
 	else if (m.flag == 'Q'){
@@ -365,12 +425,13 @@ void BitBoards::unmakeMove(const Move & m, int color)
 		bInfo.MaterialKey ^= zobrist.zArray[color][QUEEN][pieceCount[color][QUEEN]+1] //plus one because we've already decremented the counter
 			              ^  zobrist.zArray[color][PAWN ][pieceCount[color][PAWN ]  ];
 	}
+	//castling
 	else if (m.flag == 'C') {
 		
 	}
 
 	//add captured piece from BB's similar to above for moving piece
-	if (m.captured) {
+	if (m.captured && m.flag != 'E') {
 		//add captured piece to to square
 		addPiece(m.captured, them, m.to);
 		bInfo.sideMaterial[them] += SORT_VALUE[m.captured];
@@ -392,7 +453,31 @@ void BitBoards::unmakeMove(const Move & m, int color)
 	//flip internal side to move
 	bInfo.sideToMove = !bInfo.sideToMove;
 
+	//restore state pointer to state before we made this move
+	st = st->previous;
+
 	return;
+}
+
+void BitBoards::makeNullMove(StateInfo& newSt)
+{
+	//copy current board state to board state stored on ply
+	std::memcpy(&newSt, st, sizeof(StateInfo));
+	//set previous state on ply to current state
+	newSt.previous = st;
+	//use st to modify values on ply
+	st = &newSt;
+
+	zobrist.UpdateColor();
+	bInfo.sideToMove = !bInfo.sideToMove;
+	_mm_prefetch((char *)TT.first_entry(zobrist.zobristKey), _MM_HINT_NTA);
+}
+
+void BitBoards::undoNullMove()
+{
+	st = st->previous;
+	zobrist.UpdateColor();
+	bInfo.sideToMove = !bInfo.sideToMove;
 }
 
 //used for drawing a singular bitboard

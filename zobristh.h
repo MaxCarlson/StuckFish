@@ -59,12 +59,19 @@ inline void ZobristH::UpdateKey(int start, int end, const Move& moveKey, bool is
 	zobristKey ^= zArray[color][moveKey.piece][moveKey.from];
 	zobristKey ^= zArray[color][moveKey.piece][moveKey.to];
 
+	//moves that are non captures will just XOR the key with 0LL's
 	zobristKey ^= zArray[!color][moveKey.captured][moveKey.to];
 
 	//pawn promotions to queen, other not implemented
 	if (moveKey.flag == 'Q') {
 		zobristKey ^= zArray[color][PAWN][moveKey.to];
 		zobristKey ^= zArray[color][QUEEN][moveKey.to];
+	}
+	else if (moveKey.flag == 'E') {
+		//undo wrong XOR done above
+		zobristKey ^= zArray[!color][moveKey.captured][moveKey.to];
+
+		zobristKey ^= zArray[!color][moveKey.captured][moveKey.to + pawn_push(!color)];
 	}
 
 	//need caslting code

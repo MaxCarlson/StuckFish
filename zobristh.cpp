@@ -60,8 +60,6 @@ void ZobristH::UpdateColor()
     zobristKey ^= zBlackMove;
 }
 
-
-
 U64 ZobristH::fetchKey(const Move & m, int color)
 {
 	//get an idea of what most keys will be after moves..

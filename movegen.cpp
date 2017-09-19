@@ -90,7 +90,7 @@ void MoveGen::pawnMoves(const BitBoards& boards, bool capturesOnly) {
 			movegen_push(boards, color, PAWN, PIECE_EMPTY, '0', index + Down, index);
 		}
 
-		// up two
+		// up two - If move is made, ep square is flagged in make move
 		const int dpushrank = relative_rank(color, 3);
 		moves = shift_bb<Up>((shift_bb<Up>(pawns) & boards.EmptyTiles)) & boards.EmptyTiles & RankMasks8[dpushrank];
 		while (moves) {
@@ -119,6 +119,22 @@ void MoveGen::pawnMoves(const BitBoards& boards, bool capturesOnly) {
 		int captured = boards.pieceOnSq(index);
 
 		movegen_push(boards, color, PAWN, captured, '0', index - Left, index);
+	}
+
+	// en passant
+	if (boards.can_enpassant()) {
+
+		int epSq = boards.ep_square();
+		// find pawns that can attack ep square if they exist
+		moves = boards.psuedoAttacks(PAWN, them, epSq) & pawns;
+
+		while (moves) {
+			// index is our pawn locations in this case,
+			// not where the pawn is moving like in rest of template
+			int index = pop_lsb(&moves);
+
+			movegen_push(boards, color, PAWN, PAWN, 'E', index, epSq);
+		}
 	}
 
 	//rank mask of 7th rank relative side to move
