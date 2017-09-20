@@ -322,7 +322,7 @@ void BitBoards::makeMove(const Move& m, StateInfo& newSt, int color)
 
 		//if the pawn move is two forward,
 		//and there is an enemy pawn positioned to en passant
-		if ((m.to ^ m.from) == 16 
+		if ((squareBB[m.to] ^ squareBB[m.from]) == 16
 			&& (psuedoAttacks(PAWN, color, m.from + pawn_push(color)) & pieces(them, PAWN))) {
 			
 			st->epSquare = (m.from + m.to) / 2;
