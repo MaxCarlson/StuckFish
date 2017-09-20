@@ -55,7 +55,7 @@ void ZobristH::zobristFill()
     zBlackMove = random64();
 }
 
-void ZobristH::UpdateColor()
+void ZobristH::UpdateColor() //inline this? remove this?
 {
     zobristKey ^= zBlackMove;
 }
@@ -143,7 +143,11 @@ U64 ZobristH::getZobristHash(const BitBoards& BBBoard)
             returnZKey ^= zArray[1][6][square];
         }
     }
-    //EnPassant and castling stuff add later
+
+	// if en passant square is on board
+	if (BBBoard.can_enpassant()) {
+		returnZKey ^= zEnPassant[file_of(BBBoard.ep_square())];
+	}
 
     zobristKey = returnZKey;
 

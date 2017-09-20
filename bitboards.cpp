@@ -288,7 +288,7 @@ void BitBoards::makeMove(const Move& m, StateInfo& newSt, int color)
 			
 			//en passant
 			if (m.flag == 'E') {
-
+				//set capture square to correct pos and not ep square
 				capSq += pawn_push(them);
 			}
 			//update the pawn hashkey on capture
@@ -298,7 +298,6 @@ void BitBoards::makeMove(const Move& m, StateInfo& newSt, int color)
 		else { 
 			bInfo.nonPawnMaterial[them] -= SORT_VALUE[m.captured]; 
 		}
-		//if (m.flag == 'E') drawBBA();
 		//remove captured piece
 		removePiece(m.captured, them, capSq);
 		//update material
@@ -309,7 +308,6 @@ void BitBoards::makeMove(const Move& m, StateInfo& newSt, int color)
 
 	//move the piece from - to
 	movePiece(m.piece, color, m.from, m.to);
-	//if (m.flag == 'E') drawBBA();
 
 	// if there is an EP square, reset it for the next ply 
 	// and remove the ep zobrist XOR
@@ -322,8 +320,12 @@ void BitBoards::makeMove(const Move& m, StateInfo& newSt, int color)
 
 		//if the pawn move is two forward,
 		//and there is an enemy pawn positioned to en passant
-		if ((squareBB[m.to] ^ squareBB[m.from]) == 16
+		if ((m.to ^ m.from) == 16
 			&& (psuedoAttacks(PAWN, color, m.from + pawn_push(color)) & pieces(them, PAWN))) {
+
+			if (abs(m.to - m.from) != 16) { //REMOVE ONCE DONE TESTING
+				std::cout << "FE" << std::endl;
+			}
 			
 			st->epSquare = (m.from + m.to) / 2;
 			zobrist.zobristKey ^= zobrist.zEnPassant[file_of(st->epSquare)];
@@ -350,7 +352,8 @@ void BitBoards::makeMove(const Move& m, StateInfo& newSt, int color)
 		bInfo.PawnKey ^= zobrist.zArray[color][PAWN][m.to] ^ zobrist.zArray[color][PAWN][m.from];
 		//_mm_prefetch((char *)pawnsTable[bInfo.PawnKey], _MM_HINT_NTA); // TEST for ELO GAIN, BOTH PLACES WITH PREFETCH HAD ELO LOSS
 	}
-	//castling
+	// Castling ~~ only implemented to be done by another,
+	// engine itself cannot castle yet. Next thing on agenda.
 	else if (m.flag == 'C') {
 		int rookFrom = relative_square(color, m.to) == C1 ? relative_square(color, A1) : relative_square(color, H1);
 		int rookTo = rookFrom == relative_square(color, A1) ? relative_square(color, D1) : relative_square(color, F1);
@@ -376,7 +379,7 @@ void BitBoards::makeMove(const Move& m, StateInfo& newSt, int color)
 		drawBBA();
 	}
 
-	//prefetch TT entry into cache THIS IS WAY TOO TIME INTENSIVE? 6.1% on just this call from here. SWITCH TT to single address lookup instead of cluster of two?
+	//prefetch TT entry into cache ~THIS IS WAY TOO TIME INTENSIVE? 6.1% on just this call from here. SWITCH TT to single address lookup instead of cluster of two?
 	_mm_prefetch((char *)TT.first_entry(zobrist.zobristKey), _MM_HINT_NTA);
 
 }
@@ -384,14 +387,14 @@ void BitBoards::unmakeMove(const Move & m, int color)
 {
 	int them = !color;
 
-	//restore state pointer to state before we made this move
+	//restore state pointer to state before we made this move As below, move all keys to StateInfo so we can just unmake key changes by rerverting state
 	st = st->previous;
 
 	assert(posOkay());
 
 	if (m.flag != 'Q') {
 		// move piece
-		//if (m.flag == 'E') drawBBA();
+
 		movePiece(m.piece, color, m.to, m.from);
 
 		if (m.piece == PAWN) { 
@@ -405,7 +408,7 @@ void BitBoards::unmakeMove(const Move & m, int color)
 			}
 			// unmake en passant
 			if (m.flag == 'E') {
-				//drawBBA();
+
 				int ePawnSq = st->epSquare + pawn_push(them);
 
 				addPiece(PAWN, them, ePawnSq);
@@ -413,7 +416,7 @@ void BitBoards::unmakeMove(const Move & m, int color)
 				bInfo.sideMaterial[them] += SORT_VALUE[PAWN];
 				bInfo.PawnKey      ^= zobrist.zArray[them][PAWN][ePawnSq];
 				bInfo.MaterialKey  ^= zobrist.zArray[them][PAWN][pieceCount[them][PAWN]];
-				//drawBBA();
+
 			}
 			
 			

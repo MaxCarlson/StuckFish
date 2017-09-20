@@ -35,7 +35,7 @@ void UCI::uciLoop()
 	std::string line;
 	std::string token;
 
-	//master bitboard for turn
+	//master bitboard for games
 	BitBoards newBoard;
 	//initalize things
 	newBoard.initBoards();
@@ -140,9 +140,6 @@ void UCI::updatePosition(BitBoards& newBoard, std::istringstream& input)
 	if (token == "startpos")
 	{
 		newGame(newBoard);
-
-		//create zobrist hash for startpos that is used to check repetitions and TT entrys
-		newBoard.zobrist.getZobristHash(newBoard);
 	}
 	else if (token == "fen")
 	{
@@ -182,9 +179,12 @@ void UCI::newGame(BitBoards& newBoard)
 {
 	newBoard.constructBoards();
 
+	//create zobrist hash for startpos that is used to check TT entrys and repetitions 
+	newBoard.zobrist.getZobristHash(newBoard);
+
 	turns = 0;
 
-	//clear move repetitions
+	//clear move repetitions vector
 	history.twoFoldRep.clear();
 
 	isWhite = true;
