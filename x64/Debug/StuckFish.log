@@ -1,1 +1,15 @@
-﻿
+﻿  ai_logic.cpp
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\move.h(9): warning #945: type qualifier ignored
+        const Move();
+        ^
+  
+ai_logic.cpp(320): warning #589: transfer of control bypasses initialization of:
+              variable "fmargin" (declared at line 393)
+    	if (FlagInCheck || (ss - 1)->excludedMove.tried || sd.skipEarlyPruning) goto moves_loop;
+    	                                                                        ^
+  
+  bitboards.cpp
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\move.h(9): warning #945: type qualifier ignored
+        const Move();
+        ^
+  

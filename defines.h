@@ -3,7 +3,7 @@
 #include <intrin.h>
 #include <vector>
 
-#define NDEBUG
+//#define NDEBUG
 
 #ifdef NDEBUG
 #define assert(EXPRESSION) ((void)0)

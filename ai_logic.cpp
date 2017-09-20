@@ -261,7 +261,7 @@ int Ai_Logic::alphaBeta(BitBoards& board, int depth, int alpha, int beta, search
 
 	FlagInCheck = raisedAlpha = doFullDepthSearch = futileMoves = false;
 	singularExtension = captureOrPromotion = givesCheck = false;
-
+	//holds state of board on current ply info
 	StateInfo st;
 
 	int R = 2, newDepth, predictedDepth = 0, f_prune = 0, quietsC = 0;

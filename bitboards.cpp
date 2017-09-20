@@ -286,23 +286,38 @@ void BitBoards::makeMove(const Move& m, StateInfo& newSt, int color)
 	st = &newSt;
 
 	//remove or add captured piece from BB's same as above for moving piece
-	if (m.captured && m.flag != 'E') {
+	if (m.captured) {
+		int capSq = m.to;
+			
+		if (m.captured == PAWN) { 
+			
+			//en passant
+			if (m.flag == 'E') {
+
+				capSq += pawn_push(them);
+			}
+			//update the pawn hashkey on capture
+			bInfo.PawnKey ^= zobrist.zArray[them][PAWN][capSq];
+		}
+
+		else { 
+			bInfo.nonPawnMaterial[them] -= SORT_VALUE[m.captured]; 
+		}
+		//if (m.flag == 'E') drawBBA();
 		//remove captured piece
-		removePiece(m.captured, them, m.to);
+		removePiece(m.captured, them, capSq);
 		//update material
 		bInfo.sideMaterial[them] -= SORT_VALUE[m.captured];
-		
-		//update the pawn hashkey on capture
-		if (m.captured == PAWN)  bInfo.PawnKey ^= zobrist.zArray[them][PAWN][m.to]; 
-
-		else bInfo.nonPawnMaterial[them] -= SORT_VALUE[m.captured];
 		//update material key
 		bInfo.MaterialKey ^= zobrist.zArray[them][m.captured][pieceCount[them][m.captured]+1];
 	}
 
 	//move the piece from - to
-	movePiece(m.piece, color, m.from, m.to);	
+	movePiece(m.piece, color, m.from, m.to);
+	//if (m.flag == 'E') drawBBA();
 
+	// if there is an EP square, reset it for the next ply 
+	// and remove the ep zobrist XOR
 	if (st->epSquare != SQ_NONE) {
 		zobrist.zobristKey ^= zobrist.zEnPassant[file_of(st->epSquare)];
 		st->epSquare = SQ_NONE;
@@ -317,21 +332,10 @@ void BitBoards::makeMove(const Move& m, StateInfo& newSt, int color)
 			
 			st->epSquare = (m.from + m.to) / 2;
 			zobrist.zobristKey ^= zobrist.zEnPassant[file_of(st->epSquare)];
-
 		} 
-		//en passant
-		else if (m.flag == 'E') {
-			int ePawnSq = ep_square() + pawn_push(them);
-			//remove the pawn captured by ep
-			removePiece(PAWN, them, ePawnSq);
-
-			zobrist.zobristKey ^= zobrist.zArray[them][PAWN][ePawnSq];
-			bInfo.PawnKey      ^= zobrist.zArray[them][PAWN][ePawnSq];
-			bInfo.sideMaterial[them] -= SORT_VALUE[PAWN];
-		}
 
 		//pawn promotion
-		if (m.flag == 'Q') {
+		else if (m.flag == 'Q') {
 			//remove pawn placed
 			removePiece(PAWN, color, m.to);
 			//add queen to to square
@@ -347,13 +351,12 @@ void BitBoards::makeMove(const Move& m, StateInfo& newSt, int color)
 							  ^ zobrist.zArray[color ][PAWN][pieceCount[color][PAWN]+1];
 		}
 		
-
 		//update the pawn key, if it's a promotion it cancels out and updates correctly
 		bInfo.PawnKey ^= zobrist.zArray[color][PAWN][m.to] ^ zobrist.zArray[color][PAWN][m.from];
 		//_mm_prefetch((char *)pawnsTable[bInfo.PawnKey], _MM_HINT_NTA); // TEST for ELO GAIN, BOTH PLACES WITH PREFETCH HAD ELO LOSS
 	}
 	//castling
-	else if (m.flag == 'C') {
+/*	else if (m.flag == 'C') {
 		int rookFrom = relative_square(color, m.to) == C1 ? relative_square(color, A1) : relative_square(color, H1);
 		int rookTo = rookFrom == relative_square(color, A1) ? relative_square(color, D1) : relative_square(color, F1);
 
@@ -364,11 +367,11 @@ void BitBoards::makeMove(const Move& m, StateInfo& newSt, int color)
 			^ zobrist.zArray[color][ROOK][rookFrom]
 			^ zobrist.zArray[color][ROOK][rookTo];
 	}
-	
+*/	
 	assert(posOkay());
 	
 	//update the zobrist key
-	zobrist.UpdateKey(m.from, m.to, m, !color);
+	zobrist.UpdateKey(m.from, m.to, m, !color); //color is messed up here as function still takes "isWhite" bool
 	zobrist.UpdateColor();
 
 	//flip internal side to move
@@ -386,33 +389,37 @@ void BitBoards::unmakeMove(const Move & m, int color)
 
 	if (m.flag != 'Q') {
 		// move piece
+		//if (m.flag == 'E') drawBBA();
 		movePiece(m.piece, color, m.to, m.from);
 
 		if (m.piece == PAWN) { 
 			bInfo.PawnKey ^= zobrist.zArray[color][PAWN][m.to] ^ zobrist.zArray[color][PAWN][m.from]; //ADD ALL KEYS TO ST so we don't need to unmake the keys, just restore info stored on ply/stack
 
-			if (st->epSquare != SQ_NONE) { //this is possibly working?
+			
+			if (st->previous->epSquare != SQ_NONE) {
 
 				// undo zobrist key ep square designation if pawn on previous move put itself into possible ep
-				zobrist.zobristKey ^= zobrist.zEnPassant[file_of(st->epSquare)];
+				zobrist.zobristKey ^= zobrist.zEnPassant[file_of(st->previous->epSquare)];
 			}
 			// unmake en passant
-			else if (m.flag == 'E') {
-				int ePawnSq = ep_square() + pawn_push(them);
+			if (m.flag == 'E') {
+				//drawBBA();
+				int ePawnSq = st->previous->epSquare + pawn_push(them);
 
 				addPiece(PAWN, them, ePawnSq);
-				zobrist.zobristKey ^= zobrist.zArray[them][PAWN][ePawnSq];
-				bInfo.PawnKey      ^= zobrist.zArray[them][PAWN][ePawnSq];
+			
 				bInfo.sideMaterial[them] += SORT_VALUE[PAWN];
+				bInfo.PawnKey      ^= zobrist.zArray[them][PAWN][ePawnSq];
+				bInfo.MaterialKey  ^= zobrist.zArray[them][PAWN][pieceCount[them][PAWN]];
+				//drawBBA();
 			}
+			
 			
 		}
 	}
 	//pawn promotion
 	else if (m.flag == 'Q'){
-		//remove pawn from to square,
-		//we added two pawns above so here we remove one
-		//removePiece(PAWN, color, m.to);
+
 		addPiece(PAWN, color, m.from);
 		//remove queen
 		removePiece(QUEEN, color, m.to);
@@ -425,10 +432,7 @@ void BitBoards::unmakeMove(const Move & m, int color)
 		bInfo.MaterialKey ^= zobrist.zArray[color][QUEEN][pieceCount[color][QUEEN]+1] //plus one because we've already decremented the counter
 			              ^  zobrist.zArray[color][PAWN ][pieceCount[color][PAWN ]  ];
 	}
-	//castling
-	else if (m.flag == 'C') {
-		
-	}
+
 
 	//add captured piece from BB's similar to above for moving piece
 	if (m.captured && m.flag != 'E') {
@@ -468,6 +472,11 @@ void BitBoards::makeNullMove(StateInfo& newSt)
 	//use st to modify values on ply
 	st = &newSt;
 
+	if (st->epSquare != SQ_NONE) {
+		zobrist.zobristKey ^= zobrist.zEnPassant[file_of(st->epSquare)];
+		st->epSquare = SQ_NONE;
+	}
+
 	zobrist.UpdateColor();
 	bInfo.sideToMove = !bInfo.sideToMove;
 	_mm_prefetch((char *)TT.first_entry(zobrist.zobristKey), _MM_HINT_NTA);
@@ -476,6 +485,12 @@ void BitBoards::makeNullMove(StateInfo& newSt)
 void BitBoards::undoNullMove()
 {
 	st = st->previous;
+
+	if (st->epSquare != SQ_NONE) {
+		zobrist.zobristKey ^= zobrist.zEnPassant[file_of(st->epSquare)];
+		st->epSquare = SQ_NONE;
+	}
+
 	zobrist.UpdateColor();
 	bInfo.sideToMove = !bInfo.sideToMove;
 }
@@ -570,6 +585,21 @@ void BitBoards::drawBBA()
 bool BitBoards::posOkay()
 {
 
+	int pcount = 0;
+
+	for (int color = 0; color < COLOR; ++color) {
+		U64 tmp = allPiecesColorBB[color];
+		while (tmp) {
+			pop_lsb(&tmp);
+			pcount++;
+		}		
+	}
+	U64 et = EmptyTiles;
+	while (et) {
+		pop_lsb(&et);
+		pcount++;
+		if (pcount > 64) goto End;
+	}
 
 	for (int i = PAWN; i < PIECES; ++i) {
 		for (int j = PAWN; j < PIECES; ++j) {
@@ -587,9 +617,9 @@ bool BitBoards::posOkay()
 	return true;
 
 End:
+	drawBBA();
 	drawBB(EmptyTiles);
 	drawBB(FullTiles);
-	drawBBA();
 	return false;
 }
 

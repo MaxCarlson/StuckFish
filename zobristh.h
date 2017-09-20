@@ -54,13 +54,14 @@ inline void ZobristH::UpdateKey(int start, int end, const Move& moveKey, bool is
 {
 	//update the zobrist key after move or unmake move.
 	//color is messed up, 0 = white. Hence we inverse the is white to get actual color
-	int color = !isWhite;
+	const int color = !isWhite;
+	const int them  = !color;
 
 	zobristKey ^= zArray[color][moveKey.piece][moveKey.from];
 	zobristKey ^= zArray[color][moveKey.piece][moveKey.to];
 
 	//moves that are non captures will just XOR the key with 0LL's
-	zobristKey ^= zArray[!color][moveKey.captured][moveKey.to];
+	zobristKey ^= zArray[them][moveKey.captured][moveKey.to];
 
 	//pawn promotions to queen, other not implemented
 	if (moveKey.flag == 'Q') {
@@ -69,9 +70,8 @@ inline void ZobristH::UpdateKey(int start, int end, const Move& moveKey, bool is
 	}
 	else if (moveKey.flag == 'E') {
 		//undo wrong XOR done above
-		zobristKey ^= zArray[!color][moveKey.captured][moveKey.to];
-
-		zobristKey ^= zArray[!color][moveKey.captured][moveKey.to + pawn_push(!color)];
+		zobristKey ^= zArray[them][PAWN][moveKey.to];
+		zobristKey ^= zArray[them][PAWN][moveKey.to + pawn_push(them)];
 	}
 
 	//need caslting code

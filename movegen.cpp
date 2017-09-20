@@ -121,21 +121,22 @@ void MoveGen::pawnMoves(const BitBoards& boards, bool capturesOnly) {
 		movegen_push(boards, color, PAWN, captured, '0', index - Left, index);
 	}
 
-	// en passant
+///*	// en passant
 	if (boards.can_enpassant()) {
 
 		int epSq = boards.ep_square();
 		// find pawns that can attack ep square if they exist
-		moves = boards.psuedoAttacks(PAWN, them, epSq) & pawns;
+		U64 epPawns = boards.psuedoAttacks(PAWN, them, epSq) & pawns;
 
-		while (moves) {
+		while (epPawns) {
 			// index is our pawn locations in this case,
 			// not where the pawn is moving like in rest of template
-			int index = pop_lsb(&moves);
+			int index = pop_lsb(&epPawns);
 
 			movegen_push(boards, color, PAWN, PAWN, 'E', index, epSq);
 		}
 	}
+//*/
 
 	//rank mask of 7th rank relative side to move
 	const U64 seventhRank = RankMasks8[relative_rank(color, 6)];
