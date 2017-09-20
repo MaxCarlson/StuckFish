@@ -9,7 +9,7 @@
 #include "TranspositionT.h"
 
 
-
+/*
 std::string boardArr[8][8] = {
 	{ "r", "n", "b", "q", "k", "b", "n", "r" },
 	{ "p", "p", "p", "p", "p", "p", "p", "p", },
@@ -20,18 +20,18 @@ std::string boardArr[8][8] = {
 	{ "P", "P", "P", "P", "P", "P", "P", "P" },
 	{ "R", "N", "B", "Q", "K", "B", "N", "R" },
 };
-/*
+*/
 std::string boardArr[8][8] = {
-	{ "r", " ", " ", " ", "k", " ", " ", "r" },
+	{ "r", "n", "b", "q", "k", "b", "n", "r" },
 	{ "p", "p", "p", "p", "p", "p", "p", "p", },
 	{ " ", " ", " ", " ", " ", " ", " ", " " },
 	{ " ", " ", " ", " ", " ", " ", " ", " " },
 	{ " ", " ", " ", " ", " ", " ", " ", " " },
 	{ " ", " ", " ", " ", " ", " ", " ", " " },
 	{ "P", "P", "P", "P", "P", "P", "P", "P" },
-	{ "R", " ", " ", " ", "K", " ", " ", "R" },
+	{ "R", "N", "B", "Q", "K", "B", "N", "R" },
 };
-*/
+
 
 void BitBoards::initBoards()
 {
@@ -265,11 +265,6 @@ void BitBoards::constructBoards()
 	st = new StateInfo; //this is a memory leak currently. Figure out a better way!!!!!
 	st->epSquare = SQ_NONE;
 	st->castlingRights = 0;
-
-	//st->previous->castlingRights = 0;
-	//st->previous->epSquare = SQ_NONE;
-
-
 }
 
 void BitBoards::makeMove(const Move& m, StateInfo& newSt, int color)
@@ -356,7 +351,7 @@ void BitBoards::makeMove(const Move& m, StateInfo& newSt, int color)
 		//_mm_prefetch((char *)pawnsTable[bInfo.PawnKey], _MM_HINT_NTA); // TEST for ELO GAIN, BOTH PLACES WITH PREFETCH HAD ELO LOSS
 	}
 	//castling
-/*	else if (m.flag == 'C') {
+	else if (m.flag == 'C') {
 		int rookFrom = relative_square(color, m.to) == C1 ? relative_square(color, A1) : relative_square(color, H1);
 		int rookTo = rookFrom == relative_square(color, A1) ? relative_square(color, D1) : relative_square(color, F1);
 
@@ -367,7 +362,7 @@ void BitBoards::makeMove(const Move& m, StateInfo& newSt, int color)
 			^ zobrist.zArray[color][ROOK][rookFrom]
 			^ zobrist.zArray[color][ROOK][rookTo];
 	}
-*/	
+	
 	assert(posOkay());
 	
 	//update the zobrist key
@@ -377,6 +372,10 @@ void BitBoards::makeMove(const Move& m, StateInfo& newSt, int color)
 	//flip internal side to move
 	bInfo.sideToMove = !bInfo.sideToMove;
 
+	if (EmptyTiles & FullTiles || allPiecesColorBB[WHITE] & allPiecesColorBB[BLACK]) { //comment out in release
+		drawBBA();
+	}
+
 	//prefetch TT entry into cache THIS IS WAY TOO TIME INTENSIVE? 6.1% on just this call from here. SWITCH TT to single address lookup instead of cluster of two?
 	_mm_prefetch((char *)TT.first_entry(zobrist.zobristKey), _MM_HINT_NTA);
 
@@ -384,6 +383,9 @@ void BitBoards::makeMove(const Move& m, StateInfo& newSt, int color)
 void BitBoards::unmakeMove(const Move & m, int color)
 {
 	int them = !color;
+
+	//restore state pointer to state before we made this move
+	st = st->previous;
 
 	assert(posOkay());
 
@@ -396,15 +398,15 @@ void BitBoards::unmakeMove(const Move & m, int color)
 			bInfo.PawnKey ^= zobrist.zArray[color][PAWN][m.to] ^ zobrist.zArray[color][PAWN][m.from]; //ADD ALL KEYS TO ST so we don't need to unmake the keys, just restore info stored on ply/stack
 
 			
-			if (st->previous->epSquare != SQ_NONE) {
+			if (st->epSquare != SQ_NONE) {
 
 				// undo zobrist key ep square designation if pawn on previous move put itself into possible ep
-				zobrist.zobristKey ^= zobrist.zEnPassant[file_of(st->previous->epSquare)];
+				zobrist.zobristKey ^= zobrist.zEnPassant[file_of(st->epSquare)];
 			}
 			// unmake en passant
 			if (m.flag == 'E') {
 				//drawBBA();
-				int ePawnSq = st->previous->epSquare + pawn_push(them);
+				int ePawnSq = st->epSquare + pawn_push(them);
 
 				addPiece(PAWN, them, ePawnSq);
 			
@@ -457,9 +459,6 @@ void BitBoards::unmakeMove(const Move & m, int color)
 	//flip internal side to move
 	bInfo.sideToMove = !bInfo.sideToMove;
 
-	//restore state pointer to state before we made this move
-	st = st->previous;
-
 	return;
 }
 
@@ -488,7 +487,6 @@ void BitBoards::undoNullMove()
 
 	if (st->epSquare != SQ_NONE) {
 		zobrist.zobristKey ^= zobrist.zEnPassant[file_of(st->epSquare)];
-		st->epSquare = SQ_NONE;
 	}
 
 	zobrist.UpdateColor();

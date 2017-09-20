@@ -3,7 +3,7 @@
 #include <intrin.h>
 #include <vector>
 
-//#define NDEBUG
+#define NDEBUG
 
 #ifdef NDEBUG
 #define assert(EXPRESSION) ((void)0)
@@ -13,7 +13,7 @@
 
 #include <assert.h>
 
-#define ENGINE_NAME "StuckFish 0.2"
+#define ENGINE_NAME "StuckFish 0.1"
 
 #define CACHE_LINE_SIZE 64 //taken from stockfish
 #if defined(_MSC_VER) || defined(__INTEL_COMPILER)
@@ -30,7 +30,8 @@
 #  define FORCE_INLINE  inline
 #endif
 
-//holds mid and end game values
+// holds mid and end game values
+// for ease of use in evaluations
 struct Scores { int mg = 0, eg = 0; };
 
 inline Scores make_scores(int m, int e) {

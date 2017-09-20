@@ -148,7 +148,7 @@ void MoveGen::pawnMoves(const BitBoards& boards, bool capturesOnly) {
 		const U64 eighthRank = RankMasks8[relative_rank(color, 7)];
 
 		// moving forward one
-		moves = shift_bb<Up>(pawns) & boards.EmptyTiles & eighthRank; //NEED TO DRAW TEST FOR WHITE AND BLACK
+		moves = shift_bb<Up>(pawns) & boards.EmptyTiles & eighthRank; 
 
 		while (moves) {
 			int index = pop_lsb(&moves);

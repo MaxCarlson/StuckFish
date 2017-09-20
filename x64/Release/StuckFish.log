@@ -1,7 +1,12 @@
-﻿  TranspositionT.cpp
+﻿  ai_logic.cpp
 C:\Users\C-60\Desktop\cppPrograms\StuckFish\move.h(9): warning #945: type qualifier ignored
         const Move();
         ^
+  
+ai_logic.cpp(324): warning #589: transfer of control bypasses initialization of:
+              variable "fmargin" (declared at line 397)
+    	if (FlagInCheck || (ss - 1)->excludedMove.tried || sd.skipEarlyPruning) goto moves_loop;
+    	                                                                        ^
   
   bitboards.cpp
 C:\Users\C-60\Desktop\cppPrograms\StuckFish\move.h(9): warning #945: type qualifier ignored
@@ -28,5 +33,10 @@ movegen.cpp(48): warning #1119: extra braces are nonstandard
 movegen.cpp(48): warning #1119: extra braces are nonstandard
     	{ { 0xeULL               },{ 0x60ULL               } }
     	                           ^
+  
+  zobristh.cpp
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\move.h(9): warning #945: type qualifier ignored
+        const Move();
+        ^
   
   StuckFish.vcxproj -> C:\Users\C-60\Desktop\cppPrograms\StuckFish\x64\Release\StuckFish.exe

@@ -285,6 +285,15 @@ Move UCI::strToMove(BitBoards& newBoard, std::string& input)
 
 	m.flag = '0';
 
+	// en passants
+	if (m.piece == PAWN && m.captured == PIECE_EMPTY
+		&& (m.to != m.from + pawn_push(!isWhite)
+		&& (m.to != m.from + pawn_push(!isWhite) * 2) )) {
+
+		m.flag = 'E';
+		m.captured = PAWN;
+	}
+
 	//promotions
 	if (input.length() == 5) {
 		if (input[4] == 'q') m.flag = 'Q';
@@ -299,6 +308,8 @@ Move UCI::strToMove(BitBoards& newBoard, std::string& input)
 		if (newBoard.psuedoAttacks(KING, 0, xyI) & newBoard.squareBB[xyE]) return m;
 		else m.flag = 'C';
 	}
+
+
 	
 	return m;
 }

@@ -252,7 +252,7 @@ inline U64 BitBoards::square_bb(int sq) const
 }
 inline bool BitBoards::can_enpassant() const
 {
-	return (st->epSquare != SQ_NONE);
+	return (st->epSquare > 0 && st->epSquare < 64);
 }
 inline int BitBoards::ep_square() const
 {

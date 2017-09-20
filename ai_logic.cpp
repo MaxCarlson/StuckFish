@@ -292,6 +292,10 @@ int Ai_Logic::alphaBeta(BitBoards& board, int depth, int alpha, int beta, search
 	ttMove = ttentry ? ttentry->move.tried : false; //is there a move stored in transposition table?
 	ttValue = ttentry ? valueFromTT(ttentry->eval, ss->ply) : INVALID; //if there is a TT entry, grab its value
 
+	if (board.zobrist.zobristKey != board.zobrist.debugKey(!color, board)) {
+		board.drawBBA();
+	}
+
 	//is the a TT entry? If so, are we in PV? If in PV only accept and exact entry with a depth >= our depth, 
 	//accept all if the entry has a equal or greater depth compared to our depth.
 	if (ttentry

@@ -230,7 +230,10 @@ U64 ZobristH::debugKey(bool isWhite, const BitBoards& BBBoard)
 			returnZKey ^= zArray[1][6][square];
 		}
     }
-    //EnPassant and castling stuff add later
+    
+	if (BBBoard.can_enpassant()) {
+		returnZKey ^= zEnPassant[file_of(BBBoard.ep_square())];
+	}
 
 
     //if it isn't whites turn, XOR test zobrist key with black move U64
