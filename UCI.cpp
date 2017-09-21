@@ -37,10 +37,10 @@ void UCI::uciLoop()
 
 	//master bitboard for games
 	BitBoards newBoard;
-	//initalize things
-	newBoard.initBoards();
 	//fill zobrist arrays with random numbers
 	newBoard.zobrist.zobristFill();
+	//initalize things
+	newBoard.initBoards();
 
 	// Make sure that the outputs are sent straight away to the GUI
 	std::cout.setf(std::ios::unitbuf);

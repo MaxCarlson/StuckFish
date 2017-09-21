@@ -635,10 +635,10 @@ int Evaluate::evaluate(const BitBoards & boards)
 	const int color = boards.stm();
 
 	 //is this needed with TT lookup in quiet??
-	int hash = boards.zobrist.zobristKey & 5021982; //REPLACE THIS!!
+	int hash = boards.TTKey() & 5021982; //REPLACE THIS!!
 	HashEntry entry = transpositionEval[hash];
 	//if we get a hash-table hit, return the evaluation
-	if (entry.zobrist == boards.zobrist.zobristKey) {
+	if (entry.zobrist == boards.TTKey()) {
 		if (color == WHITE) {
 			//if eval was from blacks POV, return -eval
 			if (entry.flag) return -entry.eval;
@@ -847,7 +847,7 @@ void Evaluate::saveTT(int color, int result, int hash, const BitBoards &boards) 
 {
 	//store eval into eval hash table
 	transpositionEval[hash].eval = result;
-	transpositionEval[hash].zobrist = boards.zobrist.zobristKey;
+	transpositionEval[hash].zobrist = boards.TTKey();
 
 	//set flag for TT so we can switch value if we get a TT hit but
 	//the color of the eval was opposite

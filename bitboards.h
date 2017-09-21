@@ -33,6 +33,10 @@ struct BoardInfo { //possibly remove this and move this info to bitboards object
 
 struct StateInfo {
 
+	U64 Key;
+	U64 PawnKey;
+	U64 MaterialKey;
+
 	int epSquare;
 
 	int castlingRights;
@@ -140,6 +144,8 @@ public:
 	//draw out bitboards like a full chessboard array
 	void drawBBA();
 
+	U64 TTKey() const;
+
 private:
 
 	StateInfo* st;
@@ -155,6 +161,10 @@ inline int BitBoards::stm() const
 	return bInfo.sideToMove;
 }
 */
+inline U64 BitBoards::TTKey() const {
+	return st->Key;
+}
+
 //these function return a board of particular pieces/combination of pieces
 inline U64 BitBoards::pieces(int color) const{
 	return allPiecesColorBB[color];

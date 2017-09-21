@@ -166,7 +166,7 @@ int Ai_Logic::searchRoot(BitBoards& board, int depth, int alpha, int beta, searc
 	int quietsCount = 0;
 	StateInfo st;
 
-	const HashEntry* ttentry = TT.probe(board.zobrist.zobristKey);
+	const HashEntry* ttentry = TT.probe(board.TTKey());
 
 	sd.nodes++;
 	ss->ply = 1;
@@ -285,7 +285,7 @@ int Ai_Logic::alphaBeta(BitBoards& board, int depth, int alpha, int beta, search
 	bool ttMove;
 	int ttValue;
 
-	ttentry = TT.probe(board.zobrist.zobristKey);
+	ttentry = TT.probe(board.TTKey());
 	ttMove = ttentry ? ttentry->move.tried : false; //is there a move stored in transposition table?
 	ttValue = ttentry ? valueFromTT(ttentry->eval, ss->ply) : INVALID; //if there is a TT entry, grab its value
 
@@ -340,7 +340,8 @@ int Ai_Logic::alphaBeta(BitBoards& board, int depth, int alpha, int beta, search
 		}
 	}
 
-	//Null move heuristics, disabled if in PV, check, or depth is too low
+	//Null move heuristics, disabled if in PV, check, or depth is too low //RE ENABLE ONCE DONE EP TESTING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+///*
 	if (allowNull && !isPV && depth > R) {
 		if (depth > 6) R = 3;
 
@@ -354,7 +355,7 @@ int Ai_Logic::alphaBeta(BitBoards& board, int depth, int alpha, int beta, search
 		}
 	}
 
-
+//*/
 	/*
 	//razoring if not PV and is close to leaf and has a low score drop directly into quiescence 512 + 32 * depth
 		if(!is_pv && allowNull && depth <= 3){
@@ -446,7 +447,7 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 
 		//make move on BB's store data to string so move can be undone
 		board.makeMove(newMove, st, color);
-
+/*
 		if (board.zobrist.zobristKey != board.zobrist.debugKey(color, board)
 			|| board.pawn_key() != board.zobrist.debugPawnKey(board)
 			|| board.material_key() != board.zobrist.debugMaterialKey(board)) {
@@ -467,6 +468,12 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 
 		}
 
+		if (board.TTKey() != board.zobrist.zobristKey) {
+			std::cout << board.zobrist.zobristKey << std::endl;
+			std::cout << board.TTKey() << std::endl;
+			std::cout << (board.TTKey() ^ board.zobrist.zBlackMove) << std::endl;
+		}
+		*/
 		//is move legal? if not skip it
 		if (!gen_moves.isLegal(board, newMove, color)) {
 			board.unmakeMove(newMove, color);
@@ -591,11 +598,6 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 
 		ss->currentMove = newMove;
 
-		//load the (most likely) next entry in the TTable into cache near cpu
-		_mm_prefetch((char *)TT.first_entry(board.zobrist.fetchKey(newMove, color)), _MM_HINT_NTA);
-
-
-
 		//jump back here if our LMR raises Alpha ~~ NOT IN USE
 	//re_search:
 		if (!raisedAlpha) {
@@ -633,7 +635,35 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 
 		//undo move on BB's
 		board.unmakeMove(newMove, color);
+/*
+		if (board.zobrist.zobristKey != board.zobrist.debugKey(!color, board)
+			|| board.pawn_key() != board.zobrist.debugPawnKey(board)
+			|| board.material_key() != board.zobrist.debugMaterialKey(board)) {
+			std::string fuck = "";
+			U64 k1, k2;
+			if (board.zobrist.zobristKey != board.zobrist.debugKey(!color, board)) {
+				fuck = "ZOBRIST";
+				k1 = board.zobrist.zobristKey;
+				k2 = board.zobrist.debugKey(!color, board);
+				std::cout << (k1 ^ board.zobrist.zEnPassant[0]) << std::endl;
+				std::cout << (k1 ^ board.zobrist.zEnPassant[1]) << std::endl;
+				std::cout << (k1 ^ board.zobrist.zEnPassant[2]) << std::endl;
+				std::cout << (k1 ^ board.zobrist.zEnPassant[3]) << std::endl;
+				std::cout << (k1 ^ board.zobrist.zEnPassant[4]) << std::endl;
+				std::cout << (k1 ^ board.zobrist.zEnPassant[5]) << std::endl;
+				std::cout << (k1 ^ board.zobrist.zEnPassant[6]) << std::endl;
+				std::cout << (k1 ^ board.zobrist.zEnPassant[7]) << std::endl;
+			}
+			board.drawBBA();
+			if (board.pawn_key() != board.zobrist.debugPawnKey(board)) fuck += " PAWNS";
+			if (board.material_key() != board.zobrist.debugMaterialKey(board)) fuck += " Material!";
 
+			for (int i = 0; i < 2000; ++i) {
+				std::cout << "uh oh, " << fuck << " is fucked!" << std::endl;
+			}
+
+		}
+//*/
 		if (timeOver) return 0;
 
 		if (score > bestScore) {
@@ -642,7 +672,7 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 			if (score > alpha) {
 				history.cutoffs[color][newMove.from][newMove.to] += 6;
 				//store the principal variation
-				sd.PV[ss->ply] = newMove; //NEED TO DELETE AFTER A SEARCH!!!
+				sd.PV[ss->ply] = newMove; //NEED TO DELETE AFTER A SEARCH!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 				hashMove = newMove;
 
 				//if move causes a beta cutoff stop searching current branch
@@ -701,7 +731,7 @@ int Ai_Logic::quiescent(BitBoards& board, int alpha, int beta, searchStack *ss, 
 	ss->ply = (ss - 1)->ply + 1;
 	StateInfo st;
 
-	ttentry = TT.probe(board.zobrist.zobristKey);
+	ttentry = TT.probe(board.TTKey());
 	ttMove = ttentry ? ttentry->move.flag : false; //is there a move stored in transposition table?
 	ttValue = ttentry ? valueFromTT(ttentry->eval, ss->ply) : INVALID; //if there is a TT entry, grab its value
 

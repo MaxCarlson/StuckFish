@@ -65,12 +65,14 @@ inline void ZobristH::UpdateKey(int start, int end, const Move& moveKey, bool is
 
 	//pawn promotions to queen, other not implemented
 	if (moveKey.flag == 'Q') {
-		zobristKey ^= zArray[color][PAWN][moveKey.to];
+		zobristKey ^= zArray[color][PAWN ][moveKey.to];
 		zobristKey ^= zArray[color][QUEEN][moveKey.to];
 	}
+	// En passants
 	else if (moveKey.flag == 'E') {
-		//undo wrong XOR done above
+		// undo wrong XOR done above
 		zobristKey ^= zArray[them][PAWN][moveKey.to];
+		// remove EP pawn
 		zobristKey ^= zArray[them][PAWN][moveKey.to + pawn_push(them)];
 	}
 
