@@ -1,4 +1,9 @@
-﻿  ai_logic.cpp
+﻿  Evaluate.cpp
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\move.h(9): warning #945: type qualifier ignored
+        const Move();
+        ^
+  
+  ai_logic.cpp
 C:\Users\C-60\Desktop\cppPrograms\StuckFish\move.h(9): warning #945: type qualifier ignored
         const Move();
         ^

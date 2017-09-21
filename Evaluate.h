@@ -24,13 +24,6 @@ private:
 
 	void blockedPieces(int side, const BitBoards & boards, EvalInfo & ev);
 
-	bool isPiece(const U64 & piece, int sq);
-
-	int flip(int side, int sq);
-
-	//int wKingShield(const BitBoards & boards);
-
-	//int bKingShield(const BitBoards & boards);
-
+	bool isPiece(const U64 & piece, const BitBoards & boards, int sq);
 };
 

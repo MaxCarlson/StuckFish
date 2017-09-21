@@ -1,36 +1,13 @@
-﻿  ai_logic.cpp
+﻿  Evaluate.cpp
 C:\Users\C-60\Desktop\cppPrograms\StuckFish\move.h(9): warning #945: type qualifier ignored
         const Move();
         ^
   
-ai_logic.cpp(318): warning #589: transfer of control bypasses initialization of:
-              variable "fmargin" (declared at line 392)
-    	if (FlagInCheck || (ss - 1)->excludedMove.tried || sd.skipEarlyPruning) goto moves_loop;
-    	                                                                        ^
-  
-  bitboards.cpp
+  Pawns.cpp
 C:\Users\C-60\Desktop\cppPrograms\StuckFish\move.h(9): warning #945: type qualifier ignored
         const Move();
         ^
   
-  movegen.cpp
-C:\Users\C-60\Desktop\cppPrograms\StuckFish\move.h(9): warning #945: type qualifier ignored
-        const Move();
-        ^
-  
-movegen.cpp(47): warning #1119: extra braces are nonstandard
-    	{ { 0xe00000000000000ULL },{ 0x6000000000000000ULL } },
-    	  ^
-  
-movegen.cpp(47): warning #1119: extra braces are nonstandard
-    	{ { 0xe00000000000000ULL },{ 0x6000000000000000ULL } },
-    	                           ^
-  
-movegen.cpp(48): warning #1119: extra braces are nonstandard
-    	{ { 0xeULL               },{ 0x60ULL               } }
-    	  ^
-  
-movegen.cpp(48): warning #1119: extra braces are nonstandard
-    	{ { 0xeULL               },{ 0x60ULL               } }
-    	                           ^
-  
+  TimeManager.cpp
+  compilation aborted for TimeManager.cpp (code -42)
+C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V140\Platforms\x64\PlatformToolsets\Intel C++ Compiler 17.0\Toolset.targets(378,5): error MSB6006: "icl.exe" exited with code -42.

@@ -447,29 +447,7 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 
 		//make move on BB's store data to string so move can be undone
 		board.makeMove(newMove, st, color);
-/*
-		if (board.TTKey() != board.zobrist.debugKey(color, board)
-			|| board.pawn_key() != board.zobrist.debugPawnKey(board)
-			|| board.material_key() != board.zobrist.debugMaterialKey(board)) {
-			std::string fuck = "";
-			U64 k1, k2;
-			if (board.TTKey() != board.zobrist.debugKey(!color, board)) {
-				fuck = "ZOBRIST";
-				k1 = board.TTKey();
-				k2 = board.zobrist.debugKey(color, board);
-				std::cout << k1 << std::endl << k2 << std::endl << (k2 ^ board.zobrist.zBlackMove) << std::endl;
-			}
-			if (board.pawn_key() != board.zobrist.debugPawnKey(board)) fuck += " PAWNS";
-			if (board.material_key() != board.zobrist.debugMaterialKey(board)) fuck += " Material!";
 
-			for (int i = 0; i < 2000; ++i) {
-				std::cout << "ut oh, " << fuck << " is fucked!" << std::endl;
-			}
-
-		}
-//*/
-
-		//*/
 		//is move legal? if not skip it
 		if (!gen_moves.isLegal(board, newMove, color)) {
 			board.unmakeMove(newMove, color);
@@ -632,14 +610,14 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 		//undo move on BB's
 		board.unmakeMove(newMove, color);
 /*
-		if (board.zobrist.zobristKey != board.zobrist.debugKey(!color, board)
+		if (board.TTKey() != board.zobrist.debugKey(!color, board)
 			|| board.pawn_key() != board.zobrist.debugPawnKey(board)
 			|| board.material_key() != board.zobrist.debugMaterialKey(board)) {
 			std::string fuck = "";
 			U64 k1, k2;
-			if (board.zobrist.zobristKey != board.zobrist.debugKey(!color, board)) {
+			if (board.TTKey() != board.zobrist.debugKey(!color, board)) {
 				fuck = "ZOBRIST";
-				k1 = board.zobrist.zobristKey;
+				k1 = board.TTKey();
 				k2 = board.zobrist.debugKey(!color, board);
 				std::cout << (k1 ^ board.zobrist.zEnPassant[0]) << std::endl;
 				std::cout << (k1 ^ board.zobrist.zEnPassant[1]) << std::endl;

@@ -15,15 +15,9 @@ class ZobristH;
 class Move;
 class MoveGen;
 
-struct BoardInfo { //possibly remove this and move this info to bitboards object?
+struct BoardInfo { //possibly remove this and move this info to bitboards object? //DELETE THIS, REPLACED BY st
 	int sideMaterial[COLOR]; //updated on make/unmake moves	
 	int nonPawnMaterial[COLOR];
-
-	//key like master zobrist for TT, just for pawn postions
-	U64 PawnKey;
-	//Like above but key that represents
-	//number and type of pieces each side has
-	U64 MaterialKey; //Program also flipped out even when this isn't used. WTF? Thread issue with large BitBoards object????
 
 	//keeps internal track of which side 
 	//is going to make the next move. Access through function
@@ -84,7 +78,7 @@ public:
 
 	//pieces and their square locations. So we don't have to pop_lsb a board to find a piece
 	int pieceLoc[COLOR][PIECES][16]; //color, piece type
-	int pieceIndex[64];    //a lookup index so we can extract the index of the piece in the list above from just it's location
+	int pieceIndex[SQ_ALL];    //a lookup index so we can extract the index of the piece in the list above from just it's location
 	int pieceCount[COLOR][PIECES]; //count of number of pieces; color, piece type. 0 = no piece, 1 pawn, etc.
 	int pieceOn[SQ_ALL]; // allows us to lookup which piece is on a square
 	
@@ -114,8 +108,11 @@ public:
 
 
 	//Board Info Functions
-	//return the key for the pawn hash table
+	
 	int stm() const; //returns side to move
+
+    //return the key for the select hash table
+	U64 TTKey() const;
 	U64 pawn_key() const;
 	U64 material_key() const;
 
@@ -144,8 +141,6 @@ public:
 	//draw out bitboards like a full chessboard array
 	void drawBBA();
 
-	U64 TTKey() const;
-
 private:
 
 	StateInfo* st;
@@ -161,9 +156,6 @@ inline int BitBoards::stm() const
 	return bInfo.sideToMove;
 }
 */
-inline U64 BitBoards::TTKey() const {
-	return st->Key;
-}
 
 //these function return a board of particular pieces/combination of pieces
 inline U64 BitBoards::pieces(int color) const{
@@ -213,14 +205,19 @@ inline int BitBoards::game_phase() const
 	return (((npm - ENDGAME_LIMIT) * 64) / (MIDGAME_LIMIT - ENDGAME_LIMIT));
 }
 
+//returns the key to the transposition
+inline U64 BitBoards::TTKey() const {
+	return st->Key;
+}
+
 //returns the incrementaly updated pawn hash key
 inline U64 BitBoards::pawn_key() const {
-	return bInfo.PawnKey;
+	return st->PawnKey;
 }
 
 inline U64 BitBoards::material_key() const
 {
-	return bInfo.MaterialKey;
+	return st->MaterialKey;
 }
 
 inline int BitBoards::king_square(int color) const

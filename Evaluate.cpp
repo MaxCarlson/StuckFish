@@ -870,96 +870,89 @@ void Evaluate::blockedPieces(int side, const BitBoards& boards, EvalInfo & ev) /
 	king = boards.byColorPiecesBB[side][KING];
 
 	epawn = boards.byColorPiecesBB[oppo][PAWN];
-
+	
 	//central pawn block bishop blocked
-	if (isPiece(bishop, flip(side, C1))
-		&& isPiece(pawn, flip(side, D2))
-		&& emptyLoc << flip(side, D3))
+	if (isPiece(bishop, boards, relative_square(side, C1))
+		&& isPiece(pawn, boards, relative_square(side, D2))
+		&& emptyLoc << relative_square(side, D3))
 		ev.blockages[side] -= 24;
 
-	if (isPiece(bishop, flip(side, F1))
-		&& isPiece(pawn, flip(side, E2))
-		&& emptyLoc << flip(side, E3))
+	if (isPiece(bishop, boards, relative_square(side, F1))
+		&& isPiece(pawn, boards, relative_square(side, E2))
+		&& emptyLoc << relative_square(side, E3))
 		ev.blockages[side] -= 24;
 
 	//trapped knights
-	if (isPiece(knight, flip(side, A8))
-		&& isPiece(epawn, flip(oppo, A7))
-		|| isPiece(epawn, flip(oppo, C7)))
+	if (isPiece(knight, boards, relative_square(side, A8))
+		&& isPiece(epawn, boards, relative_square(oppo, A7))
+		|| isPiece(epawn, boards, relative_square(oppo, C7)))
 		ev.blockages[side] -= 150;
 
 	//trapped knights
-	if (isPiece(knight, flip(side, H8))
-		&& isPiece(epawn, flip(oppo, H7))
-		|| isPiece(epawn, flip(oppo, F7)))
+	if (isPiece(knight, boards, relative_square(side, H8))
+		&& isPiece(epawn, boards, relative_square(oppo, H7))
+		|| isPiece(epawn, boards, relative_square(oppo, F7)))
 		ev.blockages[side] -= 150;
 
-	if (isPiece(knight, flip(side, A7))
-		&& isPiece(epawn, flip(oppo, A6))
-		&& isPiece(epawn, flip(oppo, B7)))
+	if (isPiece(knight, boards, relative_square(side, A7))
+		&& isPiece(epawn, boards, relative_square(oppo, A6))
+		&& isPiece(epawn, boards, relative_square(oppo, B7)))
 		ev.blockages[side] -= 150;
 
-	if (isPiece(knight, flip(side, H7))
-		&& isPiece(epawn, flip(oppo, H6))
-		&& isPiece(epawn, flip(oppo, G7)))
+	if (isPiece(knight, boards, relative_square(side, H7))
+		&& isPiece(epawn, boards, relative_square(oppo, H6))
+		&& isPiece(epawn, boards, relative_square(oppo, G7)))
 		ev.blockages[side] -= 150;
 
 	//knight blocking queenside pawn
-	if (isPiece(knight, flip(side, C3))
-		&& isPiece(knight, flip(side, C2))
-		&& isPiece(knight, flip(side, D4))
-		&& !isPiece(knight, flip(side, E4)))
+	if (isPiece(knight, boards, relative_square(side, C3))
+		&& isPiece(knight, boards, relative_square(side, C2))
+		&& isPiece(knight, boards, relative_square(side, D4))
+		&& !isPiece(knight, boards, relative_square(side, E4)))
 		ev.blockages[side] -= 5;
 
 	//trapped bishop
-	if (isPiece(bishop, flip(side, A7))
-		&& isPiece(epawn, flip(oppo, B6)))
+	if (isPiece(bishop, boards, relative_square(side, A7))
+		&& isPiece(epawn, boards, relative_square(oppo, B6)))
 		ev.blockages[side] -= 150;
 
-	if (isPiece(bishop, flip(side, H7))
-		&& isPiece(epawn, flip(oppo, G6)))
+	if (isPiece(bishop, boards, relative_square(side, H7))
+		&& isPiece(epawn, boards, relative_square(oppo, G6)))
 		ev.blockages[side] -= 150;
 
-	if (isPiece(bishop, flip(side, B8))
-		&& isPiece(epawn, flip(oppo, C7)))
+	if (isPiece(bishop, boards, relative_square(side, B8))
+		&& isPiece(epawn, boards, relative_square(oppo, C7)))
 		ev.blockages[side] -= 150;
 
-	if (isPiece(bishop, flip(side, G8))
-		&& isPiece(epawn, flip(oppo, F7)))
+	if (isPiece(bishop, boards, relative_square(side, G8))
+		&& isPiece(epawn, boards, relative_square(oppo, F7)))
 		ev.blockages[side] -= 150;
 
-	if (isPiece(bishop, flip(side, A6))
-		&& isPiece(epawn, flip(oppo, B5)))
+	if (isPiece(bishop, boards, relative_square(side, A6))
+		&& isPiece(epawn, boards, relative_square(oppo, B5)))
 		ev.blockages[side] -= 50;
 
-	if (isPiece(bishop, flip(side, H6))
-		&& isPiece(epawn, flip(oppo, G5)))
+	if (isPiece(bishop, boards, relative_square(side, H6))
+		&& isPiece(epawn, boards, relative_square(oppo, G5)))
 		ev.blockages[side] -= 50;
 
 	// bishop on initial square supporting castled king
-	//if(isPiece(bishop, flip(side, F1))
-	//&& isPiece(king, flip(side, B1)))
+	//if(isPiece(bishop, relative_square(side, F1))
+	//&& isPiece(king, relative_square(side, B1)))
 	//need positional themes
 
 	//uncastled king blocking own rook
-	if ((isPiece(king, flip(side, F1)) || isPiece(king, flip(side, G1)))
-		&& (isPiece(rook, flip(side, H1)) || isPiece(rook, flip(side, G1))))
+	if ((isPiece(king, boards, relative_square(side, F1)) || isPiece(king, boards, relative_square(side, G1)))
+		&& (isPiece(rook, boards, relative_square(side, H1)) || isPiece(rook, boards, relative_square(side, G1))))
 		ev.blockages[side] -= 24;
 
-	if ((isPiece(king, flip(side, C1)) || isPiece(king, flip(side, B1)))
-		&& (isPiece(rook, flip(side, A1)) || isPiece(rook, flip(side, B1))))
+	if ((isPiece(king, boards, relative_square(side, C1)) || isPiece(king, boards, relative_square(side, B1)))
+		&& (isPiece(rook, boards, relative_square(side, A1)) || isPiece(rook, boards, relative_square(side, B1))))
 		ev.blockages[side] -= 24;
 }
 
-bool Evaluate::isPiece(const U64 &piece, int sq)
+bool Evaluate::isPiece(const U64 & piece, const BitBoards & boards, int sq)
 {
-	//is the piece on the square?
-	U64 loc = 1LL << sq;
-	if (loc & piece) return true;
-	return false;
+	return (piece & boards.square_bb(sq));
 }
 
-int Evaluate::flip(int side, int sq)
-{
-	return side == WHITE ? sq : bSQ[sq];
-}
