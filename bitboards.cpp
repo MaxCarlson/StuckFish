@@ -298,10 +298,12 @@ void BitBoards::makeMove(const Move& m, StateInfo& newSt, int color)
 	//use st to modify values on ply
 	st = &newSt;
 
+	
+
 	//remove or add captured piece from BB's same as above for moving piece
 	if (m.captured) {
 		int capSq = m.to;
-			
+
 		if (m.captured == PAWN) { 
 			
 			//en passant
@@ -320,6 +322,8 @@ void BitBoards::makeMove(const Move& m, StateInfo& newSt, int color)
 		removePiece(m.captured, them, capSq);
 		//update material
 		bInfo.sideMaterial[them] -= SORT_VALUE[m.captured];
+		// update TT key
+		st->Key ^= Zobrist::ZobArray[them][m.captured][capSq];
 		//update material key
 		bInfo.MaterialKey ^= zobrist.zArray[them][m.captured][pieceCount[them][m.captured]+1];
 	}
@@ -394,8 +398,9 @@ void BitBoards::makeMove(const Move& m, StateInfo& newSt, int color)
 	zobrist.UpdateKey(m.from, m.to, m, !color); //color is messed up here as function still takes "isWhite" bool
 	zobrist.UpdateColor();
 
-	st->Key ^= Zobrist::ZobArray[color][m.piece][m.from] ^ Zobrist::ZobArray[color][m.piece][m.to]
-		    ^  Zobrist::ZobArray[them][m.captured][m.to] ^ Zobrist::Color;
+	st->Key ^= Zobrist::ZobArray[color][m.piece][m.from] 
+		    ^ Zobrist::ZobArray[color ][m.piece][m.to]
+		    ^ Zobrist::Color;
 
 	//flip internal side to move
 	bInfo.sideToMove = !bInfo.sideToMove;
@@ -422,13 +427,7 @@ void BitBoards::unmakeMove(const Move & m, int color)
 
 		if (m.piece == PAWN) { 
 			bInfo.PawnKey ^= zobrist.zArray[color][PAWN][m.to] ^ zobrist.zArray[color][PAWN][m.from]; //ADD ALL KEYS TO ST so we don't need to unmake the keys, just restore info stored on ply/stack
-			/*
-			if (st->previous->epSquare != SQ_NONE) { //probably should be st->ep
 
-				// undo zobrist key ep square designation if pawn on this move put itself into possible ep
-				zobrist.zobristKey ^= zobrist.zEnPassant[file_of(st->previous->epSquare)];
-			}
-			*/
 			// unmake en passant
 			if (m.flag == 'E') {
 

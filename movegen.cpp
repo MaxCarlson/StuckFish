@@ -121,7 +121,7 @@ void MoveGen::pawnMoves(const BitBoards& boards, bool capturesOnly) {
 		movegen_push(boards, color, PAWN, captured, '0', index - Left, index);
 	}
 
-/*	// en passant
+///*	// en passant
 	if (boards.can_enpassant()) {
 
 		int epSq = boards.ep_square();

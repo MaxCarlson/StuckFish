@@ -1,5 +1,6 @@
 #include "common.h"
 #include "slider_attacks.h"
+#include "defines.h"
 
 #include <cassert>
 #include <cstdlib>

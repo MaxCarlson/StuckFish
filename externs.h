@@ -29,9 +29,6 @@ extern Material::Table MaterialTable;
 //half turns
 extern int turns;
 
-//master zobrist for turn
-//extern ZobristH zobrist;
-
 //array for storing objects containing zorbist key for position as well as depth and eval
 extern HashEntry transpositionEval[5021983];
 extern HashEntry transpositionPawn[400000];

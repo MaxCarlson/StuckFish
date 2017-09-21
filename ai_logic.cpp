@@ -242,7 +242,7 @@ int Ai_Logic::searchRoot(BitBoards& board, int depth, int alpha, int beta, searc
     }
 
 	//save info and move to TT
-	TT.save(sd.PV[ss->ply], board.zobrist.zobristKey, depth, valueToTT(alpha, ss->ply), hashFlag);
+	TT.save(sd.PV[ss->ply], board.TTKey(), depth, valueToTT(alpha, ss->ply), hashFlag);
 
 	if (alpha >= beta && !flagInCheck && sd.PV[1].captured == PIECE_EMPTY && sd.PV[1].flag != 'Q') {
 		updateStats(sd.PV[1], ss, depth, quiets, quietsCount, color);
@@ -409,7 +409,7 @@ int Ai_Logic::alphaBeta(BitBoards& board, int depth, int alpha, int beta, search
 		alphaBeta(board, d, alpha, beta, ss, NO_NULL, isPV);
 		sd.skipEarlyPruning = false;
 
-		ttentry = TT.probe(board.zobrist.zobristKey);
+		ttentry = TT.probe(board.TTKey());
 
 	}
 
@@ -448,14 +448,14 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 		//make move on BB's store data to string so move can be undone
 		board.makeMove(newMove, st, color);
 /*
-		if (board.zobrist.zobristKey != board.zobrist.debugKey(color, board)
+		if (board.TTKey() != board.zobrist.debugKey(color, board)
 			|| board.pawn_key() != board.zobrist.debugPawnKey(board)
 			|| board.material_key() != board.zobrist.debugMaterialKey(board)) {
 			std::string fuck = "";
 			U64 k1, k2;
-			if (board.zobrist.zobristKey != board.zobrist.debugKey(!color, board)) {
+			if (board.TTKey() != board.zobrist.debugKey(!color, board)) {
 				fuck = "ZOBRIST";
-				k1 = board.zobrist.zobristKey;
+				k1 = board.TTKey();
 				k2 = board.zobrist.debugKey(color, board);
 				std::cout << k1 << std::endl << k2 << std::endl << (k2 ^ board.zobrist.zBlackMove) << std::endl;
 			}
@@ -467,13 +467,9 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 			}
 
 		}
+//*/
 
-		if (board.TTKey() != board.zobrist.zobristKey) {
-			std::cout << board.zobrist.zobristKey << std::endl;
-			std::cout << board.TTKey() << std::endl;
-			std::cout << (board.TTKey() ^ board.zobrist.zBlackMove) << std::endl;
-		}
-		*/
+		//*/
 		//is move legal? if not skip it
 		if (!gen_moves.isLegal(board, newMove, color)) {
 			board.unmakeMove(newMove, color);
@@ -712,7 +708,7 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 
 	if (!ss->excludedMove.tried) { //only write to TTable if we're not in partial search
 		//save info + move to transposition table 
-		TT.save(hashMove, board.zobrist.zobristKey, depth, valueToTT(alpha, ss->ply), hashFlag);
+		TT.save(hashMove, board.TTKey(), depth, valueToTT(alpha, ss->ply), hashFlag);
 	}
 
 
@@ -754,7 +750,7 @@ int Ai_Logic::quiescent(BitBoards& board, int alpha, int beta, searchStack *ss, 
 
 	if (standingPat >= beta) {
 
-		if (!ttentry) TT.save(board.zobrist.zobristKey, DEPTH_QS, valueToTT(standingPat, ss->ply), TT_BETA); //save to TT if there's no entry MAJOR PROBLEMS WITH THIS 
+		if (!ttentry) TT.save(board.TTKey(), DEPTH_QS, valueToTT(standingPat, ss->ply), TT_BETA); //save to TT if there's no entry MAJOR PROBLEMS WITH THIS 
 		return beta;
 	}
 
@@ -814,7 +810,7 @@ int Ai_Logic::quiescent(BitBoards& board, int alpha, int beta, searchStack *ss, 
 
 	}
 
-	//TT.save(hashMove, board.zobrist.zobristKey, DEPTH_QS, valueToTT(alpha, ss->ply), hashFlag);
+	//TT.save(hashMove, board.TTKey(), DEPTH_QS, valueToTT(alpha, ss->ply), hashFlag);
 
 	return alpha;
 }
@@ -845,7 +841,7 @@ bool Ai_Logic::isRepetition(const BitBoards& board, const Move& m) //Ai_Logic::
 	int repCount = 0;
 
 	for (int i = 0; i < history.twoFoldRep.size(); ++i) {
-		if (board.zobrist.zobristKey == history.twoFoldRep[i]) repCount++;
+		if (board.TTKey() == history.twoFoldRep[i]) repCount++;
 	}
 
 	if (repCount >= 2) {
