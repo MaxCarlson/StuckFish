@@ -53,7 +53,10 @@ public:
 	ZobristH zobrist;
 
     //builds boards through reading an array
-    void constructBoards();
+    void constructBoards(const std::string* FEN);
+
+	//constructs boards from FEN string
+	void readFenString(const std::string& FEN);
 
 	//make the move
 	void makeMove(const Move& m, StateInfo& newSt, int color);

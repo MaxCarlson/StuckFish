@@ -145,7 +145,9 @@ void UCI::updatePosition(BitBoards& newBoard, std::istringstream& input)
 	{
 		while (input >> token && token != "moves")
 			fen += token + " ";
-		//add fen code
+
+		newBoard.constructBoards(&fen);
+		isWhite = !newBoard.bInfo.sideToMove;
 	}
 	else
 	{
@@ -177,7 +179,7 @@ void UCI::updatePosition(BitBoards& newBoard, std::istringstream& input)
 
 void UCI::newGame(BitBoards& newBoard)
 {
-	newBoard.constructBoards();
+	newBoard.constructBoards(NULL);
 
 	//create zobrist hash for startpos that is used to check TT entrys and repetitions 
 	newBoard.zobrist.getZobristHash(newBoard);

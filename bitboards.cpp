@@ -3,6 +3,7 @@
 #include <random>
 #include <iostream>
 #include <cstdio>
+#include <sstream>
 
 #include "externs.h"
 #include "zobristh.h"
@@ -32,6 +33,8 @@ std::string boardArr[8][8] = {
 	{ "R", "N", "B", "Q", "K", "B", "N", "R" },
 };
 
+// holds keys to XOR Transposition, Material, and Pawn hash keys by 
+// when board position changes
 namespace Zobrist {
 	U64 ZobArray[COLOR][PIECES][SQ_ALL];
 	U64 EnPassant[8];
@@ -110,18 +113,19 @@ void BitBoards::initBoards()
 	//it holds a computer bitboard relative to side to move
 	//lines forward from a particual square
 	for (int color = 0; color < 2; ++color) {
-		//const int sh = color == WHITE ? N : S; ?? doesn't accept as template argument
 
 		for (int sq = 0; sq < 64; ++sq) {
 
+			//create U64 lookup table for each square
+			squareBB[sq] = 1LL << sq;
 			//create forward bb masks
 			forwardBB[color][sq] = 1LL << sq;
 			PassedPawnMask[color][sq] = 0LL;
 			PawnAttackSpan[color][sq] = 0LL;
 
-			if (color == WHITE) { //unfotunatly cannot find a fix to declaring <x> = color == WHITE ? N : S;
+			if (color == WHITE) { 
 				forwardBB[color][sq] = shift_bb<N>(forwardBB[color][sq]);
-				for (int i = 0; i < 8; ++i) { //something to do with non static storage duration cannot be used as non-type argument
+				for (int i = 0; i < 8; ++i) { 
 					forwardBB[color][sq] |= shift_bb<N>(forwardBB[color][sq]);
 					//create passed pawn masks
 					PassedPawnMask[color][sq] |= psuedoAttacks(PAWN, WHITE, sq) | forwardBB[color][sq];
@@ -158,10 +162,10 @@ void BitBoards::initBoards()
 	
 }
 
-void BitBoards::constructBoards() //replace this with fen string reader
+void BitBoards::constructBoards(const std::string* FEN) //replace this with fen string reader
 {
 
-	st = new StateInfo; //this is a memory leak currently. Figure out a better way!!!!! Posssibly smart ptr if perfromance isn't effected other than make destruct?
+	st = new StateInfo; //this is a memory leak currently. Figure out a better way!!!!! Posssibly smart ptr if perfromance isn't effected ?
 	st->epSquare = SQ_NONE;
 	st->castlingRights = 0;
 	st->MaterialKey = 0LL;
@@ -191,7 +195,21 @@ void BitBoards::constructBoards() //replace this with fen string reader
 
 	//seed bitboards
 	for (int i = 0; i < 64; i++) {
-		squareBB[i] = 1LL << i;
+		pieceIndex[i] = SQ_NONE;
+		pieceOn[i] = PIECE_EMPTY;
+	}
+
+	if(FEN) readFenString(*FEN);
+	else {
+		const std::string startpos = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+		readFenString(startpos);
+	}
+
+	
+
+/*
+	//seed bitboards
+	for (int i = 0; i < 64; i++) {
 		pieceIndex[i] = SQ_NONE;
 		pieceOn[i] = PIECE_EMPTY;
 
@@ -259,7 +277,8 @@ void BitBoards::constructBoards() //replace this with fen string reader
 			bInfo.sideMaterial[1] += KING_VAL;
 		}
 	}
-
+*/
+	//get zobrist key of current position and store to board
 	st->Key = zobrist.getZobristHash(*this);
 
 	for (int color = 0; color < COLOR; ++color) {
@@ -286,9 +305,79 @@ void BitBoards::constructBoards() //replace this with fen string reader
   	EmptyTiles = ~FullTiles;	
 }
 
+void BitBoards::readFenString(const std::string& FEN)
+{								
+				     //  B                          K        N     P  Q  R
+	int lookup[18] = {0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 6, 0, 0, 2, 0, 1, 5, 4};
+
+	int spCount = 0;
+
+	std::istringstream ss(FEN);
+	char token;
+
+	ss >> std::noskipws;
+
+	int sq = A8;
+
+	// place pieces 
+	while((ss >> token) && !isspace(token)) {
+
+		if (isdigit(token)) sq += token - '0';
+
+		if (token == '/') continue; //is this correct?
+		
+		if (isalpha(token)) {
+			if (isupper(token)) {
+				addPiece(lookup[token - 'A'], WHITE, sq);
+			}
+			else {
+				addPiece(lookup[char(toupper(token)) - 'A'], BLACK, sq);
+			}
+			sq++;
+		}
+	}
+
+	// 2. Active color
+	ss >> token;
+	bInfo.sideToMove = (token == 'w' ? WHITE : BLACK);
+	ss >> token;
+
+	// Need castling code
+	while ((ss >> token) && !isspace(token))
+	{
+		token = char(toupper(token));
+
+		if (token == 'K' || 'Q') continue;
+
+		else continue;
+	}
+
+	// En passant square, ignore if no capture possible
+	char row, col;
+
+	if (((ss >> col) && (col >= 'a' && col <= 'h'))
+		&& ((ss >> row) && (row == '3' || row == '6'))){
+
+		st->epSquare = (col - 'a') * 8 + (row - '1'); //test this 
+
+		if (!(psuedoAttacks(PAWN, bInfo.sideToMove, st->epSquare) //also needs testing
+			& pieces(bInfo.sideToMove, PAWN))) { 
+			st->epSquare = SQ_NONE;
+		}
+		
+	}
+	
+	// need to implement half move clock 
+	char notUSED;
+	ss >> std::skipws >> notUSED >> turns;
+
+}
+
 void BitBoards::makeMove(const Move& m, StateInfo& newSt, int color)
 {
 	int them = !color;
+
+
 
 	assert(posOkay());
 

@@ -1,13 +1,5 @@
-﻿  Evaluate.cpp
+﻿  bitboards.cpp
 C:\Users\C-60\Desktop\cppPrograms\StuckFish\move.h(9): warning #945: type qualifier ignored
         const Move();
         ^
   
-  Pawns.cpp
-C:\Users\C-60\Desktop\cppPrograms\StuckFish\move.h(9): warning #945: type qualifier ignored
-        const Move();
-        ^
-  
-  TimeManager.cpp
-  compilation aborted for TimeManager.cpp (code -42)
-C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V140\Platforms\x64\PlatformToolsets\Intel C++ Compiler 17.0\Toolset.targets(378,5): error MSB6006: "icl.exe" exited with code -42.
