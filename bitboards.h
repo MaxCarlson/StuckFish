@@ -143,10 +143,11 @@ public:
 	void drawBB(U64 board);
 	//draw out bitboards like a full chessboard array
 	void drawBBA();
-
+	StateInfo startState;
 private:
 
-	StateInfo startState;
+	void set_state(StateInfo * si);
+	
 	StateInfo* st;
 
 	void movePiece(int piece, int color, int from, int to);

@@ -42,6 +42,8 @@ void UCI::uciLoop()
 	//initalize things
 	newBoard.initBoards();
 
+	StateInfo si;
+
 	// Make sure that the outputs are sent straight away to the GUI
 	std::cout.setf(std::ios::unitbuf);
 
@@ -72,7 +74,6 @@ void UCI::uciLoop()
 		}
 		else if (token == "color") {
 
-			//std::cout << "colorToPlay: " << myBoardPtr->getColorToPlay() << std::endl;
 		}
 		else if (token == "ucinewgame")
 		{
@@ -91,7 +92,7 @@ void UCI::uciLoop()
 			search(newBoard);
 		}
 		else if (token == "position") {
-			updatePosition(newBoard, is);
+			updatePosition(newBoard, is, si);
 		}
 		else if (token == "print"){
 			newBoard.drawBBA();
@@ -127,14 +128,12 @@ void UCI::uciLoop()
 	}
 }
 
-void UCI::updatePosition(BitBoards& newBoard, std::istringstream& input)
+void UCI::updatePosition(BitBoards& newBoard, std::istringstream& input, StateInfo & si)
 {
 	Move m;
 	std::string token, fen;
 
 	input >> token;
-
-	StateInfo st;
 
 	if (token == "startpos")
 	{
@@ -163,7 +162,7 @@ void UCI::updatePosition(BitBoards& newBoard, std::istringstream& input)
 			m = strToMove(newBoard, token);
 
 			//make move + increment turns
-			newBoard.makeMove(m, st, !isWhite);
+			newBoard.makeMove(m, si, !isWhite);
 			turns += 1;
 			
 			//push board position U64 to search driver.two fold repeitions

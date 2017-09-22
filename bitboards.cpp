@@ -173,7 +173,11 @@ void BitBoards::constructBoards(const std::string* FEN) //replace this with fen 
 	startState.PawnKey = 0LL;
 
 	st = &startState;
-
+	//st = new StateInfo;
+	//st->epSquare = SQ_NONE;
+	//st->castlingRights = 0;
+	//st->MaterialKey = 0LL;
+	//st->PawnKey = 0LL;
 
 	FullTiles = 0LL;
 
@@ -212,20 +216,28 @@ void BitBoards::constructBoards(const std::string* FEN) //replace this with fen 
 */
 
 
+	set_state(st);
+
+	// mark empty tiles opposite of full tiles
+  	EmptyTiles = ~FullTiles;	
+}
+
+void BitBoards::set_state(StateInfo * si)
+{
 	//get zobrist key of current position and store to board
-	st->Key = zobrist.getZobristHash(*this);
+	si->Key = zobrist.getZobristHash(*this);
 
 	for (int c = 0; c < COLOR; ++c) {
-		
+
 		bInfo.sideMaterial[c] = 0;
 		bInfo.nonPawnMaterial[c] = 0;
-		
+
 		for (int pt = PAWN; pt < PIECES; ++pt) {
 
 			bInfo.sideMaterial[c] += SORT_VALUE[pt] * pieceCount[c][pt];
 
 			//add up non pawn material 
-			if(pt > PAWN)
+			if (pt > PAWN)
 				bInfo.nonPawnMaterial[c] += SORT_VALUE[pt] * pieceCount[c][pt];
 
 			// XOR the pawn hash key by pawns
@@ -234,7 +246,7 @@ void BitBoards::constructBoards(const std::string* FEN) //replace this with fen 
 				U64 pawnBoard = pieces(c, PAWN);
 
 				while (pawnBoard) {
-					st->PawnKey ^= zobrist.zArray[c][PAWN][pop_lsb(&pawnBoard)];
+					si->PawnKey ^= zobrist.zArray[c][PAWN][pop_lsb(&pawnBoard)];
 				}
 			}
 
@@ -242,13 +254,10 @@ void BitBoards::constructBoards(const std::string* FEN) //replace this with fen 
 			// so we can have a Material Key that represents what material is on the board.
 			for (int count = 0; count <= pieceCount[c][pt]; ++count) {
 
-				st->MaterialKey ^= zobrist.zArray[c][pt][count];
+				si->MaterialKey ^= zobrist.zArray[c][pt][count];
 			}
 		}
 	}
-
-	// mark empty tiles opposite of full tiles
-  	EmptyTiles = ~FullTiles;	
 }
 
 void BitBoards::readFenString(const std::string& FEN)
@@ -325,6 +334,7 @@ void BitBoards::makeMove(const Move& m, StateInfo& newSt, int color)
 
 	assert(posOkay());
 
+	
 	//copy current board state to board state stored on ply
 	std::memcpy(&newSt, st, sizeof(StateInfo));
 	//set previous state on ply to current state
