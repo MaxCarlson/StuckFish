@@ -165,35 +165,34 @@ void BitBoards::initBoards()
 void BitBoards::constructBoards(const std::string* FEN) //replace this with fen string reader
 {
 
-	st = new StateInfo; //this is a memory leak currently. Figure out a better way!!!!! Posssibly smart ptr if perfromance isn't effected ?
-	st->epSquare = SQ_NONE;
-	st->castlingRights = 0;
-	st->MaterialKey = 0LL;
-	st->PawnKey = 0LL;
+	//st = new StateInfo; //this is a memory leak currently. Figure out a better way!!!!! Posssibly smart ptr if perfromance isn't effected ?
+	//st->previous = NULL;
+	startState.epSquare = SQ_NONE;
+	startState.castlingRights = 0;
+	startState.MaterialKey = 0LL;
+	startState.PawnKey = 0LL;
+
+	st = &startState;
+
 
 	FullTiles = 0LL;
-	bInfo.sideToMove = WHITE;
-	
+
 	//reset piece and color BitBoards to 0;
 	for (int i = 0; i < 2; ++i) {
 		allPiecesColorBB[i] = 0LL;
-		//reset side material values
-		bInfo.sideMaterial[i] = 0; 
-		//reset castling rights
-		castlingRights[i] = 0LL;
 
 		for (int j = 0; j < 7; ++j) {
 			byColorPiecesBB[i][j] = 0LL;
 			byPieceType[j] = 0LL;
-			pieceCount[i][j] = 0;	
-			
+			pieceCount[i][j] = 0;
+
 			for (int h = 0; h < 16; ++h) {
 				pieceLoc[i][j][h] = SQ_NONE;
 			}
 		}
 	}
 
-	//seed bitboards
+	//clear piece locations and indices
 	for (int i = 0; i < 64; i++) {
 		pieceIndex[i] = SQ_NONE;
 		pieceOn[i] = PIECE_EMPTY;
@@ -205,103 +204,50 @@ void BitBoards::constructBoards(const std::string* FEN) //replace this with fen 
 		readFenString(startpos);
 	}
 
-	
-
 /*
-	//seed bitboards
+	//seed bitboards //delete
 	for (int i = 0; i < 64; i++) {
 		pieceIndex[i] = SQ_NONE;
 		pieceOn[i] = PIECE_EMPTY;
-
-		if (boardArr[i / 8][i % 8] == "P") {
-
-			addPiece(PAWN, WHITE, i);
-			bInfo.sideMaterial[0] += PAWN_VAL;
-			st->PawnKey ^= zobrist.zArray[WHITE][PAWN][i];
-		}
-		else if (boardArr[i / 8][i % 8] == "N") {
-			addPiece(KNIGHT, WHITE, i);
-
-			bInfo.sideMaterial[0] += KNIGHT_VAL;
-		}
-		else if (boardArr[i / 8][i % 8] == "B") {
-
-			addPiece(BISHOP, WHITE, i);
-			bInfo.sideMaterial[0] += BISHOP_VAL;
-		}
-		else if (boardArr[i / 8][i % 8] == "R") {
-
-			addPiece(ROOK, WHITE, i);
-			bInfo.sideMaterial[0] += ROOK_VAL;
-		}
-		else if (boardArr[i / 8][i % 8] == "Q") {
-
-			addPiece(QUEEN, WHITE, i);
-			bInfo.sideMaterial[0] += QUEEN_VAL;
-		}
-		else if (boardArr[i / 8][i % 8] == "K") {
-
-			addPiece(KING, WHITE, i);
-			bInfo.sideMaterial[0] += KING_VAL;
-		}
-		//black pieces
-		else if (boardArr[i / 8][i % 8] == "p") {
-
-			addPiece(PAWN, BLACK, i);
-			bInfo.sideMaterial[1] += PAWN_VAL;
-			st->PawnKey ^= zobrist.zArray[BLACK][PAWN][i];
-		}
-		else if (boardArr[i / 8][i % 8] == "n") {
-
-			addPiece(KNIGHT, BLACK, i);
-			bInfo.sideMaterial[1] += KNIGHT_VAL;
-		}
-		else if (boardArr[i / 8][i % 8] == "b") {
-
-			addPiece(BISHOP, BLACK, i);
-			bInfo.sideMaterial[1] += BISHOP_VAL;
-		}
-		else if (boardArr[i / 8][i % 8] == "r") {
-
-			addPiece(ROOK, BLACK, i);
-			bInfo.sideMaterial[1] += ROOK_VAL;
-		}
-		else if (boardArr[i / 8][i % 8] == "q") {
-
-			addPiece(QUEEN, BLACK, i);
-			bInfo.sideMaterial[1] += QUEEN_VAL;
-		}
-		else if (boardArr[i / 8][i % 8] == "k") {
-
-			addPiece(KING, BLACK, i);
-			bInfo.sideMaterial[1] += KING_VAL;
-		}
-	}
 */
+
+
 	//get zobrist key of current position and store to board
 	st->Key = zobrist.getZobristHash(*this);
 
-	for (int color = 0; color < COLOR; ++color) {
-		for (int pt = PAWN; pt <= KING; ++pt) {
-			for (int count = 0; count <= pieceCount[color][pt]; ++count) {
+	for (int c = 0; c < COLOR; ++c) {
+		
+		bInfo.sideMaterial[c] = 0;
+		bInfo.nonPawnMaterial[c] = 0;
+		
+		for (int pt = PAWN; pt < PIECES; ++pt) {
 
-				//XOR material key with piece count instead of square location
-				//so we can have a Material Key that represents what material is on the board.
-				st->MaterialKey ^= zobrist.zArray[color][pt][count];
+			bInfo.sideMaterial[c] += SORT_VALUE[pt] * pieceCount[c][pt];
+
+			//add up non pawn material 
+			if(pt > PAWN)
+				bInfo.nonPawnMaterial[c] += SORT_VALUE[pt] * pieceCount[c][pt];
+
+			// XOR the pawn hash key by pawns
+			// and their color/locations
+			if (pt == PAWN) {
+				U64 pawnBoard = pieces(c, PAWN);
+
+				while (pawnBoard) {
+					st->PawnKey ^= zobrist.zArray[c][PAWN][pop_lsb(&pawnBoard)];
+				}
+			}
+
+			// XOR material key with piece count instead of square location
+			// so we can have a Material Key that represents what material is on the board.
+			for (int count = 0; count <= pieceCount[c][pt]; ++count) {
+
+				st->MaterialKey ^= zobrist.zArray[c][pt][count];
 			}
 		}
 	}
 
-	//add up non pawn material 
-	for (int c = 0; c < COLOR; ++c) {
-		bInfo.nonPawnMaterial[c] = 0;
-
-		for (int pt = KNIGHT; pt < PIECES; ++pt) {
-			bInfo.nonPawnMaterial[c] += SORT_VALUE[pt] * pieceCount[c][pt];
-		}
-	}
-
-	//mark empty tiles opposite of full tiles
+	// mark empty tiles opposite of full tiles
   	EmptyTiles = ~FullTiles;	
 }
 
@@ -377,8 +323,6 @@ void BitBoards::makeMove(const Move& m, StateInfo& newSt, int color)
 {
 	int them = !color;
 
-
-
 	assert(posOkay());
 
 	//copy current board state to board state stored on ply
@@ -387,7 +331,6 @@ void BitBoards::makeMove(const Move& m, StateInfo& newSt, int color)
 	newSt.previous = st;
 	//use st to modify values on ply
 	st = &newSt;
-
 
 	//remove or add captured piece from BB's same as above for moving piece
 	if (m.captured) {

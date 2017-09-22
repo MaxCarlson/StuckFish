@@ -76,14 +76,13 @@ void UCI::uciLoop()
 		}
 		else if (token == "ucinewgame")
 		{
-			newGame(newBoard); //add function to reset TTables ? plus / only
-			//searchM.clearHistorys();
+			newGame(newBoard); 
 			searchM.clearHistorys();
 			TT.clearTable(); //need to clear other TTables too at somepoint
 			searchM.initSearch();
 		}
 		else if (token == "test") { //used to enable quick testing
-			newGame(newBoard); //add function to reset TTables ? plus / only
+			newGame(newBoard); 
 			searchM.clearHistorys();
 			TT.clearTable(); //need to clear other TTables too at somepoint
 			searchM.initSearch();
@@ -218,7 +217,7 @@ void UCI::setOption(std::istringstream & input)
 
 void UCI::search(BitBoards& newBoard)
 {	
-	Move m = searchM.searchStart(newBoard, isWhite); //searchM.searchStart(newBoard, isWhite);
+	Move m = searchM.searchStart(newBoard, isWhite); 
 
 	std::cout << "bestmove " << moveToStr(m) << std::endl; //send move to std output for UCI GUI to pickup
 

@@ -146,6 +146,7 @@ public:
 
 private:
 
+	StateInfo startState;
 	StateInfo* st;
 
 	void movePiece(int piece, int color, int from, int to);
