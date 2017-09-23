@@ -3,11 +3,3 @@ C:\Users\C-60\Desktop\cppPrograms\StuckFish\move.h(9): warning #945: type qualif
         const Move();
         ^
   
-bitboards.cpp(464): warning #592: variable "rookFrom" is used before its value is set
-    		movePiece(ROOK, color, rookFrom, rookTo);
-    		                       ^
-  
-bitboards.cpp(464): warning #592: variable "rookTo" is used before its value is set
-    		movePiece(ROOK, color, rookFrom, rookTo);
-    		                                 ^
-  

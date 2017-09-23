@@ -214,6 +214,7 @@ inline int BitBoards::stm() const
 	return bInfo.sideToMove;
 }
 
+//castling helpers
 inline int BitBoards::castling_rights() const
 {
 	return st->castlingRights;

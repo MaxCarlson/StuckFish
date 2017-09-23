@@ -456,12 +456,8 @@ void BitBoards::makeMove(const Move& m, StateInfo& newSt, int color)
 	// Castling ~~ only implemented to be done by another,
 	// engine itself cannot castle yet. Next thing on agenda.
 	else if (m.flag == 'C') {
-		
-		int rookFrom, rookTo;
 
 		do_castling<true>(m, color);
-
-		movePiece(ROOK, color, rookFrom, rookTo);
 	}
 
 	// Update castling rights if a rook is moving for first time,

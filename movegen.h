@@ -70,6 +70,9 @@ private:
 	template<int color>
 	void pawnMoves(const BitBoards & boards, bool capturesOnly);
 
+	template<int cs>
+	void castling(const BitBoards & boards, int color);
+
     void possibleN(const BitBoards& board, int color, const U64 &capturesOnly);
     void possibleB(const BitBoards& board, int color, const U64 &capturesOnly);
     void possibleR(const BitBoards& board, int color, const U64 &capturesOnly);
