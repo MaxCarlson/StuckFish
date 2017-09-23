@@ -241,9 +241,9 @@ void MoveGen::generatePsMoves(const BitBoards& boards, bool capturesOnly)
 	possibleQ(boards, color, capsOnly);
 	possibleK(boards, color, capsOnly);
 
-	if (boards.can_castle(color)) { // && !capturesOnly //only commeneted out for easy testing
+	if (boards.can_castle(color) && !capturesOnly) { 
 		castling<KING_SIDE >(boards, color);
-		//castling<QUEEN_SIDE>(boards, color);
+		castling<QUEEN_SIDE>(boards, color);
 	}
 
     return;
