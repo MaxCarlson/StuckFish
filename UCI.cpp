@@ -166,7 +166,7 @@ void UCI::updatePosition(BitBoards& newBoard, std::istringstream& input, StateIn
 			turns += 1;
 			
 			//push board position U64 to search driver.two fold repeitions
-			history.twoFoldRep.push_back(newBoard.zobrist.zobristKey);
+			history.twoFoldRep.push_back(newBoard.TTKey());
 			repCount++;
 			
 			isWhite = !isWhite;

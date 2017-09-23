@@ -129,13 +129,13 @@ public:
 
 	U64 psuedoAttacks(int piece, int color, int sq) const;
 
-//state info
-	//piece material arrays for sides, using piece values
- //MOVE TO STRUCT ALONG WITH OTHER INFO?
 
-	//Bitboard array used to denote if castling has occured for color.
-	U64 castlingRights[COLOR];
-	bool can_castle(int color) const;
+	//castling
+	void set_castling_rights(int color, int rfrom);
+
+	int castlingRightsMasks[SQ_ALL];
+	U64 castlingPath[4];
+
 
 
 
@@ -143,12 +143,19 @@ public:
 	void drawBB(U64 board);
 	//draw out bitboards like a full chessboard array
 	void drawBBA();
+
+	// holds the state info for the very start
+	// st eventually points to this at the end
 	StateInfo startState;
+
 private:
 
 	void set_state(StateInfo * si);
 	
 	StateInfo* st;
+
+	template<int make>
+	void do_castling(const Move & m, int color);
 
 	void movePiece(int piece, int color, int from, int to);
 
@@ -269,12 +276,6 @@ inline bool BitBoards::can_enpassant() const
 inline int BitBoards::ep_square() const
 {
 	return st->epSquare;
-}
-//not yet working castling legal check
-inline bool BitBoards::can_castle(int color) const
-{
-	return (castlingRights[color] < 5 && castlingRights[color] != 2LL && castlingRights[color] != 3LL
-		&& (pieces(color, ROOK) & (1LL << relative_square(color, A1))) || (pieces(color, ROOK) & (1LL << relative_square(color, H1)))  );
 }
 
 //can only be used if there is no piece on landing spot

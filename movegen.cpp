@@ -347,11 +347,7 @@ void MoveGen::possibleK(const BitBoards& board, int color, const U64 &capturesOn
 		U64 moves = board.psuedoAttacks(KING, color, square);
 		moves &= capturesOnly & ~(friends | eking);
 
-		/*
-		if (board.can_castle(color)) { //flag first movement for king
-			flag = 'M';
-		}
-		*/
+
 		//non castling moves
 		while (moves) {
 			int index = pop_lsb(&moves);
@@ -362,19 +358,6 @@ void MoveGen::possibleK(const BitBoards& board, int color, const U64 &capturesOn
 
 			movegen_push(board, color, KING, captured, flag, square, index);
 		}
-
-		/*
-		if (flag == 'M') {
-			if (!(castlingMasks[color][0] & board.FullTiles)) {
-				movegen_push(KING, PIECE_EMPTY, 'C', square, relative_square(color, C1));
-			}
-			if (!(castlingMasks[color][1] & board.FullTiles)) {
-				movegen_push(KING, PIECE_EMPTY, 'C', square, relative_square(color, G1));
-			}
-
-		}
-		*/
-
 	}
 }
 

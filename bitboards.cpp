@@ -164,20 +164,17 @@ void BitBoards::initBoards()
 
 void BitBoards::constructBoards(const std::string* FEN) //replace this with fen string reader
 {
-
-	//st = new StateInfo; //this is a memory leak currently. Figure out a better way!!!!! Posssibly smart ptr if perfromance isn't effected ?
-	//st->previous = NULL;
+	//set the start state
 	startState.epSquare = SQ_NONE;
 	startState.castlingRights = 0;
 	startState.MaterialKey = 0LL;
 	startState.PawnKey = 0LL;
 
+	//set state to start state
+	//there are probable issues with this, it seems after setting a position
+	//once we break into search, there's an infinite list of identical positions to search start
+	//in st->previous
 	st = &startState;
-	//st = new StateInfo;
-	//st->epSquare = SQ_NONE;
-	//st->castlingRights = 0;
-	//st->MaterialKey = 0LL;
-	//st->PawnKey = 0LL;
 
 	FullTiles = 0LL;
 
@@ -207,13 +204,7 @@ void BitBoards::constructBoards(const std::string* FEN) //replace this with fen 
 		const std::string startpos = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 		readFenString(startpos);
 	}
-
-/*
-	//seed bitboards //delete
-	for (int i = 0; i < 64; i++) {
-		pieceIndex[i] = SQ_NONE;
-		pieceOn[i] = PIECE_EMPTY;
-*/
+	delete FEN; //posibly change this? not much reason for ptr anymore
 
 
 	set_state(st);
@@ -227,9 +218,11 @@ void BitBoards::set_state(StateInfo * si)
 	//get zobrist key of current position and store to board
 	si->Key = zobrist.getZobristHash(*this);
 
+	//si->Key ^= Zobrist::Castling[st->castlingRights];
+
 	for (int c = 0; c < COLOR; ++c) {
 
-		bInfo.sideMaterial[c] = 0;
+		bInfo.sideMaterial[c] = 0; //transfer Binfo stuff to st->~!~!~!~!~~!~!!~!~!~!~!~!!~!~!~!~!~!
 		bInfo.nonPawnMaterial[c] = 0;
 
 		for (int pt = PAWN; pt < PIECES; ++pt) {
@@ -292,25 +285,36 @@ void BitBoards::readFenString(const std::string& FEN)
 		}
 	}
 
-	// 2. Active color
+	// Side to move
 	ss >> token;
 	bInfo.sideToMove = (token == 'w' ? WHITE : BLACK);
 	ss >> token;
 
-	// Need castling code
+	// figure out which castling rights are applicable
+	// and apply them
 	while ((ss >> token) && !isspace(token))
 	{
+		int rookSquare;
+
+		int color = islower(token) ? BLACK : WHITE;
+
 		token = char(toupper(token));
 
-		if (token == 'K' || 'Q') continue;
-
+		if (token == 'K') {
+			rookSquare = relative_square(color, H1);
+		}
+		else if (token == 'Q') {
+			rookSquare = relative_square(color, A1);
+		}
 		else continue;
+
+		set_castling_rights(color, rookSquare);
 	}
 
 	// En passant square, ignore if no capture possible
 	char row, col;
 
-	if (((ss >> col) && (col >= 'a' && col <= 'h'))
+	if (((ss >> col) && (col >= 'a' && col <= 'h')) // TEST AND CHECK if ep square through FEN is working and correct
 		&& ((ss >> row) && (row == '3' || row == '6'))){
 
 		st->epSquare = (col - 'a') * 8 + (row - '1'); //test this 
@@ -328,13 +332,31 @@ void BitBoards::readFenString(const std::string& FEN)
 
 }
 
+void BitBoards::set_castling_rights(int color, int rfrom)
+{
+	int king = king_square(color);
+
+	int cside = king < rfrom ? KING_SIDE : QUEEN_SIDE;
+
+	// White queenside castle least significant bit is set,
+	// White kingside  second least sig bit set
+	// Black queenside 3rd    least sig set
+	// Black kingside  4th
+	int cright = (1LL << ((cside == QUEEN_SIDE) + 2 * color));
+
+	st->castlingRights         |= cright;
+	castlingRightsMasks[king]  |= cright;
+	castlingRightsMasks[rfrom] |= cright;
+
+	//set castling paths here or do so manually?
+}
+
 void BitBoards::makeMove(const Move& m, StateInfo& newSt, int color)
 {
 	int them = !color;
 
 	assert(posOkay());
 
-	
 	//copy current board state to board state stored on ply
 	std::memcpy(&newSt, st, sizeof(StateInfo));
 	//set previous state on ply to current state
@@ -382,7 +404,6 @@ void BitBoards::makeMove(const Move& m, StateInfo& newSt, int color)
 		st->Key ^= Zobrist::EnPassant[file_of(st->epSquare)];
 		st->epSquare = SQ_NONE;
 	}
-	
 
 	if (m.piece == PAWN) {
 		
@@ -420,7 +441,7 @@ void BitBoards::makeMove(const Move& m, StateInfo& newSt, int color)
 	// Castling ~~ only implemented to be done by another,
 	// engine itself cannot castle yet. Next thing on agenda.
 	else if (m.flag == 'C') {
-		int rookFrom = relative_square(color, m.to) == C1 ? relative_square(color, A1) : relative_square(color, H1);
+		int rookFrom = relative_square(color, m.to) == C1   ? relative_square(color, A1) : relative_square(color, H1);
 		int rookTo = rookFrom == relative_square(color, A1) ? relative_square(color, D1) : relative_square(color, F1);
 
 		movePiece(ROOK, color, rookFrom, rookTo);
@@ -430,13 +451,17 @@ void BitBoards::makeMove(const Move& m, StateInfo& newSt, int color)
 			^ Zobrist::ZobArray[color][ROOK][rookFrom]
 			^ Zobrist::ZobArray[color][ROOK][rookTo];
 	}
-	
-	assert(posOkay());
 
 	//update the TT key, capture update done in capture above
-	st->Key ^= Zobrist::ZobArray[color][m.piece][m.from] 
-		    ^  Zobrist::ZobArray[color][m.piece][m.to]
-		    ^  Zobrist::Color;
+	st->Key ^= Zobrist::ZobArray[color][m.piece][m.from]
+		^ Zobrist::ZobArray[color][m.piece][m.to]
+		^ Zobrist::Color;
+
+	// prefetch TT entry into cache ~THIS IS WAY TOO TIME INTENSIVE? 6.1% on just this call from here?
+	// SWITCH TT to single address lookup instead of cluster of two?
+	_mm_prefetch((char *)TT.first_entry(st->Key), _MM_HINT_NTA);
+	
+	assert(posOkay());
 
 	//flip internal side to move
 	bInfo.sideToMove = !bInfo.sideToMove;
@@ -444,11 +469,8 @@ void BitBoards::makeMove(const Move& m, StateInfo& newSt, int color)
 	if (EmptyTiles & FullTiles || allPiecesColorBB[WHITE] & allPiecesColorBB[BLACK]) { //comment out in release
 		drawBBA();
 	}
-
-	//prefetch TT entry into cache ~THIS IS WAY TOO TIME INTENSIVE? 6.1% on just this call from here. SWITCH TT to single address lookup instead of cluster of two?
-	_mm_prefetch((char *)TT.first_entry(st->Key), _MM_HINT_NTA);
-
 }
+
 void BitBoards::unmakeMove(const Move & m, int color)
 {
 	//restore state pointer to state before we made this move
@@ -499,6 +521,26 @@ void BitBoards::unmakeMove(const Move & m, int color)
 	bInfo.sideToMove = !bInfo.sideToMove;
 
 	return;
+}
+
+template<int make>
+inline void BitBoards::do_castling(const Move & m, int color)
+{
+	bool kingSide = m.to > m.from;
+
+	int rFrom = relative_square(color, kingSide ? H1 : A1);
+	int rTo   = relative_square(color, kingSide ? F1 : D1);
+
+	//int rookFrom = relative_square(color, m.to) == C1     ? relative_square(color, A1) : relative_square(color, H1);
+	//int rookTo   = rookFrom == relative_square(color, A1) ? relative_square(color, D1) : relative_square(color, F1);
+
+	movePiece(ROOK, color, make ? rFrom : rTo, make ? rTo : rFrom);
+
+	int zCast = color == WHITE ? rookFrom == A1 ? 0 : 1 : rookFrom == A1 ? 2 : 3;
+
+	st->Key ^= Zobrist::Castling[zCast]
+		    ^  Zobrist::ZobArray[color][ROOK][rFrom]
+		    ^  Zobrist::ZobArray[color][ROOK][rTo];
 }
 
 void BitBoards::makeNullMove(StateInfo& newSt)

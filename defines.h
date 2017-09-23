@@ -3,6 +3,10 @@
 #include <intrin.h>
 #include <vector>
 
+
+#include <iostream>
+
+
 #define NDEBUG
 
 #ifdef NDEBUG
@@ -29,6 +33,25 @@
 #else
 #  define FORCE_INLINE  inline
 #endif
+
+/*
+void prefetch(char* addr) {
+
+#  if defined(__INTEL_COMPILER)
+	// This hack prevents prefetches from being optimized away by
+	// Intel compiler. Both MSVC and gcc seem not be affected by this.
+	__asm__(""); //this isn't recognized??
+#  endif
+
+#  if defined(__INTEL_COMPILER) || defined(_MSC_VER)
+	_mm_prefetch(addr, _MM_HINT_T0);
+#  else
+	__builtin_prefetch(addr);
+#  endif
+}
+*/
+
+
 
 // holds mid and end game values
 // for ease of use in evaluations
@@ -191,6 +214,9 @@ struct HashTable {
 private:
 	std::vector<Entry> table;
 };
+
+#define KING_SIDE 0
+#define QUEEN_SIDE 1
 
 #define TT_ALPHA 1
 #define TT_BETA 2
