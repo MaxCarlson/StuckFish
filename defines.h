@@ -181,7 +181,7 @@ enum ecolor {
 };
 
 
-#define KING_SIDE 0
+#define KING_SIDE  0
 #define QUEEN_SIDE 1
 
 // castling sematics

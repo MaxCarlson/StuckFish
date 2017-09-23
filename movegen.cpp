@@ -188,14 +188,18 @@ void MoveGen::castling(const BitBoards& boards, int color) {
 	int cr = cs == KING_SIDE ? color == WHITE ?  WHITE_OO : BLACK_OO 
 							 : color == WHITE ? WHITE_OOO : BLACK_OOO;
 
+	// If we don't have the right to this castle
+	if (!(cr & boards.castling_rights())) return;
 
+	// If castling is blocked
 	if (boards.castling_impeded(cr)) return;
 
 	int ks = boards.king_square(color);
 
-	int kto = relative_square(color, cs == KING_SIDE ? G1 : C1);
+	int kto = relative_square(color, (cs == KING_SIDE ? G1 : C1));
 
-	int cDelta = kto > ks ? E : W;
+	// Is the king moving left or right?
+	int cDelta = (cs == KING_SIDE ? E : W);
 
 	U64 enemys = boards.pieces(!color);
 
@@ -237,9 +241,9 @@ void MoveGen::generatePsMoves(const BitBoards& boards, bool capturesOnly)
 	possibleQ(boards, color, capsOnly);
 	possibleK(boards, color, capsOnly);
 
-	if (boards.can_castle(color)) {
+	if (boards.can_castle(color)) { // && !capturesOnly //only commeneted out for easy testing
 		castling<KING_SIDE >(boards, color);
-		castling<QUEEN_SIDE>(boards, color);
+		//castling<QUEEN_SIDE>(boards, color);
 	}
 
     return;
@@ -358,8 +362,6 @@ void MoveGen::possibleK(const BitBoards& board, int color, const U64 &capturesOn
 	const int* list = board.pieceLoc[color][KING];
 	U64 enemys = board.pieces(!color);
 
-	char flag = '0';
-
 	int square;
 	while ((square = *list++) != SQ_NONE) {
 
@@ -371,12 +373,12 @@ void MoveGen::possibleK(const BitBoards& board, int color, const U64 &capturesOn
 
 			int	captured = board.pieceOnSq(index);
 
-			movegen_push(board, color, KING, captured, flag, square, index);
+			movegen_push(board, color, KING, captured, '0', square, index);
 		}
 	}
 }
 
-int MoveGen::whichPieceCaptured(const BitBoards & board, int location, int color)
+int MoveGen::whichPieceCaptured(const BitBoards & board, int location, int color) // no longer needed??
 {
 	for (int i = PAWN; i < KING; ++i) {
 		if (board.pieces(!color, i) & board.square_bb(location)) return i;
@@ -587,53 +589,17 @@ void MoveGen::reorderMoves(searchStack *ss, const HashEntry *entry)
         if( entry && moveAr[i] == entry->move){
             moveAr[i].score = SORT_HASH;
         }
-		
-
     }
 }
-
+// Just test to see if our king is attacked by any enemy pieces
+// castling moves are checked for legality durning move gen, aside from
+// this king in check test. En passants are done the same way
 bool MoveGen::isLegal(const BitBoards & b, const Move & m, int color) 
 {
 	const int them = !color;
 	const int kingLoc = b.king_square(color);
 
 	return !isSquareAttacked(b, kingLoc, color);
-
-	// if move is not a castling move and ///CASTLING LEGALITY CHECKS REMOVED WHILE TESTING FOR BUGS
-	// has passed all legality checks 
-	// move is legal
-	//if (m.flag != 'C') return !kAttacked;
-	//return !kAttacked;
-/*	
-	U64 rookSq = color == WHITE ? m.to == C1  ? (1LL << A1) : (1LL << H1)
-							    : m.to == C8  ? (1LL << A8) : (1LL << H8);
-
-	//if we don't have our rook in the right spot, 
-	//castling isn't legal
-	if (!(rookSq & b.pieces(color, ROOK))) return false;
-	
-
-
-	//if we don't have the appropriate castling rights, 
-	//then castling isn't legal
-	int relRook = relative_square(color, pop_lsb(&rookSq));
-	U64 index = relRook == A1 ? 3LL : 6LL;
-
-	if (index & b.castlingRights[color]) return false;
-
-	//set the appropriate squares that we need to
-	//test for legality depending on castling color, qs/ks
-	U64 castleSqs = color == WHITE ? m.to == C1 ? 0xc00000000000000ULL : 0x6000000000000000ULL
-		                           : m.to == C8 ? 0xcULL : 0x60ULL;
-
-	for (int i = 0; i < 2; ++i) {
-		int loc = pop_lsb(&castleSqs);
-
-		if (isSquareAttacked(b, loc, color)) return false;
-	}
-
-	return true;
-	*/
 }
 
 bool MoveGen::isSquareAttacked(const BitBoards & b, const int square, const int color) {
@@ -662,135 +628,3 @@ bool MoveGen::isSquareAttacked(const BitBoards & b, const int square, const int 
 
 	return false;
 }
-
-
-/* //TEST new min_attacker function for ELO loss/gain before deleting this!!!!!!!!!!!!!!!!!!!!!!!!!!
-inline int MoveGen::min_attacker(bool isWhite, const BitBoards & b, const int & to, const U64 & stmAttackers, U64 & occupied, U64 & attackers)
-{
-U64 pawns, knights, rooks, bishops, queens, king, loc;
-
-if (isWhite) { //NEED TO CHANGE to make recursive and use piece type to return and search again
-pawns = b.byColorPiecesBB[0][1];
-knights = b.byColorPiecesBB[0][2];
-bishops = b.byColorPiecesBB[0][3];
-rooks = b.byColorPiecesBB[0][4];
-queens = b.byColorPiecesBB[0][5];
-king = b.byColorPiecesBB[0][6];
-}
-else {
-pawns = b.byColorPiecesBB[1][1];
-knights = b.byColorPiecesBB[1][2];
-bishops = b.byColorPiecesBB[1][3];
-rooks = b.byColorPiecesBB[1][4];
-queens = b.byColorPiecesBB[1][5];
-king = b.byColorPiecesBB[1][6];
-}
-
-//drawBB(stmAttackers);
-
-int piece;
-//find smallest attacker
-if (pawns & stmAttackers) {
-piece = PAWN; loc = pawns & stmAttackers;
-}
-else if (knights & stmAttackers) {
-piece = KNIGHT; loc = knights & stmAttackers;
-}
-else if (bishops & stmAttackers) {
-piece = BISHOP; loc = bishops & stmAttackers;
-}
-else if (rooks & stmAttackers) {
-piece = ROOK; loc = rooks & stmAttackers;
-}
-else if (queens & stmAttackers) {
-piece = QUEEN; loc = queens & stmAttackers;
-}
-else if (king & stmAttackers) {
-piece = KING; loc = king & stmAttackers;
-}
-else { //early cutoff if no stm attackers
-return PIECE_EMPTY;
-}
-
-//remove piece from occupied board
-occupied ^= loc & ~(loc - 1);
-//drawBB(occupied);
-
-//find xray attackers behind piece once it's been removed and add to attackers
-if (piece == PAWN || piece == BISHOP || piece == QUEEN) {                       //ADD BY TYPE BOARD REPRESENTATION TO BITBOARDS
-attackers |= slider_attacks.BishopAttacks(occupied, to) & (b.byPieceType[3] | b.byPieceType[5]);
-}
-
-if (piece == ROOK || piece == QUEEN) {
-attackers |= slider_attacks.RookAttacks(occupied, to) & (b.byPieceType[4] | b.byPieceType[5]);
-}
-//add new attackers to board
-attackers &= occupied;
-//drawBB(attackers);
-
-
-return piece;
-}
-
-//returns a bitboard of all attackers of sq locations
-U64 MoveGen::attackersTo(int sq, const BitBoards& b, const U64 occ) const
-{
-U64 attackers = 0LL, loc = 1LL << sq, kingA;
-
-//drawBB(occ);
-
-//knights
-if (sq > 18) {
-attackers = KNIGHT_SPAN << (sq - 18);
-}
-else {
-attackers = KNIGHT_SPAN >> (18 - sq);
-}
-
-if (sq % 8 < 4) {
-attackers &= ~FILE_GH;
-}
-else {
-attackers &= ~FILE_AB;
-}
-attackers &= b.byPieceType[KNIGHT]; //knights
-
-//drawBB(attackers);
-
-//pawns
-attackers |= (loc << 9) & notHFile & b.byColorPiecesBB[WHITE][PAWN];
-attackers |= (loc << 7) & notAFile & b.byColorPiecesBB[WHITE][PAWN];
-//drawBB(attackers);
-attackers |= (loc >> 9) & notHFile & b.byColorPiecesBB[BLACK][PAWN];
-attackers |= (loc >> 7) &  notAFile & b.byColorPiecesBB[BLACK][PAWN];
-//drawBB(attackers);
-
-//bishop and queens
-attackers |= slider_attacks.BishopAttacks(occ, sq) & (b.byPieceType[BISHOP] | b.byPieceType[QUEEN]);
-//drawBB(attackers);
-
-//rooks and queens
-attackers |= slider_attacks.RookAttacks(occ, sq) & (b.byPieceType[ROOK] | b.byPieceType[QUEEN]);
-//drawBB(attackers);
-
-if (sq > 9) {
-kingA = KING_SPAN << (sq - 9);
-}
-else {
-kingA = KING_SPAN >> (9 - sq);
-}
-if (sq % 8 < 4) {
-kingA &= ~FILE_GH;
-
-}
-else {
-kingA &= ~FILE_AB;
-}
-attackers |= kingA & (b.byPieceType[KING]);
-
-return attackers;
-}
-
-
-
-*/

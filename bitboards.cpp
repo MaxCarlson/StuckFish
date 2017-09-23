@@ -473,7 +473,7 @@ void BitBoards::makeMove(const Move& m, StateInfo& newSt, int color)
 
 	//update the TT key, capture update done in capture above
 	st->Key ^= Zobrist::ZobArray[color][m.piece][m.from]
-		    ^  Zobrist::ZobArray[color][m.piece][m.to]
+		    ^  Zobrist::ZobArray[color][m.piece][m.to  ]
 		    ^  Zobrist::Color;
 
 	// prefetch TT entry into cache ~THIS IS WAY TOO TIME INTENSIVE? 6.1% on just this call from here?
@@ -559,7 +559,7 @@ inline void BitBoards::do_castling(const Move & m, int color)
 
 	// move the piece from to if we're making, 
 	// and to from for unmake
-	movePiece(ROOK, color, make ? rFrom : rTo, make ? rTo : rFrom);
+	movePiece(ROOK, color, (make ? rFrom : rTo), (make ? rTo : rFrom));
 
 	// if we're making the castle, change the keys
 	// otherwise they'll be undone by reverting to prior *st
