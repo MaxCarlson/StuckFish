@@ -134,7 +134,13 @@ public:
 	void set_castling_rights(int color, int rfrom);
 
 	int castlingRightsMasks[SQ_ALL];
-	U64 castlingPath[4];
+	U64 castlingPath[CASTLING_RIGHTS];
+
+	int castling_rights() const;
+
+	int can_castle(int color) const;
+
+	bool castling_impeded(int castlingRights) const;
 
 
 
@@ -206,6 +212,21 @@ inline int BitBoards::pieceOnSq(int sq) const
 inline int BitBoards::stm() const
 {
 	return bInfo.sideToMove;
+}
+
+inline int BitBoards::castling_rights() const
+{
+	return st->castlingRights;
+}
+
+inline int BitBoards::can_castle(int color) const {
+	return st->castlingRights & ((WHITE_OO | WHITE_OOO) << (2 * color));
+}
+
+// & all pieces board by the castling path indexed by
+// castiling rights
+inline bool BitBoards::castling_impeded(int cr) const {
+	return FullTiles & castlingPath[cr];
 }
 
 inline int BitBoards::game_phase() const

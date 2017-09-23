@@ -180,6 +180,22 @@ enum ecolor {
     COLOR
 };
 
+
+#define KING_SIDE 0
+#define QUEEN_SIDE 1
+
+// castling sematics
+// taken from Stockfish
+enum Castling {
+	NO_CASTLING,
+	WHITE_OO,
+	WHITE_OOO    = WHITE_OO << 1,
+	BLACK_OO     = WHITE_OO << 2,
+	BLACK_OOO    = WHITE_OO << 3,
+	ANY_CASTLING = WHITE_OO | WHITE_OOO | BLACK_OO | BLACK_OOO,
+	CASTLING_RIGHTS = 16
+};
+
 //mid and end game indices
 enum GameStage {
 	mg,
@@ -215,8 +231,6 @@ private:
 	std::vector<Entry> table;
 };
 
-#define KING_SIDE 0
-#define QUEEN_SIDE 1
 
 #define TT_ALPHA 1
 #define TT_BETA 2

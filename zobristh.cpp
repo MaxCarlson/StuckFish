@@ -46,7 +46,7 @@ void ZobristH::zobristFill()
     }
     
 
-    for (int i = 0; i < 4; i++)
+    for (int i = 0; i < 16; i++)
     {
         zCastle[i] = random64(); //white queen side, white king side, black qs, bks
     }
@@ -149,6 +149,9 @@ U64 ZobristH::getZobristHash(const BitBoards& BBBoard)
 		returnZKey ^= zEnPassant[file_of(BBBoard.ep_square())];
 	}
 
+	//XOR by current castling rights
+	zobristKey ^= zCastle[BBBoard.castling_rights()];
+
     zobristKey = returnZKey;
 
     return returnZKey;
@@ -239,6 +242,8 @@ U64 ZobristH::debugKey(bool isWhite, const BitBoards& BBBoard)
 		returnZKey ^= zEnPassant[file_of(BBBoard.ep_square())];
 	}
 
+	//XOR by current castling rights
+	zobristKey ^= zCastle[BBBoard.castling_rights()];
 
     //if it isn't whites turn, XOR test zobrist key with black move U64
     if(isWhite == false){

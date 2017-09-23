@@ -17,7 +17,7 @@ public:
 	//array for random numbers used to gen zobrist key
 	U64 zArray[2][7][64];
 	//denotes a castling has taken place for zobrist key
-	U64 zCastle[4];
+	U64 zCastle[CASTLING_RIGHTS];
 	//used to change color of move
 	U64 zBlackMove;
 

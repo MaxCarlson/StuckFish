@@ -358,6 +358,10 @@ void MoveGen::possibleK(const BitBoards& board, int color, const U64 &capturesOn
 
 			movegen_push(board, color, KING, captured, flag, square, index);
 		}
+
+		if (board.can_castle(color)) {
+
+		}
 	}
 }
 
@@ -398,35 +402,6 @@ void MoveGen::movegen_push(const BitBoards & board, int color, int piece, int ca
 		if (blind(board, to, color, SORT_VALUE[piece], SORT_VALUE[captured])) moveAr[moveCount].score = SORT_CAPT + SORT_VALUE[captured] + idAr[piece];
 
 		else  moveAr[moveCount].score = SORT_VALUE[captured] + idAr[piece];
-
-		/*
-		U64 occ = board.FullTiles ^ board.square_bb(from);
-		U64 attackers = attackersTo(board, occ, to) & board.pieces(color) ^ board.square_bb(from);
-
-		int def = min_attacker<PAWN>(board, color, to, attackers, occ, attackers);
-
-		if (blind(board, to, color, SORT_VALUE[piece], SORT_VALUE[captured])) {
-
-			if (def) moveAr[moveCount].score = SORT_CAPT + 10000 + SORT_VALUE[captured] + idAr[piece];
-
-			else moveAr[moveCount].score = SORT_CAPT + SORT_VALUE[captured]  + idAr[piece];
-
-		}
-
-        //captures of defended pieces or pieces we know nothing about ~~ better if lower still, by id
-		else {
-
-			if(def) moveAr[moveCount].score = SORT_VALUE[captured] + idAr[piece] - idAr[def]*3;
-			else  moveAr[moveCount].score = SORT_VALUE[captured] - SORT_VALUE[piece];
-			
-		}
-		
-
-		//int value = SEE(moveAr[moveCount], board, !color, true);
-
-		//if(value > 0) moveAr[moveCount].score = value*12 + SORT_CAPT; //possibility, will have to test for ELO Gain
-		//else moveAr[moveCount].score = value;
-		//*/
     }
 
     //pawn promotions
@@ -436,59 +411,7 @@ void MoveGen::movegen_push(const BitBoards & board, int color, int piece, int ca
 	//moves we have to search and sort through
     moveCount ++;
 }
-/*
-bool MoveGen::blind(const BitBoards & board, const Move &move, int pieceVal, int captureVal)
-{
-    //approx static eval, Better Lower if not Defended
-    int piece = move.piece;
-    //get bitboards containing start and landing spot
-    U64 sLoc = 1LL << move.from;
-    U64 eLoc = 1LL << move.to;
 
-    //captures from pawns don't lose material
-    if(move.piece == PAWN) return true;
-
-    //capture lower takes higher
-    if(captureVal >= pieceVal - 50) return true;
-
-    //move the piece only on the color BB's and full/emptys
-    if(isWhite){
-        BBWhitePieces &= ~sLoc;
-        BBWhitePieces |= eLoc;
-        BBBlackPieces &= ~eLoc;
-    } else {
-        BBBlackPieces &= ~sLoc;
-        BBBlackPieces |= eLoc;
-        BBWhitePieces &= ~eLoc;
-    }
-    FullTiles &= ~ sLoc;
-    FullTiles |= eLoc;
-    EmptyTiles = ~FullTiles;
-
-    bool defended = false;
-
-    //in order to test if capture location is attacked
-    if(isAttacked(eLoc, isWhite, false)){
-        defended = true;
-    }
-    //correct BB's
-    if(isWhite){
-        BBWhitePieces |= sLoc;
-        BBWhitePieces &= ~ eLoc;
-        BBBlackPieces |= eLoc;
-    } else {
-        BBBlackPieces |= sLoc;
-        BBBlackPieces &= ~eLoc;
-        BBWhitePieces |= eLoc;
-    }
-    FullTiles |= sLoc;
-    EmptyTiles = ~FullTiles;
-
-    if(!defended) return true;
-
-    return 0; //of other captures we know not
-}
-*/
 bool MoveGen::blind(const BitBoards & board, int to, int color, int pieceVal, int captureVal) { //REplace move with just to square? use piece val to see if it equals PAWN val
 	
 	//better lower if not defeneded 
@@ -515,11 +438,17 @@ int MoveGen::SEE(const Move& m, const BitBoards& b, int color, bool isCapture)
 	//we don't want an early return if that's the case
 	if (SORT_VALUE[m.piece] <= SORT_VALUE[m.captured] && isCapture) return INF;
 
+	// return in case of a castling move
+	if (m.flag == 'C') return 0;
+
 	swapList[0] = SORT_VALUE[m.captured];
 
 	occupied = b.FullTiles ^ b.square_bb(m.from); //remove capturing piece from occupied bb 
 
-	//need castling and enpassant logic once implmented
+	//remove captured pawn
+	if (m.flag == 'E') {
+		occupied ^= m.to - pawn_push(!color);
+	}
 
 	//finds all attackers to the square
 	//attackers = attackersTo(m.to, b, occupied) & occupied;

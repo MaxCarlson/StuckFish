@@ -38,7 +38,7 @@ std::string boardArr[8][8] = {
 namespace Zobrist {
 	U64 ZobArray[COLOR][PIECES][SQ_ALL];
 	U64 EnPassant[8];
-	U64 Castling[4];
+	U64 Castling[CASTLING_RIGHTS];
 	U64 Color;
 }
 
@@ -189,6 +189,7 @@ void BitBoards::constructBoards(const std::string* FEN) //replace this with fen 
 
 			for (int h = 0; h < 16; ++h) {
 				pieceLoc[i][j][h] = SQ_NONE;
+				castlingPath[h] = 0LL;
 			}
 		}
 	}
@@ -197,6 +198,7 @@ void BitBoards::constructBoards(const std::string* FEN) //replace this with fen 
 	for (int i = 0; i < 64; i++) {
 		pieceIndex[i] = SQ_NONE;
 		pieceOn[i] = PIECE_EMPTY;
+		castlingRightsMasks[i] = 0LL;
 	}
 
 	if(FEN) readFenString(*FEN);
@@ -218,7 +220,7 @@ void BitBoards::set_state(StateInfo * si)
 	//get zobrist key of current position and store to board
 	si->Key = zobrist.getZobristHash(*this);
 
-	//si->Key ^= Zobrist::Castling[st->castlingRights];
+	//si->Key ^= Zobrist::Castling[st->castlingRights]; //already done in zobrist.gethash above!!
 
 	for (int c = 0; c < COLOR; ++c) {
 
@@ -348,8 +350,21 @@ void BitBoards::set_castling_rights(int color, int rfrom)
 	castlingRightsMasks[king]  |= cright;
 	castlingRightsMasks[rfrom] |= cright;
 
-	//set castling paths here or do so manually?
+	// distance between rook and king,
+	// minus their squares
+	int d = SquareDistance[rfrom][king] - 2;
+
+	// set cp to king square + or - 1 based on which way we're castling
+	castlingPath[cright] |= 1LL << (king + (cside == KING_SIDE ? 1 : -1));
+
+	// bitboard of path of castling, minus the squares
+	// our rook and king occupy
+	for (int i = 0; i < d; ++i) {
+		castlingPath[cright] |= cside == KING_SIDE ? castlingPath[cright] << 1LL 
+												   : castlingPath[cright] >> 1LL;
+	}
 }
+
 
 void BitBoards::makeMove(const Move& m, StateInfo& newSt, int color)
 {
@@ -441,21 +456,29 @@ void BitBoards::makeMove(const Move& m, StateInfo& newSt, int color)
 	// Castling ~~ only implemented to be done by another,
 	// engine itself cannot castle yet. Next thing on agenda.
 	else if (m.flag == 'C') {
-		int rookFrom = relative_square(color, m.to) == C1   ? relative_square(color, A1) : relative_square(color, H1);
-		int rookTo = rookFrom == relative_square(color, A1) ? relative_square(color, D1) : relative_square(color, F1);
+		
+		int rookFrom, rookTo;
+
+		do_castling<true>(m, color);
 
 		movePiece(ROOK, color, rookFrom, rookTo);
+	}
 
-		int zCast = color == WHITE ? rookFrom == A1 ? 0 : 1 : rookFrom == A1 ? 2 : 3;
-		st->Key ^= Zobrist::Castling[zCast]
-			^ Zobrist::ZobArray[color][ROOK][rookFrom]
-			^ Zobrist::ZobArray[color][ROOK][rookTo];
+	// Update castling rights if a rook is moving for first time,
+	// being  captured or if the king is moving 
+	if (st->castlingRights && (castlingRightsMasks[m.from] | castlingRightsMasks[m.to])) {
+
+		int cr = castlingRightsMasks[m.from] | castlingRightsMasks[m.to];
+
+		st->Key ^= Zobrist::Castling[st->castlingRights & cr];
+
+		st->castlingRights &= ~cr;
 	}
 
 	//update the TT key, capture update done in capture above
 	st->Key ^= Zobrist::ZobArray[color][m.piece][m.from]
-		^ Zobrist::ZobArray[color][m.piece][m.to]
-		^ Zobrist::Color;
+		    ^  Zobrist::ZobArray[color][m.piece][m.to]
+		    ^  Zobrist::Color;
 
 	// prefetch TT entry into cache ~THIS IS WAY TOO TIME INTENSIVE? 6.1% on just this call from here?
 	// SWITCH TT to single address lookup instead of cluster of two?
@@ -514,13 +537,17 @@ void BitBoards::unmakeMove(const Move & m, int color)
 		if (m.captured != PAWN) bInfo.nonPawnMaterial[them] += SORT_VALUE[m.captured];
 	}
 
+	//undo the rook movment in castling
+	if (m.flag == 'C') {
+		do_castling<false>(m, color);
+	}
+
 
 	assert(posOkay());
 
 	//flip internal side to move
 	bInfo.sideToMove = !bInfo.sideToMove;
 
-	return;
 }
 
 template<int make>
@@ -531,16 +558,18 @@ inline void BitBoards::do_castling(const Move & m, int color)
 	int rFrom = relative_square(color, kingSide ? H1 : A1);
 	int rTo   = relative_square(color, kingSide ? F1 : D1);
 
-	//int rookFrom = relative_square(color, m.to) == C1     ? relative_square(color, A1) : relative_square(color, H1);
+	//int rookFrom = relative_square(color, m.to) == C1     ? relative_square(color, A1) : relative_square(color, H1); //delete
 	//int rookTo   = rookFrom == relative_square(color, A1) ? relative_square(color, D1) : relative_square(color, F1);
 
+	// move the piece from to if we're making, 
+	// and to from for unmake
 	movePiece(ROOK, color, make ? rFrom : rTo, make ? rTo : rFrom);
 
-	int zCast = color == WHITE ? rookFrom == A1 ? 0 : 1 : rookFrom == A1 ? 2 : 3;
-
-	st->Key ^= Zobrist::Castling[zCast]
-		    ^  Zobrist::ZobArray[color][ROOK][rFrom]
-		    ^  Zobrist::ZobArray[color][ROOK][rTo];
+	// if we're making the castle, change the keys
+	// otherwise they'll be undone by reverting to prior *st
+	if(make)
+		st->Key ^= Zobrist::ZobArray[color][ROOK][rFrom]
+				^  Zobrist::ZobArray[color][ROOK][rTo  ];
 }
 
 void BitBoards::makeNullMove(StateInfo& newSt)
@@ -697,63 +726,6 @@ End:
 	drawBB(FullTiles);
 	return false;
 }
-
-/*
-//make move castling stuff
-
-//remove castling right for rook or king if it's its first movement
-/*	else if (m.flag == 'M') {
-castlingRights[color] |= m.piece == ROOK ? relative_square(color, m.from) == A1 ? 1LL : 4LL : 2LL;
-}
-//do castling. We've already moved the king, so we need to
-//deal with the rook, castling rights, and the zobrist keys
-else if (m.flag == 'C') {
-//BitBoards * a = this;
-//a->drawBBA();
-
-castlingRights[color] |= 2LL;
-
-int rookFrom = relative_square(color, m.to)     == C1  ? relative_square(color, A1) : relative_square(color, H1);
-int rookTo   = rookFrom == relative_square(color,  A1) ? relative_square(color, D1) : relative_square(color, F1);
-
-movePiece(ROOK, color, rookFrom, rookTo);
-
-int zCast = color == WHITE ? rookFrom == A1 ? 0 : 1 : rookFrom == A1 ? 2 : 3;
-zobrist.zobristKey ^= zobrist.zCastle[zCast]
-^  zobrist.zArray[color][ROOK][rookFrom]
-^  zobrist.zArray[color][ROOK][rookTo];
-//a = this;
-//a->drawBBA();
-}
-
-//unmake castling stuff
-
-//restore castling rights if we're unmaking the rooks first move and the king hasn't moved.
-//else if (m.flag == 'M') {
-//	castlingRights[color] ^= m.piece == ROOK ? relative_square(color, m.from) == A1 ? 1LL : 4LL : 2LL;
-//}
-//unmake castling
-if (m.flag == 'C') {
-//BitBoards * a = this;
-//a->drawBBA();
-
-castlingRights[color] ^= 2;
-
-int rookFrom = relative_square(color, m.to)    == C1  ? relative_square(color, A1) : relative_square(color, H1);
-int rookTo   = rookFrom == relative_square(color, A1) ? relative_square(color, D1) : relative_square(color, F1);
-
-movePiece(ROOK, color, rookTo, rookFrom);
-
-int zCast = color == WHITE ? rookFrom == A1 ? 0 : 1 : rookFrom == A1 ? 2 : 3;
-zobrist.zobristKey ^= zobrist.zCastle[zCast]
-^  zobrist.zArray[ color][ROOK][rookFrom]
-^  zobrist.zArray[ color][ROOK][rookTo];
-
-//a = this;
-//a->drawBBA();
-//a->drawBBA();
-}
-*/
 
 
 
