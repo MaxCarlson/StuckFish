@@ -42,12 +42,6 @@ const U64 FILE_AB = FileABB + FileBBB;
 const U64 FILE_GH = FileGBB + FileHBB;
 
 
-//[white/black][queenside/kingside]
-const U64 castlingMasks[COLOR][2] = {
-	{ { 0xe00000000000000ULL },{ 0x6000000000000000ULL } },
-	{ { 0xeULL               },{ 0x60ULL               } }
-};
-
 static const U64 RankMasks8[8] = //from rank 1 - 8 
 {
 	0xFF00000000000000L, 0xFF000000000000L,  0xFF0000000000L, 0xFF00000000L, 0xFF000000L, 0xFF0000L, 0xFF00L, 0xFFL,
@@ -74,12 +68,15 @@ void MoveGen::generate(const BitBoards & board)
 	moveCount = 0;
 	const int color = board.stm();
 
+	// If only generating captures our target is only enemy pieces,
+	// aside from E king. Else our target is all squares that are not
+	// occupied by our friends or E king.
 	U64 target = genType == CAPTURES
-		? (board.pieces(!color) ^ board.pieces(!color, KING))
-		: ~(board.pieces(color) | board.pieces(!color, KING));
+		?  (board.pieces(!color) ^ board.pieces(!color, KING))
+		: ~(board.pieces( color) | board.pieces(!color, KING));
 
 	color == WHITE ? generateAll<WHITE, genType>(board, target)
-		: generateAll<BLACK, genType>(board, target);
+				   : generateAll<BLACK, genType>(board, target);
 }
 
 template void MoveGen::generate<MAIN_GEN>(const BitBoards & board);
@@ -88,7 +85,7 @@ template void MoveGen::generate<CAPTURES>(const BitBoards & board);
 template<int color, int genType> FORCE_INLINE
 void MoveGen::generateAll(const BitBoards & board, const U64 & target)
 {
-	pawnMoves<color>(board, genType); // once working be sure to add template genType param to pawn moves
+	pawnMoves<color, genType>(board); // once working be sure to add template genType param to pawn moves
 
 	generateMoves<color, KNIGHT>(board, target);
 	generateMoves<color, BISHOP>(board, target);
@@ -97,22 +94,28 @@ void MoveGen::generateAll(const BitBoards & board, const U64 & target)
 	generateMoves<color, KING  >(board, target);
 
 	if (genType != CAPTURES && board.can_castle(color)) {
-		castling<KING_SIDE >(board, color); //move color to template param once working
-		castling<QUEEN_SIDE>(board, color);
+		castling<color,  KING_SIDE>(board); //move color to template param once working
+		castling<color, QUEEN_SIDE>(board);
 	}
 
 }
 
-template<int color, int Pt> FORCE_INLINE
+template<int color, int Pt> 
 void MoveGen::generateMoves(const BitBoards & board, const U64 & target)
 {
+	// Grab the list of all pieces of a type
 	const int *pieceList = board.pieceLoc[color][Pt];
 
+	// Find the first piece and generate 
+	// its moves
 	int square;
 	while ((square = *pieceList++) != SQ_NONE) {
 
 		U64 moves = board.attacks_from<Pt>(square) & target;
 
+		// Loop through those moves, removing them
+		// from the board and pushing them to the 
+		// move array + scoring
 		while (moves) {
 			//store moves
 			int index = pop_lsb(&moves);
@@ -124,8 +127,8 @@ void MoveGen::generateMoves(const BitBoards & board, const U64 & target)
 	}
 }
 
-template<int color>
-void MoveGen::pawnMoves(const BitBoards& boards, bool capturesOnly) {
+template<int color, int genType>
+void MoveGen::pawnMoves(const BitBoards& boards) {
 
 	const int them = color == WHITE ? BLACK : WHITE;
 	const int Up = color == WHITE ? N : S;
@@ -139,7 +142,7 @@ void MoveGen::pawnMoves(const BitBoards& boards, bool capturesOnly) {
 	const U64 enemys = boards.pieces(them) ^ boards.pieces(them, KING);
 	U64 moves;
 
-	if (!capturesOnly) {
+	if (genType != CAPTURES) {
 		// up one
 		moves = shift_bb<Up>(pawns) & boards.EmptyTiles;
 		while (moves) {
@@ -179,7 +182,7 @@ void MoveGen::pawnMoves(const BitBoards& boards, bool capturesOnly) {
 		movegen_push(boards, color, PAWN, captured, '0', index - Left, index);
 	}
 
-	///*	// en passant
+	// en passant
 	if (boards.can_enpassant()) {
 
 		int epSq = boards.ep_square();
@@ -194,7 +197,6 @@ void MoveGen::pawnMoves(const BitBoards& boards, bool capturesOnly) {
 			movegen_push(boards, color, PAWN, PAWN, 'E', index, epSq);
 		}
 	}
-	//*/
 
 	//rank mask of 7th rank relative side to move
 	const U64 seventhRank = RankMasks8[relative_rank(color, 6)];
@@ -240,11 +242,11 @@ void MoveGen::pawnMoves(const BitBoards& boards, bool capturesOnly) {
 	}
 }
 
-template<int cs>
-void MoveGen::castling(const BitBoards& boards, int color) {
+template<int color, int cs>
+void MoveGen::castling(const BitBoards& boards) {
 
-	int cr = cs == KING_SIDE ? color == WHITE ? WHITE_OO : BLACK_OO
-		: color == WHITE ? WHITE_OOO : BLACK_OOO;
+	int cr = cs == KING_SIDE ? color == WHITE ? WHITE_OO  : BLACK_OO
+							 : color == WHITE ? WHITE_OOO : BLACK_OOO;
 
 	// If we don't have the right to this castle
 	if (!(cr & boards.castling_rights())) return;
@@ -268,181 +270,6 @@ void MoveGen::castling(const BitBoards& boards, int color) {
 			return;
 
 	movegen_push(boards, color, KING, PIECE_EMPTY, 'C', ks, kto);
-}
-
-
-void MoveGen::generatePsMoves(const BitBoards& boards, bool capturesOnly)
-{
-    //counts total moves generated
-    moveCount = 0;
-	int color = boards.stm();
-
-	if(color == WHITE) pawnMoves<WHITE>(boards, capturesOnly);
-	else		       pawnMoves<BLACK>(boards, capturesOnly);
-
-    //if we don't want to only generate captures
-    U64 capsOnly = full;
-
-    //if we only want to generate captures
-    if(capturesOnly) capsOnly = boards.FullTiles;
-
-	// remove friends and enemy king 
-	// from all possible moves
-	capsOnly ^= boards.pieces(!color, KING) ^ boards.pieces(color);
-
-	// generate moves, looping through a *list of piece
-	// locations and generating moves for them,
-	// poping the lsb of the moves and pushing it 
-	// to the move array stored locally.
-	possibleN(boards, color, capsOnly);
-	possibleB(boards, color, capsOnly);
-	possibleR(boards, color, capsOnly);
-	possibleQ(boards, color, capsOnly);
-	possibleK(boards, color, capsOnly);
-
-	if (boards.can_castle(color) && !capturesOnly) { 
-		castling<KING_SIDE >(boards, color);
-		castling<QUEEN_SIDE>(boards, color);
-	}
-
-    return;
-}
-
-void MoveGen::possibleN(const BitBoards& board, int color, const U64 &capturesOnly)
-{
-
-	const int* list = board.pieceLoc[color][KNIGHT];
-	//U64 friends = board.pieces(color);
-	U64 enemys = board.pieces(!color);
-	//U64 eking = board.pieces(!color, KING);
-
-	int square;
-	while ((square = *list++) != SQ_NONE) {
-
-		U64 moves = board.psuedoAttacks(KNIGHT, color, square) & capturesOnly;
-		//moves &= capturesOnly & ~(friends | eking);
-
-		while (moves) {
-			//store moves
-			int index = pop_lsb(&moves);
-
-			//U64 landing = board.square_bb(index);
-			//int captured = (landing & enemys) ? whichPieceCaptured(landing) : PIECE_EMPTY;
-			int	captured = board.pieceOnSq(index);
-
-			movegen_push(board, color, KNIGHT, captured, '0', square, index);
-		}
-	}
-
-
-}
-
-void MoveGen::possibleB(const BitBoards& board, int color, const U64 &capturesOnly)
-{
-
-	const int* list = board.pieceLoc[color][BISHOP];
-
-	U64 enemys = board.pieces(!color);
-
-	int square;
-	while ((square = *list++) != SQ_NONE) {
-	
-		U64 moves = slider_attacks.BishopAttacks(board.FullTiles, square)  & capturesOnly;
-
-
-		while (moves) {
-			int index = pop_lsb(&moves);
-
-			int	captured = board.pieceOnSq(index);
-
-			movegen_push(board, color, BISHOP, captured, '0', square, index);
-
-		}
-
-	}
-
- 
-}
-
-void MoveGen::possibleR(const BitBoards& board, int color, const U64 &capturesOnly)
-{
-
-	const int* list = board.pieceLoc[color][ROOK];
-
-	U64 enemys = board.pieces(!color);
-
-
-	int square;
-	while ((square = *list++) != SQ_NONE) {
-
-		U64 moves = slider_attacks.RookAttacks(board.FullTiles, square)  & capturesOnly;
-		
-		while (moves) {
-			int index = pop_lsb(&moves);
-
-			//U64 landing = board.square_bb(index);
-			//int captured = (landing & enemys) ? whichPieceCaptured(landing) : PIECE_EMPTY;
-			int	captured = board.pieceOnSq(index);
-
-			movegen_push(board, color, ROOK, captured, '0', square, index);
-
-		}
-
-	}
-
-    
-
-}
-
-void MoveGen::possibleQ(const BitBoards& board, int color, const U64 &capturesOnly)
-{
-	const int* list = board.pieceLoc[color][QUEEN];
-
-	U64 enemys = board.pieces(!color);
-
-	int square;
-	while ((square = *list++) != SQ_NONE) {
-
-		//grab moves from magic bitboards
-		U64 moves = slider_attacks.QueenAttacks(board.FullTiles, square)  & capturesOnly;
-
-		while (moves) {
-			int index = pop_lsb(&moves);
-
-			int	captured = board.pieceOnSq(index);
-
-			movegen_push(board, color, QUEEN, captured, '0', square, index);
-		}
-	}
-}
-
-void MoveGen::possibleK(const BitBoards& board, int color, const U64 &capturesOnly)
-{
-	const int* list = board.pieceLoc[color][KING];
-	U64 enemys = board.pieces(!color);
-
-	int square;
-	while ((square = *list++) != SQ_NONE) {
-
-		U64 moves = board.psuedoAttacks(KING, color, square) & capturesOnly;
-
-		//non castling moves
-		while (moves) {
-			int index = pop_lsb(&moves);
-
-			int	captured = board.pieceOnSq(index);
-
-			movegen_push(board, color, KING, captured, '0', square, index);
-		}
-	}
-}
-
-int MoveGen::whichPieceCaptured(const BitBoards & board, int location, int color) // no longer needed??
-{
-	for (int i = PAWN; i < KING; ++i) {
-		if (board.pieces(!color, i) & board.square_bb(location)) return i;
-	}
-	return PIECE_EMPTY;
 }
 
 void MoveGen::movegen_push(const BitBoards & board, int color, int piece, int captured, char flag, int from, int to) //change flags to int eventually

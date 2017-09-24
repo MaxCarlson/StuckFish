@@ -1,21 +1,17 @@
-﻿  movegen.cpp
-C:\Users\C-60\Desktop\cppPrograms\StuckFish\move.h(9): warning #945: type qualifier ignored
-        const Move();
-        ^
-  
-movegen.cpp(47): warning #1119: extra braces are nonstandard
-    	{ { 0xe00000000000000ULL },{ 0x6000000000000000ULL } },
-    	  ^
-  
-movegen.cpp(47): warning #1119: extra braces are nonstandard
-    	{ { 0xe00000000000000ULL },{ 0x6000000000000000ULL } },
-    	                           ^
-  
-movegen.cpp(48): warning #1119: extra braces are nonstandard
-    	{ { 0xeULL               },{ 0x60ULL               } }
-    	  ^
-  
-movegen.cpp(48): warning #1119: extra braces are nonstandard
-    	{ { 0xeULL               },{ 0x60ULL               } }
-    	                           ^
-  
+﻿  zobristh.cpp
+  UCI.cpp
+  TranspositionT.cpp
+  TimeManager.cpp
+  slider_attacks.cpp
+  Pawns.cpp
+  movegen.cpp
+  material.cpp
+  main.cpp
+  hashentry.cpp
+  Evaluate.cpp
+  EndGame.cpp
+  bitboards.cpp
+  ai_logic.cpp
+  Generating Code...
+  StuckFish.vcxproj -> C:\Users\C-60\Desktop\cppPrograms\StuckFish\x64\Debug\StuckFish.exe
+  StuckFish.vcxproj -> C:\Users\C-60\Desktop\cppPrograms\StuckFish\x64\Debug\StuckFish.pdb (Partial PDB)

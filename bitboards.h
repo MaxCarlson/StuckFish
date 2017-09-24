@@ -266,12 +266,12 @@ inline int BitBoards::king_square(int color) const
 template<int Pt>
 inline U64 BitBoards::attacks_from(int from) const
 {
-	return Pt == KNIGHT ? psuedoAttacks(KNIGHT, WHITE, from)
-		: Pt == BISHOP  ? slider_attacks.BishopAttacks(FullTiles, from)
-		: Pt == ROOK    ? slider_attacks.RookAttacks(FullTiles, from)
-		: Pt == QUEEN   ? slider_attacks.QueenAttacks(FullTiles, from)
-		: Pt == KING    ? psuedoAttacks(KING, WHITE, from)
-		: 0LL;
+	return Pt == KNIGHT  ? psuedoAttacks(KNIGHT, WHITE, from)
+		 : Pt == BISHOP  ? slider_attacks.BishopAttacks( FullTiles, from)
+		 : Pt == ROOK    ? slider_attacks.RookAttacks(   FullTiles, from)
+		 : Pt == QUEEN   ? slider_attacks.QueenAttacks(  FullTiles, from)
+		 : Pt == KING    ? psuedoAttacks(KING, WHITE, from)
+		 : 0LL;
 }
 
 //return an attack set for a piece on any square, attacks are generated

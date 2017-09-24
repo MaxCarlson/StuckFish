@@ -28,11 +28,6 @@ public:
 	//number of moves generated this node
     int moveCount;
 
-	// called from search, calls individual move functions 
-	// and fills array above with moves with each function
-	// pushing moves to movegen_push which stores info and scores with BLIND
-    void generatePsMoves(const BitBoards& boards, bool capturesOnly);
-
 	template<int genType>
 	void generate(const BitBoards& board);
 
@@ -66,28 +61,21 @@ private:
 	//removes the attacker from the attackers and occuied board, then finds any x-ray attackers behind that piece
 	//and returns the int representing the piece
 
-	template<int Pt> FORCE_INLINE
+	template<int Pt> 
 	int min_attacker(const BitBoards & b, int color, const int & to, const U64 & stmAttackers, U64 & occupied, U64 & attackers);
 
-	template<int color, int Pt> FORCE_INLINE
-		void generateMoves(const BitBoards& board, const U64 &target);
+	template<int color, int Pt> 
+	void generateMoves(const BitBoards& board, const U64 &target);
 
 	template<int color, int genType> FORCE_INLINE
-		void generateAll(const BitBoards& board, const U64 & target);
+	void generateAll(const BitBoards& board, const U64 & target);
 
 	//psuedo legal move gen for indvidual pieces
-	template<int color>
-	void pawnMoves(const BitBoards & boards, bool capturesOnly);
+	template<int color, int genType>
+	void pawnMoves(const BitBoards & boards);
 
-	template<int cs>
-	void castling(const BitBoards & boards, int color);
-
-    void possibleN(const BitBoards& board, int color, const U64 &capturesOnly);
-    void possibleB(const BitBoards& board, int color, const U64 &capturesOnly);
-    void possibleR(const BitBoards& board, int color, const U64 &capturesOnly);
-    void possibleQ(const BitBoards& board, int color, const U64 &capturesOnly);
-    void possibleK(const BitBoards& board, int color, const U64 &capturesOnly);
-
+	template<int color, int cs>
+	void castling(const BitBoards & boards);
 };
 
 
@@ -95,7 +83,7 @@ private:
 inline Move MoveGen::movegen_sort(int ply, Move * moveAr) const
 {
 	int best = -INF;
-	int high = 0;
+	int high;
 	//find best scoring move
 	for (int i = 0; i < moveCount; ++i) {
 		if (moveAr[i].score > best && !moveAr[i].tried) {
