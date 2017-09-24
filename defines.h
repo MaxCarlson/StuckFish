@@ -155,6 +155,11 @@ enum epiece {
 	PIECES
 };
 
+// Used to determine which type of 
+// move generation we want
+#define MAIN_GEN 0
+#define CAPTURES 1
+
 #define PAWN_VAL 100 //should pieces have a mid and end game value??
 #define KNIGHT_VAL 325
 #define BISHOP_VAL 335
@@ -163,7 +168,7 @@ enum epiece {
 #define KING_VAL 0 //change later??
 
 
-#define DRAW_OPENING -10 //re define these?
+#define DRAW_OPENING -10 //re define these? //DELETE??
 #define DRAW_ENDGAME 0
 #define END_GAME_MAT 1300
 

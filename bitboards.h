@@ -125,6 +125,9 @@ public:
 
 	//full of attacks all possible attacks for all squares and pieces
 	//on a completely empty board
+	template<int Pt>
+	U64 attacks_from(int from) const;
+
 	U64 PseudoAttacks[PIECES][SQ_ALL]; //zero index is white pawns, 1 black pawns, pieces after are index by their number ~~ Move Outside Object
 
 	U64 psuedoAttacks(int piece, int color, int sq) const;
@@ -257,6 +260,18 @@ inline U64 BitBoards::material_key() const
 inline int BitBoards::king_square(int color) const
 {
 	return pieceLoc[color][KING][0];
+}
+// Does Not Support Pawns.
+// Color is unimportant where mentioned.
+template<int Pt>
+inline U64 BitBoards::attacks_from(int from) const
+{
+	return Pt == KNIGHT ? psuedoAttacks(KNIGHT, WHITE, from)
+		: Pt == BISHOP  ? slider_attacks.BishopAttacks(FullTiles, from)
+		: Pt == ROOK    ? slider_attacks.RookAttacks(FullTiles, from)
+		: Pt == QUEEN   ? slider_attacks.QueenAttacks(FullTiles, from)
+		: Pt == KING    ? psuedoAttacks(KING, WHITE, from)
+		: 0LL;
 }
 
 //return an attack set for a piece on any square, attacks are generated

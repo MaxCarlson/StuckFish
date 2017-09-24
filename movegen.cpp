@@ -66,18 +66,76 @@ static const U64 FileMasks8[8] =/*from fileA to FileH*/
 *************************************************/
 const int SORT_VALUE[7] = { 0, 100, 325, 335, 500, 975, 0 };
 
+
+template<int genType>
+void MoveGen::generate(const BitBoards & board)
+{
+	//counts total moves generated
+	moveCount = 0;
+	const int color = board.stm();
+
+	U64 target = genType == CAPTURES
+		? (board.pieces(!color) ^ board.pieces(!color, KING))
+		: ~(board.pieces(color) | board.pieces(!color, KING));
+
+	color == WHITE ? generateAll<WHITE, genType>(board, target)
+		: generateAll<BLACK, genType>(board, target);
+}
+
+template void MoveGen::generate<MAIN_GEN>(const BitBoards & board);
+template void MoveGen::generate<CAPTURES>(const BitBoards & board);
+
+template<int color, int genType> FORCE_INLINE
+void MoveGen::generateAll(const BitBoards & board, const U64 & target)
+{
+	pawnMoves<color>(board, genType); // once working be sure to add template genType param to pawn moves
+
+	generateMoves<color, KNIGHT>(board, target);
+	generateMoves<color, BISHOP>(board, target);
+	generateMoves<color, ROOK  >(board, target);
+	generateMoves<color, QUEEN >(board, target);
+	generateMoves<color, KING  >(board, target);
+
+	if (genType != CAPTURES && board.can_castle(color)) {
+		castling<KING_SIDE >(board, color); //move color to template param once working
+		castling<QUEEN_SIDE>(board, color);
+	}
+
+}
+
+template<int color, int Pt> FORCE_INLINE
+void MoveGen::generateMoves(const BitBoards & board, const U64 & target)
+{
+	const int *pieceList = board.pieceLoc[color][Pt];
+
+	int square;
+	while ((square = *pieceList++) != SQ_NONE) {
+
+		U64 moves = board.attacks_from<Pt>(square) & target;
+
+		while (moves) {
+			//store moves
+			int index = pop_lsb(&moves);
+
+			int	captured = board.pieceOnSq(index);
+
+			movegen_push(board, color, Pt, captured, '0', square, index);
+		}
+	}
+}
+
 template<int color>
 void MoveGen::pawnMoves(const BitBoards& boards, bool capturesOnly) {
-	
-	const int them     = color == WHITE ?  BLACK : WHITE;
-	const int Up       = color == WHITE ?  N     :     S;
-	const int Down     = color == WHITE ?  S     :     N;
-	const int Right    = color == WHITE ?  NE    :    SE;
-	const int Left     = color == WHITE ?  NW    :    SW;
-	const int dpush    = color == WHITE ?  16    :   -16;
+
+	const int them = color == WHITE ? BLACK : WHITE;
+	const int Up = color == WHITE ? N : S;
+	const int Down = color == WHITE ? S : N;
+	const int Right = color == WHITE ? NE : SE;
+	const int Left = color == WHITE ? NW : SW;
+	const int dpush = color == WHITE ? 16 : -16;
 
 
-	const U64 pawns  = boards.pieces(color, PAWN);
+	const U64 pawns = boards.pieces(color, PAWN);
 	const U64 enemys = boards.pieces(them) ^ boards.pieces(them, KING);
 	U64 moves;
 
@@ -121,7 +179,7 @@ void MoveGen::pawnMoves(const BitBoards& boards, bool capturesOnly) {
 		movegen_push(boards, color, PAWN, captured, '0', index - Left, index);
 	}
 
-///*	// en passant
+	///*	// en passant
 	if (boards.can_enpassant()) {
 
 		int epSq = boards.ep_square();
@@ -136,7 +194,7 @@ void MoveGen::pawnMoves(const BitBoards& boards, bool capturesOnly) {
 			movegen_push(boards, color, PAWN, PAWN, 'E', index, epSq);
 		}
 	}
-//*/
+	//*/
 
 	//rank mask of 7th rank relative side to move
 	const U64 seventhRank = RankMasks8[relative_rank(color, 6)];
@@ -148,7 +206,7 @@ void MoveGen::pawnMoves(const BitBoards& boards, bool capturesOnly) {
 		const U64 eighthRank = RankMasks8[relative_rank(color, 7)];
 
 		// moving forward one
-		moves = shift_bb<Up>(pawns) & boards.EmptyTiles & eighthRank; 
+		moves = shift_bb<Up>(pawns) & boards.EmptyTiles & eighthRank;
 
 		while (moves) {
 			int index = pop_lsb(&moves);
@@ -184,9 +242,9 @@ void MoveGen::pawnMoves(const BitBoards& boards, bool capturesOnly) {
 
 template<int cs>
 void MoveGen::castling(const BitBoards& boards, int color) {
-	
-	int cr = cs == KING_SIDE ? color == WHITE ?  WHITE_OO : BLACK_OO 
-							 : color == WHITE ? WHITE_OOO : BLACK_OOO;
+
+	int cr = cs == KING_SIDE ? color == WHITE ? WHITE_OO : BLACK_OO
+		: color == WHITE ? WHITE_OOO : BLACK_OOO;
 
 	// If we don't have the right to this castle
 	if (!(cr & boards.castling_rights())) return;
@@ -211,6 +269,7 @@ void MoveGen::castling(const BitBoards& boards, int color) {
 
 	movegen_push(boards, color, KING, PIECE_EMPTY, 'C', ks, kto);
 }
+
 
 void MoveGen::generatePsMoves(const BitBoards& boards, bool capturesOnly)
 {
@@ -395,12 +454,6 @@ void MoveGen::movegen_push(const BitBoards & board, int color, int piece, int ca
     moveAr[moveCount].captured = captured;
     moveAr[moveCount].flag = flag;
 
-
-    /**************************************************************************
-    * Quiet moves are sorted by history score.                                *
-    **************************************************************************/
-	moveAr[moveCount].score = history.history[color][from][to]; //+ history.gains[isWhite][piece][to] * 10; //find a way to pass historys here instead of using global???
-
     //scoring capture moves
     if(captured){
 
@@ -412,10 +465,17 @@ void MoveGen::movegen_push(const BitBoards & board, int color, int piece, int ca
 
         //Good captures are scored higher, based on BLIND better lower if not defended
         //need to add Static Exchange at somepoint
-		if (blind(board, to, color, SORT_VALUE[piece], SORT_VALUE[captured])) moveAr[moveCount].score = SORT_CAPT + SORT_VALUE[captured] + idAr[piece];
+		if (blind(board, to, color, SORT_VALUE[piece], SORT_VALUE[captured])) moveAr[moveCount].score = SORT_VALUE[captured] + idAr[piece] + SORT_CAPT; //
 
 		else  moveAr[moveCount].score = SORT_VALUE[captured] + idAr[piece];
+
+		//else  moveAr[moveCount].score = SEE(moveAr[moveCount], board, color, true);
     }
+	else {
+
+		// Quiet moves are sorted by history score.                                
+		moveAr[moveCount].score = history.history[color][from][to]; 
+	}
 
     //pawn promotions
     if(moveAr[moveCount].flag == 'Q') moveAr[moveCount].score += SORT_PROM;
@@ -435,9 +495,7 @@ bool MoveGen::blind(const BitBoards & board, int to, int color, int pieceVal, in
 	//capture lower takes higher
 	if (captureVal >= pieceVal - 50) return true;
 
-	//is our capture attacked by enemys?
-	//bool defended = isSquareAttacked(board, move.to, !color);
-
+	// if square is attacked return false
 	return !isSquareAttacked(board, to, color);
 }
 
@@ -591,6 +649,7 @@ void MoveGen::reorderMoves(searchStack *ss, const HashEntry *entry)
         }
     }
 }
+
 // Just test to see if our king is attacked by any enemy pieces
 // castling moves are checked for legality durning move gen, aside from
 // this king in check test. En passants are done the same way

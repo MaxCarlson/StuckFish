@@ -174,7 +174,8 @@ int Ai_Logic::searchRoot(BitBoards& board, int depth, int alpha, int beta, searc
 	const int color = board.stm();
 
     MoveGen gen_moves;
-    gen_moves.generatePsMoves(board, false);
+    //gen_moves.generatePsMoves(board, false);
+	gen_moves.generate<MAIN_GEN>(board);
 	gen_moves.reorderMoves(ss, ttentry);
 
     // Are we in check?	
@@ -424,7 +425,8 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 */
 
 //generate psuedo legal moves (not just captures)
-	gen_moves.generatePsMoves(board, false);
+	//gen_moves.generatePsMoves(board, false);
+	gen_moves.generate<MAIN_GEN>(board);
 
 	//add killers scores and hash moves scores to moves if there are any
 	gen_moves.reorderMoves(ss, ttentry);
@@ -738,7 +740,8 @@ int Ai_Logic::quiescent(BitBoards& board, int alpha, int beta, searchStack *ss, 
 
 	//generate only captures with true capture gen var
 	MoveGen gen_moves;
-	gen_moves.generatePsMoves(board, true);
+	//gen_moves.generatePsMoves(board, true);
+	gen_moves.generate<CAPTURES>(board);
 	gen_moves.reorderMoves(ss, ttentry);
 
 	//set hash flag equal to alpha Flag

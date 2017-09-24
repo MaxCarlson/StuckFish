@@ -33,6 +33,9 @@ public:
 	// pushing moves to movegen_push which stores info and scores with BLIND
     void generatePsMoves(const BitBoards& boards, bool capturesOnly);
 
+	template<int genType>
+	void generate(const BitBoards& board);
+
 	bool isLegal(const BitBoards & b, const Move & m, int color);
 
 	//helper function for isLegal + for finding if in check
@@ -66,7 +69,13 @@ private:
 	template<int Pt> FORCE_INLINE
 	int min_attacker(const BitBoards & b, int color, const int & to, const U64 & stmAttackers, U64 & occupied, U64 & attackers);
 
-    //psuedo legal move gen for indvidual pieces
+	template<int color, int Pt> FORCE_INLINE
+		void generateMoves(const BitBoards& board, const U64 &target);
+
+	template<int color, int genType> FORCE_INLINE
+		void generateAll(const BitBoards& board, const U64 & target);
+
+	//psuedo legal move gen for indvidual pieces
 	template<int color>
 	void pawnMoves(const BitBoards & boards, bool capturesOnly);
 
