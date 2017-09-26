@@ -99,6 +99,7 @@ extern const U64 FILE_GH;
 //holds a array of lines "forward" relative from side to move
 //in front of a particualar square
 extern U64 forwardBB[COLOR][SQ_ALL];
+extern U64 BetweenSquares[SQ_ALL][SQ_ALL];
 extern U64 PassedPawnMask[COLOR][SQ_ALL];
 extern U64 PawnAttackSpan[COLOR][SQ_ALL];
 extern int SquareDistance[SQ_ALL][SQ_ALL];

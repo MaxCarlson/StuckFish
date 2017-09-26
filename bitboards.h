@@ -31,9 +31,13 @@ struct StateInfo {
 	U64 PawnKey;
 	U64 MaterialKey;
 
-	int epSquare;
+	//int sideMaterial[COLOR]; // need to use these and delete struct above
+	//int nonPawnMaterial[COLOR];
 
+	int epSquare;
 	int castlingRights;
+
+	U64 checkers;
 
 	StateInfo* previous;
 };
@@ -46,7 +50,7 @@ public:
 	//this is only called once at program startup
 	void initBoards();
 
-	//debug method
+	//debug method ~~ needs additions and to be redone
 	bool posOkay();
 
 	//holds zobrist key and arrays neccasary for modifying key
@@ -92,6 +96,7 @@ public:
 	U64 pieces(int color, int pt, int pt1)const;
 	U64 piecesByType(int p1) const;
 	U64 piecesByType(int p1, int p2) const; 
+
 	template<int pt> int count(int color) const;
 	bool empty(int sq) const;
 	int pieceOnSq(int sq) const;
@@ -106,11 +111,7 @@ public:
 	U64 square_bb(int sq) const;
 
 
-	bool can_enpassant() const;
-	int  ep_square() const;
 
-
-	//Board Info Functions
 	
 	int stm() const; //returns side to move
 
@@ -122,16 +123,24 @@ public:
 	//used for interpolating between mid and end game scores, in TESTING
 	int game_phase() const;
 
+	//attack info
 
 	//full of attacks all possible attacks for all squares and pieces
 	//on a completely empty board
 	template<int Pt>
 	U64 attacks_from(int from) const;
+	template<int Pt>
+	U64 attacks_from(int from, int color) const;
+
+	U64 attackers_to(int square, U64 occupied) const;
 
 	U64 PseudoAttacks[PIECES][SQ_ALL]; //zero index is white pawns, 1 black pawns, pieces after are index by their number ~~ Move Outside Object
 
 	U64 psuedoAttacks(int piece, int color, int sq) const;
 
+
+	//checks
+	U64 check_blockers(int color, int kingColor) const;
 
 	//castling
 	void set_castling_rights(int color, int rfrom);
@@ -146,6 +155,9 @@ public:
 	bool castling_impeded(int castlingRights) const;
 
 
+	//en passants
+	bool can_enpassant() const;
+	int  ep_square() const;
 
 
 //helper funtction to draw out bitboards like chess boards
@@ -272,6 +284,12 @@ inline U64 BitBoards::attacks_from(int from) const
 		 : Pt == QUEEN   ? slider_attacks.QueenAttacks(  FullTiles, from)
 		 : Pt == KING    ? psuedoAttacks(KING, WHITE, from)
 		 : 0LL;
+}
+
+template<int Pt>
+inline U64 BitBoards::attacks_from<PAWN>(int from, int color) const
+{
+	return psuedoAttacks(PAWN, color, from);
 }
 
 //return an attack set for a piece on any square, attacks are generated

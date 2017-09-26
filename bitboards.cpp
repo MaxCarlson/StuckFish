@@ -152,9 +152,16 @@ void BitBoards::initBoards()
 	//find and record the max distance between two square on the game board
 	for (int s1 = 0; s1 < 64; ++s1) {
 		for (int s2 = 0; s2 < 64; ++s2) {
+			BetweenSquares[s1][s2] = 0LL;
+
 			if (s1 != s2) {
 				SquareDistance[s1][s2] = std::max(file_distance(s1, s2), rank_distance(s1, s1));
+
+				if (SquareDistance[s1][s2] > 1) {
+
+				}
 			}
+			
 		}
 	}
 
@@ -332,6 +339,17 @@ void BitBoards::readFenString(const std::string& FEN)
 	char notUSED;
 	ss >> std::skipws >> notUSED >> turns;
 
+}
+
+U64 BitBoards::check_blockers(int color, int kingColor) const
+{
+	U64 b, pinners, result;
+
+	int kingSq = king_square(color);
+
+	//pinners = ;
+
+	return U64();
 }
 
 void BitBoards::set_castling_rights(int color, int rfrom)
@@ -593,6 +611,17 @@ void BitBoards::undoNullMove()
 	st = st->previous;
 
 	bInfo.sideToMove = !bInfo.sideToMove;
+}
+
+// Finds all attackers to a square
+U64 BitBoards::attackers_to(int square, U64 occupied) const 
+{
+	return (attacks_from<PAWN>(square, WHITE)			   & pieces(BLACK, PAWN)
+		  | attacks_from<PAWN>(square, BLACK)			   & pieces(WHITE, PAWN)
+		  | attacks_from<KNIGHT>(square)				   & piecesByType(KNIGHT)
+		  | slider_attacks.BishopAttacks(occupied, square) & piecesByType(BISHOP, QUEEN)
+		  | slider_attacks.RookAttacks(occupied, square)   & piecesByType(ROOK, QUEEN)
+		  | attacks_from<KING>(square)					   & piecesByType(KING));
 }
 
 //used for drawing a singular bitboard

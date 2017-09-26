@@ -292,7 +292,7 @@ void MoveGen::movegen_push(const BitBoards & board, int color, int piece, int ca
 
         //Good captures are scored higher, based on BLIND better lower if not defended
         //need to add Static Exchange at somepoint
-		if (blind(board, to, color, SORT_VALUE[piece], SORT_VALUE[captured])) moveAr[moveCount].score = SORT_VALUE[captured] + idAr[piece] + SORT_CAPT; //
+		if (blind(board, to, color, SORT_VALUE[piece], SORT_VALUE[captured])) moveAr[moveCount].score = SORT_VALUE[captured] + idAr[piece] + SORT_CAPT;
 
 		else  moveAr[moveCount].score = SORT_VALUE[captured] + idAr[piece];
 
@@ -322,6 +322,7 @@ bool MoveGen::blind(const BitBoards & board, int to, int color, int pieceVal, in
 	//capture lower takes higher
 	if (captureVal >= pieceVal - 50) return true;
 
+	//return false; //currently in testing for ELO loss/gain
 	// if square is attacked return false
 	return !isSquareAttacked(board, to, color);
 }
@@ -349,8 +350,7 @@ int MoveGen::SEE(const Move& m, const BitBoards& b, int color, bool isCapture)
 	}
 
 	//finds all attackers to the square
-	//attackers = attackersTo(m.to, b, occupied) & occupied;
-	attackers = attackersTo(b, occupied, m.to) & occupied;
+	attackers = b.attackers_to(m.to, occupied) & occupied;
 
 	//if there are no attacking pieces, return
 	if(!(attackers & b.allPiecesColorBB[color])) return swapList[0];
@@ -482,10 +482,12 @@ void MoveGen::reorderMoves(searchStack *ss, const HashEntry *entry)
 // this king in check test. En passants are done the same way
 bool MoveGen::isLegal(const BitBoards & b, const Move & m, int color) 
 {
-	const int them = !color;
-	const int kingLoc = b.king_square(color);
+	// There's a better way of doing this than checking
+	// all moves to see if our king is attacked.
+	// Right now though, this function is at 1~2%
+	// if search is speed up than this should be revisited!
 
-	return !isSquareAttacked(b, kingLoc, color);
+	return !isSquareAttacked(b, b.king_square(color), color);
 }
 
 bool MoveGen::isSquareAttacked(const BitBoards & b, const int square, const int color) {

@@ -1,17 +1,1 @@
-﻿  zobristh.cpp
-  UCI.cpp
-  TranspositionT.cpp
-  TimeManager.cpp
-  slider_attacks.cpp
-  Pawns.cpp
-  movegen.cpp
-  material.cpp
-  main.cpp
-  hashentry.cpp
-  Evaluate.cpp
-  EndGame.cpp
-  bitboards.cpp
-  ai_logic.cpp
-  Generating Code...
-  StuckFish.vcxproj -> C:\Users\C-60\Desktop\cppPrograms\StuckFish\x64\Debug\StuckFish.exe
-  StuckFish.vcxproj -> C:\Users\C-60\Desktop\cppPrograms\StuckFish\x64\Debug\StuckFish.pdb (Partial PDB)
+﻿

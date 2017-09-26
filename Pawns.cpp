@@ -35,9 +35,10 @@ static const U64 adjacentFiles[8] = {
 
 
 //masks used for pawn eval, possibly other things too
-U64 forwardBB[COLOR][64]; //line in front of square relative side to move
-U64 PassedPawnMask[COLOR][64]; //line in front & pawnAttackSpan
-U64 PawnAttackSpan[COLOR][64]; //all tiles that can be attacked by a pawn as it moves forward
+U64 forwardBB[COLOR][SQ_ALL]; //line in front of square relative side to move
+U64 PassedPawnMask[COLOR][SQ_ALL]; //line in front & pawnAttackSpan
+U64 PawnAttackSpan[COLOR][SQ_ALL]; //all tiles that can be attacked by a pawn as it moves forward
+U64 BetweenSquares[SQ_ALL][SQ_ALL];
 
 //function returns a bitboard of all squares ahead of the sq
 //input, realtive to side to move.
