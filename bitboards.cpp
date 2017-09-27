@@ -159,10 +159,7 @@ void BitBoards::initBoards()
 				SquareDistance[s1][s2] = std::max(file_distance(s1, s2), rank_distance(s1, s2));
 
 
-				if (s1 == 0 && s2 == 24)
-					int hhhh = 5;
 				if (SquareDistance[s1][s2] > 1) {
-
 
 					if (s1 / 8 == s2 / 8 || s1 % 8 == s2 % 8)
 						BetweenSquares[s1][s2] = psuedoAttacks(ROOK, WHITE, s1) & psuedoAttacks(ROOK, WHITE, s2);
@@ -170,7 +167,7 @@ void BitBoards::initBoards()
 					else {
 						bool isDiag = false;
 						for (int i = 1; i < 8; ++i) {
-							
+
 							if (s1 == s2 + 9 * i)
 								isDiag = true;
 							if (s1 == s2 - 9 * i)
@@ -188,94 +185,54 @@ void BitBoards::initBoards()
 						}
 						else
 							continue;
-					}	
-
-					
+					}
 
 					int ss1 = s1, ss2 = s2;
 
 					if (s1 > 7) ss1 = s1 % 8;
 					if (s2 > 7) ss2 = s2 % 8;
 
-					drawBB(BetweenSquares[s1][s2]);
-
-					if (s1 == 0 && s2 == 16) 
-						int aaa = 5;
-						
-			
-					
-
-					if (ss2 > ss1) {
-						for (int i = ss2; i < 8; ++i) {
-							BetweenSquares[s1][s2] &= ~FileMasks8[i];
+					//squares on vertical
+					if (s1 % 8 == s2 % 8) {
+						if (s1 > s2) {
+							ss1 = s1 / 8;
+							ss2 = s2 / 8;
 						}
-						for (int i = ss1; i >= 0; --i) {
-							BetweenSquares[s1][s2] &= ~FileMasks8[i];
+						else {
+							ss1 = s2 / 8;
+							ss2 = s1 / 8;
 						}
 
-					}
-					else if (ss1 > ss2) {
+
 						for (int i = ss1; i < 8; ++i) {
-							BetweenSquares[s1][s2] &= ~FileMasks8[i];
+							BetweenSquares[s1][s2] &= ~RankMasks8[i ^ 7];
 						}
+
 						for (int i = ss2; i >= 0; --i) {
-							BetweenSquares[s1][s2] &= ~FileMasks8[i];
+							BetweenSquares[s1][s2] &= ~RankMasks8[i ^ 7];
 						}
+						continue;
 					}
 
-					/*
-					if (ss2 > ss1) {
-						for (int i = ss2; i < 8; ++i) {
-							BetweenSquares[s1][s2] = (BetweenSquares[s1][s2] << 1LL) & ~FileABB;
-							//drawBB(BetweenSquares[s1][s2]);
-						}
-						for (int i = 8; i > ss2; --i) {
-							BetweenSquares[s1][s2] = BetweenSquares[s1][s2] >> 1LL;
-							//drawBB(BetweenSquares[s1][s2]);
-						}
-						if (ss1 > 0) {
-
-							int i;
-							for (i = ss1; i > 0; --i) {
-								BetweenSquares[s1][s2] = BetweenSquares[s1][s2] >> 1LL & ~FileHBB;
-							}
-							for (i; i < ss1; ++i) {
-								BetweenSquares[s1][s2] = BetweenSquares[s1][s2] << 1LL;
-							}
-
-						}
+	
+					//diagonal and horizontal squares
+					if (ss1 > ss2) {
+						int tmp = ss1;
+						ss1 = ss2;
+						ss2 = tmp;
 					}
-					else {
-						for (int i = ss1; i < 8; ++i) {
-							BetweenSquares[s1][s2] = (BetweenSquares[s1][s2] << 1LL) & ~FileABB;
-							//drawBB(BetweenSquares[s1][s2]);
-						}
-						for (int i = 8; i > ss1; --i) {
-							BetweenSquares[s1][s2] = BetweenSquares[s1][s2] >> 1LL;
-							//drawBB(BetweenSquares[s1][s2]);
-						}
-						if (ss2 > 0) {
 
-							int i;
-							for (i = ss2; i > 0; --i) {
-								BetweenSquares[s1][s2] = BetweenSquares[s1][s2] >> 1LL & ~FileHBB;
-							}
-							for (i; i >= 0; --i) {
-								BetweenSquares[s1][s2] = BetweenSquares[s1][s2] << 1LL;
-							}
-						}
+					for (int i = ss2; i < 8; ++i) {
+						BetweenSquares[s1][s2] &= ~FileMasks8[i];
 					}
-					*/
-
-					drawBB(BetweenSquares[s1][s2]);
+					for (int i = ss1; i >= 0; --i) {
+						BetweenSquares[s1][s2] &= ~FileMasks8[i];
+					}
 				}
 			}
 			
 		}
-	}
-
-
-	
+	}	
 }
 
 void BitBoards::constructBoards(const std::string* FEN) //replace this with fen string reader
