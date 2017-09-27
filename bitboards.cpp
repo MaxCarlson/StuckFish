@@ -12,30 +12,6 @@
 
 
 
-/*
-std::string boardArr[8][8] = {
-	{ "r", "n", "b", "q", "k", "b", "n", "r" },
-	{ "p", "p", "p", "p", "p", "p", "p", "p", },
-	{ " ", " ", " ", " ", " ", " ", " ", " " },
-	{ " ", " ", " ", " ", " ", " ", " ", " " },
-	{ " ", " ", " ", " ", " ", " ", " ", " " },
-	{ " ", " ", " ", " ", " ", " ", " ", " " },
-	{ "P", "P", "P", "P", "P", "P", "P", "P" },
-	{ "R", "N", "B", "Q", "K", "B", "N", "R" },
-};
-*/
-std::string boardArr[8][8] = {
-	{ "r", "n", "b", "q", "k", "b", "n", "r" },
-	{ "p", "p", "p", "p", "p", "p", "p", "p", },
-	{ " ", " ", " ", " ", " ", " ", " ", " " },
-	{ " ", " ", " ", " ", " ", " ", " ", " " },
-	{ " ", " ", " ", " ", " ", " ", " ", " " },
-	{ " ", " ", " ", " ", " ", " ", " ", " " },
-	{ "P", "P", "P", "P", "P", "P", "P", "P" },
-	{ "R", "N", "B", "Q", "K", "B", "N", "R" },
-};
-
-
 // returns true if squares s0, s1, and s2 are aligned
 // either vertically, horizontally, or diagonally
 inline bool aligned(int s0, int s1, int s2) { // move this to a new .h
@@ -57,7 +33,7 @@ namespace Zobrist {
 // we're in check
 CheckInfo::CheckInfo(const BitBoards &board)
 {
-	int color = !board.stm();
+	int color = board.stm();
 	ksq = board.king_square(!color);
 
 	pinned          = board.check_blockers(color,  color);
@@ -67,7 +43,7 @@ CheckInfo::CheckInfo(const BitBoards &board)
 	checkSq[KNIGHT] = board.attacks_from<KNIGHT>(ksq);
 	checkSq[BISHOP] = board.attacks_from<BISHOP>(ksq);
 	checkSq[ROOK]   = board.attacks_from<ROOK>(ksq);
-	checkSq[QUEEN]  = board.attacks_from<QUEEN>(ksq);
+	checkSq[QUEEN]  = checkSq[ROOK] | checkSq[BISHOP];
 	checkSq[KING]   = 0LL;
 }
 
@@ -442,12 +418,12 @@ bool BitBoards::gives_check(const Move & m, const CheckInfo & ci)
 {
 
 	// direct check?
-	if (ci.checkSq[m.piece] & m.to)
+	if (ci.checkSq[m.piece] & squareBB[m.to])
 		return true;
 
 
 	if (ci.dcCandidates
-		&& (ci.dcCandidates & m.from)
+		&& (ci.dcCandidates & squareBB[m.from])
 		&& !aligned(m.from, m.to, ci.ksq))
 		return true;
 
@@ -458,7 +434,7 @@ bool BitBoards::gives_check(const Move & m, const CheckInfo & ci)
 		return false;
 
 		// Promotions
-	case 'P':
+	case 'Q':
 		return attacks_from<QUEEN>(m.to, FullTiles ^ squareBB[m.from]); // Other promotions not implemented
 
 	// En passants
@@ -491,6 +467,7 @@ bool BitBoards::gives_check(const Move & m, const CheckInfo & ci)
 		return (PseudoAttacks[ROOK][rto] & squareBB[ci.ksq])
 			&& (attacks_from<ROOK>(rto, (FullTiles ^ squareBB[m.from] ^ squareBB[rfrom]) | squareBB[rto] | squareBB[m.to]) & squareBB[ci.ksq]); //also test this!!!
 	}
+
 	}
 
 	std::cout << "gives check error!!!!!!!!!!!!" << std::endl;
@@ -501,7 +478,7 @@ bool BitBoards::gives_check(const Move & m, const CheckInfo & ci)
 // that are blocking checks on king of kingColor
 U64 BitBoards::check_blockers(int color, int kingColor) const
 {
-	U64 b, pinners, result;
+	U64 b, pinners, result = 0LL;
 
 	int kingSq = king_square(kingColor);
 
@@ -556,7 +533,8 @@ void BitBoards::makeMove(const Move& m, StateInfo& newSt, int color)
 {
 	int them = !color;
 
-	//gives_check(m, CheckInfo(*this));
+	CheckInfo ci(*this);
+	bool checking = gives_check(m, ci);
 
 	assert(posOkay());
 
@@ -667,6 +645,36 @@ void BitBoards::makeMove(const Move& m, StateInfo& newSt, int color)
 	// prefetch TT entry into cache ~THIS IS WAY TOO TIME INTENSIVE? 6.1% on just this call from here?
 	// SWITCH TT to single address lookup instead of cluster of two?
 	_mm_prefetch((char *)TT.first_entry(st->Key), _MM_HINT_NTA);
+
+
+	if (checking) {
+		//drawBBA();
+		//drawBB(ci.checkSq[1]);
+		//drawBB(ci.checkSq[2]);
+		//drawBB(ci.checkSq[3]);
+		//drawBB(ci.checkSq[4]);
+		//drawBB(ci.checkSq[5]);
+		//drawBB(ci.checkSq[6]);
+		if (m.flag != '0')
+			st->checkers = attackers_to(king_square(them), FullTiles) & pieces(color);
+
+		else {
+
+			//Direct checks
+			if (ci.checkSq[m.piece] & squareBB[m.to])
+				st->checkers |= squareBB[m.to];
+
+			//Discoverd checks
+			if (ci.dcCandidates && (ci.dcCandidates & squareBB[m.from])) {
+
+				if (m.piece != ROOK)
+					st->checkers |= attacks_from<ROOK  >(king_square(them)) & pieces(color, ROOK,   QUEEN);
+
+				if (m.piece != BISHOP)
+					st->checkers |= attacks_from<BISHOP>(king_square(them)) & pieces(color, BISHOP, QUEEN);
+			}
+		}
+	}
 	
 	assert(posOkay());
 
