@@ -136,6 +136,8 @@ Move Ai_Logic::iterativeDeep(BitBoards& board, int depth, bool isWhite)
             //if statement makes sure the move has been tried before storing it
             if(sd.PV[1].tried) bestMove = sd.PV[1];
 
+			//insert_pv(board);
+
 			//print data on search 
 			print(isWhite, bestScore);
         }
@@ -174,7 +176,6 @@ int Ai_Logic::searchRoot(BitBoards& board, int depth, int alpha, int beta, searc
 	const int color = board.stm();
 
     MoveGen gen_moves;
-    //gen_moves.generatePsMoves(board, false);
 	gen_moves.generate<MAIN_GEN>(board);
 	gen_moves.reorderMoves(ss, ttentry);
 
@@ -611,35 +612,7 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 
 		//undo move on BB's
 		board.unmakeMove(newMove, color);
-/*
-		if (board.TTKey() != board.zobrist.debugKey(!color, board)
-			|| board.pawn_key() != board.zobrist.debugPawnKey(board)
-			|| board.material_key() != board.zobrist.debugMaterialKey(board)) {
-			std::string fuck = "";
-			U64 k1, k2;
-			if (board.TTKey() != board.zobrist.debugKey(!color, board)) {
-				fuck = "ZOBRIST";
-				k1 = board.TTKey();
-				k2 = board.zobrist.debugKey(!color, board);
-				std::cout << (k1 ^ board.zobrist.zEnPassant[0]) << std::endl;
-				std::cout << (k1 ^ board.zobrist.zEnPassant[1]) << std::endl;
-				std::cout << (k1 ^ board.zobrist.zEnPassant[2]) << std::endl;
-				std::cout << (k1 ^ board.zobrist.zEnPassant[3]) << std::endl;
-				std::cout << (k1 ^ board.zobrist.zEnPassant[4]) << std::endl;
-				std::cout << (k1 ^ board.zobrist.zEnPassant[5]) << std::endl;
-				std::cout << (k1 ^ board.zobrist.zEnPassant[6]) << std::endl;
-				std::cout << (k1 ^ board.zobrist.zEnPassant[7]) << std::endl;
-			}
-			board.drawBBA();
-			if (board.pawn_key() != board.zobrist.debugPawnKey(board)) fuck += " PAWNS";
-			if (board.material_key() != board.zobrist.debugMaterialKey(board)) fuck += " Material!";
 
-			for (int i = 0; i < 2000; ++i) {
-				std::cout << "uh oh, " << fuck << " is fucked!" << std::endl;
-			}
-
-		}
-//*/
 		if (timeOver) return 0;
 
 		if (score > bestScore) {
@@ -830,6 +803,31 @@ bool Ai_Logic::isRepetition(const BitBoards& board, const Move& m) //Ai_Logic::
 	}
 
 	return false;
+}
+
+void Ai_Logic::insert_pv(BitBoards & board)
+{
+	StateInfo state[MAX_PLY + 6], *st = state;
+	const HashEntry * tte;
+	int id = 1;
+
+	do {
+		tte = TT.probe(board.TTKey());
+
+		if (!tte || tte->move != sd.PV[id])
+			TT.save(sd.PV[id], board.TTKey(), 0, 0, TT_ALPHA);
+
+		board.makeMove(sd.PV[id++], *st++, board.stm());
+
+		board.drawBBA();
+
+	} while (sd.PV[id].tried);
+
+	while (id > 1) {
+		board.drawBBA();
+		board.unmakeMove(sd.PV[--id], !board.stm());
+	}
+	board.drawBBA();
 }
 
 void Ai_Logic::updateStats(Move move, searchStack * ss, int depth, Move * quiets, int qCount, int color)

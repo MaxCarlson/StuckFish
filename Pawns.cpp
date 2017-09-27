@@ -30,8 +30,9 @@ U64 forwardBB[COLOR][SQ_ALL]; //line in front of square relative side to move
 U64 PassedPawnMask[COLOR][SQ_ALL]; //line in front & pawnAttackSpan
 U64 PawnAttackSpan[COLOR][SQ_ALL]; //all tiles that can be attacked by a pawn as it moves forward
 U64 BetweenSquares[SQ_ALL][SQ_ALL];
+U64 LineBB[SQ_ALL][SQ_ALL];
 
-//function returns a bitboard of all squares ahead of the sq
+//function returns a bitboard of all squares ahead of the sq  /////////Move these functions and declarations to their own header? 
 //input, realtive to side to move.
 inline U64 forward_bb(int color, int sq) {
 	return forwardBB[color][sq];
@@ -54,6 +55,7 @@ inline U64 pawn_attack_span(int color, int sq) {
 inline U64 between_sqs(int sq, int sq1) {
 	return BetweenSquares[sq][sq1];
 }
+
 
 
 #define S(mg, eg) make_scores(mg, eg)

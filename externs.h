@@ -102,6 +102,7 @@ extern U64 forwardBB[COLOR][SQ_ALL];
 extern U64 BetweenSquares[SQ_ALL][SQ_ALL];
 extern U64 PassedPawnMask[COLOR][SQ_ALL];
 extern U64 PawnAttackSpan[COLOR][SQ_ALL];
+extern U64 LineBB[SQ_ALL][SQ_ALL];
 extern int SquareDistance[SQ_ALL][SQ_ALL];
 
 

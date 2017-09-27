@@ -11,6 +11,7 @@
 #include "Evaluate.h"
 
 
+
 /*
 std::string boardArr[8][8] = {
 	{ "r", "n", "b", "q", "k", "b", "n", "r" },
@@ -34,6 +35,13 @@ std::string boardArr[8][8] = {
 	{ "R", "N", "B", "Q", "K", "B", "N", "R" },
 };
 
+
+// returns true if squares s0, s1, and s2 are aligned
+// either vertically, horizontally, or diagonally
+inline bool aligned(int s0, int s1, int s2) { // move this to a new .h
+	return LineBB[s0][s1] & (1LL << s2);
+}
+
 // holds keys to XOR Transposition, Material, and Pawn hash keys by 
 // when board position changes
 namespace Zobrist {
@@ -41,6 +49,26 @@ namespace Zobrist {
 	U64 EnPassant[8];
 	U64 Castling[CASTLING_RIGHTS];
 	U64 Color;
+}
+
+// Constructor for check info,
+// called during make move so we can later exclude
+// everything but evasions for move generation if
+// we're in check
+CheckInfo::CheckInfo(const BitBoards &board)
+{
+	int color = !board.stm();
+	ksq = board.king_square(!color);
+
+	pinned          = board.check_blockers(color,  color);
+	dcCandidates    = board.check_blockers(color, !color);
+
+	checkSq[PAWN]   = board.attacks_from<PAWN>(ksq, !color);
+	checkSq[KNIGHT] = board.attacks_from<KNIGHT>(ksq);
+	checkSq[BISHOP] = board.attacks_from<BISHOP>(ksq);
+	checkSq[ROOK]   = board.attacks_from<ROOK>(ksq);
+	checkSq[QUEEN]  = board.attacks_from<QUEEN>(ksq);
+	checkSq[KING]   = 0LL;
 }
 
 
@@ -294,6 +322,8 @@ void BitBoards::set_state(StateInfo * si)
 	//get zobrist key of current position and store to board
 	si->Key = zobrist.getZobristHash(*this);
 
+	si->checkers = attackers_to(king_square(stm()), FullTiles) & pieces(!stm()); //IS THIS working as intended????
+
 	//si->Key ^= Zobrist::Castling[st->castlingRights]; //already done in zobrist.gethash above!!
 
 	for (int c = 0; c < COLOR; ++c) {
@@ -408,6 +438,67 @@ void BitBoards::readFenString(const std::string& FEN)
 
 }
 
+bool BitBoards::gives_check(const Move & m, const CheckInfo & ci)
+{
+
+	// direct check?
+	if (ci.checkSq[m.piece] & m.to)
+		return true;
+
+
+	if (ci.dcCandidates
+		&& (ci.dcCandidates & m.from)
+		&& !aligned(m.from, m.to, ci.ksq))
+		return true;
+
+	switch (m.flag) {
+
+		// Normal moves
+	case '0':
+		return false;
+
+		// Promotions
+	case 'P':
+		return attacks_from<QUEEN>(m.to, FullTiles ^ squareBB[m.from]); // Other promotions not implemented
+
+	// En passants
+	case 'E':
+	{
+		// Find the true capture square for EP since m.to
+		// represents destination square.
+		int capsq = stm() == WHITE ? m.to + S : m.to + N;
+
+		// "Move" the pieces, so we can see if there is a discoverd check
+		// through the captured pawn.
+		U64 bb = (FullTiles ^ squareBB[m.from] ^ squareBB[capsq]) | squareBB[m.to];
+
+		return   (attacks_from<ROOK  >(ci.ksq, bb) & pieces(stm(), ROOK,   QUEEN))
+			   | (attacks_from<BISHOP>(ci.ksq, bb) & pieces(stm(), BISHOP, QUEEN));
+	}
+
+	// Castling
+	case 'C':
+	{
+		// Find rook to and from squares
+		int rfrom = relative_square(stm(), (m.to < m.from ? A1 : H1));
+		int rto   = relative_square(stm(), (m.to < m.from ? D1 : F1));
+
+		// First we use a psuedo attack lookup table to check if their
+		// king would recieve a check if there were no other pieces on the board
+		// from this castle. If that's true, then we "move" the pieces and pass
+		// attacks_from a occluded full tiles board with the pieces "moved"
+		// and generate rook moves to see if the castle truely causes check. 
+		return (PseudoAttacks[ROOK][rto] & squareBB[ci.ksq])
+			&& (attacks_from<ROOK>(rto, (FullTiles ^ squareBB[m.from] ^ squareBB[rfrom]) | squareBB[rto] | squareBB[m.to]) & squareBB[ci.ksq]); //also test this!!!
+	}
+	}
+
+	std::cout << "gives check error!!!!!!!!!!!!" << std::endl;
+	return false;
+}
+
+// returns a bitboard of all pieces of color
+// that are blocking checks on king of kingColor
 U64 BitBoards::check_blockers(int color, int kingColor) const
 {
 	U64 b, pinners, result;
@@ -464,6 +555,8 @@ void BitBoards::set_castling_rights(int color, int rfrom)
 void BitBoards::makeMove(const Move& m, StateInfo& newSt, int color)
 {
 	int them = !color;
+
+	//gives_check(m, CheckInfo(*this));
 
 	assert(posOkay());
 
@@ -701,6 +794,7 @@ U64 BitBoards::attackers_to(int square, U64 occupied) const
 		  | attacks_from<KING>(square)					   & piecesByType(KING));
 }
 
+
 //used for drawing a singular bitboard
 void BitBoards::drawBB(U64 board)
 {
@@ -828,8 +922,5 @@ End:
 	drawBB(FullTiles);
 	return false;
 }
-
-
-
 
 

@@ -56,6 +56,8 @@ private:
 
 	//repetition checker
 	bool isRepetition(const BitBoards& newBoard, const Move& m);
+
+	void insert_pv(BitBoards & board);
 	
 
 //helpers

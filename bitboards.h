@@ -25,6 +25,16 @@ struct BoardInfo { //possibly remove this and move this info to bitboards object
 
 };
 
+struct CheckInfo{
+	CheckInfo(const BitBoards& board);
+
+	//direct check candidates
+	U64 dcCandidates;
+	U64 pinned;
+	U64 checkSq[PIECES];
+	int ksq;
+};
+
 struct StateInfo {
 
 	U64 Key;
@@ -124,15 +134,17 @@ public:
 	int game_phase() const;
 
 	//attack info
-
 	//full of attacks all possible attacks for all squares and pieces
 	//on a completely empty board
 	template<int Pt>
 	U64 attacks_from(int from) const;
 	template<int Pt>
 	U64 attacks_from(int from, int color) const;
+	template<int Pt>
+	U64 attacks_from(int sq, U64 occ) const;
 
 	U64 attackers_to(int square, U64 occupied) const;
+
 
 	U64 PseudoAttacks[PIECES][SQ_ALL]; //zero index is white pawns, 1 black pawns, pieces after are index by their number ~~ Move Outside Object
 
@@ -140,6 +152,7 @@ public:
 
 
 	//checks
+	bool gives_check(const Move & m, const CheckInfo& ci);
 	U64 check_blockers(int color, int kingColor) const;
 
 	//castling
@@ -285,12 +298,22 @@ inline U64 BitBoards::attacks_from(int from) const
 		 : Pt == KING    ? psuedoAttacks(KING, WHITE, from)
 		 : 0LL;
 }
-
+//Used for Pawns with color info.
 template<int Pt>
 inline U64 BitBoards::attacks_from<PAWN>(int from, int color) const
 {
 	return psuedoAttacks(PAWN, color, from);
 }
+// template for rooks, bishops, and queens
+// with occlusion bitboard
+template<int Pt>
+inline U64 BitBoards::attacks_from(int sq, U64 occ) const
+{
+	return   Pt == BISHOP ? slider_attacks.BishopAttacks(occ, sq)
+		   : Pt == ROOK   ? slider_attacks.RookAttacks(  occ, sq)
+		   :			    slider_attacks.QueenAttacks( occ, sq);
+}
+
 
 //return an attack set for a piece on any square, attacks are generated
 //as if there are no pieces on the boards
