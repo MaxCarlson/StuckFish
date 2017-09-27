@@ -42,17 +42,6 @@ const U64 FILE_AB = FileABB + FileBBB;
 const U64 FILE_GH = FileGBB + FileHBB;
 
 
-static const U64 RankMasks8[8] = //from rank 1 - 8 
-{
-	0xFF00000000000000L, 0xFF000000000000L,  0xFF0000000000L, 0xFF00000000L, 0xFF000000L, 0xFF0000L, 0xFF00L, 0xFFL,
-};
-
-static const U64 FileMasks8[8] =/*from fileA to FileH*/
-{
-    0x101010101010101L, 0x202020202020202L, 0x404040404040404L, 0x808080808080808L,
-    0x1010101010101010L, 0x2020202020202020L, 0x4040404040404040L, 0x8080808080808080L
-};
-
 
 /*************************************************
 * Values used for sorting captures are the same  *
