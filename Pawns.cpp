@@ -49,6 +49,11 @@ inline U64 passed_pawn_mask(int color, int sq) {
 inline U64 pawn_attack_span(int color, int sq) {
 	return PawnAttackSpan[color][sq];
 }
+//returns a bitboard of all squares between
+// two squares
+inline U64 between_sqs(int sq, int sq1) {
+	return BetweenSquares[sq][sq1];
+}
 
 
 #define S(mg, eg) make_scores(mg, eg)

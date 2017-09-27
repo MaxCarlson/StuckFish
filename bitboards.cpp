@@ -151,6 +151,7 @@ void BitBoards::initBoards()
 	}
 
 	//find and record the max distance between two square on the game board
+	// also build the BetweenSquares array which holds a U64 of all squares between two squares.
 	for (int s1 = 0; s1 < 64; ++s1) {
 		for (int s2 = 0; s2 < 64; ++s2) {
 			BetweenSquares[s1][s2] = 0LL;
@@ -411,11 +412,21 @@ U64 BitBoards::check_blockers(int color, int kingColor) const
 {
 	U64 b, pinners, result;
 
-	int kingSq = king_square(color);
+	int kingSq = king_square(kingColor);
 
-	//pinners = ;
+	// bb of all sliding pieces that give check
+	// if we remove the pieces in front of the king 
+	pinners = ((piecesByType(ROOK,   QUEEN) & psuedoAttacks(ROOK,   WHITE, kingSq))
+		    |  (piecesByType(BISHOP, QUEEN) & psuedoAttacks(BISHOP, WHITE, kingSq))) & pieces(!kingColor);
 
-	return U64();
+	while (pinners) {
+
+		b = BetweenSquares[kingSq][pop_lsb(&pinners)] & FullTiles;
+
+		if (!more_than_one(b))
+			result |= b & pieces(color);
+	}
+	return result;
 }
 
 void BitBoards::set_castling_rights(int color, int rfrom)
