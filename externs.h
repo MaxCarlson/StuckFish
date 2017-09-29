@@ -21,7 +21,25 @@ class MoveGen;
 extern const int SORT_VALUE[7];
 
 //magics object
-extern SliderAttacks slider_attacks;
+extern SliderAttacks slider_attacks; // move this to bitboard object????? or into sliderattacks.h?
+
+// Used for Bishops, Rooks, and Queens.
+// Returns a bitboard of all attacks for an sq
+// not occluded by occ
+inline U64 attacks_bb(int Pt, int sq, U64 occ)
+{
+	switch (Pt) {
+	case BISHOP:
+		return slider_attacks.BishopAttacks(occ, sq);
+
+	case ROOK:
+		return slider_attacks.RookAttacks(  occ, sq);
+
+	case QUEEN:
+		return slider_attacks.QueenAttacks( occ, sq);
+	}
+}
+
 //two hash tables for respective names
 extern Pawns::Table pawnsTable;
 extern Material::Table MaterialTable;

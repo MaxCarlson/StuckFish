@@ -152,6 +152,9 @@ public:
 
 
 	//checks
+	U64 checkers() const;
+	U64 check_candidates() const;
+	U64 pinned_pieces(int color) const;
 	bool gives_check(const Move & m, const CheckInfo& ci);
 	U64 check_blockers(int color, int kingColor) const;
 
@@ -174,9 +177,9 @@ public:
 
 
 //helper funtction to draw out bitboards like chess boards
-	void drawBB(U64 board);
+	void drawBB(U64 board) const;
 	//draw out bitboards like a full chessboard array
-	void drawBBA();
+	void drawBBA() const;
 
 	// holds the state info for the very start
 	// st eventually points to this at the end
@@ -323,6 +326,28 @@ inline U64 BitBoards::psuedoAttacks(int piece, int color, int sq) const
 		? PseudoAttacks[PAWN - 1][sq] : PseudoAttacks[PAWN][sq]
 		: PseudoAttacks[piece][sq];
 }
+
+// Returns a bitboard of pieces checking
+// our king
+inline U64 BitBoards::checkers() const
+{
+	return st->checkers;
+}
+
+// Returns BB of all of our pieces that 
+// are blocking checks against opponent king
+inline U64 BitBoards::check_candidates() const
+{
+	return check_blockers(stm(), !stm());
+}
+
+// Returns BB of all our pieces pinned down
+// blocking check against our king
+inline U64 BitBoards::pinned_pieces(int color) const
+{
+	return check_blockers(color, color);
+}
+
 
 //is there a pawn past their relative 4th rank?
 inline bool BitBoards::isPawnPush(const Move &m, int color) 

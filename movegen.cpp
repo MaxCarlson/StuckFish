@@ -55,38 +55,96 @@ void MoveGen::generate(const BitBoards & board)
 {
 	//counts total moves generated
 	moveCount = 0;
+	U64 target;
 	const int color = board.stm();
 
-	// If only generating captures our target is only enemy pieces,
-	// aside from E king. Else our target is all squares that are not
-	// occupied by our friends or E king.
-	U64 target = genType == CAPTURES
-		?  (board.pieces(!color) ^ board.pieces(!color, KING))
-		: ~(board.pieces( color) | board.pieces(!color, KING));
+/*	
+	if (board.checkers()) {
+		//BitBoards a = board;
+		
 
-	color == WHITE ? generateAll<WHITE, genType>(board, target)
-				   : generateAll<BLACK, genType>(board, target);
+		int ksq       = board.king_square(color);
+		U64 sliderAtt = 0LL;
+		U64 sliders   = board.checkers() & ~board.piecesByType(PAWN, KNIGHT);
+
+		//a.drawBB(sliders);
+
+
+		// Find all squares attacked by slider checks
+		// we remove them in order not to generate useless illegal moves
+		while (sliders) {
+			int checksq = pop_lsb(&sliders);
+			sliderAtt  |= LineBB[checksq][ksq] ^ board.square_bb(checksq);
+		}
+		//a.drawBB(sliderAtt);
+
+		//Generate all possible check evasions for king
+		U64 bb = board.attacks_from<KING>(ksq) & ~board.pieces(color) & ~sliderAtt;
+
+		//a.drawBB(bb);
+		while (bb) {
+			int to  = pop_lsb(&bb);
+			int cap = board.pieceOnSq(to);
+			movegen_push(board, color, KING, cap, '0', ksq, to);
+		}
+
+		// If double check, we can only use king moves
+		if (more_than_one(board.checkers()))
+			return;
+
+		// Target blocking evasions or capturing the checking piece
+		int checksq = lsb(board.checkers());
+
+		target = BetweenSquares[checksq][ksq] | board.square_bb(checksq)
+			   & ~(board.pieces(color)		  | board.pieces(!color, KING));
+
+		//a.drawBB(target);
+
+		//a.drawBBA();
+
+		color == WHITE ? generateAll<WHITE, EVASIONS>(board, target)
+			           : generateAll<BLACK, EVASIONS>(board, target);
+	}
+//*/	
+
+	//else {
+
+		// If only generating captures our target is only enemy pieces,
+		// aside from E king. Else our target is all squares that are not
+		// occupied by our friends or E king.
+		target = genType == CAPTURES
+			   ?  (board.pieces(!color) ^ board.pieces(!color, KING))
+			   : ~(board.pieces(color)  | board.pieces(!color, KING));
+
+		color == WHITE ? generateAll<WHITE, genType>(board, target)
+			           : generateAll<BLACK, genType>(board, target);
+
+	//}
 }
 
 template void MoveGen::generate<MAIN_GEN>(const BitBoards & board);
 template void MoveGen::generate<CAPTURES>(const BitBoards & board);
 
+
 template<int color, int genType> FORCE_INLINE
 void MoveGen::generateAll(const BitBoards & board, const U64 & target)
 {
-	pawnMoves<color, genType>(board); // once working be sure to add template genType param to pawn moves
+	pawnMoves<color, genType>(board, target); // once working be sure to add template genType param to pawn moves
 
 	generateMoves<color, KNIGHT>(board, target);
 	generateMoves<color, BISHOP>(board, target);
 	generateMoves<color, ROOK  >(board, target);
 	generateMoves<color, QUEEN >(board, target);
-	generateMoves<color, KING  >(board, target);
 
-	if (genType != CAPTURES && board.can_castle(color)) {
-		castling<color,  KING_SIDE>(board); //move color to template param once working
+	if (genType != EVASIONS) 
+		generateMoves<color, KING>(board, target);
+	
+
+	if (genType != CAPTURES && genType != EVASIONS && board.can_castle(color)) {
+		castling<color, KING_SIDE >(board); //move color to template param once working
 		castling<color, QUEEN_SIDE>(board);
 	}
-
+	
 }
 
 template<int color, int Pt> 
@@ -117,23 +175,38 @@ void MoveGen::generateMoves(const BitBoards & board, const U64 & target)
 }
 
 template<int color, int genType>
-void MoveGen::pawnMoves(const BitBoards& boards) {
+void MoveGen::pawnMoves(const BitBoards& boards, U64 target) {
 
-	const int them = color == WHITE ? BLACK : WHITE;
-	const int Up = color == WHITE ? N : S;
-	const int Down = color == WHITE ? S : N;
-	const int Right = color == WHITE ? NE : SE;
-	const int Left = color == WHITE ? NW : SW;
-	const int dpush = color == WHITE ? 16 : -16;
+	const int them  = color == WHITE ? BLACK : WHITE;
+	const int Up    = color == WHITE ? N     :     S;
+	const int Down  = color == WHITE ? S     :     N;
+	const int Right = color == WHITE ? NE    :    SE;
+	const int Left  = color == WHITE ? NW    :    SW;
+	const int dpush = color == WHITE ? 16    :   -16;
+
+	const U64 thirdRank   = color == WHITE ? rank3 : rank6;
+	const U64 seventhRank = color == WHITE ? rank7 : rank2;
+	const U64 eighthRank   = color == WHITE ? rank8 : rank1;
 
 
-	const U64 pawns = boards.pieces(color, PAWN);
-	const U64 enemys = boards.pieces(them) ^ boards.pieces(them, KING);
-	U64 moves;
+	const U64 pawns          = boards.pieces(color, PAWN) & ~seventhRank;
+	const U64 candidatePawns = boards.pieces(color, PAWN) &  seventhRank;
+
+	const U64 enemys = (genType == EVASIONS ? boards.pieces(them) ^ boards.pieces(them, KING) & target
+										    : boards.pieces(them) ^ boards.pieces(them, KING));
+	U64 moves, moves1;
 
 	if (genType != CAPTURES) {
+		
+		moves  = shift_bb<Up>(pawns) & boards.EmptyTiles;
+		moves1 = shift_bb<Up>(moves  & thirdRank) & boards.EmptyTiles;
+
+		if (genType == EVASIONS) {
+			moves  &= target;
+			moves1 &= target;
+		}
+
 		// up one
-		moves = shift_bb<Up>(pawns) & boards.EmptyTiles;
 		while (moves) {
 			int index = pop_lsb(&moves);
 
@@ -141,10 +214,8 @@ void MoveGen::pawnMoves(const BitBoards& boards) {
 		}
 
 		// up two - If move is made, ep square is flagged in make move
-		const int dpushrank = relative_rank(color, 3);
-		moves = shift_bb<Up>((shift_bb<Up>(pawns) & boards.EmptyTiles)) & boards.EmptyTiles & RankMasks8[dpushrank];
-		while (moves) {
-			int index = pop_lsb(&moves);
+		while (moves1) {
+			int index = pop_lsb(&moves1);
 
 			movegen_push(boards, color, PAWN, PIECE_EMPTY, '0', index + dpush, index);
 		}
@@ -187,17 +258,12 @@ void MoveGen::pawnMoves(const BitBoards& boards) {
 		}
 	}
 
-	//rank mask of 7th rank relative side to move
-	const U64 seventhRank = RankMasks8[relative_rank(color, 6)];
-
 	// Pawn promotions, if we have pawns on the 7th..
 	// generate promotions
-	if (pawns & seventhRank) {
-
-		const U64 eighthRank = RankMasks8[relative_rank(color, 7)];
+	if (candidatePawns) {
 
 		// moving forward one
-		moves = shift_bb<Up>(pawns) & boards.EmptyTiles & eighthRank;
+		moves = shift_bb<Up>(candidatePawns) & boards.EmptyTiles & eighthRank;
 
 		while (moves) {
 			int index = pop_lsb(&moves);
@@ -207,7 +273,7 @@ void MoveGen::pawnMoves(const BitBoards& boards) {
 
 		// pawn capture promotions
 		// capture right
-		moves = shift_bb<Right>(pawns) & enemys & eighthRank;
+		moves = shift_bb<Right>(candidatePawns) & enemys & eighthRank;
 
 		while (moves) {
 			int index = pop_lsb(&moves);
@@ -219,7 +285,7 @@ void MoveGen::pawnMoves(const BitBoards& boards) {
 
 
 		// capture left
-		moves = shift_bb<Left>(pawns) & enemys & eighthRank;
+		moves = shift_bb<Left>(candidatePawns) & enemys & eighthRank;
 
 		while (moves) {
 			int index = pop_lsb(&moves);
@@ -255,7 +321,7 @@ void MoveGen::castling(const BitBoards& boards) {
 	// if an enemy us attacking any square
 	// on the kings path, we don't generate the castling move
 	for (int i = ks; i != kto; i += cDelta)
-		if (attackersTo(boards, boards.FullTiles, i) & enemys)
+		if(boards.attackers_to(i, boards.FullTiles) & enemys)
 			return;
 
 	movegen_push(boards, color, KING, PIECE_EMPTY, 'C', ks, kto);
@@ -388,26 +454,6 @@ int MoveGen::SEE(const Move& m, const BitBoards& b, int color, bool isCapture)
 	return swapList[0];
 }
 
-//finds all attackers to a location
-U64 MoveGen::attackersTo(const BitBoards& b, const U64 occ, int square) {
-
-	U64 attackers;
-
-	// Note. Color does not matter on b.psuedoAttacks(KING) / KNIGHT
-
-	attackers  = b.psuedoAttacks(PAWN, BLACK, square)      & b.pieces(WHITE, PAWN);
-	attackers |= b.psuedoAttacks(PAWN, WHITE, square)      & b.pieces(BLACK, PAWN);
-
-	attackers |= b.psuedoAttacks(KNIGHT, WHITE, square)    & b.piecesByType(KNIGHT);
-
-	attackers |= slider_attacks.BishopAttacks(occ, square) & b.piecesByType(BISHOP, QUEEN);
-
-	attackers |= slider_attacks.RookAttacks(occ, square)   & b.piecesByType(ROOK, QUEEN);
-
-	attackers |= b.psuedoAttacks(KING, WHITE, square)      & b.piecesByType(KING);
-
-	return attackers;
-}
 // Find the smallest attacker to a square
 template<int Pt> FORCE_INLINE
 int MoveGen::min_attacker(const BitBoards & b, int color, const int & to, const U64 & stmAttackers, U64 & occupied, U64 & attackers) {
@@ -479,6 +525,7 @@ bool MoveGen::isLegal(const BitBoards & b, const Move & m, int color)
 	return !isSquareAttacked(b, b.king_square(color), color);
 }
 
+// Checks if square input is attacked by color opposite of input color
 bool MoveGen::isSquareAttacked(const BitBoards & b, const int square, const int color) {
 
 	const int them = !color;

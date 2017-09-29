@@ -40,22 +40,15 @@ public:
 	int SEE(const Move& m, const BitBoards& b, int color, bool isCapture);
 
 	//grab the best scoring move and return it
-	inline Move movegen_sort(int ply, Move * moveAr) const;
+	Move movegen_sort(int ply, Move * moveAr) const;
 
     void reorderMoves(searchStack *ss, const HashEntry *entry);
 
 private:
 
-	int whichPieceCaptured(const BitBoards& board, int location, int color);
-
     //assigns a score to moves and adds them to the move array
     void movegen_push(const BitBoards & board, int color, int piece, int captured, char flag, int from, int to);
     bool blind(const BitBoards & board, int to, int color, int pieceVal, int captureVal);
-
-	//used in static exchange eval
-	//U64 attackersTo(int sq, const BitBoards& b, const U64 occ) const;
-
-	U64 attackersTo(const BitBoards & b, const U64 occ, int square);
 
 	//finds the smallest attacker for side to move, out of the stm attackers board,
 	//removes the attacker from the attackers and occuied board, then finds any x-ray attackers behind that piece
@@ -67,12 +60,13 @@ private:
 	template<int color, int Pt> 
 	void generateMoves(const BitBoards& board, const U64 &target);
 
+
 	template<int color, int genType> FORCE_INLINE
 	void generateAll(const BitBoards& board, const U64 & target);
 
 	//psuedo legal move gen for indvidual pieces
 	template<int color, int genType>
-	void pawnMoves(const BitBoards & boards);
+	void pawnMoves(const BitBoards & boards, U64 target);
 
 	template<int color, int cs>
 	void castling(const BitBoards & boards);

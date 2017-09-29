@@ -159,6 +159,7 @@ enum epiece {
 // move generation we want
 #define MAIN_GEN 0
 #define CAPTURES 1
+#define EVASIONS 2
 
 #define PAWN_VAL 100 //should pieces have a mid and end game value??
 #define KNIGHT_VAL 325

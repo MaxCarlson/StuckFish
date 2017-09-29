@@ -36,8 +36,8 @@ CheckInfo::CheckInfo(const BitBoards &board)
 	int color = board.stm();
 	ksq = board.king_square(!color);
 
-	pinned          = board.check_blockers(color,  color);
-	dcCandidates    = board.check_blockers(color, !color);
+	pinned		    = board.pinned_pieces(board.stm());
+	dcCandidates    = board.check_candidates();
 
 	checkSq[PAWN]   = board.attacks_from<PAWN>(ksq, !color);
 	checkSq[KNIGHT] = board.attacks_from<KNIGHT>(ksq);
@@ -154,88 +154,27 @@ void BitBoards::initBoards()
 		}		
 	}
 
-	//find and record the max distance between two square on the game board
-	// also build the BetweenSquares array which holds a U64 of all squares between two squares.
+	// Find and record the max distance between two square on the game board.
+	// Also build the BetweenSquares array which holds a U64 of all squares between two squares.
+	// LineBB draws all squares that are aligned with two squares, be it diagonally, horizontally, or vertically. 
 	for (int s1 = 0; s1 < 64; ++s1) {
 		for (int s2 = 0; s2 < 64; ++s2) {
 			BetweenSquares[s1][s2] = 0LL;
+			LineBB[s1][s2] = 0LL;
 
 			if (s1 != s2) {
 				SquareDistance[s1][s2] = std::max(file_distance(s1, s2), rank_distance(s1, s2));
-
-
-				if (SquareDistance[s1][s2] > 1) {
-
-					if (s1 / 8 == s2 / 8 || s1 % 8 == s2 % 8)
-						BetweenSquares[s1][s2] = psuedoAttacks(ROOK, WHITE, s1) & psuedoAttacks(ROOK, WHITE, s2);
-
-					else {
-						bool isDiag = false;
-						for (int i = 1; i < 8; ++i) {
-
-							if (s1 == s2 + 9 * i)
-								isDiag = true;
-							if (s1 == s2 - 9 * i)
-								isDiag = true;
-							if (s1 == s2 + 7 * i)
-								isDiag = true;
-							if (s1 == s2 - 7 * i)
-								isDiag = true;
-						}
-						if (isDiag) {
-							BetweenSquares[s1][s2] = psuedoAttacks(BISHOP, WHITE, s1) & psuedoAttacks(BISHOP, WHITE, s2);
-
-							if (BetweenSquares[s1][s2] == 0LL)
-								continue;
-						}
-						else
-							continue;
-					}
-
-					int ss1 = s1, ss2 = s2;
-
-					if (s1 > 7) ss1 = s1 % 8;
-					if (s2 > 7) ss2 = s2 % 8;
-
-					//squares on vertical
-					if (s1 % 8 == s2 % 8) {
-						if (s1 > s2) {
-							ss1 = s1 / 8;
-							ss2 = s2 / 8;
-						}
-						else {
-							ss1 = s2 / 8;
-							ss2 = s1 / 8;
-						}
-
-
-						for (int i = ss1; i < 8; ++i) {
-							BetweenSquares[s1][s2] &= ~RankMasks8[i ^ 7];
-						}
-
-						for (int i = ss2; i >= 0; --i) {
-							BetweenSquares[s1][s2] &= ~RankMasks8[i ^ 7];
-						}
-						continue;
-					}
-
-	
-					//diagonal and horizontal squares
-					if (ss1 > ss2) {
-						int tmp = ss1;
-						ss1 = ss2;
-						ss2 = tmp;
-					}
-
-					for (int i = ss2; i < 8; ++i) {
-						BetweenSquares[s1][s2] &= ~FileMasks8[i];
-					}
-					for (int i = ss1; i >= 0; --i) {
-						BetweenSquares[s1][s2] &= ~FileMasks8[i];
-					}
-				}
 			}
-			
+
+			int pc = (PseudoAttacks[BISHOP][s1] & squareBB[s2]) ? BISHOP
+				   : (PseudoAttacks[ROOK  ][s1] & squareBB[s2]) ? ROOK : PIECE_EMPTY;
+
+			if (pc == PIECE_EMPTY)
+				continue;
+
+			LineBB[s1][s2]         = (attacks_bb(pc, s1, 0LL) & attacks_bb(pc, s2, 0LL)) | squareBB[s1] | squareBB[s2];
+
+			BetweenSquares[s1][s2] = attacks_bb(pc, s1, squareBB[s2]) & attacks_bb(pc, s2, squareBB[s1]);
 		}
 	}	
 }
@@ -646,6 +585,7 @@ void BitBoards::makeMove(const Move& m, StateInfo& newSt, int color)
 	// SWITCH TT to single address lookup instead of cluster of two?
 	_mm_prefetch((char *)TT.first_entry(st->Key), _MM_HINT_NTA);
 
+	st->checkers = 0LL;
 
 	if (checking) {
 		//drawBBA();
@@ -804,7 +744,7 @@ U64 BitBoards::attackers_to(int square, U64 occupied) const
 
 
 //used for drawing a singular bitboard
-void BitBoards::drawBB(U64 board)
+void BitBoards::drawBB(U64 board) const
 {
 	for (int i = 0; i < 64; i++) {
 		if (board & (1ULL << i)) {
@@ -820,7 +760,7 @@ void BitBoards::drawBB(U64 board)
 	std::cout << std::endl;
 }
 //draws all bitboards as a chess board in chars
-void BitBoards::drawBBA()
+void BitBoards::drawBBA() const
 {
 	char flips[8] = { '8', '7', '6', '5', '4', '3', '2', '1' };
 	char flipsL[8] = { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H' };
