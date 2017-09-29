@@ -20,10 +20,10 @@ class searchStack;
 class MoveGen
 {
 public:
-    //MoveGen();
 
 	//array of move objects 
 	Move moveAr[256];
+	
 
 	//number of moves generated this node
     int moveCount;

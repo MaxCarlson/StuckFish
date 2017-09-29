@@ -53,6 +53,8 @@ void prefetch(char* addr) {
 
 
 
+
+
 // holds mid and end game values
 // for ease of use in evaluations
 struct Scores { int mg = 0, eg = 0; };
@@ -381,7 +383,7 @@ inline int frontmost_sq(int color, U64 b)
 	return color == WHITE ? lsb(b) : msb(b);
 	
 }
-inline int  backmost_sq(int color, U64 b)
+inline int backmost_sq(int color, U64 b)
 { 
 	return color == WHITE ? msb(b) : lsb(b);
 }

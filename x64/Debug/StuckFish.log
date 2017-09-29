@@ -1,9 +1,16 @@
 ﻿  movegen.cpp
-C:\Users\C-60\Desktop\cppPrograms\StuckFish\move.h(9): warning #945: type qualifier ignored
-        const Move();
-        ^
-  
-C:\Users\C-60\Desktop\cppPrograms\StuckFish\externs.h(41): warning #1011: missing return statement at end of non-void function "attacks_bb"
-    }
-    ^
-  
+  ai_logic.cpp
+  Generating Code...
+  Compiling...
+  zobristh.cpp
+  slider_attacks.cpp
+  main.cpp
+  bitboards.cpp
+  UCI.cpp
+  TimeManager.cpp
+  Pawns.cpp
+  Evaluate.cpp
+  Generating Code...
+c:\users\c-60\desktop\cppprograms\stuckfish\externs.h(41): warning C4715: 'attacks_bb': not all control paths return a value
+  StuckFish.vcxproj -> C:\Users\C-60\Desktop\cppPrograms\StuckFish\x64\Debug\StuckFish.exe
+  StuckFish.vcxproj -> C:\Users\C-60\Desktop\cppPrograms\StuckFish\x64\Debug\StuckFish.pdb (Partial PDB)

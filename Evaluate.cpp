@@ -217,7 +217,7 @@ Scores evaluatePieces(const BitBoards & boards, EvalInfo & ev, U64 * mobilityAre
 			   : boards.PseudoAttacks[KNIGHT][square]; 
 
 		// If piece is pinned, be sure that we only look at
-		// Mobility and move data for it moving along it's pinned line
+		// Mobility and move data for it moving along it's pinned line ///////////////////////////////////////THIS NEEDS SERIOUS TESTING, SLOWS DOWN SEARCH SIGNIFICANTLY
 		if (ev.pinnedPieces[color] & boards.square_bb(square))
 			bb &= LineBB[boards.king_square(color)][square];
 
@@ -240,8 +240,8 @@ Scores evaluatePieces(const BitBoards & boards, EvalInfo & ev, U64 * mobilityAre
 		//knight, bishop, rook towards mobility
 		if (pT == QUEEN)
 			bb &= ~(ev.attackedBy[them][KNIGHT]
-				| ev.attackedBy[them][BISHOP]
-				| ev.attackedBy[them][ROOK]);
+			   |    ev.attackedBy[them][BISHOP]
+			   |    ev.attackedBy[them][ROOK  ]);
 
 		//gather mobility count and record mob scores for mid and end game
 		//don't count squares occupied by our pawns or king, or attacked by their pawns

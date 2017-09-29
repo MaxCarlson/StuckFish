@@ -5,6 +5,8 @@
 
 #include <vector>
 
+//#include <immintrin.h> return _pext_u64(occupancy, m.magic);
+
 struct Magic {
   U64 mask;
   U64 magic;

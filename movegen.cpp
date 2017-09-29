@@ -175,8 +175,8 @@ void MoveGen::pawnMoves(const BitBoards& boards, U64 target) {
 	const int Left  = color == WHITE ? NW    :    SW;
 	const int dpush = color == WHITE ? 16    :   -16;
 
-	const U64 thirdRank   = color == WHITE ? rank3 : rank6;
-	const U64 seventhRank = color == WHITE ? rank7 : rank2;
+	const U64 thirdRank    = color == WHITE ? rank3 : rank6;
+	const U64 seventhRank  = color == WHITE ? rank7 : rank2;
 	const U64 eighthRank   = color == WHITE ? rank8 : rank1;
 
 
@@ -212,6 +212,7 @@ void MoveGen::pawnMoves(const BitBoards& boards, U64 target) {
 		}
 
 	}
+
 
 	//capture right
 	moves = shift_bb<Right>(pawns) & enemys;
@@ -327,6 +328,7 @@ void MoveGen::movegen_push(const BitBoards & board, int color, int piece, int ca
     moveAr[moveCount].captured = captured;
     moveAr[moveCount].flag = flag;
 
+
     //scoring capture moves
     if(captured){
 
@@ -340,7 +342,7 @@ void MoveGen::movegen_push(const BitBoards & board, int color, int piece, int ca
         //need to add Static Exchange at somepoint
 		if (blind(board, to, color, SORT_VALUE[piece], SORT_VALUE[captured])) moveAr[moveCount].score = SORT_VALUE[captured] + idAr[piece] + SORT_CAPT;
 
-		else  moveAr[moveCount].score = SORT_VALUE[captured] + idAr[piece];
+		else moveAr[moveCount].score = SORT_VALUE[captured] + idAr[piece];
 
 		//else  moveAr[moveCount].score = SEE(moveAr[moveCount], board, color, true);
     }
@@ -392,7 +394,7 @@ int MoveGen::SEE(const Move& m, const BitBoards& b, int color, bool isCapture)
 
 	//remove captured pawn
 	if (m.flag == 'E') {
-		occupied ^= m.to - pawn_push(!color);
+		occupied ^= b.square_bb(m.to - pawn_push(!color));
 	}
 
 	//finds all attackers to the square
@@ -427,9 +429,6 @@ int MoveGen::SEE(const Move& m, const BitBoards& b, int color, bool isCapture)
 			}
 			break;
 		}
-
-		//isWhite = !isWhite; remove if new min_attackers function is solid
-		//captured = min_attacker(isWhite, b, m.to, stmAttackers, occupied, attackers);
 
 		color = !color;
 		stmAttackers = attackers & b.allPiecesColorBB[color];
@@ -484,7 +483,7 @@ int MoveGen::min_attacker<KING>(const BitBoards & b, int color, const int & to, 
 
 void MoveGen::reorderMoves(searchStack *ss, const HashEntry *entry)
 {
-
+	
     for(int i = 0; i < moveCount; ++i){
         //add killer moves score to move if there is a from - to match in killers
 		if (moveAr[i] == ss->killers[0] //operator == overloaded in move.h
@@ -501,6 +500,7 @@ void MoveGen::reorderMoves(searchStack *ss, const HashEntry *entry)
             moveAr[i].score = SORT_HASH;
         }
     }
+
 }
 
 // Just test to see if our king is attacked by any enemy pieces
