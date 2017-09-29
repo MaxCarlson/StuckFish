@@ -129,6 +129,9 @@ struct EvalInfo {
 	//bitboards of attacked squares by color and piece type, 
 	U64 attackedBy[COLOR][7] = { { 0LL } }; //0 for second index is all pieces of that color
 
+	//holds bb of pinned pieces of color
+	U64 pinnedPieces[COLOR] = { 0LL };
+
 	Scores mobility[COLOR]; 
 
 	int blockages[COLOR] = { 0 };
@@ -159,8 +162,6 @@ void Evaluate::generateKingZones(const BitBoards & boards, EvalInfo & ev)
 		int psqLoc = side == WHITE ? location : bSQ[location];
 
 		//psq table scoring for king
-		//ev.psqScores[side][mg] += pieceSqTab[KING][mg][psqLoc];
-		//ev.psqScores[side][eg] += pieceSqTab[KING][eg][psqLoc];
 		ev.psqScores[side].mg += pieceSqTab[KING][mg][psqLoc]; //change piece square tables to Scores
 		ev.psqScores[side].eg += pieceSqTab[KING][eg][psqLoc];
 
@@ -208,14 +209,17 @@ Scores evaluatePieces(const BitBoards & boards, EvalInfo & ev, U64 * mobilityAre
 		//add piece square table scores 
 		ev.psqScores[color] += make_scores(pieceSqTab[pT][mg][adjSq], pieceSqTab[pT][eg][adjSq]);
 			
-	
+
 		//find attack squares, including xray bishop and rook attacks blocked by queens / rooks/queens
 		U64 bb = pT == BISHOP ? slider_attacks.BishopAttacks(boards.FullTiles ^ boards.pieces(color, QUEEN), square)
-			: pT == ROOK ? slider_attacks.RookAttacks(boards.FullTiles ^ boards.pieces(color, QUEEN, ROOK), square)
-			: pT == QUEEN ? slider_attacks.QueenAttacks(boards.FullTiles, square)
-			 : boards.PseudoAttacks[KNIGHT][square]; 
+			   : pT == ROOK   ? slider_attacks.RookAttacks(  boards.FullTiles ^ boards.pieces(color, QUEEN, ROOK), square)
+			   : pT == QUEEN  ? slider_attacks.QueenAttacks( boards.FullTiles, square)
+			   : boards.PseudoAttacks[KNIGHT][square]; 
 
-		//add pinned piece code, not moving pieces out of line from their pin
+		// If piece is pinned, be sure that we only look at
+		// Mobility and move data for it moving along it's pinned line
+		if (ev.pinnedPieces[color] & boards.square_bb(square))
+			bb &= LineBB[boards.king_square(color)][square];
 
 		//add attack squares to both piece attacks by color, and all piece attacks by color
 		//very important order, if all pieces comes first the pT will grab all attack boards generated.
@@ -244,35 +248,23 @@ Scores evaluatePieces(const BitBoards & boards, EvalInfo & ev, U64 * mobilityAre
 		//towards mobility. Additional restrictions for queen mob above.
 		int mobility = bit_count(bb & mobilityArea[color]);
 
-		//ev.mobility[color][mg] += midGmMobilityBonus[pT][mobility];
-		//ev.mobility[color][eg] += endGMobilityBonus[pT][mobility];
 		ev.mobility[color] += mobilityBonus[pT][mobility];
 
 		//if piece is threatened by a pawn, apply penalty
 		//increasing penalty in threatened piece value
-		if (ev.attackedBy[them][PAWN] & square) {
-			//ev.gameScore[color][mg] -= threatenedByPawn[mg][pT];
-			//ev.gameScore[color][eg] -= threatenedByPawn[eg][pT];
+		if (ev.attackedBy[them][PAWN] & square) 
 			score -= pawnThreat[pT];
-		}
+		
 
 		//need knight and bishop evals
 		if (pT == KNIGHT || pT == BISHOP) {
 
 			//penalty for bishop with our pawns on same color squares
-			if (pT == BISHOP) score -= BishopPawns * ev.pe->pawns_on_same_color_squares(color, square); //NOT working Is value - too high? slows down search signifcantly@!
+			if (pT == BISHOP) score -= BishopPawns * ev.pe->pawns_on_same_color_squares(color, square); //Very High Cost? What's with this?
 			
-			if (relative_rankSq(color, square) < 5 // HAVEN"T TESTED!!!!!!!!!!!!!!!
+			if (relative_rankSq(color, square) < 5 
 				&& boards.piecesByType(PAWN) & (1LL << (square + pawn_push(color))))
 				score += MinorBehindPawn;
-			/*
-			BitBoards a = boards;
-			a.drawBBA();
-			int f = ev.pe->pawns_on_same_color_squares(color, square);
-			a.drawBB(Pawns::DarkSquares);
-			a.drawBBA();
-			*/
-
 		}
 
 		if (pT == ROOK) {
@@ -311,9 +303,9 @@ int centerControl(const BitBoards & boards, const EvalInfo & ev) {
 	//find the safe tiles, safe if not attacked by enemy pawn,
 	//or if it is attacked by an enemy piece and not defended
 	U64 safe = center[color]
-			& ~boards.pieces(color, PAWN)
-			& ~ev.attackedBy[them][PAWN]
-			& (ev.attackedBy[color][0] | ev.attackedBy[them][0]);
+			 & ~boards.pieces(color, PAWN)
+			 & ~ev.attackedBy[them][PAWN]
+			 & (ev.attackedBy[color][0] | ev.attackedBy[them][0]);
 
 
 	//find squares which are between one and three squares behind friendly pawns
@@ -433,8 +425,6 @@ Scores evalThreats(const BitBoards & boards, EvalInfo & ev) {
 	if (protectedEnemys) {
 		int p = boards.pieceOnSq(lsb(protectedEnemys));
 
-		//ev.gameScore[color][mg] += threats[Minor][mg][p];
-		//ev.gameScore[color][eg] += threats[Minor][eg][p];
 		score += threats[Minor][p];
 	}
 
@@ -451,8 +441,6 @@ Scores evalThreats(const BitBoards & boards, EvalInfo & ev) {
 		if (bb) {
 			int p = boards.pieceOnSq(lsb(bb));
 
-			//ev.gameScore[color][mg] += threats[Minor][mg][p];
-			//ev.gameScore[color][eg] += threats[Minor][eg][p];
 			score += threats[Minor][p];
 		}
 
@@ -462,8 +450,6 @@ Scores evalThreats(const BitBoards & boards, EvalInfo & ev) {
 		if (bb) {
 			int p = boards.pieceOnSq(lsb(bb));
 
-			//ev.gameScore[color][mg] += threats[Major][mg][p];
-			//ev.gameScore[color][eg] += threats[Major][eg][p];
 			score += threats[Major][p];
 		}
 
@@ -473,8 +459,6 @@ Scores evalThreats(const BitBoards & boards, EvalInfo & ev) {
 		if (bb) {
 			int pop = bit_count(bb);
 
-			//ev.gameScore[color][mg] += pop * Hanging[mg];
-			//ev.gameScore[color][eg] += pop * Hanging[eg];
 			score += Hanging * pop;
 		}
 
@@ -482,13 +466,10 @@ Scores evalThreats(const BitBoards & boards, EvalInfo & ev) {
 		bb = weakEnemys & boards.pieces(them, PAWN) & ev.attackedBy[color][KING];
 
 		if (bb) {
-			pop_lsb(&bb);
-			//one or many pawns?
-			//int score = bb ? kingOnMPawn[eg] : kingOnPawn[eg];
 
+			//one or many pawns?
 			//no mid game value for this threat
-			//ev.gameScore[color][eg] += score;
-			score += bb ? KingOnMPawn : KingOnPawn;
+			score += more_than_one(bb) ? KingOnMPawn : KingOnPawn;
 		}
 	}
 	return score;
@@ -648,6 +629,10 @@ int Evaluate::evaluate(const BitBoards & boards)
 
 	//initilize king zones and king attacks for both kings
 	generateKingZones(boards, ev);
+
+	//find pinned pieces of color
+	ev.pinnedPieces[WHITE] = boards.pinned_pieces(WHITE);
+	ev.pinnedPieces[BLACK] = boards.pinned_pieces(WHITE);
 
 	//probe the material hash table for an end game scenario,
 	//a factor to scale to evaluation score by, and/or

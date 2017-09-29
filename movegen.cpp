@@ -58,17 +58,15 @@ void MoveGen::generate(const BitBoards & board)
 	U64 target;
 	const int color = board.stm();
 
-/*	
+///*	
+	// If we're in check, only generate king evasions
+	// as well as other pieces blocking or capturing 
+	// the checking piece.
 	if (board.checkers()) {
-		//BitBoards a = board;
-		
 
 		int ksq       = board.king_square(color);
 		U64 sliderAtt = 0LL;
 		U64 sliders   = board.checkers() & ~board.piecesByType(PAWN, KNIGHT);
-
-		//a.drawBB(sliders);
-
 
 		// Find all squares attacked by slider checks
 		// we remove them in order not to generate useless illegal moves
@@ -76,12 +74,10 @@ void MoveGen::generate(const BitBoards & board)
 			int checksq = pop_lsb(&sliders);
 			sliderAtt  |= LineBB[checksq][ksq] ^ board.square_bb(checksq);
 		}
-		//a.drawBB(sliderAtt);
 
 		//Generate all possible check evasions for king
 		U64 bb = board.attacks_from<KING>(ksq) & ~board.pieces(color) & ~sliderAtt;
 
-		//a.drawBB(bb);
 		while (bb) {
 			int to  = pop_lsb(&bb);
 			int cap = board.pieceOnSq(to);
@@ -89,7 +85,7 @@ void MoveGen::generate(const BitBoards & board)
 		}
 
 		// If double check, we can only use king moves
-		if (more_than_one(board.checkers()))
+		if (more_than_one(board.checkers())) 
 			return;
 
 		// Target blocking evasions or capturing the checking piece
@@ -98,16 +94,11 @@ void MoveGen::generate(const BitBoards & board)
 		target = BetweenSquares[checksq][ksq] | board.square_bb(checksq)
 			   & ~(board.pieces(color)		  | board.pieces(!color, KING));
 
-		//a.drawBB(target);
-
-		//a.drawBBA();
-
 		color == WHITE ? generateAll<WHITE, EVASIONS>(board, target)
 			           : generateAll<BLACK, EVASIONS>(board, target);
 	}
 //*/	
-
-	//else {
+	else {
 
 		// If only generating captures our target is only enemy pieces,
 		// aside from E king. Else our target is all squares that are not
@@ -119,7 +110,7 @@ void MoveGen::generate(const BitBoards & board)
 		color == WHITE ? generateAll<WHITE, genType>(board, target)
 			           : generateAll<BLACK, genType>(board, target);
 
-	//}
+	}
 }
 
 template void MoveGen::generate<MAIN_GEN>(const BitBoards & board);

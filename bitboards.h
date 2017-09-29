@@ -302,7 +302,7 @@ inline U64 BitBoards::attacks_from(int from) const
 		 : 0LL;
 }
 //Used for Pawns with color info.
-template<int Pt>
+template<>
 inline U64 BitBoards::attacks_from<PAWN>(int from, int color) const
 {
 	return psuedoAttacks(PAWN, color, from);
