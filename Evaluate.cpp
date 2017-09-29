@@ -622,7 +622,6 @@ int Evaluate::evaluate(const BitBoards & boards)
 
 	}
 
-
 	EvalInfo ev;
 	Scores score;	
 	int result = 0;

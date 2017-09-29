@@ -1,16 +1,3 @@
-﻿  movegen.cpp
-  ai_logic.cpp
-  Generating Code...
-  Compiling...
-  zobristh.cpp
-  slider_attacks.cpp
-  main.cpp
-  bitboards.cpp
-  UCI.cpp
-  TimeManager.cpp
-  Pawns.cpp
-  Evaluate.cpp
-  Generating Code...
-c:\users\c-60\desktop\cppprograms\stuckfish\externs.h(41): warning C4715: 'attacks_bb': not all control paths return a value
+﻿  Evaluate.cpp
   StuckFish.vcxproj -> C:\Users\C-60\Desktop\cppPrograms\StuckFish\x64\Debug\StuckFish.exe
   StuckFish.vcxproj -> C:\Users\C-60\Desktop\cppPrograms\StuckFish\x64\Debug\StuckFish.pdb (Partial PDB)

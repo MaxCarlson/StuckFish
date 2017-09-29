@@ -51,6 +51,46 @@ void prefetch(char* addr) {
 }
 */
 
+// Move represented in 16 bits, idea taken from Stockfish
+// 1-6 from square
+// 6-12 desitination square
+// 13-14 move flag, 1 Castle, 2 EP, 3 Promotion
+// 15-16 prormotion type
+enum Moves { //later change to move once entire move class has been removed.
+	MOVE_NONE
+};
+
+enum MoveType {
+	NORMAL,
+	CASTLING  = 1 << 12,
+	ENPASSANT = 2 << 12,
+	PROMOTION = 3 << 12
+};
+
+inline Moves create_move(int from, int to) {
+	return Moves(from | (to << 6));
+}
+
+inline int from_sq(Moves m) {
+	return (m & 0x3f);
+}
+
+inline int to_sq(Moves m) {
+	return (m >> 6) & 0x3f;
+}
+
+inline MoveType move_type(Moves m) {
+	return MoveType(m & (3 << 12));
+}
+
+inline int promotion_type(Moves m) {
+	return ((m >> 15) & 3) + 2;
+}
+
+template<MoveType T, int Pt>
+inline Moves make_special(int from, int to) {
+	return Moves((from | (to << 6) | T | (Pt - KNIGHT << 15)));
+}
 
 
 
