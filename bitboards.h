@@ -78,7 +78,7 @@ public:
 	bool isSquareAttacked(const int square, const int color) const;
 
 	//make the move
-	void makeMove(const Move& m, StateInfo& newSt, int color);
+	void makeMove(const Moves& m, StateInfo& newSt, int color);
 	//unamke move
 	void unmakeMove(const Move& m, int color);
 
@@ -170,7 +170,7 @@ public:
 	U64 checkers() const;
 	U64 check_candidates() const;
 	U64 pinned_pieces(int color) const;
-	bool gives_check(const Move & m, const CheckInfo& ci);
+	bool gives_check(Moves m, int from, int to, const CheckInfo& ci);
 	U64 check_blockers(int color, int kingColor) const;
 
 	//castling
@@ -207,7 +207,7 @@ private:
 	StateInfo* st;
 
 	template<int make>
-	void do_castling(const Move & m, int color);
+	void do_castling(int from, int to, int color);
 
 	void movePiece(int piece, int color, int from, int to);
 

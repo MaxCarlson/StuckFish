@@ -66,6 +66,12 @@ struct SMoves {
 	int score;
 };
 
+// Removes error from std::algorithm about std::less no overload found.
+// Is also usefull in move picking.
+inline bool operator<(const SMoves& f, const SMoves& s) {
+	return f.score < s.score;
+}
+
 enum MoveType {
 	NORMAL,
 	CASTLING  = 1 << 12,
@@ -87,16 +93,22 @@ inline int to_sq(Moves m) {
 	return (m >> 6) & 0x3f;
 }
 
+// Returns 0 if the move is normal, 
+// and enum values above it is an EP, Castle, or promotion
 inline MoveType move_type(Moves m) {
 	return MoveType(m & (3 << 12));
 }
 
+// What piece does the move promote to?
 inline int promotion_type(Moves m) {
 	return ((m >> 15) & 3) + 2;
 }
 
+// Create EP, Castle, or promotion move
+// Pt is equal to zero for all moves aside from promotions
+// where it designates piece type move is promoting to. 
 template<MoveType T, int Pt>
-inline Moves make_special(int from, int to) {
+inline Moves create_special(int from, int to) {
 	return Moves((from | (to << 6) | T | (Pt - KNIGHT << 15)));
 }
 
@@ -216,6 +228,7 @@ const int SORT_VALUE[7] = { 0, 100, 325, 335, 500, 975, 0 };
 #define MAIN_GEN 0
 #define CAPTURES 1
 #define EVASIONS 2
+#define QUIETS   3
 
 #define PAWN_VAL 100 //should pieces have a mid and end game value??
 #define KNIGHT_VAL 325

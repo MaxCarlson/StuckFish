@@ -367,50 +367,51 @@ bool BitBoards::isLegal(const Move & m, int color)
 	return !isSquareAttacked(king_square(color), color);
 }
 
-bool BitBoards::gives_check(const Move & m, const CheckInfo & ci)
+bool BitBoards::gives_check(Moves m, int from, int to, const CheckInfo & ci)
 {
+	int piece = pieceOnSq(from);
 
 	// direct check?
-	if (ci.checkSq[m.piece] & squareBB[m.to])
+	if (ci.checkSq[piece] & squareBB[to])
 		return true;
 
 
 	if (ci.dcCandidates
-		&& (ci.dcCandidates & squareBB[m.from])
-		&& !aligned(m.from, m.to, ci.ksq))
+		&& (ci.dcCandidates & squareBB[from])
+		&& !aligned(from, to, ci.ksq))
 		return true;
 
-	switch (m.flag) {
+	switch (move_type(m)) {
 
 		// Normal moves
-	case '0':
+	case NORMAL:
 		return false;
 
 		// Promotions
-	case 'Q':
-		return attacks_from<QUEEN>(m.to, FullTiles ^ squareBB[m.from]); // Other promotions not implemented
+	case PROMOTION:
+		return attacks_from<QUEEN>(to, FullTiles ^ squareBB[from]); // Other promotions not implemented
 
 	// En passants
-	case 'E':
+	case ENPASSANT:
 	{
 		// Find the true capture square for EP since m.to
 		// represents destination square.
-		int capsq = stm() == WHITE ? m.to + S : m.to + N;
+		int capsq = stm() == WHITE ? to + S : to + N;
 
 		// "Move" the pieces, so we can see if there is a discoverd check
 		// through the captured pawn.
-		U64 bb = (FullTiles ^ squareBB[m.from] ^ squareBB[capsq]) | squareBB[m.to];
+		U64 bb = (FullTiles ^ squareBB[from] ^ squareBB[capsq]) | squareBB[to];
 
 		return   (attacks_from<ROOK  >(ci.ksq, bb) & pieces(stm(), ROOK,   QUEEN))
 			   | (attacks_from<BISHOP>(ci.ksq, bb) & pieces(stm(), BISHOP, QUEEN));
 	}
 
 	// Castling
-	case 'C':
+	case CASTLING:
 	{
 		// Find rook to and from squares
-		int rfrom = relative_square(stm(), (m.to < m.from ? A1 : H1));
-		int rto   = relative_square(stm(), (m.to < m.from ? D1 : F1));
+		int rfrom = relative_square(stm(), (to < from ? A1 : H1));
+		int rto   = relative_square(stm(), (to < from ? D1 : F1));
 
 		// First we use a psuedo attack lookup table to check if their
 		// king would recieve a check if there were no other pieces on the board
@@ -418,7 +419,7 @@ bool BitBoards::gives_check(const Move & m, const CheckInfo & ci)
 		// attacks_from a occluded full tiles board with the pieces "moved"
 		// and generate rook moves to see if the castle truely causes check. 
 		return (PseudoAttacks[ROOK][rto] & squareBB[ci.ksq])
-			&& (attacks_from<ROOK>(rto, (FullTiles ^ squareBB[m.from] ^ squareBB[rfrom]) | squareBB[rto] | squareBB[m.to]) & squareBB[ci.ksq]); //also test this!!!
+			&& (attacks_from<ROOK>(rto, (FullTiles ^ squareBB[from] ^ squareBB[rfrom]) | squareBB[rto] | squareBB[to]) & squareBB[ci.ksq]); //also test this!!!
 	}
 
 	}
@@ -482,12 +483,17 @@ void BitBoards::set_castling_rights(int color, int rfrom)
 }
 
 
-void BitBoards::makeMove(const Move& m, StateInfo& newSt, int color)
+void BitBoards::makeMove(const Moves& m, StateInfo& newSt, int color)
 {
 	int them = !color;
 
 	CheckInfo ci(*this);
 	bool checking = gives_check(m, ci);
+
+	int to       =        to_sq(m);
+	int from     =      from_sq(m);
+	int piece    = pieceOnSq(from);
+	int captured =   pieceOnSq(to);
 
 	assert(posOkay());
 
@@ -499,13 +505,13 @@ void BitBoards::makeMove(const Move& m, StateInfo& newSt, int color)
 	st = &newSt;
 
 	//remove or add captured piece from BB's same as above for moving piece
-	if (m.captured) {
-		int capSq = m.to;
+	if (captured != SQ_NONE) {
+		int capSq = to;
 
-		if (m.captured == PAWN) { 
+		if (captured == PAWN) {
 			
 			//en passant
-			if (m.flag == 'E') {
+			if (move_type(m) == ENPASSANT) {
 				//set capture square to correct pos and not ep square
 				capSq += pawn_push(them);
 			}
@@ -514,20 +520,20 @@ void BitBoards::makeMove(const Move& m, StateInfo& newSt, int color)
 		}
 
 		else { 
-			bInfo.nonPawnMaterial[them] -= SORT_VALUE[m.captured]; 
+			bInfo.nonPawnMaterial[them] -= SORT_VALUE[captured];
 		}
 		//remove captured piece
-		removePiece(m.captured, them, capSq);
+		removePiece(captured them, capSq);
 		//update material
-		bInfo.sideMaterial[them] -= SORT_VALUE[m.captured];
+		bInfo.sideMaterial[them] -= SORT_VALUE[captured];
 		// update TT key
-		st->Key ^= Zobrist::ZobArray[them][m.captured][capSq];
+		st->Key ^= Zobrist::ZobArray[them][captured][capSq];
 		//update material key
-		st->MaterialKey ^= Zobrist::ZobArray[them][m.captured][pieceCount[them][m.captured]+1];
+		st->MaterialKey ^= Zobrist::ZobArray[them][captured][pieceCount[them][captured]+1];
 	}
 
 	//move the piece from - to
-	movePiece(m.piece, color, m.from, m.to);
+	movePiece(piece, color, from, to);
 
 	
 	// if there was an EP square, reset it for the next ply 
@@ -539,51 +545,54 @@ void BitBoards::makeMove(const Move& m, StateInfo& newSt, int color)
 		st->epSquare = SQ_NONE;
 	}
 
-	if (m.piece == PAWN) {
+	if (piece == PAWN) {
 		
 		//if the pawn move is two forward,
 		//and there is an enemy pawn positioned to en passant
-		if ((m.to ^ m.from) == 16
-			&& (psuedoAttacks(PAWN, color, m.from + pawn_push(color)) & pieces(them, PAWN))) {
+		if ((to ^ from) == 16
+			&& (psuedoAttacks(PAWN, color, from + pawn_push(color)) & pieces(them, PAWN))) {
 			
-			st->epSquare = (m.from + m.to) / 2;
+			st->epSquare = (from + to) / 2;
 			st->Key ^= Zobrist::EnPassant[file_of(st->epSquare)];
 		} 
 		
 		// pawn promotion
-		if (m.flag == 'Q') {
+		if (move_type(m) == PROMOTION) {
 			//remove pawn placed
-			removePiece(PAWN, color, m.to);
+			removePiece(PAWN, color, to);
+
+			int promT = promotion_type(m); /////////////////////////////// Use this once everything else is working to add other promotion types
+
 			//add queen to to square
-			addPiece(QUEEN, color, m.to);
+			addPiece(QUEEN, color, to);
 			//update material
 			bInfo.sideMaterial[color]    += SORT_VALUE[QUEEN] - SORT_VALUE[PAWN];
 			bInfo.nonPawnMaterial[color] += SORT_VALUE[QUEEN];
 
-			st->Key ^= Zobrist::ZobArray[color][QUEEN][m.to] ^ Zobrist::ZobArray[color][PAWN][m.to];
+			st->Key ^= Zobrist::ZobArray[color][QUEEN][to] ^ Zobrist::ZobArray[color][PAWN][to];
 			//update pawn key
-			st->PawnKey ^= Zobrist::ZobArray[color][PAWN][m.to];
+			st->PawnKey ^= Zobrist::ZobArray[color][PAWN][to];
 			//update material key
 			st->MaterialKey   ^= Zobrist::ZobArray[color][QUEEN][pieceCount[color][QUEEN]]
-							  ^  Zobrist::ZobArray[color ][PAWN][pieceCount[color][PAWN]+1];
+							  ^  Zobrist::ZobArray[color][PAWN ][pieceCount[color][PAWN]+1];
 		}
 		
 		//update the pawn key, if it's a promotion it cancels out and updates correctly
-		st->PawnKey ^= zobrist.zArray[color][PAWN][m.to] ^ zobrist.zArray[color][PAWN][m.from];
+		st->PawnKey ^= zobrist.zArray[color][PAWN][to] ^ zobrist.zArray[color][PAWN][from];
 		//_mm_prefetch((char *)pawnsTable[bInfo.PawnKey], _MM_HINT_NTA); // TEST for ELO GAIN, BOTH PLACES WITH PREFETCH HAD ELO LOSS
 	}
 	// Castling ~~ only implemented to be done by another,
 	// engine itself cannot castle yet. Next thing on agenda.
-	else if (m.flag == 'C') {
+	else if (move_type(m) == CASTLING) {
 
-		do_castling<true>(m, color);
+		do_castling<true>(from, to, color);
 	}
 
 	// Update castling rights if a rook is moving for first time,
 	// being  captured or if the king is moving 
-	if (st->castlingRights && (castlingRightsMasks[m.from] | castlingRightsMasks[m.to])) {
+	if (st->castlingRights && (castlingRightsMasks[from] | castlingRightsMasks[to])) {
 
-		int cr = castlingRightsMasks[m.from] | castlingRightsMasks[m.to];
+		int cr = castlingRightsMasks[from] | castlingRightsMasks[to];
 
 		st->Key ^= Zobrist::Castling[st->castlingRights & cr];
 
@@ -591,8 +600,8 @@ void BitBoards::makeMove(const Move& m, StateInfo& newSt, int color)
 	}
 
 	//update the TT key, capture update done in capture above
-	st->Key ^= Zobrist::ZobArray[color][m.piece][m.from]
-		    ^  Zobrist::ZobArray[color][m.piece][m.to  ]
+	st->Key ^= Zobrist::ZobArray[color][piece][from]
+		    ^  Zobrist::ZobArray[color][piece][to  ]
 		    ^  Zobrist::Color;
 
 	// prefetch TT entry into cache ~THIS IS WAY TOO TIME INTENSIVE? 6.1% on just this call from here?
@@ -602,29 +611,23 @@ void BitBoards::makeMove(const Move& m, StateInfo& newSt, int color)
 	st->checkers = 0LL;
 
 	if (checking) {
-		//drawBBA();
-		//drawBB(ci.checkSq[1]);
-		//drawBB(ci.checkSq[2]);
-		//drawBB(ci.checkSq[3]);
-		//drawBB(ci.checkSq[4]);
-		//drawBB(ci.checkSq[5]);
-		//drawBB(ci.checkSq[6]);
-		if (m.flag != '0')
+
+		if (move_type(m) != NORMAL)
 			st->checkers = attackers_to(king_square(them), FullTiles) & pieces(color);
 
 		else {
 
 			//Direct checks
-			if (ci.checkSq[m.piece] & squareBB[m.to])
-				st->checkers |= squareBB[m.to];
+			if (ci.checkSq[piece] & squareBB[to])
+				st->checkers |= squareBB[to];
 
 			//Discoverd checks
-			if (ci.dcCandidates && (ci.dcCandidates & squareBB[m.from])) {
+			if (ci.dcCandidates && (ci.dcCandidates & squareBB[from])) {
 
-				if (m.piece != ROOK)
+				if (piece != ROOK)
 					st->checkers |= attacks_from<ROOK  >(king_square(them)) & pieces(color, ROOK,   QUEEN);
 
-				if (m.piece != BISHOP)
+				if (piece != BISHOP)
 					st->checkers |= attacks_from<BISHOP>(king_square(them)) & pieces(color, BISHOP, QUEEN);
 			}
 		}
@@ -696,16 +699,14 @@ void BitBoards::unmakeMove(const Move & m, int color)
 
 }
 
+// Makes or unmakes a castling move depending on template true, false.
 template<int make>
-inline void BitBoards::do_castling(const Move & m, int color)
+inline void BitBoards::do_castling(int from, int to, int color)
 {
-	bool kingSide = m.to > m.from;
+	bool kingSide = to > from;
 
 	int rFrom = relative_square(color, kingSide ? H1 : A1);
 	int rTo   = relative_square(color, kingSide ? F1 : D1);
-
-	//int rookFrom = relative_square(color, m.to) == C1     ? relative_square(color, A1) : relative_square(color, H1); //delete
-	//int rookTo   = rookFrom == relative_square(color, A1) ? relative_square(color, D1) : relative_square(color, F1);
 
 	// move the piece from to if we're making, 
 	// and to from for unmake

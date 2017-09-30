@@ -6,7 +6,7 @@
 #include "move.h"
 #include "slider_attacks.h"
 
-class ZobristH;
+
 class BitBoards;
 class evaluateBB;
 class HashEntry;
@@ -78,8 +78,6 @@ private:
 
 	//prints data to console/gui
 	void print(bool isWhite, int bestScore);
-
-
 
 };
 

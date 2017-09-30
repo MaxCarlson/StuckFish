@@ -10,10 +10,12 @@
 #include "Evaluate.h"
 #include "bitboards.h"
 #include "movegen.h"
-#include "zobristh.h"
+//#include "zobristh.h"
 #include "hashentry.h"
 #include "TimeManager.h"
 #include "TranspositionT.h"
+#include "MovePicker.h"
+
 
 //#include <advisor-annotate.h> // INTEL ADVISOR FOR THREAD ANNOTATION
 
@@ -175,15 +177,15 @@ int Ai_Logic::searchRoot(BitBoards& board, int depth, int alpha, int beta, searc
 	(ss + 1)->skipNull = false;
 	const int color = board.stm();
 
-    MoveGen gen_moves;
-	gen_moves.generate<MAIN_GEN>(board);
-	gen_moves.reorderMoves(ss, ttentry);
-
     // Are we in check?	
-	flagInCheck = board.isSquareAttacked(board.king_square(color), color);
+	flagInCheck = board.checkers();
 
-	int moveNumber = gen_moves.moveCount;
-    for(int i = 0; i < moveNumber; ++i){
+
+	MovePicker mp(board, MOVE_NONE, depth, history, ss); //CHANGE MOVE NONE TO TTMOVE ONCE IMPLEMENTED
+
+	MoveGen gen_moves; //delete this
+
+    while(mp.nextMove() != MOVE_NONE){
         //find best move generated
         Move newMove = gen_moves.movegen_sort(ss->ply, &gen_moves.moveAr[0]);
         board.makeMove(newMove, st, color);  
@@ -311,8 +313,6 @@ int Ai_Logic::alphaBeta(BitBoards& board, int depth, int alpha, int beta, search
 		return score;
 	}
 
-	MoveGen gen_moves;
-
 	//are we in check?
 	FlagInCheck = board.isSquareAttacked(board.king_square(color), color);
 
@@ -425,23 +425,20 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 		&& ttentry->depth >= depth - 3;
 */
 
-//generate psuedo legal moves (not just captures)
-	//gen_moves.generatePsMoves(board, false);
-	gen_moves.generate<MAIN_GEN>(board);
-
-	//add killers scores and hash moves scores to moves if there are any
-	gen_moves.reorderMoves(ss, ttentry);
-
-	int hashFlag = TT_ALPHA, movesNum = gen_moves.moveCount, legalMoves = 0, bestScore = -INF;
-
 	//has this current node variation improved our static_eval ?
 	bool improving = ss->staticEval >= (ss - 2)->staticEval
 		|| ss->staticEval == 0
 		|| (ss - 2)->staticEval == 0;
 	
+	MovePicker mp(board, MOVE_NONE, depth, history, ss); //CHANGE MOVE NONE TO TTMOVE ONCE IMPLEMENTED
+
+	MoveGen gen_moves;
+
+	int hashFlag = TT_ALPHA, movesNum = gen_moves.moveCount, legalMoves = 0, bestScore = -INF;
 
 	Move hashMove; //move to store alpha in and pass to TTable
-	for (int i = 0; i < movesNum; ++i) {
+
+	while(mp.nextMove() != MOVE_NONE){
 
 		//grab best scoring move	
 		Move newMove = gen_moves.movegen_sort(ss->ply, gen_moves.moveAr);
@@ -541,7 +538,7 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 
 			history.cutoffs[color][newMove.from][newMove.to] = 50; //NEED to test, makes it about 50% faster from start node with it commented out
 
-			ss->reduction = reductions[isPV][improving][depth][i]; //TRY CHANGING I TO LEGAL MOVES , SEE IF ELO GAINS
+			ss->reduction = reductions[isPV][improving][depth][legalMoves]; //TRY CHANGING I TO LEGAL MOVES , SEE IF ELO GAINS
 
 			//reduce reductions for moves that escape capture
 			if (ss->reduction) {
@@ -711,19 +708,19 @@ int Ai_Logic::quiescent(BitBoards& board, int alpha, int beta, searchStack *ss, 
 		alpha = standingPat;
 	}
 
-	//generate only captures with true capture gen var
-	MoveGen gen_moves;
-	//gen_moves.generatePsMoves(board, true);
-	gen_moves.generate<CAPTURES>(board);
-	gen_moves.reorderMoves(ss, ttentry);
-
-	//set hash flag equal to alpha Flag
-	int hashFlag = TT_ALPHA, moveNum = gen_moves.moveCount;
-
 
 	Move hashMove;
 
-	for (int i = 0; i < moveNum; ++i)
+
+	//generate only captures with true capture gen var
+	MoveGen gen_moves;
+
+	MovePicker mp(board, MOVE_NONE, history, ss); //CHANGE MOVE NONE TO TTMOVE ONCE IMPLEMENTED
+
+													 //set hash flag equal to alpha Flag
+	int hashFlag = TT_ALPHA, moveNum = gen_moves.moveCount;
+
+	while(mp.nextMove() != MOVE_NONE)
 	{
 		Move newMove = gen_moves.movegen_sort(ss->ply, gen_moves.moveAr);
 
@@ -731,17 +728,17 @@ int Ai_Logic::quiescent(BitBoards& board, int alpha, int beta, searchStack *ss, 
 		// unless we're in endgame, where that's not safe ~~ possibly use more advanced board.game_phase()?
 		if ((standingPat + SORT_VALUE[newMove.captured] + 200 < alpha)
 			&& (board.bInfo.sideMaterial[!color] - SORT_VALUE[newMove.captured] > END_GAME_MAT)
-			&& newMove.flag != 'Q') continue;
+			&& newMove.flag != 'Q') //continue;
 		
 
 		//Don't search losing capture moves if not in PV
-		if (!isPV && board.SEE(newMove, color, true) < 0) continue;
+		if (!isPV && board.SEE(newMove, color, true) < 0) //continue;
 
 		board.makeMove(newMove, st, color);
 
 		if (!board.isLegal(newMove, color)) {
 			board.unmakeMove(newMove, color);
-			continue;
+			//continue;
 		}
 
 		score = -quiescent(board, -beta, -alpha, ss, isPV);
@@ -754,7 +751,7 @@ int Ai_Logic::quiescent(BitBoards& board, int alpha, int beta, searchStack *ss, 
 				hashFlag = TT_BETA;
 				hashMove = newMove;
 				alpha = beta;
-				break;
+				//break;
 			}
 
 			hashFlag = TT_EXACT;

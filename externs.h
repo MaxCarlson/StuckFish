@@ -75,7 +75,7 @@ extern searchDriver sd;
 
 struct Historys { //holds history info for search 
 
-	//color, piece  from, piece loc to
+	//color, from, to
 	int history[2][64][64] = { { { 0 } } };
 
 	//TEST THIS FOR SPEED/ELO below ///NOT IN USE

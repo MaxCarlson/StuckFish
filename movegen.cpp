@@ -42,96 +42,153 @@ const U64 FILE_AB = FileABB + FileBBB;
 const U64 FILE_GH = FileGBB + FileHBB;
 
 
-template<int genType>
-void MoveGen::generate(const BitBoards & board)
-{
-	//counts total moves generated
-	moveCount = 0;
-	U64 target;
-	const int color = board.stm();
+template<int color, int genType>
+SMoves* pawnMoves(const BitBoards& boards, SMoves *mlist, U64 target) {
 
-///*	
-	// If we're in check, only generate king evasions
-	// as well as other pieces blocking or capturing 
-	// the checking piece.
-	if (board.checkers()) {
+	const int them = color == WHITE ? BLACK : WHITE;
+	const int Up = color == WHITE ? N : S;
+	const int Down = color == WHITE ? S : N;
+	const int Right = color == WHITE ? NE : SE;
+	const int Left = color == WHITE ? NW : SW;
+	const int dpush = color == WHITE ? 16 : -16;
 
-		int ksq       = board.king_square(color);
-		U64 sliderAtt = 0LL;
-		U64 sliders   = board.checkers() & ~board.piecesByType(PAWN, KNIGHT);
+	const U64 thirdRank = color == WHITE ? rank3 : rank6;
+	const U64 seventhRank = color == WHITE ? rank7 : rank2;
+	const U64 eighthRank = color == WHITE ? rank8 : rank1;
 
-		// Find all squares attacked by slider checks
-		// we remove them in order not to generate useless illegal moves
-		while (sliders) {
-			int checksq = pop_lsb(&sliders);
-			sliderAtt  |= LineBB[checksq][ksq] ^ board.square_bb(checksq);
+
+	const U64 pawns = boards.pieces(color, PAWN) & ~seventhRank;
+	const U64 candidatePawns = boards.pieces(color, PAWN) &  seventhRank;
+
+	const U64 enemys = (genType == EVASIONS ? boards.pieces(them) ^ boards.pieces(them, KING) & target
+		                                    : boards.pieces(them) ^ boards.pieces(them, KING));
+	U64 moves, moves1;
+
+	if (genType != CAPTURES) {
+
+		moves = shift_bb<Up>(pawns) & boards.EmptyTiles;
+		moves1 = shift_bb<Up>(moves  & thirdRank) & boards.EmptyTiles;
+
+		if (genType == EVASIONS) {
+			moves &= target;
+			moves1 &= target;
 		}
 
-		//Generate all possible check evasions for king
-		U64 bb = board.attacks_from<KING>(ksq) & ~board.pieces(color) & ~sliderAtt;
+		// up one
+		while (moves) {
+			int index = pop_lsb(&moves);
 
-		while (bb) {
-			int to  = pop_lsb(&bb);
-			int cap = board.pieceOnSq(to);
-			movegen_push(board, color, KING, cap, '0', ksq, to);
+			(mlist++)->move = create_move(index + Down, index);
 		}
 
-		// If double check, we can only use king moves
-		if (more_than_one(board.checkers())) 
-			return;
+		// up two - If move is made, ep square is flagged in make move
+		while (moves1) {
+			int index = pop_lsb(&moves1);
 
-		// Target blocking evasions or capturing the checking piece
-		int checksq = lsb(board.checkers());
-
-		target = BetweenSquares[checksq][ksq] | board.square_bb(checksq)
-			   & ~(board.pieces(color)		  | board.pieces(!color, KING));
-
-		color == WHITE ? generateAll<WHITE, EVASIONS>(board, target)
-			           : generateAll<BLACK, EVASIONS>(board, target);
+			(mlist++)->move = create_move(index + dpush, index);
+		}
 	}
-//*/	
-	else {
 
-		// If only generating captures our target is only enemy pieces,
-		// aside from E king. Else our target is all squares that are not
-		// occupied by our friends or E king.
-		target = genType == CAPTURES
-			   ?  (board.pieces(!color) ^ board.pieces(!color, KING))
-			   : ~(board.pieces(color)  | board.pieces(!color, KING));
 
-		color == WHITE ? generateAll<WHITE, genType>(board, target)
-			           : generateAll<BLACK, genType>(board, target);
+	//capture right
+	moves = shift_bb<Right>(pawns) & enemys;
+	while (moves) {
+		int index = pop_lsb(&moves);
 
+		(mlist++)->move = create_move(index - Right, index);
 	}
+
+	// capture left
+	moves = shift_bb<Left>(pawns) & enemys;
+	while (moves) {
+		int index = pop_lsb(&moves);
+
+		(mlist++)->move = create_move(index - Left, index);
+	}
+
+	// en passant
+	if (boards.can_enpassant()) {
+
+		int epSq = boards.ep_square();
+		// find pawns that can attack ep square if they exist
+		U64 epPawns = boards.psuedoAttacks(PAWN, them, epSq) & pawns;
+
+		while (epPawns) {
+			// ePawns is our pawn locations in this case
+			(mlist++)->move = create_special<ENPASSANT, PIECE_EMPTY>(pop_lsb(&epPawns), epSq);
+		}
+	}
+
+	// Pawn promotions, if we have pawns on the 7th..
+	// generate promotions
+	if (candidatePawns) {
+
+		// moving forward one
+		moves = shift_bb<Up>(candidatePawns) & boards.EmptyTiles & eighthRank;
+
+		while (moves) {
+			int index = pop_lsb(&moves);
+
+			(mlist++)->move = create_special<PROMOTION, QUEEN>(index + Down, index);
+		}
+
+		// pawn capture promotions
+		// capture right
+		moves = shift_bb<Right>(candidatePawns) & enemys & eighthRank;
+
+		while (moves) {
+			int index = pop_lsb(&moves);
+
+			(mlist++)->move = create_special<PROMOTION, QUEEN>(index - Right, index);
+		}
+
+		// capture left
+		moves = shift_bb<Left>(candidatePawns) & enemys & eighthRank;
+
+		while (moves) {
+			int index = pop_lsb(&moves);
+
+			(mlist++)->move = create_special<PROMOTION, QUEEN>(index - Left, index);
+		}
+	}
+	return mlist;
 }
 
-template void MoveGen::generate<MAIN_GEN>(const BitBoards & board);
-template void MoveGen::generate<CAPTURES>(const BitBoards & board);
+template<int color, int cs>
+SMoves* castling(const BitBoards& boards, SMoves *mlist) {
 
+	int cr = cs == KING_SIDE ? color == WHITE ? WHITE_OO : BLACK_OO
+		: color == WHITE ? WHITE_OOO : BLACK_OOO;
 
-template<int color, int genType> FORCE_INLINE
-void MoveGen::generateAll(const BitBoards & board, const U64 & target)
-{
-	pawnMoves<color, genType>(board, target); // once working be sure to add template genType param to pawn moves
+	// If we don't have the right to this castle
+	if (!(cr & boards.castling_rights())) 
+		return mlist;
 
-	generateMoves<color, KNIGHT>(board, target);
-	generateMoves<color, BISHOP>(board, target);
-	generateMoves<color, ROOK  >(board, target);
-	generateMoves<color, QUEEN >(board, target);
+	// If castling is blocked
+	if (boards.castling_impeded(cr)) 
+		return mlist;
 
-	if (genType != EVASIONS) 
-		generateMoves<color, KING>(board, target);
-	
+	int ks = boards.king_square(color);
 
-	if (genType != CAPTURES && genType != EVASIONS && board.can_castle(color)) {
-		castling<color, KING_SIDE >(board); //move color to template param once working
-		castling<color, QUEEN_SIDE>(board);
-	}
-	
+	int kto = relative_square(color, (cs == KING_SIDE ? G1 : C1));
+
+	// Is the king moving left or right?
+	int cDelta = (cs == KING_SIDE ? E : W);
+
+	U64 enemys = boards.pieces(!color);
+
+	// if an enemy us attacking any square
+	// on the kings path, we don't generate the castling move
+	for (int i = ks; i != kto; i += cDelta)
+		if (boards.attackers_to(i, boards.FullTiles) & enemys)
+			return mlist;
+
+	(mlist++)->move = create_special<CASTLING, PIECE_EMPTY>(ks, kto);
+	return mlist;
 }
 
-template<int color, int Pt> 
-void MoveGen::generateMoves(const BitBoards & board, const U64 & target)
+template<int color, int Pt>
+SMoves* generateMoves(const BitBoards & board, SMoves *mlist, const U64 & target)
 {
 	// Grab the list of all pieces of a type
 	const int *pieceList = board.pieceLoc[color][Pt];
@@ -148,167 +205,91 @@ void MoveGen::generateMoves(const BitBoards & board, const U64 & target)
 		// move array + scoring
 		while (moves) {
 			//store moves
-			int index = pop_lsb(&moves);
-
-			int	captured = board.pieceOnSq(index);
-
-			movegen_push(board, color, Pt, captured, '0', square, index);
+			(mlist++)->move = create_move(square, pop_lsb(&moves));
 		}
 	}
+	return mlist;
 }
 
-template<int color, int genType>
-void MoveGen::pawnMoves(const BitBoards& boards, U64 target) {
+template<int color, int genType> FORCE_INLINE
+SMoves* generateAll(const BitBoards & board, SMoves *mlist, const U64 & target)
+{
+	mlist = pawnMoves<color, genType>(board, mlist, target); // once working be sure to add template genType param to pawn moves
 
-	const int them  = color == WHITE ? BLACK : WHITE;
-	const int Up    = color == WHITE ? N     :     S;
-	const int Down  = color == WHITE ? S     :     N;
-	const int Right = color == WHITE ? NE    :    SE;
-	const int Left  = color == WHITE ? NW    :    SW;
-	const int dpush = color == WHITE ? 16    :   -16;
+	mlist = generateMoves<color, KNIGHT>(board, mlist, target);
+	mlist = generateMoves<color, BISHOP>(board, mlist, target);
+	mlist = generateMoves<color, ROOK  >(board, mlist, target);
+	mlist = generateMoves<color, QUEEN >(board, mlist, target);
 
-	const U64 thirdRank    = color == WHITE ? rank3 : rank6;
-	const U64 seventhRank  = color == WHITE ? rank7 : rank2;
-	const U64 eighthRank   = color == WHITE ? rank8 : rank1;
+	if (genType != EVASIONS)
+		mlist = generateMoves<color, KING>(board, mlist, target);
 
 
-	const U64 pawns          = boards.pieces(color, PAWN) & ~seventhRank;
-	const U64 candidatePawns = boards.pieces(color, PAWN) &  seventhRank;
-
-	const U64 enemys = (genType == EVASIONS ? boards.pieces(them) ^ boards.pieces(them, KING) & target
-										    : boards.pieces(them) ^ boards.pieces(them, KING));
-	U64 moves, moves1;
-
-	if (genType != CAPTURES) {
-		
-		moves  = shift_bb<Up>(pawns) & boards.EmptyTiles;
-		moves1 = shift_bb<Up>(moves  & thirdRank) & boards.EmptyTiles;
-
-		if (genType == EVASIONS) {
-			moves  &= target;
-			moves1 &= target;
-		}
-
-		// up one
-		while (moves) {
-			int index = pop_lsb(&moves);
-
-			movegen_push(boards, color, PAWN, PIECE_EMPTY, '0', index + Down, index);
-		}
-
-		// up two - If move is made, ep square is flagged in make move
-		while (moves1) {
-			int index = pop_lsb(&moves1);
-
-			movegen_push(boards, color, PAWN, PIECE_EMPTY, '0', index + dpush, index);
-		}
-
+	if (genType != CAPTURES && genType != EVASIONS && board.can_castle(color)) {
+		mlist = castling<color, KING_SIDE >(board, mlist); //move color to template param once working
+		mlist = castling<color, QUEEN_SIDE>(board, mlist);
 	}
 
-
-	//capture right
-	moves = shift_bb<Right>(pawns) & enemys;
-	while (moves) {
-		int index = pop_lsb(&moves);
-
-		int captured = boards.pieceOnSq(index);
-
-		movegen_push(boards, color, PAWN, captured, '0', index - Right, index);
-	}
-
-	// capture left
-	moves = shift_bb<Left>(pawns) & enemys;
-	while (moves) {
-		int index = pop_lsb(&moves);
-
-		int captured = boards.pieceOnSq(index);
-
-		movegen_push(boards, color, PAWN, captured, '0', index - Left, index);
-	}
-
-	// en passant
-	if (boards.can_enpassant()) {
-
-		int epSq = boards.ep_square();
-		// find pawns that can attack ep square if they exist
-		U64 epPawns = boards.psuedoAttacks(PAWN, them, epSq) & pawns;
-
-		while (epPawns) {
-			// index is our pawn locations in this case,
-			// not where the pawn is moving like in rest of template
-			int index = pop_lsb(&epPawns);
-
-			movegen_push(boards, color, PAWN, PAWN, 'E', index, epSq);
-		}
-	}
-
-	// Pawn promotions, if we have pawns on the 7th..
-	// generate promotions
-	if (candidatePawns) {
-
-		// moving forward one
-		moves = shift_bb<Up>(candidatePawns) & boards.EmptyTiles & eighthRank;
-
-		while (moves) {
-			int index = pop_lsb(&moves);
-
-			movegen_push(boards, color, PAWN, PIECE_EMPTY, 'Q', index + Down, index);
-		}
-
-		// pawn capture promotions
-		// capture right
-		moves = shift_bb<Right>(candidatePawns) & enemys & eighthRank;
-
-		while (moves) {
-			int index = pop_lsb(&moves);
-
-			int	captured = boards.pieceOnSq(index);
-
-			movegen_push(boards, color, PAWN, captured, 'Q', index - Right, index);
-		}
-
-
-		// capture left
-		moves = shift_bb<Left>(candidatePawns) & enemys & eighthRank;
-
-		while (moves) {
-			int index = pop_lsb(&moves);
-
-			int	captured = boards.pieceOnSq(index);
-
-			movegen_push(boards, color, PAWN, captured, 'Q', index - Left, index);
-		}
-	}
+	return mlist;
 }
 
-template<int color, int cs>
-void MoveGen::castling(const BitBoards& boards) {
+template<int genType>
+SMoves* generate(const BitBoards & board, SMoves *mlist)
+{
+	U64 target;
+	const int color = board.stm();
 
-	int cr = cs == KING_SIDE ? color == WHITE ? WHITE_OO  : BLACK_OO
-							 : color == WHITE ? WHITE_OOO : BLACK_OOO;
 
-	// If we don't have the right to this castle
-	if (!(cr & boards.castling_rights())) return;
+	// If only generating captures our target is only enemy pieces,
+	// aside from E king. Else our target is all squares that are not
+	// occupied by our friends or E king.
+	target = genType == CAPTURES ?  (board.pieces(!color) ^ board.pieces(!color, KING))
+		   : genType == MAIN_GEN ? ~(board.pieces(color)  | board.pieces(!color, KING))
+		   : genType == QUIETS   ?   board.EmptyTiles     : 0;                                  ////////////////////////////////////////////////////////////////////////////////////////////////NEED TO ADD THIS TO OTHER TEMPLATES TO MAKE SURE ONLY QUIETS ARE GENERATED
 
-	// If castling is blocked
-	if (boards.castling_impeded(cr)) return;
+	return color == WHITE ? generateAll<WHITE, genType>(board, mlist, target)
+			              : generateAll<BLACK, genType>(board, mlist, target);
+}
 
-	int ks = boards.king_square(color);
+template SMoves* generate<MAIN_GEN>(const BitBoards & board, SMoves *mlist);
+template SMoves* generate<CAPTURES>(const BitBoards & board, SMoves *mlist);
+template SMoves* generate<QUIETS  >(const BitBoards & board, SMoves *mlist);
 
-	int kto = relative_square(color, (cs == KING_SIDE ? G1 : C1));
+template<>
+SMoves* generate<EVASIONS>(const BitBoards & board, SMoves *mlist) {
 
-	// Is the king moving left or right?
-	int cDelta = (cs == KING_SIDE ? E : W);
+	U64 target;
+	const int color = board.stm();
 
-	U64 enemys = boards.pieces(!color);
+	int ksq = board.king_square(color);
+	U64 sliderAtt = 0LL;
+	U64 sliders = board.checkers() & ~board.piecesByType(PAWN, KNIGHT);
 
-	// if an enemy us attacking any square
-	// on the kings path, we don't generate the castling move
-	for (int i = ks; i != kto; i += cDelta)
-		if(boards.attackers_to(i, boards.FullTiles) & enemys)
-			return;
+	// Find all squares attacked by slider checks
+	// we remove them in order not to generate useless illegal moves
+	while (sliders) {
+		int checksq = pop_lsb(&sliders);
+		sliderAtt |= LineBB[checksq][ksq] ^ board.square_bb(checksq);
+	}
 
-	movegen_push(boards, color, KING, PIECE_EMPTY, 'C', ks, kto);
+	//Generate all possible check evasions for king
+	U64 bb = board.attacks_from<KING>(ksq) & ~board.pieces(color) & ~sliderAtt;
+
+	while (bb) 
+		(mlist++)->move = create_move(ksq, pop_lsb(&bb));
+	
+	// If double check, we can only use king moves
+	if (more_than_one(board.checkers()))
+		return mlist;
+
+	// Target blocking evasions or capturing the checking piece
+	int checksq = lsb(board.checkers());
+
+	target = BetweenSquares[checksq][ksq] | board.square_bb(checksq)
+		   & ~(board.pieces(color)        | board.pieces(!color, KING));
+
+	return color == WHITE ? generateAll<WHITE, EVASIONS>(board, mlist, target)
+				          : generateAll<BLACK, EVASIONS>(board, mlist, target);
 }
 
 void MoveGen::movegen_push(const BitBoards & board, int color, int piece, int captured, char flag, int from, int to) //change flags to int eventually

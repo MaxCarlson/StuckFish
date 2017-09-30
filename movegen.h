@@ -15,7 +15,8 @@ class Historys;
 class HashEntry;
 class searchStack;
 
-
+template<int genType>
+SMoves* generate(const BitBoards & board, SMoves *mlist);
 
 class MoveGen
 {
@@ -29,8 +30,8 @@ public:
 	//number of moves generated this node
     int moveCount;
 
-	template<int genType>
-	void generate(const BitBoards& board);
+	//template<int genType>
+	//void generate(const BitBoards& board);
 
 	//grab the best scoring move and return it
 	Move movegen_sort(int ply, Move * moveAr) const;
@@ -43,7 +44,7 @@ private:
     void movegen_push(const BitBoards & board, int color, int piece, int captured, char flag, int from, int to);
 
     bool blind(const BitBoards & board, int to, int color, int pieceVal, int captureVal);
-
+	/*
 	template<int color, int Pt> 
 	void generateMoves(const BitBoards& board, const U64 &target);
 
@@ -57,6 +58,7 @@ private:
 
 	template<int color, int cs>
 	void castling(const BitBoards & boards);
+	*/
 };
 
 
