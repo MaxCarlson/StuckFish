@@ -358,7 +358,7 @@ void BitBoards::readFenString(const std::string& FEN)
 // Just test to see if our king is attacked by any enemy pieces
 // castling moves are checked for legality durning move gen, aside from
 // this king in check test. En passants are done the same way
-bool BitBoards::isLegal(const Moves & m, int color)
+bool BitBoards::isLegal(const Move & m, int color)
 {
 	// There's a better way of doing this than checking
 	// all moves to see if our king is attacked.
@@ -368,7 +368,7 @@ bool BitBoards::isLegal(const Moves & m, int color)
 	return !isSquareAttacked(king_square(color), color);
 }
 
-bool BitBoards::gives_check(Moves m, int from, int to, const CheckInfo & ci)
+bool BitBoards::gives_check(Move m, int from, int to, const CheckInfo & ci)
 {
 	int piece = pieceOnSq(from);
 
@@ -484,7 +484,7 @@ void BitBoards::set_castling_rights(int color, int rfrom)
 }
 
 
-void BitBoards::makeMove(const Moves& m, StateInfo& newSt, int color)
+void BitBoards::makeMove(const Move& m, StateInfo& newSt, int color)
 {
 	int them = !color;
 
@@ -498,6 +498,22 @@ void BitBoards::makeMove(const Moves& m, StateInfo& newSt, int color)
 	bool checking = gives_check(m, from, to, ci);
 
 	assert(posOkay());
+
+	/*
+	if (pieceOnSq(C6) == KNIGHT && pieceOnSq(E6) == PAWN) {
+		drawBBA();
+	}
+
+
+	if (pieceOnSq(C6) == KNIGHT && pieceOnSq(E3) == PAWN) {
+		drawBBA();
+	}
+
+
+	if (pieceOnSq(C6) == KNIGHT && pieceOnSq(E6) == PAWN && pieceOnSq(E6) == PAWN && pieceOnSq(H5) == PAWN) {
+		drawBBA();
+	}
+	*/
 
 	//copy current board state to board state stored on ply
 	std::memcpy(&newSt, st, sizeof(StateInfo));
@@ -543,7 +559,6 @@ void BitBoards::makeMove(const Moves& m, StateInfo& newSt, int color)
 	// and remove the ep zobrist XOR
 	if (st->epSquare != SQ_NONE) {
 
-		//zobrist.zobristKey ^= zobrist.zEnPassant[file_of(st->epSquare)];
 		st->Key ^= Zobrist::EnPassant[file_of(st->epSquare)];
 		st->epSquare = SQ_NONE;
 	}
@@ -646,11 +661,8 @@ void BitBoards::makeMove(const Moves& m, StateInfo& newSt, int color)
 	}
 }
 
-void BitBoards::unmakeMove(const Moves & m, int color)
+void BitBoards::unmakeMove(const Move & m, int color)
 {
-	//restore state pointer to state before we made this move
-	st = st->previous;
-
 	int them = !color;
 
 	int type = move_type(m);
@@ -659,6 +671,7 @@ void BitBoards::unmakeMove(const Moves & m, int color)
 	int piece = pieceOnSq(to);
 
 	assert(posOkay());
+
 
 	if (type == NORMAL) {
 
@@ -704,9 +717,11 @@ void BitBoards::unmakeMove(const Moves & m, int color)
 
 	assert(posOkay());
 
+	//restore state pointer to state before we made this move
+	st = st->previous;
+
 	//flip internal side to move
 	bInfo.sideToMove = !bInfo.sideToMove;
-
 }
 
 // Makes or unmakes a castling move depending on template true, false.
@@ -756,30 +771,36 @@ void BitBoards::undoNullMove()
 	bInfo.sideToMove = !bInfo.sideToMove;
 }
 
-int BitBoards::SEE(const Move& m, int color, bool isCapture)
+int BitBoards::SEE(const Move& m, int color, bool isCapture) const
 {
 	U64 attackers, occupied, stmAttackers;
 	int swapList[32], index = 1;
 
+	int from     =      from_sq(m);
+	int to       =		  to_sq(m);
+	int piece    = pieceOnSq(from);
+	int captured =   pieceOnSq(to);
+	int type     =    move_type(m);
+
 	//early return, SEE can't be a losing capture
 	//is capture flag is used for when we're checking to see if the move is escaping capture
 	//we don't want an early return if that's the case
-	if (SORT_VALUE[m.piece] <= SORT_VALUE[m.captured] && isCapture) return INF;
+	if (SORT_VALUE[piece] <= SORT_VALUE[captured] && isCapture) return INF;
 
 	// return in case of a castling move
-	if (m.flag == 'C') return 0;
+	if (type == CASTLING) return 0;
 
-	swapList[0] = SORT_VALUE[m.captured];
+	swapList[0] = SORT_VALUE[captured];
 
-	occupied = FullTiles ^ square_bb(m.from); //remove capturing piece from occupied bb 
+	occupied = FullTiles ^ square_bb(from); //remove capturing piece from occupied bb 
 
 												  //remove captured pawn
-	if (m.flag == 'E') {
-		occupied ^= square_bb(m.to - pawn_push(!color));
+	if (type == ENPASSANT) {
+		occupied ^= square_bb(to - pawn_push(!color));
 	}
 
 	//finds all attackers to the square
-	attackers = attackers_to(m.to, occupied) & occupied;
+	attackers = attackers_to(to, occupied) & occupied;
 
 	//if there are no attacking pieces, return
 	if (!(attackers & allPiecesColorBB[color])) return swapList[0];
@@ -792,9 +813,9 @@ int BitBoards::SEE(const Move& m, int color, bool isCapture)
 
 	if (!stmAttackers) return swapList[0];
 
-	int captured = m.piece; //if there are attackers, our piece being moved will be captured
+	captured = piece; //if there are attackers, our piece being moved will be captured
 
-							//loop through and add pieces that can capture on the square to swapList
+	//loop through and add pieces that can capture on the square to swapList
 	do {
 		if (index > 31) break;
 
@@ -802,7 +823,7 @@ int BitBoards::SEE(const Move& m, int color, bool isCapture)
 		swapList[index] = -swapList[index - 1] + SORT_VALUE[captured];
 
 
-		captured = min_attacker<PAWN>(color, m.to, stmAttackers, occupied, attackers);
+		captured = min_attacker<PAWN>(color, to, stmAttackers, occupied, attackers);
 
 		if (captured == KING) {
 			if (stmAttackers == attackers) {
@@ -827,7 +848,8 @@ int BitBoards::SEE(const Move& m, int color, bool isCapture)
 
 // Find the smallest attacker to a square
 template<int Pt> FORCE_INLINE
-int BitBoards::min_attacker(int color, int to, const U64 & stmAttackers, U64 & occupied, U64 & attackers) {
+int BitBoards::min_attacker(int color, int to, const U64 & stmAttackers, U64 & occupied, U64 & attackers) const
+{
 
 	// is there a piece of this Pt that we've previously found
 	// attacking the square?
@@ -858,7 +880,7 @@ int BitBoards::min_attacker(int color, int to, const U64 & stmAttackers, U64 & o
 }
 
 template<> FORCE_INLINE // If we've checked all the pieces, return KING and stop SEE search
-int BitBoards::min_attacker<KING>(int color, int to, const U64 & stmAttackers, U64 & occupied, U64 & attackers) {
+int BitBoards::min_attacker<KING>(int color, int to, const U64 & stmAttackers, U64 & occupied, U64 & attackers) const{
 	return KING;
 }
 
@@ -970,11 +992,6 @@ void BitBoards::drawBBA() const
 		if (EmptyTiles & (1ULL << i)) {
 			std::cout << " " << ", ";
 		}
-
-		//if(i % 8 == 7){
-		//    std::cout << "| " << flips[c] ;
-		//     c++;
-		// }
 	}
 
 	std::cout << std::endl << "    ";

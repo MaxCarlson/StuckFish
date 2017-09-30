@@ -3,7 +3,6 @@
 #include <sstream> 
 #include "defines.h"
 
-class Move;
 class BitBoards;
 class StateInfo;
 
@@ -22,9 +21,9 @@ public:
 
 	void search(BitBoards& newBoard);
 
-	std::string moveToStr(const Moves & m);
+	std::string moveToStr(const Move & m);
 
-	Moves strToMove(BitBoards& newBoard, std::string & input);
+	Move strToMove(BitBoards& newBoard, std::string & input);
 
 
 };

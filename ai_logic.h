@@ -3,14 +3,13 @@
 #include <string>
 #include <stack>
 #include <thread>
-#include "move.h"
 #include "slider_attacks.h"
+#include "defines.h"
 
 
 class BitBoards;
 class evaluateBB;
 class HashEntry;
-class Move;
 
 //holds info about past and current searches, passed to search
 struct searchStack {
@@ -32,10 +31,10 @@ public:
 	//initialze values called at program start
 	void initSearch();
 
-	Moves searchStart(BitBoards& newBoard, bool isWhite);
+	Move searchStart(BitBoards& newBoard, bool isWhite);
 
     //iterative deepening
-    Moves iterativeDeep(BitBoards& newBoard, int depth, bool isWhite);
+    Move iterativeDeep(BitBoards& newBoard, int depth, bool isWhite);
 
 	//clear historys, for new games
 	void clearHistorys();

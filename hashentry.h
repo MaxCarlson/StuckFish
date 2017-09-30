@@ -2,8 +2,7 @@
 #define HASHENTRY_H
 #include <string>
 
-#include "move.h"
-
+#include "defines.h"
 
 class HashEntry
 {

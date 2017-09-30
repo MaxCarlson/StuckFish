@@ -7,11 +7,9 @@ typedef unsigned long long  U64; // supported by MSC 13.00+ and C99
 
 #include <string>
 #include <algorithm>
-#include "move.h"
 #include "zobristh.h"
 
 class ZobristH;
-class Move;
 class MoveGen;
 
 struct BoardInfo { //possibly remove this and move this info to bitboards object? //DELETE THIS, REPLACED BY st
@@ -72,15 +70,15 @@ public:
 	//constructs boards from FEN string
 	void readFenString(const std::string& FEN);
 
-	bool isLegal(const Moves & m, int color);
+	bool isLegal(const Move & m, int color);
 
 	//helper function for isLegal + for finding if in check
 	bool isSquareAttacked(const int square, const int color) const;
 
 	//make the move
-	void makeMove(const Moves& m, StateInfo& newSt, int color);
+	void makeMove(const Move& m, StateInfo& newSt, int color);
 	//unamke move
-	void unmakeMove(const Moves & m, int color);
+	void unmakeMove(const Move & m, int color);
 
 	void makeNullMove(StateInfo& newSt);
 	void undoNullMove();
@@ -89,12 +87,12 @@ public:
 	BoardInfo bInfo;
 
 	//static exhange eval
-	int SEE(const Move& m, int color, bool isCapture);
+	int SEE(const Move& m, int color, bool isCapture) const;
 	//finds the smallest attacker for side to move, out of the stm attackers board,
 	//removes the attacker from the attackers and occuied board, then finds any x-ray attackers behind that piece
 	//and returns the int representing the piece
 	template<int Pt>
-	int min_attacker(int color, int to, const U64 & stmAttackers, U64 & occupied, U64 & attackers);
+	int min_attacker(int color, int to, const U64 & stmAttackers, U64 & occupied, U64 & attackers) const;
 
 
 
@@ -125,6 +123,10 @@ public:
 	template<int pt> int count(int color) const;
 	bool empty(int sq) const;
 	int pieceOnSq(int sq) const;
+
+	bool capture(Move m) const;
+	bool capture_or_promotion(Move m) const;
+
 	//returns the square the king is on
 	int king_square(int color) const;
 	//is this a pawn move on the 5th or higher relative rank?
@@ -170,7 +172,7 @@ public:
 	U64 checkers() const;
 	U64 check_candidates() const;
 	U64 pinned_pieces(int color) const;
-	bool gives_check(Moves m, int from, int to, const CheckInfo& ci);
+	bool gives_check(Move m, int from, int to, const CheckInfo& ci);
 	U64 check_blockers(int color, int kingColor) const;
 
 	//castling
@@ -253,6 +255,16 @@ inline bool BitBoards::empty(int sq) const
 inline int BitBoards::pieceOnSq(int sq) const
 {
 	return pieceOn[sq];
+}
+
+inline bool BitBoards::capture(Move m) const
+{
+	return (!empty(to_sq(m)) && move_type(m) != ENPASSANT);
+}
+
+inline bool BitBoards::capture_or_promotion(Move m) const
+{
+	return (move_type(m) != NORMAL ? move_type(m) != CASTLING : !empty(to_sq(m)));
 }
 
 inline int BitBoards::stm() const
@@ -367,7 +379,7 @@ inline U64 BitBoards::pinned_pieces(int color) const
 //is there a pawn past their relative 4th rank?
 inline bool BitBoards::isPawnPush(const Move &m, int color) 
 {	
-	return (m.piece == PAWN && relative_rankSq(color, m.from) > 4);
+	return (pieceOnSq(from_sq(m)) == PAWN && relative_rankSq(color, from_sq(m)) > 4);
 }
 
 //is there a pawn on the 7th rank for side to move?

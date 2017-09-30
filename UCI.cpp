@@ -130,7 +130,7 @@ void UCI::uciLoop()
 
 void UCI::updatePosition(BitBoards& newBoard, std::istringstream& input, StateInfo & si)
 {
-	Moves m;
+	Move m;
 	std::string token, fen;
 
 	input >> token;
@@ -216,7 +216,7 @@ void UCI::setOption(std::istringstream & input)
 
 void UCI::search(BitBoards& newBoard)
 {	
-	Moves m = searchM.searchStart(newBoard, isWhite); 
+	Move m = searchM.searchStart(newBoard, isWhite); 
 
 	std::cout << "bestmove " << moveToStr(m) << std::endl; //send move to std output for UCI GUI to pickup
 
@@ -224,7 +224,7 @@ void UCI::search(BitBoards& newBoard)
 	turns += 1;
 }
 
-std::string UCI::moveToStr(const Moves& m) 
+std::string UCI::moveToStr(const Move& m) 
 {
 	std::string flipsL[8] = { "a", "b", "c", "d", "e", "f", "g", "h" };
 	int flipsN[8] = {8, 7, 6, 5, 4, 3, 2, 1};
@@ -247,9 +247,9 @@ std::string UCI::moveToStr(const Moves& m)
 	return ss.str();
 }
 
-Moves UCI::strToMove(BitBoards& newBoard, std::string& input)
+Move UCI::strToMove(BitBoards& newBoard, std::string& input)
 {
-	Moves m;
+	Move m;
 	int flipsN[9] = {0, 7, 6, 5, 4, 3, 2, 1, 0};
 	char flipsA[8]{ 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h' };
 

@@ -9,8 +9,6 @@
 #include "externs.h"
 #include "Evaluate.h"
 #include "bitboards.h"
-#include "movegen.h"
-//#include "zobristh.h"
 #include "hashentry.h"
 #include "TimeManager.h"
 #include "TranspositionT.h"
@@ -74,7 +72,7 @@ void Ai_Logic::initSearch()
 	}
 }
 
-Moves Ai_Logic::searchStart(BitBoards& board, bool isWhite) {
+Move Ai_Logic::searchStart(BitBoards& board, bool isWhite) {
 	
 	//max depth
 	int depth = MAX_PLY;
@@ -89,12 +87,12 @@ Moves Ai_Logic::searchStart(BitBoards& board, bool isWhite) {
 	//calc move time for us, send to search driver
 	timeM.calcMoveTime(isWhite);
 
-	Moves m = iterativeDeep(board, depth, isWhite);
+	Move m = iterativeDeep(board, depth, isWhite);
 	
 	return m;
 }
 
-Moves Ai_Logic::iterativeDeep(BitBoards& board, int depth, bool isWhite)
+Move Ai_Logic::iterativeDeep(BitBoards& board, int depth, bool isWhite)
 {
 	//reset ply
     int ply = 0;
@@ -106,7 +104,7 @@ Moves Ai_Logic::iterativeDeep(BitBoards& board, int depth, bool isWhite)
 	std::memset(ss - 2, 0, 5 * sizeof(searchStack));
 
     //best overall move as calced
-    Moves bestMove;
+    Move bestMove;
     int bestScore, alpha = -INF, beta = INF;
 	int delta = 8;
 	sd.depth = 1;
@@ -183,8 +181,7 @@ int Ai_Logic::searchRoot(BitBoards& board, int depth, int alpha, int beta, searc
 
 	MovePicker mp(board, MOVE_NONE, depth, history, ss); //CHANGE MOVE NONE TO TTMOVE ONCE IMPLEMENTED
 
-	MoveGen gen_moves; //delete this
-	Moves newMove;
+	Move newMove;
 
     while((newMove = mp.nextMove()) != MOVE_NONE){
         //find best move generated
@@ -276,6 +273,7 @@ int Ai_Logic::alphaBeta(BitBoards& board, int depth, int alpha, int beta, search
 	sd.nodes++;
 	ss->ply = (ss - 1)->ply + 1; //increment ply
 	ss->reduction = 0;
+	ss->excludedMove = MOVE_NONE;
 	(ss + 1)->skipNull = false;
 
 	const int color = board.stm();
@@ -290,11 +288,11 @@ int Ai_Logic::alphaBeta(BitBoards& board, int depth, int alpha, int beta, search
 	if (alpha >= beta) return alpha;
 
 	const HashEntry *ttentry;
-	bool ttMove;
+	Move ttMove;
 	int ttValue;
 
 	ttentry = TT.probe(board.TTKey());
-	ttMove = ttentry ? ttentry->move.tried : false; //is there a move stored in transposition table?
+	ttMove  = ttentry ? ttentry->move : MOVE_NONE; //is there a move stored in transposition table?
 	ttValue = ttentry ? valueFromTT(ttentry->eval, ss->ply) : INVALID; //if there is a TT entry, grab its value
 
 
@@ -321,20 +319,22 @@ int Ai_Logic::alphaBeta(BitBoards& board, int depth, int alpha, int beta, search
 	FlagInCheck = board.isSquareAttacked(board.king_square(color), color);
 
 	//if in check, or in reduced search extension: skip nulls, statics evals, razoring, etc to moves_loop:
-	if (FlagInCheck || (ss - 1)->excludedMove.tried || sd.skipEarlyPruning) goto moves_loop;
+	if (FlagInCheck || (ss - 1)->excludedMove || sd.skipEarlyPruning) goto moves_loop;
 
 	//evaluateBB eval;
 	Evaluate eval;
 	ss->staticEval = eval.evaluate(board);
 
+	/*
 	//update gain from previous ply stats for previous move
 	if ((ss - 1)->currentMove.captured == PIECE_EMPTY
 		&& (ss - 1)->currentMove.flag != 'Q'
 		&& ss->staticEval != 0 && (ss - 1)->staticEval != 0
 		&& (ss - 1)->currentMove.tried) {
 
-		history.updateGain((ss - 1)->currentMove, -(ss - 1)->staticEval - ss->staticEval, !color);
+		history.updateGain((ss - 1)->currentMove, -(ss - 1)->staticEval - ss->staticEval, !color);          //RE ENABLE ONCE DONE EP TESTING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	}
+	*/
 
 
 	//eval pruning / static null move
@@ -347,7 +347,7 @@ int Ai_Logic::alphaBeta(BitBoards& board, int depth, int alpha, int beta, search
 	}
 
 	//Null move heuristics, disabled if in PV, check, or depth is too low //RE ENABLE ONCE DONE EP TESTING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-///*
+/*
 	if (allowNull && !isPV && depth > R) {
 		if (depth > 6) R = 3;
 
@@ -393,7 +393,7 @@ int Ai_Logic::alphaBeta(BitBoards& board, int depth, int alpha, int beta, search
 		if (val <= alpha) return val;
 	}
 
-	///* //Still a bit slow?
+	/* //Still a bit slow?
 //do we want to futility prune?
 	int fmargin[4] = { 0, 200, 300, 500 };
 	//int fmargin[8] = {0, 100, 150, 200, 250, 300, 400, 500};
@@ -434,14 +434,12 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 		|| ss->staticEval == 0
 		|| (ss - 2)->staticEval == 0;
 	
+	int hashFlag = TT_ALPHA, legalMoves = 0, bestScore = -INF;
+
+
+	Move newMove;
 	MovePicker mp(board, MOVE_NONE, depth, history, ss); //CHANGE MOVE NONE TO TTMOVE ONCE IMPLEMENTED
 
-	MoveGen gen_moves;
-
-	int hashFlag = TT_ALPHA, movesNum = gen_moves.moveCount, legalMoves = 0, bestScore = -INF;
-
-
-	Moves newMove;
 	while((newMove = mp.nextMove()) != MOVE_NONE){
 
 		//if (sd.excludedMove && newMove.score >= SORT_HASH) continue;
@@ -674,14 +672,13 @@ int Ai_Logic::quiescent(BitBoards& board, int alpha, int beta, searchStack *ss, 
 	sd.nodes++;
 	const int color = board.stm();
 	const HashEntry *ttentry;
-	bool ttMove;
 	int ttValue;
 	int oldAlpha, bestScore, score;
 	ss->ply = (ss - 1)->ply + 1;
 	StateInfo st;
 
 	ttentry = TT.probe(board.TTKey());
-	ttMove = ttentry ? ttentry->move.flag : false; //is there a move stored in transposition table?
+	Move ttMove = ttentry ? ttentry->move : MOVE_NONE; //is there a move stored in transposition table?
 	ttValue = ttentry ? valueFromTT(ttentry->eval, ss->ply) : INVALID; //if there is a TT entry, grab its value
 
 	if (ttentry
@@ -703,7 +700,7 @@ int Ai_Logic::quiescent(BitBoards& board, int alpha, int beta, searchStack *ss, 
 
 	if (standingPat >= beta) {
 
-		if (!ttentry) TT.save(board.TTKey(), DEPTH_QS, valueToTT(standingPat, ss->ply), TT_BETA); //save to TT if there's no entry MAJOR PROBLEMS WITH THIS 
+		//if (!ttentry) TT.save(board.TTKey(), DEPTH_QS, valueToTT(standingPat, ss->ply), TT_BETA); //save to TT if there's no entry MAJOR PROBLEMS WITH THIS  ////////////////////////////////////////////////////////////REENABLE ONCE EVERYTHING IS WOKRING
 		return beta;
 	}
 
@@ -711,15 +708,12 @@ int Ai_Logic::quiescent(BitBoards& board, int alpha, int beta, searchStack *ss, 
 		alpha = standingPat;
 	}
 
-	//generate only captures with true capture gen var
-	MoveGen gen_moves;
-
 	MovePicker mp(board, MOVE_NONE, history, ss); //CHANGE MOVE NONE TO TTMOVE ONCE IMPLEMENTED
 
 													 //set hash flag equal to alpha Flag
-	int hashFlag = TT_ALPHA, moveNum = gen_moves.moveCount;
+	int hashFlag = TT_ALPHA;
 
-	Moves newMove;
+	Move newMove;
 	while((newMove = mp.nextMove()) != MOVE_NONE)
 	{
 		/*
@@ -738,7 +732,7 @@ int Ai_Logic::quiescent(BitBoards& board, int alpha, int beta, searchStack *ss, 
 
 		if (!board.isLegal(newMove, color)) {
 			board.unmakeMove(newMove, color);
-			//continue;
+			continue;
 		}
 
 		score = -quiescent(board, -beta, -alpha, ss, isPV);
@@ -783,7 +777,7 @@ int Ai_Logic::contempt(const BitBoards& board, int color)
 
 bool Ai_Logic::isRepetition(const BitBoards& board, const Move& m) //Ai_Logic::
 {
-	if (m.piece == PAWN) return false;
+	if (board.pieceOnSq(m) == PAWN) return false;
 	//add in castling logic to quit early
 
 	int repCount = 0;

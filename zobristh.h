@@ -1,13 +1,11 @@
 #ifndef ZOBRISTH_H
 #define ZOBRISTH_H
 #include <string>
-#include "move.h"
-
+#include "defines.h"
 
 
 class BitBoards;
 class MoveGen;
-class Move;
 
 class ZobristH
 {
@@ -32,11 +30,7 @@ public:
     //get zorbist key by XOR ing all pieces random numbers with Zkey
     U64 getZobristHash(const BitBoards& BBBoard);
 
-	//used for prefetching a very probable match to the next transposition entry
-	U64 fetchKey(const Move& m, int color);
-
     //Update zobrist key by XOR ing rand numbers in zArray
-    void UpdateKey(int start, int end, const Move& moveKey, bool isWhite);
     void UpdateColor();
 
     //print out how many times a number in the array is created
@@ -49,34 +43,5 @@ public:
 	U64 debugMaterialKey(const BitBoards& BBBoard);
 
 };
-
-inline void ZobristH::UpdateKey(int start, int end, const Move& moveKey, bool isWhite)
-{
-	//update the zobrist key after move or unmake move.
-	//color is messed up, 0 = white. Hence we inverse the is white to get actual color
-	const int color = !isWhite;
-	const int them  = !color;
-
-	zobristKey ^= zArray[color][moveKey.piece][moveKey.from];
-	zobristKey ^= zArray[color][moveKey.piece][moveKey.to];
-
-	//moves that are non captures will just XOR the key with 0LL's
-	zobristKey ^= zArray[them][moveKey.captured][moveKey.to];
-
-	//pawn promotions to queen, other not implemented
-	if (moveKey.flag == 'Q') {
-		zobristKey ^= zArray[color][PAWN ][moveKey.to];
-		zobristKey ^= zArray[color][QUEEN][moveKey.to];
-	}
-	// En passants
-	else if (moveKey.flag == 'E') {
-		// undo wrong XOR done above
-		zobristKey ^= zArray[them][PAWN][moveKey.to];
-		// remove EP pawn
-		zobristKey ^= zArray[them][PAWN][moveKey.to + pawn_push(them)];
-	}
-
-	//need caslting code
-}
 
 #endif // ZOBRISTH_H

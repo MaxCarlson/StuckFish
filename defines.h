@@ -56,19 +56,19 @@ void prefetch(char* addr) {
 // 6-12 desitination square
 // 13-14 move flag, 1 Castle, 2 EP, 3 Promotion
 // 15-16 promotion piece type
-enum Moves { //later change to move once entire move class has been removed.
+enum Move { //later change to move once entire move class has been removed.
 	MOVE_NONE
 };
 
 // Struct that holds moves and their scores
-struct SMoves {
-	Moves move;
+struct SMove {
+	Move move;
 	int score;
 };
 
 // Removes error from std::algorithm about std::less no overload found.
 // Is also usefull in move picking.
-inline bool operator<(const SMoves& f, const SMoves& s) {
+inline bool operator<(const SMove& f, const SMove& s) {
 	return f.score < s.score;
 }
 
@@ -81,26 +81,26 @@ enum MoveType {
 
 
 
-inline Moves create_move(int from, int to) {
-	return Moves(from | (to << 6));
+inline Move create_move(int from, int to) {
+	return Move(from | (to << 6));
 }
 
-inline int from_sq(Moves m) {
+inline int from_sq(Move m) {
 	return (m & 0x3f);
 }
 
-inline int to_sq(Moves m) {
+inline int to_sq(Move m) {
 	return (m >> 6) & 0x3f;
 }
 
 // Returns 0 if the move is normal, 
 // and enum values above it is an EP, Castle, or promotion
-inline MoveType move_type(Moves m) {
+inline MoveType move_type(Move m) {
 	return MoveType(m & (3 << 12));
 }
 
 // What piece does the move promote to?
-inline int promotion_type(Moves m) {
+inline int promotion_type(Move m) {
 	return ((m >> 15) & 3) + 2;
 }
 
@@ -108,8 +108,8 @@ inline int promotion_type(Moves m) {
 // Pt is equal to zero for all moves aside from promotions
 // where it designates piece type move is promoting to. 
 template<MoveType T, int Pt>
-inline Moves create_special(int from, int to) {
-	return Moves((from | (to << 6) | T | (Pt - KNIGHT << 15)));
+inline Move create_special(int from, int to) {
+	return Move((from | (to << 6) | T | (Pt - KNIGHT << 15)));
 }
 
 

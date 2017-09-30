@@ -1,16 +1,16 @@
-﻿  ai_logic.cpp
+﻿  Evaluate.cpp
+  MovePicker.cpp
+  Pawns.cpp
+  TimeManager.cpp
+  TranspositionT.cpp
+  UCI.cpp
+  ai_logic.cpp
   bitboards.cpp
-  Evaluate.cpp
   hashentry.cpp
   main.cpp
   material.cpp
   movegen.cpp
-  MovePicker.cpp
-  Pawns.cpp
   slider_attacks.cpp
-  TimeManager.cpp
-  TranspositionT.cpp
-  UCI.cpp
   zobristh.cpp
   Generating Code...
   StuckFish.vcxproj -> C:\Users\C-60\Desktop\cppPrograms\StuckFish\x64\Release\StuckFish.exe

@@ -8,7 +8,6 @@ typedef unsigned long long  U64; // supported by MSC 13.00+ and C99
 #include <string>
 #include <unordered_map>
 #include <algorithm>
-#include "move.h"
 #include "slider_attacks.h"
 #include "Pawns.h"
 #include "material.h"
@@ -63,7 +62,7 @@ extern int futileMoveCounts[2][32];
 //holds search info, killers, historys, PV, etc
 struct searchDriver{
 
-	Moves PV[130];
+	Move PV[130];
 	int nodes = 0;
 	int depth = 0;
 	long startTime;
@@ -89,14 +88,15 @@ struct Historys { //holds history info for search
 	std::vector<U64> twoFoldRep; //stores zobrist keys of all positions encountered thus far
 
 	void updateHist(Move m, int v, int color) {
-		if (abs(history[color][m.from][m.to]) < SORT_KILL) {
-			history[color][m.from][m.to] += v;
+		if (abs(history[color][from_sq(m)][to_sq(m)]) < SORT_KILL) {
+			history[color][from_sq(m)][to_sq(m)] += v;
 		}
 	}
-
+	/*
 	void updateGain(Move m, int v, int color) {
 		gains[color][m.piece][m.to] = std::max(v, gains[color][m.piece][m.to] - 1);
 	}
+	*/
 
 };
 extern Historys history; 

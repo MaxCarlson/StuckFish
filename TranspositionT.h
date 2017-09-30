@@ -6,7 +6,7 @@ const unsigned TTClusterSize = 2;
 //const unsigned TTClusterSizePawn = 4;
 
 //main TTable cluster
-struct TTCluster { //64 bytes in size, 32 per entry
+struct TTCluster { //64 bytes in size, 32 per entry             //////////////////////////////////////////REWORK THIS , MOVE IS NOW ONLY 16Bit
 
 	HashEntry entry[TTClusterSize];
 };
