@@ -186,6 +186,7 @@ void BitBoards::constructBoards(const std::string* FEN) //replace this with fen 
 	startState.castlingRights = 0;
 	startState.MaterialKey = 0LL;
 	startState.PawnKey = 0LL;
+	startState.capturedPiece = 0;
 
 	//set state to start state
 	//there are probable issues with this, it seems after setting a position
@@ -357,7 +358,7 @@ void BitBoards::readFenString(const std::string& FEN)
 // Just test to see if our king is attacked by any enemy pieces
 // castling moves are checked for legality durning move gen, aside from
 // this king in check test. En passants are done the same way
-bool BitBoards::isLegal(const Move & m, int color)
+bool BitBoards::isLegal(const Moves & m, int color)
 {
 	// There's a better way of doing this than checking
 	// all moves to see if our king is attacked.
@@ -487,13 +488,14 @@ void BitBoards::makeMove(const Moves& m, StateInfo& newSt, int color)
 {
 	int them = !color;
 
-	CheckInfo ci(*this);
-	bool checking = gives_check(m, ci);
-
 	int to       =        to_sq(m);
 	int from     =      from_sq(m);
 	int piece    = pieceOnSq(from);
-	int captured =   pieceOnSq(to);
+
+	int captured = move_type(m) == ENPASSANT ? PAWN : pieceOnSq(to);
+
+	CheckInfo ci(*this);
+	bool checking = gives_check(m, from, to, ci);
 
 	assert(posOkay());
 
@@ -505,7 +507,7 @@ void BitBoards::makeMove(const Moves& m, StateInfo& newSt, int color)
 	st = &newSt;
 
 	//remove or add captured piece from BB's same as above for moving piece
-	if (captured != SQ_NONE) {
+	if (captured) {
 		int capSq = to;
 
 		if (captured == PAWN) {
@@ -523,7 +525,7 @@ void BitBoards::makeMove(const Moves& m, StateInfo& newSt, int color)
 			bInfo.nonPawnMaterial[them] -= SORT_VALUE[captured];
 		}
 		//remove captured piece
-		removePiece(captured them, capSq);
+		removePiece(captured, them, capSq);
 		//update material
 		bInfo.sideMaterial[them] -= SORT_VALUE[captured];
 		// update TT key
@@ -535,7 +537,8 @@ void BitBoards::makeMove(const Moves& m, StateInfo& newSt, int color)
 	//move the piece from - to
 	movePiece(piece, color, from, to);
 
-	
+	st->capturedPiece = captured;
+
 	// if there was an EP square, reset it for the next ply 
 	// and remove the ep zobrist XOR
 	if (st->epSquare != SQ_NONE) {
@@ -643,54 +646,61 @@ void BitBoards::makeMove(const Moves& m, StateInfo& newSt, int color)
 	}
 }
 
-void BitBoards::unmakeMove(const Move & m, int color)
+void BitBoards::unmakeMove(const Moves & m, int color)
 {
 	//restore state pointer to state before we made this move
 	st = st->previous;
 
 	int them = !color;
 
+	int type = move_type(m);
+	int from = from_sq(m);
+	int to = to_sq(m);
+	int piece = pieceOnSq(to);
+
 	assert(posOkay());
 
-	if (m.flag != 'Q') {
+	if (type == NORMAL) {
 
 		// move piece
-		movePiece(m.piece, color, m.to, m.from);
+		movePiece(piece, color, to, from);
 	}
 	//pawn promotion
-	else if (m.flag == 'Q'){
+	else if (type == PROMOTION){
 
-		addPiece(PAWN, color, m.from);
+		int promType = promotion_type(m); //////////////////// USE THIS TO DO OTHER PROMOTIONS
+
+		addPiece(PAWN, color, from);
 		//remove queen
-		removePiece(QUEEN, color, m.to);
+		removePiece(QUEEN, color, to);
 
 		bInfo.sideMaterial[color]    += SORT_VALUE[PAWN ] - SORT_VALUE[QUEEN];
 		bInfo.nonPawnMaterial[color] -= SORT_VALUE[QUEEN];
 	}
 
 	//add captured piece from BB's similar to above for moving piece
-	if (m.captured) {
-		int capSq = m.to;
+	if (st->capturedPiece) {
+		int capSq = to;
+		int captured = st->capturedPiece;
 
 		// set capture square correctly if 
 		// move is an en passant
-		if (m.flag == 'E') {
+		if (type == ENPASSANT) {
 			capSq += pawn_push(them);
 		}
 
 		//add captured piece to to square
-		addPiece(m.captured, them, capSq);
-		bInfo.sideMaterial[them] += SORT_VALUE[m.captured];
+		addPiece(captured, them, capSq);
+		bInfo.sideMaterial[them] += SORT_VALUE[captured];
 
 		//if pawn captured undone, update pawn key
-		if (m.captured != PAWN) bInfo.nonPawnMaterial[them] += SORT_VALUE[m.captured];
+		if (captured != PAWN) bInfo.nonPawnMaterial[them] += SORT_VALUE[captured];
 	}
 
 	//undo the rook movment in castling
-	if (m.flag == 'C') {
-		do_castling<false>(m, color);
+	if (type == CASTLING) {
+		do_castling<false>(from, to, color);
 	}
-
 
 	assert(posOkay());
 

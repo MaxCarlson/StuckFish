@@ -130,7 +130,7 @@ void UCI::uciLoop()
 
 void UCI::updatePosition(BitBoards& newBoard, std::istringstream& input, StateInfo & si)
 {
-	Move m;
+	Moves m;
 	std::string token, fen;
 
 	input >> token;
@@ -216,7 +216,7 @@ void UCI::setOption(std::istringstream & input)
 
 void UCI::search(BitBoards& newBoard)
 {	
-	Move m = searchM.searchStart(newBoard, isWhite); 
+	Moves m = searchM.searchStart(newBoard, isWhite); 
 
 	std::cout << "bestmove " << moveToStr(m) << std::endl; //send move to std output for UCI GUI to pickup
 
@@ -224,22 +224,22 @@ void UCI::search(BitBoards& newBoard)
 	turns += 1;
 }
 
-std::string UCI::moveToStr(const Move& m) 
+std::string UCI::moveToStr(const Moves& m) 
 {
 	std::string flipsL[8] = { "a", "b", "c", "d", "e", "f", "g", "h" };
 	int flipsN[8] = {8, 7, 6, 5, 4, 3, 2, 1};
 
-	int x = m.from % 8; //extract x's and y's from "from/to" 
-	int y = m.from / 8;
-	int x1 = m.to % 8;
-	int y1 = m.to / 8;
+	int x  = rank_of(from_sq(m));
+	int y  = file_of(from_sq(m));
+	int x1 = rank_of(to_sq(  m));
+	int y1 = file_of(to_sq(  m));
 
 	std::string promL = "";
 
-	if (m.flag == 'Q') promL = "q"; //promotion flags
-	else if (m.flag == 'R') promL = "r";
-	else if (m.flag == 'B') promL = "b";
-	else if (m.flag == 'N') promL = "n";
+	if (move_type(m) == PROMOTION) promL = "q"; //promotion flags
+	//else if (m.flag == 'R') promL = "r";
+	//else if (m.flag == 'B') promL = "b";
+	//else if (m.flag == 'N') promL = "n";
 
 	std::stringstream ss;
 	ss << flipsL[x] << flipsN[y] << flipsL[x1] << flipsN[y1] << promL;
@@ -247,13 +247,13 @@ std::string UCI::moveToStr(const Move& m)
 	return ss.str();
 }
 
-Move UCI::strToMove(BitBoards& newBoard, std::string& input)
+Moves UCI::strToMove(BitBoards& newBoard, std::string& input)
 {
-	Move m;
+	Moves m;
 	int flipsN[9] = {0, 7, 6, 5, 4, 3, 2, 1, 0};
 	char flipsA[8]{ 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h' };
 
-	int x, y, x1, y1, xyI, xyE;
+	int x, y, x1, y1;
 
 	char cx = input[0];
 	char cx1 = input[2];
@@ -266,37 +266,25 @@ Move UCI::strToMove(BitBoards& newBoard, std::string& input)
 	y = flipsN[input[1] - '0'];
 	y1 = flipsN[input[3] - '0'];
 
-	xyI = y * 8 + x;
-	xyE = y1 * 8 + x1;
+	int from = y * 8 + x;
+	int to = y1 * 8 + x1;
+	int piece = newBoard.pieceOnSq(from);
 
-	m.from = xyI; //store from and to for move
-	m.to = xyE;
 
-	U64 f = newBoard.squareBB[xyI]; //create bitboards of initial 
-	U64 t = newBoard.squareBB[xyE]; //and landing pos
-
-	m.captured = PIECE_EMPTY;
-
-	for (int i = PIECE_EMPTY; i < PIECES; ++i) {
-
-		if (f & newBoard.piecesByType(i)) m.piece = i;
-		if (t & newBoard.piecesByType(i)) m.captured = i;
-	}
-
-	m.flag = '0';
+	int typeOfMove = NORMAL;
 
 	// en passants
-	if (m.piece == PAWN && m.captured == PIECE_EMPTY
-		&& (m.to != m.from + pawn_push(!isWhite)
-		&& (m.to != m.from + pawn_push(!isWhite) * 2) )) {
+	if (piece == PAWN 
+		&& (to != from + pawn_push(!isWhite)
+		&& (to != from + pawn_push(!isWhite) * 2) )) {
 
-		m.flag = 'E';
-		m.captured = PAWN;
+		typeOfMove = ENPASSANT;
 	}
 
 	//promotions
 	if (input.length() == 5) {
-		if (input[4] == 'q') m.flag = 'Q';
+		if (input[4] == 'q')
+			typeOfMove = PROMOTION;
 		//below not implemented!!!!!!!!!!!
 		//else if (input[4] == 'r') m.flag = 'R';
 		//else if (input[4] == 'b') m.flag = 'B';
@@ -304,13 +292,25 @@ Move UCI::strToMove(BitBoards& newBoard, std::string& input)
 	}	
 
 	//NEED CASTLING CODE ONCE IMPLEMENTED
-	if (m.piece == KING && !m.captured) {
-		if (newBoard.psuedoAttacks(KING, 0, xyI) & newBoard.squareBB[xyE]) return m;
-		else m.flag = 'C';
+	if (piece == KING) {
+		if (!(newBoard.psuedoAttacks(KING, 0, from) & newBoard.squareBB[to]))
+			typeOfMove = CASTLING;
 	}
 
+	if (typeOfMove == NORMAL)
+		m = create_move(from, to);
 
-	
+	else if (typeOfMove == ENPASSANT)
+		m = create_special<ENPASSANT, PIECE_EMPTY>(from, to);
+
+	else if (typeOfMove == PROMOTION)
+		m = create_special<PROMOTION, QUEEN>(from, to);
+
+	else if (typeOfMove == CASTLING)
+		m = create_special<CASTLING, PIECE_EMPTY>(from, to);
+
+
+
 	return m;
 }
 

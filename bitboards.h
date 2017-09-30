@@ -42,7 +42,7 @@ struct StateInfo {
 	//int sideMaterial[COLOR]; // need to use these and delete struct above
 	//int nonPawnMaterial[COLOR];
 
-	//int capturedPiece; //add once we switch over to numerically represented moves
+	int capturedPiece; //add once we switch over to numerically represented moves
 
 	int epSquare;
 	int castlingRights;
@@ -72,7 +72,7 @@ public:
 	//constructs boards from FEN string
 	void readFenString(const std::string& FEN);
 
-	bool isLegal(const Move & m, int color);
+	bool isLegal(const Moves & m, int color);
 
 	//helper function for isLegal + for finding if in check
 	bool isSquareAttacked(const int square, const int color) const;
@@ -80,7 +80,7 @@ public:
 	//make the move
 	void makeMove(const Moves& m, StateInfo& newSt, int color);
 	//unamke move
-	void unmakeMove(const Move& m, int color);
+	void unmakeMove(const Moves & m, int color);
 
 	void makeNullMove(StateInfo& newSt);
 	void undoNullMove();

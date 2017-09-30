@@ -32,10 +32,10 @@ public:
 	//initialze values called at program start
 	void initSearch();
 
-	Move searchStart(BitBoards& newBoard, bool isWhite);
+	Moves searchStart(BitBoards& newBoard, bool isWhite);
 
     //iterative deepening
-    Move iterativeDeep(BitBoards& newBoard, int depth, bool isWhite);
+    Moves iterativeDeep(BitBoards& newBoard, int depth, bool isWhite);
 
 	//clear historys, for new games
 	void clearHistorys();

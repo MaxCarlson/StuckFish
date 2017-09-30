@@ -1,6 +1,8 @@
 #pragma once
 
 #include <sstream> 
+#include "defines.h"
+
 class Move;
 class BitBoards;
 class StateInfo;
@@ -20,9 +22,9 @@ public:
 
 	void search(BitBoards& newBoard);
 
-	std::string moveToStr(const Move & m);
+	std::string moveToStr(const Moves & m);
 
-	Move strToMove(BitBoards& newBoard, std::string & input);
+	Moves strToMove(BitBoards& newBoard, std::string & input);
 
 
 };

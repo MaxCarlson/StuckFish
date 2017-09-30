@@ -74,7 +74,7 @@ void Ai_Logic::initSearch()
 	}
 }
 
-Move Ai_Logic::searchStart(BitBoards& board, bool isWhite) {
+Moves Ai_Logic::searchStart(BitBoards& board, bool isWhite) {
 	
 	//max depth
 	int depth = MAX_PLY;
@@ -89,12 +89,12 @@ Move Ai_Logic::searchStart(BitBoards& board, bool isWhite) {
 	//calc move time for us, send to search driver
 	timeM.calcMoveTime(isWhite);
 
-	Move m = iterativeDeep(board, depth, isWhite);
+	Moves m = iterativeDeep(board, depth, isWhite);
 	
 	return m;
 }
 
-Move Ai_Logic::iterativeDeep(BitBoards& board, int depth, bool isWhite)
+Moves Ai_Logic::iterativeDeep(BitBoards& board, int depth, bool isWhite)
 {
 	//reset ply
     int ply = 0;
@@ -106,7 +106,7 @@ Move Ai_Logic::iterativeDeep(BitBoards& board, int depth, bool isWhite)
 	std::memset(ss - 2, 0, 5 * sizeof(searchStack));
 
     //best overall move as calced
-    Move bestMove;
+    Moves bestMove;
     int bestScore, alpha = -INF, beta = INF;
 	int delta = 8;
 	sd.depth = 1;
@@ -136,7 +136,7 @@ Move Ai_Logic::iterativeDeep(BitBoards& board, int depth, bool isWhite)
             //grab best move out of PV array ~~ need better method of grabbing best move, not based on "distance"
             //Maybe if statement is a bad fix? sometimes a max of specified depth is not reached near checkmates/possibly checks
             //if statement makes sure the move has been tried before storing it
-            if(sd.PV[1].tried) bestMove = sd.PV[1];
+            if(sd.PV[1] != MOVE_NONE) bestMove = sd.PV[1];
 
 			//insert_pv(board);
 
@@ -184,23 +184,25 @@ int Ai_Logic::searchRoot(BitBoards& board, int depth, int alpha, int beta, searc
 	MovePicker mp(board, MOVE_NONE, depth, history, ss); //CHANGE MOVE NONE TO TTMOVE ONCE IMPLEMENTED
 
 	MoveGen gen_moves; //delete this
+	Moves newMove;
 
-    while(mp.nextMove() != MOVE_NONE){
+    while((newMove = mp.nextMove()) != MOVE_NONE){
         //find best move generated
-        Move newMove = gen_moves.movegen_sort(ss->ply, &gen_moves.moveAr[0]);
+
         board.makeMove(newMove, st, color);  
 
+		/*
 		if (isRepetition(board, newMove)) { //if position from root move is a two fold repetition, discard that move
-			board.unmakeMove(newMove, color);
+			board.unmakeMove(newMove, color);							 ////////////////////////////////////////////////////////////////////////////////////////////////////////////REENABLE ONCE EVERYTHING IS WORKING AND CONVERT TO NEW MOVE STANDARD
 			continue;
-		}											     
+		}	
+		*/
 
 		if (!board.isLegal(newMove, color)) {
 			board.unmakeMove(newMove, color);
 			continue;
 		}
         legalMoves ++;
-        history.cutoffs[color][newMove.from][newMove.to] -= 1;
 
         //PV search at root
         if(best == -INF){
@@ -220,8 +222,8 @@ int Ai_Logic::searchRoot(BitBoards& board, int depth, int alpha, int beta, searc
         //undo move on BB's
         board.unmakeMove(newMove, color);
 
-		if (newMove.captured == PIECE_EMPTY && newMove.flag != 'Q' && quietsCount < 64) {
-			quiets[quietsCount] = newMove;
+		if (board.pieceOnSq(to_sq(newMove)) == PIECE_EMPTY && move_type(newMove) != PROMOTION && quietsCount < 64) {
+			//quiets[quietsCount] = newMove;          ////////////////////////////////////////////////////////////////////////////////////////////////////////////REENABLE ONCE EVERYTHING IS WORKING AND CONVERT TO NEW MOVE STANDARD
 			quietsCount++;
 		}
 
@@ -246,11 +248,13 @@ int Ai_Logic::searchRoot(BitBoards& board, int depth, int alpha, int beta, searc
     }
 
 	//save info and move to TT
-	TT.save(sd.PV[ss->ply], board.TTKey(), depth, valueToTT(alpha, ss->ply), hashFlag);
+	//TT.save(sd.PV[ss->ply], board.TTKey(), depth, valueToTT(alpha, ss->ply), hashFlag);
 
+	/*
 	if (alpha >= beta && !flagInCheck && sd.PV[1].captured == PIECE_EMPTY && sd.PV[1].flag != 'Q') {
 		updateStats(sd.PV[1], ss, depth, quiets, quietsCount, color);
 	}
+	*/
 	
     return alpha;
 }
@@ -436,12 +440,9 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 
 	int hashFlag = TT_ALPHA, movesNum = gen_moves.moveCount, legalMoves = 0, bestScore = -INF;
 
-	Move hashMove; //move to store alpha in and pass to TTable
 
-	while(mp.nextMove() != MOVE_NONE){
-
-		//grab best scoring move	
-		Move newMove = gen_moves.movegen_sort(ss->ply, gen_moves.moveAr);
+	Moves newMove;
+	while((newMove = mp.nextMove()) != MOVE_NONE){
 
 		//if (sd.excludedMove && newMove.score >= SORT_HASH) continue;
 
@@ -456,8 +457,7 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 
 		legalMoves++;
 		newDepth = depth - 1;
-		history.cutoffs[color][newMove.from][newMove.to] -= 1;
-		captureOrPromotion = (newMove.captured || newMove.flag == 'Q');
+		captureOrPromotion = (st.capturedPiece || move_type(newMove) != PROMOTION);
 		givesCheck = board.isSquareAttacked(board.king_square(!color), !color);
 
 		/* //ELO loss with singular extensions so far
@@ -525,7 +525,7 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 			continue;
 		}
 		//*/
-
+/*
 		//late move reductions, reduce the depth of the search in non dangerous situations. 
 		if (newDepth > 3
 			&& legalMoves > 3
@@ -567,10 +567,10 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 				ss->reduction = 0;
 			}
 		}
-
+*/
 		newDepth -= ss->reduction;
 
-		ss->currentMove = newMove;
+		//ss->currentMove = newMove; //////////////////////////////////////////////////////////////////////////////////////////////////REENABLE ONCE EVERYTHING IS WOKRING
 
 		//jump back here if our LMR raises Alpha ~~ NOT IN USE
 	//re_search:
@@ -600,12 +600,14 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 
 			goto re_search;
 		}
-		*/
+		
 		//store queit moves so we can decrease their value later, find a more effecient way or storing than a huge move array?, possibly 2D array by ply?
 		if (!captureOrPromotion && quietsC < 64) {
 			queits[quietsC] = newMove;
-			quietsC++;
+			quietsC++;                                     //////////////////////////////////////////////////////////////////////////////////////////////////REENABLE ONCE EVERYTHING IS WOKRING
 		}
+		*/
+
 
 		//undo move on BB's
 		board.unmakeMove(newMove, color);
@@ -616,10 +618,8 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 			bestScore = score;
 
 			if (score > alpha) {
-				history.cutoffs[color][newMove.from][newMove.to] += 6;
 				//store the principal variation
 				sd.PV[ss->ply] = newMove; //NEED TO DELETE AFTER A SEARCH!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-				hashMove = newMove;
 
 				//if move causes a beta cutoff stop searching current branch
 				if (score >= beta) {
@@ -645,10 +645,11 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 		else alpha = contempt(board, color);
 
 	}
-	else if (alpha >= beta && !FlagInCheck && hashMove.captured == PIECE_EMPTY && hashMove.flag != 'Q') {
+	/*
+	else if (alpha >= beta && !FlagInCheck && hashMove.captured == PIECE_EMPTY && hashMove.flag != 'Q') {  //////////////////////////////////////////////////////////////////////////////////////////////////REENABLE ONCE EVERYTHING IS WOKRING
 		updateStats(hashMove, ss, depth, queits, quietsC, color);
 	}
-
+	*/
 
 	if (futileMoves && !raisedAlpha && hashFlag != TT_BETA) {
 
@@ -656,10 +657,12 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 		hashFlag = TT_EXACT; //NEED TO TEST
 	}
 
-	if (!ss->excludedMove.tried) { //only write to TTable if we're not in partial search
+	/*
+	if (!ss->excludedMove.tried) { //only write to TTable if we're not in partial search  //////////////////////////////////////////////////////////////////////////////////////////////////REENABLE ONCE EVERYTHING IS WOKRING
 		//save info + move to transposition table 
 		TT.save(hashMove, board.TTKey(), depth, valueToTT(alpha, ss->ply), hashFlag);
 	}
+	*/
 
 
 	return alpha;
@@ -708,10 +711,6 @@ int Ai_Logic::quiescent(BitBoards& board, int alpha, int beta, searchStack *ss, 
 		alpha = standingPat;
 	}
 
-
-	Move hashMove;
-
-
 	//generate only captures with true capture gen var
 	MoveGen gen_moves;
 
@@ -720,19 +719,20 @@ int Ai_Logic::quiescent(BitBoards& board, int alpha, int beta, searchStack *ss, 
 													 //set hash flag equal to alpha Flag
 	int hashFlag = TT_ALPHA, moveNum = gen_moves.moveCount;
 
-	while(mp.nextMove() != MOVE_NONE)
+	Moves newMove;
+	while((newMove = mp.nextMove()) != MOVE_NONE)
 	{
-		Move newMove = gen_moves.movegen_sort(ss->ply, gen_moves.moveAr);
-
+		/*
 		// If the move is gurenteed to be below alpha, don't search it
 		// unless we're in endgame, where that's not safe ~~ possibly use more advanced board.game_phase()?
 		if ((standingPat + SORT_VALUE[newMove.captured] + 200 < alpha)
-			&& (board.bInfo.sideMaterial[!color] - SORT_VALUE[newMove.captured] > END_GAME_MAT)
+			&& (board.bInfo.sideMaterial[!color] - SORT_VALUE[newMove.captured] > END_GAME_MAT)  //////////////////////////////////////////////////////////////////////////////////////////////////REENABLE ONCE EVERYTHING IS WOKRING
 			&& newMove.flag != 'Q') //continue;
 		
 
 		//Don't search losing capture moves if not in PV
 		if (!isPV && board.SEE(newMove, color, true) < 0) //continue;
+		*/
 
 		board.makeMove(newMove, st, color);
 
@@ -749,16 +749,13 @@ int Ai_Logic::quiescent(BitBoards& board, int alpha, int beta, searchStack *ss, 
 
 			if (score >= beta) {
 				hashFlag = TT_BETA;
-				hashMove = newMove;
 				alpha = beta;
 				//break;
 			}
 
 			hashFlag = TT_EXACT;
 			alpha = score;
-			hashMove = newMove;
 		}
-
 	}
 
 	//TT.save(hashMove, board.TTKey(), DEPTH_QS, valueToTT(alpha, ss->ply), hashFlag);
@@ -802,6 +799,7 @@ bool Ai_Logic::isRepetition(const BitBoards& board, const Move& m) //Ai_Logic::
 	return false;
 }
 
+/*
 void Ai_Logic::insert_pv(BitBoards & board)
 {
 	StateInfo state[MAX_PLY + 6], *st = state;
@@ -812,7 +810,7 @@ void Ai_Logic::insert_pv(BitBoards & board)
 		tte = TT.probe(board.TTKey());
 
 		if (!tte || tte->move != sd.PV[id])
-			TT.save(sd.PV[id], board.TTKey(), 0, 0, TT_ALPHA);
+			TT.save(sd.PV[id], board.TTKey(), 0, 0, TT_ALPHA); //////////////////////////////////////////////////////////////////////////////////////////////////REENABLE ONCE EVERYTHING IS WOKRING
 
 		board.makeMove(sd.PV[id++], *st++, board.stm());
 
@@ -826,6 +824,7 @@ void Ai_Logic::insert_pv(BitBoards & board)
 	}
 	board.drawBBA();
 }
+*/
 
 void Ai_Logic::updateStats(Move move, searchStack * ss, int depth, Move * quiets, int qCount, int color)
 {	
