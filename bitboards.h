@@ -9,7 +9,6 @@ typedef unsigned long long  U64; // supported by MSC 13.00+ and C99
 #include <algorithm>
 #include "move.h"
 #include "zobristh.h"
-#include "defines.h"
 
 class ZobristH;
 class Move;
@@ -22,7 +21,6 @@ struct BoardInfo { //possibly remove this and move this info to bitboards object
 	//keeps internal track of which side 
 	//is going to make the next move. Access through function
 	int sideToMove; 
-
 };
 
 struct CheckInfo{
@@ -44,6 +42,8 @@ struct StateInfo {
 	//int sideMaterial[COLOR]; // need to use these and delete struct above
 	//int nonPawnMaterial[COLOR];
 
+	//int capturedPiece; //add once we switch over to numerically represented moves
+
 	int epSquare;
 	int castlingRights;
 
@@ -64,13 +64,18 @@ public:
 	bool posOkay();
 
 	//holds zobrist key and arrays neccasary for modifying key
-	ZobristH zobrist;
+	ZobristH zobrist; //REMOVE THIS FROM THE OBJECT WHEN YOU CAN
 
     //builds boards through reading an array
     void constructBoards(const std::string* FEN);
 
 	//constructs boards from FEN string
 	void readFenString(const std::string& FEN);
+
+	bool isLegal(const Move & m, int color);
+
+	//helper function for isLegal + for finding if in check
+	bool isSquareAttacked(const int square, const int color) const;
 
 	//make the move
 	void makeMove(const Move& m, StateInfo& newSt, int color);
@@ -82,6 +87,16 @@ public:
 
 	//Holds board information, struct above
 	BoardInfo bInfo;
+
+	//static exhange eval
+	int SEE(const Move& m, int color, bool isCapture);
+	//finds the smallest attacker for side to move, out of the stm attackers board,
+	//removes the attacker from the attackers and occuied board, then finds any x-ray attackers behind that piece
+	//and returns the int representing the piece
+	template<int Pt>
+	int min_attacker(int color, int to, const U64 & stmAttackers, U64 & occupied, U64 & attackers);
+
+
 
 //bitboards
     U64 FullTiles;

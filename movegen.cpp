@@ -42,14 +42,6 @@ const U64 FILE_AB = FileABB + FileBBB;
 const U64 FILE_GH = FileGBB + FileHBB;
 
 
-
-/*************************************************
-* Values used for sorting captures are the same  *
-* as normal piece values, except for a king.     *
-*************************************************/
-const int SORT_VALUE[7] = { 0, 100, 325, 335, 500, 975, 0 };
-
-
 template<int genType>
 void MoveGen::generate(const BitBoards & board)
 {
@@ -328,7 +320,6 @@ void MoveGen::movegen_push(const BitBoards & board, int color, int piece, int ca
     moveAr[moveCount].captured = captured;
     moveAr[moveCount].flag = flag;
 
-
     //scoring capture moves
     if(captured){
 
@@ -372,113 +363,7 @@ bool MoveGen::blind(const BitBoards & board, int to, int color, int pieceVal, in
 
 	//return false; //currently in testing for ELO loss/gain
 	// if square is attacked return false
-	return !isSquareAttacked(board, to, color);
-}
-
-int MoveGen::SEE(const Move& m, const BitBoards& b, int color, bool isCapture)
-{
-	U64 attackers, occupied, stmAttackers;
-	int swapList[32], index = 1; 
-
-	//early return, SEE can't be a losing capture
-	//is capture flag is used for when we're checking to see if the move is escaping capture
-	//we don't want an early return if that's the case
-	if (SORT_VALUE[m.piece] <= SORT_VALUE[m.captured] && isCapture) return INF;
-
-	// return in case of a castling move
-	if (m.flag == 'C') return 0;
-
-	swapList[0] = SORT_VALUE[m.captured];
-
-	occupied = b.FullTiles ^ b.square_bb(m.from); //remove capturing piece from occupied bb 
-
-	//remove captured pawn
-	if (m.flag == 'E') {
-		occupied ^= b.square_bb(m.to - pawn_push(!color));
-	}
-
-	//finds all attackers to the square
-	attackers = b.attackers_to(m.to, occupied) & occupied;
-
-	//if there are no attacking pieces, return
-	if(!(attackers & b.allPiecesColorBB[color])) return swapList[0];
-
-
-	//switch sides
-	color = !color;
-	stmAttackers = attackers & b.allPiecesColorBB[color];
-
-
-	if (!stmAttackers) return swapList[0];
-	
-	int captured = m.piece; //if there are attackers, our piece being moved will be captured
-
-	//loop through and add pieces that can capture on the square to swapList
-	do {
-		if (index > 31) break;
-
-		//add entry to swap list
-		swapList[index] = -swapList[index - 1] + SORT_VALUE[captured];
-
-	
-		captured = min_attacker<PAWN>(b, color, m.to, stmAttackers, occupied, attackers);
-
-		if (captured == KING) {
-			if (stmAttackers == attackers) {
-				index++;
-			}
-			break;
-		}
-
-		color = !color;
-		stmAttackers = attackers & b.allPiecesColorBB[color];
-
-		index++;
-	} while (stmAttackers);
-	
-	//negamax through swap list finding best possible outcome for starting side to move
-	while (--index) {
-		swapList[index - 1] = std::min(-swapList[index], swapList[index - 1]);
-	}
-
-	return swapList[0];
-}
-
-// Find the smallest attacker to a square
-template<int Pt> FORCE_INLINE
-int MoveGen::min_attacker(const BitBoards & b, int color, const int & to, const U64 & stmAttackers, U64 & occupied, U64 & attackers) {
-
-	// is there a piece of this Pt that we've previously found
-	// attacking the square?
-	U64 bb = stmAttackers & b.pieces(color, Pt);
-
-	// if not, increment piece type and re-search
-	if (!bb)
-		return min_attacker<Pt + 1>(b, color, to, stmAttackers, occupied, attackers);
-
-	// We've found a attackerr!
-	// remove piece from occupied board
-	occupied ^= bb & ~(bb - 1);
-
-	//find xray attackers behind piece once it's been removed and add to attackers
-	if (Pt == PAWN || Pt == BISHOP || Pt == QUEEN) {                       
-		attackers |= slider_attacks.BishopAttacks(occupied, to) & (b.pieces(color, BISHOP, QUEEN));
-	}
-
-	if (Pt == ROOK || Pt == QUEEN) {
-		attackers |= slider_attacks.RookAttacks(occupied, to) & (b.pieces(color, ROOK, QUEEN));
-	}
-
-	//add new attackers to board
-	attackers &= occupied;
-
-	//return attacker
-	return Pt;
-}
-
-template<> FORCE_INLINE // If we've checked all the pieces, return KING and stop SEE search
-int MoveGen::min_attacker<KING>(const BitBoards & b, int color, const int & to, const U64 & stmAttackers, U64 & occupied, U64 & attackers) {
-	return KING;
+	return !board.isSquareAttacked(to, color);
 }
 
 void MoveGen::reorderMoves(searchStack *ss, const HashEntry *entry)
@@ -503,43 +388,4 @@ void MoveGen::reorderMoves(searchStack *ss, const HashEntry *entry)
 
 }
 
-// Just test to see if our king is attacked by any enemy pieces
-// castling moves are checked for legality durning move gen, aside from
-// this king in check test. En passants are done the same way
-bool MoveGen::isLegal(const BitBoards & b, const Move & m, int color) 
-{
-	// There's a better way of doing this than checking
-	// all moves to see if our king is attacked.
-	// Right now though, this function is at 1~2%
-	// if search is speed up than this should be revisited!
 
-	return !isSquareAttacked(b, b.king_square(color), color);
-}
-
-// Checks if square input is attacked by color opposite of input color
-bool MoveGen::isSquareAttacked(const BitBoards & b, const int square, const int color) {
-
-	const int them = !color;
-
-	U64 attacks = b.psuedoAttacks(PAWN, color, square); //reverse color pawn attacks so we can find enemy pawns
-
-	if (attacks & b.pieces(them, PAWN)) return true;
-
-	attacks = b.psuedoAttacks(KNIGHT, them, square);
-
-	if (attacks & b.pieces(them, KNIGHT)) return true;
-
-	attacks = slider_attacks.BishopAttacks(b.FullTiles, square);
-
-	if (attacks & b.pieces(them, BISHOP, QUEEN)) return true;
-
-	attacks = slider_attacks.RookAttacks(b.FullTiles, square);
-
-	if (attacks & b.pieces(them, ROOK, QUEEN)) return true;
-
-	attacks = b.psuedoAttacks(KING, them, square);
-
-	if (attacks & b.pieces(them, KING)) return true;
-
-	return false;
-}

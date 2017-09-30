@@ -55,9 +55,15 @@ void prefetch(char* addr) {
 // 1-6 from square
 // 6-12 desitination square
 // 13-14 move flag, 1 Castle, 2 EP, 3 Promotion
-// 15-16 prormotion type
+// 15-16 promotion piece type
 enum Moves { //later change to move once entire move class has been removed.
 	MOVE_NONE
+};
+
+// Struct that holds moves and their scores
+struct SMoves {
+	Moves move;
+	int score;
 };
 
 enum MoveType {
@@ -66,6 +72,8 @@ enum MoveType {
 	ENPASSANT = 2 << 12,
 	PROMOTION = 3 << 12
 };
+
+
 
 inline Moves create_move(int from, int to) {
 	return Moves(from | (to << 6));
@@ -125,7 +133,7 @@ inline Scores operator+(Scores s1, const Scores s2) {
 	return s1;
 };
 
-inline Scores operator+(Scores s1, const int s2) {
+inline Scores operator+(Scores s1, int s2) {
 	s1.mg += s2;
 	s1.eg += s2;
 	return s1;
@@ -142,7 +150,7 @@ inline Scores operator*(Scores s1, const Scores s2) {
 	return s1;
 }
 
-inline Scores operator*(Scores s1, const int s2) {
+inline Scores operator*(Scores s1, int s2) {
 	s1.mg *= s2;
 	s1.eg *= s2;
 	return s1;
@@ -173,8 +181,8 @@ inline void operator/=(Scores& s1, const Scores s2) {
 
 //squares from whites POV
 enum esqare {
-	A8 = 0, B8, C8, D8, E8, F8, G8, H8,
-	A7 = 8, B7, C7, D7, E7, F7, G7, H7,
+	A8 = 0,  B8, C8, D8, E8, F8, G8, H8,
+	A7 = 8,  B7, C7, D7, E7, F7, G7, H7,
 	A6 = 16, B6, C6, D6, E6, F6, G6, H6,
 	A5 = 24, B5, C5, D5, E5, F5, G5, H5,
 	A4 = 32, B4, C4, D4, E4, F4, G4, H4,
@@ -196,6 +204,12 @@ enum epiece {
     KING,
 	PIECES
 };
+
+/*************************************************
+* Values used for sorting captures are the same  *
+* as normal piece values, except for a king.     *
+*************************************************/
+const int SORT_VALUE[7] = { 0, 100, 325, 335, 500, 975, 0 };
 
 // Used to determine which type of 
 // move generation we want

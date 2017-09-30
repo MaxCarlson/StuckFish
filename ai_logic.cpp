@@ -180,7 +180,7 @@ int Ai_Logic::searchRoot(BitBoards& board, int depth, int alpha, int beta, searc
 	gen_moves.reorderMoves(ss, ttentry);
 
     // Are we in check?	
-	flagInCheck = gen_moves.isSquareAttacked(board, board.king_square(color), color);
+	flagInCheck = board.isSquareAttacked(board.king_square(color), color);
 
 	int moveNumber = gen_moves.moveCount;
     for(int i = 0; i < moveNumber; ++i){
@@ -193,7 +193,7 @@ int Ai_Logic::searchRoot(BitBoards& board, int depth, int alpha, int beta, searc
 			continue;
 		}											     
 
-		if (!gen_moves.isLegal(board, newMove, color)) {
+		if (!board.isLegal(newMove, color)) {
 			board.unmakeMove(newMove, color);
 			continue;
 		}
@@ -314,7 +314,7 @@ int Ai_Logic::alphaBeta(BitBoards& board, int depth, int alpha, int beta, search
 	MoveGen gen_moves;
 
 	//are we in check?
-	FlagInCheck = gen_moves.isSquareAttacked(board, board.king_square(color), color);
+	FlagInCheck = board.isSquareAttacked(board.king_square(color), color);
 
 	//if in check, or in reduced search extension: skip nulls, statics evals, razoring, etc to moves_loop:
 	if (FlagInCheck || (ss - 1)->excludedMove.tried || sd.skipEarlyPruning) goto moves_loop;
@@ -452,7 +452,7 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 		board.makeMove(newMove, st, color);
 
 		//is move legal? if not skip it
-		if (!gen_moves.isLegal(board, newMove, color)) {
+		if (!board.isLegal(newMove, color)) {
 			board.unmakeMove(newMove, color);
 			continue;
 		}
@@ -461,7 +461,7 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 		newDepth = depth - 1;
 		history.cutoffs[color][newMove.from][newMove.to] -= 1;
 		captureOrPromotion = (newMove.captured || newMove.flag == 'Q');
-		givesCheck = gen_moves.isSquareAttacked(board, board.king_square(!color), !color);
+		givesCheck = board.isSquareAttacked(board.king_square(!color), !color);
 
 		/* //ELO loss with singular extensions so far
 		if (singularExtension && newMove.score >= SORT_HASH) {
@@ -549,7 +549,7 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 				board.unmakeMove(newMove, color);
 				Move n; n.from = newMove.to; n.to = newMove.from; n.piece = newMove.piece;
 
-				if (gen_moves.SEE(n, board, color, false) < 0) {
+				if (board.SEE(n, color, false) < 0) {
 					ss->reduction = std::max(1, ss->reduction - 2); //play with reduction value
 				}
 				board.makeMove(newMove, st, color);
@@ -735,11 +735,11 @@ int Ai_Logic::quiescent(BitBoards& board, int alpha, int beta, searchStack *ss, 
 		
 
 		//Don't search losing capture moves if not in PV
-		if (!isPV && gen_moves.SEE(newMove, board, color, true) < 0) continue;
+		if (!isPV && board.SEE(newMove, color, true) < 0) continue;
 
 		board.makeMove(newMove, st, color);
 
-		if (!gen_moves.isLegal(board, newMove, color)) {
+		if (!board.isLegal(newMove, color)) {
 			board.unmakeMove(newMove, color);
 			continue;
 		}

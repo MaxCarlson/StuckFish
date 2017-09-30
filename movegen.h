@@ -23,21 +23,14 @@ public:
 
 	//array of move objects 
 	Move moveAr[256];
-	
+
+	SMoves mList[256];
 
 	//number of moves generated this node
     int moveCount;
 
 	template<int genType>
 	void generate(const BitBoards& board);
-
-	bool isLegal(const BitBoards & b, const Move & m, int color);
-
-	//helper function for isLegal + for finding if in check
-	bool isSquareAttacked(const BitBoards & b, const int square, const int color);
-	
-	//static exhange eval
-	int SEE(const Move& m, const BitBoards& b, int color, bool isCapture);
 
 	//grab the best scoring move and return it
 	Move movegen_sort(int ply, Move * moveAr) const;
@@ -48,14 +41,8 @@ private:
 
     //assigns a score to moves and adds them to the move array
     void movegen_push(const BitBoards & board, int color, int piece, int captured, char flag, int from, int to);
+
     bool blind(const BitBoards & board, int to, int color, int pieceVal, int captureVal);
-
-	//finds the smallest attacker for side to move, out of the stm attackers board,
-	//removes the attacker from the attackers and occuied board, then finds any x-ray attackers behind that piece
-	//and returns the int representing the piece
-
-	template<int Pt> 
-	int min_attacker(const BitBoards & b, int color, const int & to, const U64 & stmAttackers, U64 & occupied, U64 & attackers);
 
 	template<int color, int Pt> 
 	void generateMoves(const BitBoards& board, const U64 &target);

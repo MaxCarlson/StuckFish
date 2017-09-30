@@ -30,8 +30,8 @@ FORCE_INLINE bool operator ==(const Move& m, const Move& m1) {
 FORCE_INLINE bool operator !=(const Move& m, const Move& m1) {
 	//if all the conditions are equal, return false (or they are equal),
 	//else return true they are not equal.
-	return ((m.from == m1.from) && (m.to == m1.to)
-		&& (m.piece == m1.piece) && (m.flag == m1.flag)) ? false : true;
+	return !((m.from == m1.from) && (m.to == m1.to)
+		&& (m.piece == m1.piece) && (m.flag == m1.flag));
 }
 
 #endif // MOVE_H

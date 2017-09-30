@@ -353,6 +353,20 @@ void BitBoards::readFenString(const std::string& FEN)
 
 }
 
+
+// Just test to see if our king is attacked by any enemy pieces
+// castling moves are checked for legality durning move gen, aside from
+// this king in check test. En passants are done the same way
+bool BitBoards::isLegal(const Move & m, int color)
+{
+	// There's a better way of doing this than checking
+	// all moves to see if our king is attacked.
+	// Right now though, this function is at 1~2%
+	// if search is speed up than this should be revisited!
+
+	return !isSquareAttacked(king_square(color), color);
+}
+
 bool BitBoards::gives_check(const Move & m, const CheckInfo & ci)
 {
 
@@ -731,6 +745,139 @@ void BitBoards::undoNullMove()
 	bInfo.sideToMove = !bInfo.sideToMove;
 }
 
+int BitBoards::SEE(const Move& m, int color, bool isCapture)
+{
+	U64 attackers, occupied, stmAttackers;
+	int swapList[32], index = 1;
+
+	//early return, SEE can't be a losing capture
+	//is capture flag is used for when we're checking to see if the move is escaping capture
+	//we don't want an early return if that's the case
+	if (SORT_VALUE[m.piece] <= SORT_VALUE[m.captured] && isCapture) return INF;
+
+	// return in case of a castling move
+	if (m.flag == 'C') return 0;
+
+	swapList[0] = SORT_VALUE[m.captured];
+
+	occupied = FullTiles ^ square_bb(m.from); //remove capturing piece from occupied bb 
+
+												  //remove captured pawn
+	if (m.flag == 'E') {
+		occupied ^= square_bb(m.to - pawn_push(!color));
+	}
+
+	//finds all attackers to the square
+	attackers = attackers_to(m.to, occupied) & occupied;
+
+	//if there are no attacking pieces, return
+	if (!(attackers & allPiecesColorBB[color])) return swapList[0];
+
+
+	//switch sides
+	color = !color;
+	stmAttackers = attackers & allPiecesColorBB[color];
+
+
+	if (!stmAttackers) return swapList[0];
+
+	int captured = m.piece; //if there are attackers, our piece being moved will be captured
+
+							//loop through and add pieces that can capture on the square to swapList
+	do {
+		if (index > 31) break;
+
+		//add entry to swap list
+		swapList[index] = -swapList[index - 1] + SORT_VALUE[captured];
+
+
+		captured = min_attacker<PAWN>(color, m.to, stmAttackers, occupied, attackers);
+
+		if (captured == KING) {
+			if (stmAttackers == attackers) {
+				index++;
+			}
+			break;
+		}
+
+		color = !color;
+		stmAttackers = attackers & allPiecesColorBB[color];
+
+		index++;
+	} while (stmAttackers);
+
+	//negamax through swap list finding best possible outcome for starting side to move
+	while (--index) {
+		swapList[index - 1] = std::min(-swapList[index], swapList[index - 1]);
+	}
+
+	return swapList[0];
+}
+
+// Find the smallest attacker to a square
+template<int Pt> FORCE_INLINE
+int BitBoards::min_attacker(int color, int to, const U64 & stmAttackers, U64 & occupied, U64 & attackers) {
+
+	// is there a piece of this Pt that we've previously found
+	// attacking the square?
+	U64 bb = stmAttackers & pieces(color, Pt);
+
+	// if not, increment piece type and re-search
+	if (!bb)
+		return min_attacker<Pt + 1>(color, to, stmAttackers, occupied, attackers);
+
+	// We've found a attackerr!
+	// remove piece from occupied board
+	occupied ^= bb & ~(bb - 1);
+
+	//find xray attackers behind piece once it's been removed and add to attackers
+	if (Pt == PAWN || Pt == BISHOP || Pt == QUEEN) {
+		attackers |= slider_attacks.BishopAttacks(occupied, to) & (pieces(color, BISHOP, QUEEN));
+	}
+
+	if (Pt == ROOK || Pt == QUEEN) {
+		attackers |= slider_attacks.RookAttacks(occupied, to) & (pieces(color, ROOK, QUEEN));
+	}
+
+	//add new attackers to board
+	attackers &= occupied;
+
+	//return attacker
+	return Pt;
+}
+
+template<> FORCE_INLINE // If we've checked all the pieces, return KING and stop SEE search
+int BitBoards::min_attacker<KING>(int color, int to, const U64 & stmAttackers, U64 & occupied, U64 & attackers) {
+	return KING;
+}
+
+// Checks if square input is attacked by color opposite of input color
+bool BitBoards::isSquareAttacked(const int square, const int color) const {
+
+	const int them = !color;
+
+	U64 attacks = psuedoAttacks(PAWN, color, square); //reverse color pawn attacks so we can find enemy pawns
+
+	if (attacks & pieces(them, PAWN)) return true;
+
+	attacks = psuedoAttacks(KNIGHT, them, square);
+
+	if (attacks & pieces(them, KNIGHT)) return true;
+
+	attacks = slider_attacks.BishopAttacks(FullTiles, square);
+
+	if (attacks & pieces(them, BISHOP, QUEEN)) return true;
+
+	attacks = slider_attacks.RookAttacks(FullTiles, square);
+
+	if (attacks & pieces(them, ROOK, QUEEN)) return true;
+
+	attacks = psuedoAttacks(KING, them, square);
+
+	if (attacks & pieces(them, KING)) return true;
+
+	return false;
+}
 // Finds all attackers to a square
 U64 BitBoards::attackers_to(int square, U64 occupied) const 
 {

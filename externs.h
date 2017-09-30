@@ -37,6 +37,10 @@ inline U64 attacks_bb(int Pt, int sq, U64 occ)
 
 	case QUEEN:
 		return slider_attacks.QueenAttacks( occ, sq);
+
+	default:
+		std::cout << "attacks_bb invalid Input" << std::endl;
+		return 0;
 	}
 }
 
