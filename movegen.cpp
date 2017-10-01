@@ -105,7 +105,7 @@ SMove* pawnMoves(const BitBoards& boards, SMove *mlist, U64 target) {
 
 		(mlist++)->move = create_move(index - Left, index);
 	}
-	/*
+	
 	// en passant
 	if (boards.can_enpassant()) {
 
@@ -115,10 +115,11 @@ SMove* pawnMoves(const BitBoards& boards, SMove *mlist, U64 target) {
 
 		while (epPawns) {
 			// ePawns is our pawn locations in this case
-			(mlist++)->move = create_special<ENPASSANT, PIECE_EMPTY>(pop_lsb(&epPawns), epSq);
+			int from = pop_lsb(&epPawns);
+			(mlist++)->move = create_special<ENPASSANT, PIECE_EMPTY>(from, epSq);
 		}
 	}
-	*/
+	
 
 	// Pawn promotions, if we have pawns on the 7th..
 	// generate promotions

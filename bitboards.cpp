@@ -672,8 +672,7 @@ void BitBoards::unmakeMove(const Move & m, int color)
 
 	assert(posOkay());
 
-
-	if (type == NORMAL) {
+	if (type != PROMOTION) {
 
 		// move piece
 		movePiece(piece, color, to, from);

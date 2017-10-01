@@ -109,7 +109,7 @@ inline int promotion_type(Move m) {
 // where it designates piece type move is promoting to. 
 template<MoveType T, int Pt>
 inline Move create_special(int from, int to) {
-	return Move((from | (to << 6) | T | (Pt - KNIGHT << 15)));
+	return Move((from | (to << 6) | T | (Pt ? (Pt - KNIGHT) << 15 : 0LL)));
 }
 
 

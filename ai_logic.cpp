@@ -219,8 +219,11 @@ int Ai_Logic::searchRoot(BitBoards& board, int depth, int alpha, int beta, searc
         //undo move on BB's
         board.unmakeMove(newMove, color);
 
-		if (board.pieceOnSq(to_sq(newMove)) == PIECE_EMPTY && move_type(newMove) != PROMOTION && quietsCount < 64) {
-			//quiets[quietsCount] = newMove;          ////////////////////////////////////////////////////////////////////////////////////////////////////////////REENABLE ONCE EVERYTHING IS WORKING AND CONVERT TO NEW MOVE STANDARD
+		if (board.pieceOnSq(to_sq(newMove)) == PIECE_EMPTY 
+			&& move_type(newMove) != PROMOTION 
+			&& quietsCount < 64) {
+
+			quiets[quietsCount] = newMove;         
 			quietsCount++;
 		}
 
@@ -247,12 +250,11 @@ int Ai_Logic::searchRoot(BitBoards& board, int depth, int alpha, int beta, searc
 	//save info and move to TT
 	//TT.save(sd.PV[ss->ply], board.TTKey(), depth, valueToTT(alpha, ss->ply), hashFlag);
 
-	/*
-	if (alpha >= beta && !flagInCheck && sd.PV[1].captured == PIECE_EMPTY && sd.PV[1].flag != 'Q') {
+	
+	if (alpha >= beta && !flagInCheck && !board.capture_or_promotion(sd.PV[1])) {
 		updateStats(sd.PV[1], ss, depth, quiets, quietsCount, color);
 	}
-	*/
-	
+		
     return alpha;
 }
 
@@ -347,7 +349,7 @@ int Ai_Logic::alphaBeta(BitBoards& board, int depth, int alpha, int beta, search
 	}
 
 	//Null move heuristics, disabled if in PV, check, or depth is too low //RE ENABLE ONCE DONE EP TESTING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-/*
+///*
 	if (allowNull && !isPV && depth > R) {
 		if (depth > 6) R = 3;
 
@@ -436,9 +438,10 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 	
 	int hashFlag = TT_ALPHA, legalMoves = 0, bestScore = -INF;
 
+	CheckInfo ci(board);
 
 	Move newMove;
-	MovePicker mp(board, MOVE_NONE, depth, history, ss); //CHANGE MOVE NONE TO TTMOVE ONCE IMPLEMENTED
+	MovePicker mp(board, MOVE_NONE, depth, history, ss); //CHANGE MOVE NONE TO TTMOVE ONCE IMPLEMENTED!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 	while((newMove = mp.nextMove()) != MOVE_NONE){
 
@@ -455,8 +458,8 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 
 		legalMoves++;
 		newDepth = depth - 1;
-		captureOrPromotion = (st.capturedPiece || move_type(newMove) != PROMOTION);
-		givesCheck = board.isSquareAttacked(board.king_square(!color), !color);
+		captureOrPromotion = board.capture_or_promotion(newMove);
+		givesCheck = st.checkers;
 
 		/* //ELO loss with singular extensions so far
 		if (singularExtension && newMove.score >= SORT_HASH) {
@@ -523,31 +526,27 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 			continue;
 		}
 		//*/
-/*
+///*
 		//late move reductions, reduce the depth of the search in non dangerous situations. 
 		if (newDepth > 3
 			&& legalMoves > 3
 			&& !FlagInCheck
 			&& !captureOrPromotion
-			&& !givesCheck		           
+			&& !givesCheck	
+			&& newMove != ttMove
 			&& newMove != ss->killers[0]
-			&& newMove != ss->killers[1]
-			&& newMove.score < SORT_HASH) { //comment out? should already be tested by having on move already
+			&& newMove != ss->killers[1]) {
 
-			history.cutoffs[color][newMove.from][newMove.to] = 50; //NEED to test, makes it about 50% faster from start node with it commented out
 
-			ss->reduction = reductions[isPV][improving][depth][legalMoves]; //TRY CHANGING I TO LEGAL MOVES , SEE IF ELO GAINS
+			ss->reduction = reductions[isPV][improving][depth][legalMoves];
 
 			//reduce reductions for moves that escape capture
-			if (ss->reduction) {
-				//reverse move and pass SEE a reversed move to and from
-				board.unmakeMove(newMove, color);
-				Move n; n.from = newMove.to; n.to = newMove.from; n.piece = newMove.piece;
+			if (ss->reduction
+				&& move_type(newMove) == NORMAL
+				&& board.pieceOnSq(to_sq(newMove)) != PAWN
+				&& board.SEE(create_move(to_sq(newMove), from_sq(newMove)), color, false) < 0){ //////////////////////////////////////////////////////////////////////////TEST THIS TO TRY AND MAKE SURE SEE IS WORKING CORRECTLY HERE!!!!
 
-				if (board.SEE(n, color, false) < 0) {
 					ss->reduction = std::max(1, ss->reduction - 2); //play with reduction value
-				}
-				board.makeMove(newMove, st, color);
 			}
 
 			int d1 =  std::max(newDepth - ss->reduction, 1);
@@ -565,20 +564,17 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 				ss->reduction = 0;
 			}
 		}
-*/
+//*/
 		newDepth -= ss->reduction;
 
-		//ss->currentMove = newMove; //////////////////////////////////////////////////////////////////////////////////////////////////REENABLE ONCE EVERYTHING IS WOKRING
+		ss->currentMove = newMove; 
 
 		//jump back here if our LMR raises Alpha ~~ NOT IN USE
 	//re_search:
 		if (!raisedAlpha) {
-			//we're in princiapl variation search or full window search
-			
-			
-			score = -alphaBeta(board, newDepth, -beta, -alpha, ss + 1, DO_NULL, isPV);
+			//we're in principal variation search or full window search
 
-			
+			score = -alphaBeta(board, newDepth, -beta, -alpha, ss + 1, DO_NULL, isPV);
 		}
 		else {
 			//zero window search
@@ -598,14 +594,13 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 
 			goto re_search;
 		}
-		
+		*/
 		//store queit moves so we can decrease their value later, find a more effecient way or storing than a huge move array?, possibly 2D array by ply?
 		if (!captureOrPromotion && quietsC < 64) {
 			queits[quietsC] = newMove;
 			quietsC++;                                     //////////////////////////////////////////////////////////////////////////////////////////////////REENABLE ONCE EVERYTHING IS WOKRING
 		}
-		*/
-
+		
 
 		//undo move on BB's
 		board.unmakeMove(newMove, color);
@@ -643,11 +638,11 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 		else alpha = contempt(board, color);
 
 	}
-	/*
-	else if (alpha >= beta && !FlagInCheck && hashMove.captured == PIECE_EMPTY && hashMove.flag != 'Q') {  //////////////////////////////////////////////////////////////////////////////////////////////////REENABLE ONCE EVERYTHING IS WOKRING
-		updateStats(hashMove, ss, depth, queits, quietsC, color);
+	
+	else if (alpha >= beta && !FlagInCheck && !board.capture_or_promotion(sd.PV[ss->ply])) {  //////////////////////////////////////////////////////////////////////////////////////////////////REENABLE ONCE EVERYTHING IS WOKRING
+		updateStats(sd.PV[ss->ply], ss, depth, queits, quietsC, color);
 	}
-	*/
+	
 
 	if (futileMoves && !raisedAlpha && hashFlag != TT_BETA) {
 
@@ -661,7 +656,6 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 		TT.save(hashMove, board.TTKey(), depth, valueToTT(alpha, ss->ply), hashFlag);
 	}
 	*/
-
 
 	return alpha;
 }
