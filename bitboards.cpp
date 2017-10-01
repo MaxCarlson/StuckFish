@@ -369,8 +369,8 @@ bool BitBoards::isLegal(const Move & m, U64 pinned) const
 	//return !isSquareAttacked(king_square(color), color);
 
 
-	int color = stm();
-	int from = from_sq(m);
+	int color =      stm();
+	int from  = from_sq(m);
 
 	
 	// Move our pawn on occupied board,
@@ -378,10 +378,11 @@ bool BitBoards::isLegal(const Move & m, U64 pinned) const
 	// Test if our king is attacked.
 	if (move_type(m) == ENPASSANT) {
 
-		int ksq = king_square(color);
-		int to = to_sq(m);
-		int capsq = to - pawn_push(color);
-		U64 occ = (FullTiles ^ squareBB[from] ^ squareBB[capsq]) | to;
+		int to    =  to_sq(m);
+		int ksq   =  king_square(color);
+		int capsq =  to - pawn_push(color);
+
+		U64 occ = (FullTiles ^ squareBB[from] ^ squareBB[capsq]) | squareBB[to];
 
 		return !(attacks_from<ROOK  >(ksq, occ) & pieces(!color, QUEEN,   ROOK))
 			&& !(attacks_from<BISHOP>(ksq, occ) & pieces(!color, QUEEN, BISHOP));
@@ -391,18 +392,20 @@ bool BitBoards::isLegal(const Move & m, U64 pinned) const
 	// in move generation, otherwise
 	// figure out if our king is attacked
 	if (pieceOnSq(from) == KING)
-		return move_type(m) == CASTLING || !isSquareAttacked(to_sq(m), color) & ~pieces(color); // DO we test total legality in move gen? will need to test
+		return move_type(m) == CASTLING || !attackers_to(to_sq(m), FullTiles) & ~pieces(color); // DO we test total legality in move gen? will need to test
 
 	// If the move isn't a king move it's legal
 	// if it's not pinned, or it's moving along the pinning ray
-	return !pinned || !(pinned & squareBB[from]) || aligned(from, to_sq(m), king_square(color));
+	return !pinned 
+		|| !(pinned & squareBB[from]) 
+		|| aligned(from, to_sq(m), king_square(color));
 }
 
 bool BitBoards::pseudoLegal(Move m) const
 {
 	int color =           stm();
-	int from  =      from_sq(m);
 	int to    =        to_sq(m);
+	int from  =      from_sq(m);
 	int piece = pieceOnSq(from);
 
 
