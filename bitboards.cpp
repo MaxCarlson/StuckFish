@@ -368,6 +368,35 @@ bool BitBoards::isLegal(const Move & m, int color)
 	return !isSquareAttacked(king_square(color), color);
 }
 
+bool BitBoards::pseudoLegal(Move m) const
+{
+	int color =           stm();
+	int from  =      from_sq(m);
+	int to    =        to_sq(m);
+	int piece = pieceOnSq(from);
+
+	if (to == from)
+		return false;
+
+	// If there's no piece of or the piece is 
+	// not of our color it can't be pslegal
+	if (color_of_pc(from) != color)
+		return false;
+
+	// Landing on own color piece
+	if (square_bb(to) & pieces(color))
+		return false;
+
+
+
+	if (move_type(m) == NORMAL) {
+
+		
+	}
+
+	return true;
+}
+
 bool BitBoards::gives_check(Move m, int from, int to, const CheckInfo & ci)
 {
 	int piece = pieceOnSq(from);
@@ -498,22 +527,6 @@ void BitBoards::makeMove(const Move& m, StateInfo& newSt, int color)
 	bool checking = gives_check(m, from, to, ci);
 
 	assert(posOkay());
-
-	/*
-	if (pieceOnSq(C6) == KNIGHT && pieceOnSq(E6) == PAWN) {
-		drawBBA();
-	}
-
-
-	if (pieceOnSq(C6) == KNIGHT && pieceOnSq(E3) == PAWN) {
-		drawBBA();
-	}
-
-
-	if (pieceOnSq(C6) == KNIGHT && pieceOnSq(E6) == PAWN && pieceOnSq(E6) == PAWN && pieceOnSq(H5) == PAWN) {
-		drawBBA();
-	}
-	*/
 
 	//copy current board state to board state stored on ply
 	std::memcpy(&newSt, st, sizeof(StateInfo));
@@ -770,7 +783,7 @@ void BitBoards::undoNullMove()
 	bInfo.sideToMove = !bInfo.sideToMove;
 }
 
-int BitBoards::SEE(const Move& m, int color, bool isCapture) const
+int BitBoards::SEE(const Move& m, int color, bool isCapture) const ///////////////////////////////////////////////////////////////////////////////////////////NOTE we might need to make stm here equal to the color of piece on from sq for reduction SEE to work
 {
 	U64 attackers, occupied, stmAttackers;
 	int swapList[32], index = 1;

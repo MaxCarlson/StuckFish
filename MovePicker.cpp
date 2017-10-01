@@ -103,11 +103,11 @@ void MovePicker::generateNextStage()
 		return;
 
 	case KILLERS_M:
-		//current = killers;
-		//end = current + 2;
+		current = killers;
+		end = current + 2;
 
-		//killers[0] = s->killers[0];
-		//killers[1] = s->killers[1]; //NEED TO CHANGE searchStack TO HOLD NEW MOVE TYPE
+		killers[0].move = s->killers[0];
+		killers[1].move = s->killers[1]; //NEED TO CHANGE searchStack TO HOLD NEW MOVE TYPE
 		return;
 
 	case QUIETS_M:
@@ -164,6 +164,7 @@ Move MovePicker::nextMove()
 		
 		case CAPTURES_M:
 			m = pick(current++, end)->move;
+
 			if (m != ttMove) {
 				if (b.SEE(m, b.stm(), true) > 0) {
 					return m;
@@ -174,8 +175,10 @@ Move MovePicker::nextMove()
 
 		case KILLERS_M:
 			m = (current++)->move;
-			if (m != MOVE_NONE
-				&& m != ttMove) // && m is psuedoLegal && !a capture
+			if (   m != MOVE_NONE
+				&& m != ttMove
+				&&   !  b.capture(m) 
+				&& b.pseudoLegal(m))// && m is psuedoLegal 
 
 				return m;
 
@@ -184,7 +187,7 @@ Move MovePicker::nextMove()
 		case QUIETS_M: case QUIETS_M1:
 			m = (current++)->move;
 
-			if (m != ttMove
+			if (   m != ttMove
 				&& m != killers[0].move
 				&& m != killers[1].move)
 				return m;

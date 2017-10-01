@@ -51,7 +51,7 @@ const HashEntry * TranspositionT::probe(const U64 key) const
 	return NULL;
 }
 
-void TranspositionT::save(Move& m, const U64 zkey, U8 depth, S16 eval, U8 flag)
+void TranspositionT::save(Move m, const U64 zkey, U8 depth, S16 eval, U8 flag)
 {
 	HashEntry *tte, *replace;
 

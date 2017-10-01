@@ -71,6 +71,7 @@ public:
 	void readFenString(const std::string& FEN);
 
 	bool isLegal(const Move & m, int color);
+	bool pseudoLegal(Move m) const;
 
 	//helper function for isLegal + for finding if in check
 	bool isSquareAttacked(const int square, const int color) const;
@@ -123,6 +124,7 @@ public:
 	template<int pt> int count(int color) const;
 	bool empty(int sq) const;
 	int pieceOnSq(int sq) const;
+	int color_of_pc(int sq) const;
 
 	bool capture(Move m) const;
 	bool capture_or_promotion(Move m) const;
@@ -257,14 +259,20 @@ inline int BitBoards::pieceOnSq(int sq) const
 	return pieceOn[sq];
 }
 
+// Returns 3 if the square is empty
+inline int BitBoards::color_of_pc(int sq) const
+{
+	return empty(sq) ? 3 : !(squareBB[sq] & allPiecesColorBB[WHITE]);
+}
+
 inline bool BitBoards::capture(Move m) const
 {
-	return (!empty(to_sq(m)) && move_type(m) != ENPASSANT);
+	return (!empty(to_sq(m)) || move_type(m) == ENPASSANT);
 }
 
 inline bool BitBoards::capture_or_promotion(Move m) const
 {
-	return (move_type(m) != NORMAL ? move_type(m) != CASTLING : !empty(to_sq(m)));
+	return move_type(m) != NORMAL ? move_type(m) != CASTLING : !empty(to_sq(m));
 }
 
 inline int BitBoards::stm() const

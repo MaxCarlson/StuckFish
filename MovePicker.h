@@ -11,8 +11,8 @@ class searchStack;
 
 
 enum Stages {
-	MAIN_M, CAPTURES_M, KILLERS_M, QUIETS_M, QUIETS_M1, BAD_CAPTURES_M,
-	QSEARCH_, CAPTURES_Q, 
+	MAIN_M,    CAPTURES_M, KILLERS_M, QUIETS_M, QUIETS_M1, BAD_CAPTURES_M,
+	QSEARCH_,  CAPTURES_Q, 
 	EVASIONS_, EVASIONS_S1,
 	STOP
 };
@@ -50,7 +50,7 @@ private:
 // Main search initilization 
 MovePicker::MovePicker(const BitBoards & board, Move ttmove, int depth, const Historys & hist, searchStack * ss) : b(board), h(hist), s(ss), Depth(depth)
 {
-	current = end = mList;
+	current = end  = mList;
 	endBadCaptures = mList + 255;
 
 	if (b.checkers()) Stage = EVASIONS_;
@@ -67,9 +67,9 @@ MovePicker::MovePicker(const BitBoards & board, Move ttmove, int depth, const Hi
 // For Qsearch
 MovePicker::MovePicker(const BitBoards & board, Move ttmove, const Historys & hist, searchStack * ss) : b(board), h(hist), s(ss)
 {
-	Stage = QSEARCH_; //Modify this??
+	Stage = QSEARCH_; //Modify this?? // generate evasions if in check?>?
 
-					   //check for psuedo legality!!!
+	//check for psuedo legality!!!
 	ttMove = ttmove ? ttmove : MOVE_NONE;
 
 	end += (ttmove != MOVE_NONE);
