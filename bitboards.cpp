@@ -627,7 +627,7 @@ void BitBoards::makeMove(const Move& m, StateInfo& newSt, int color)
 			
 			//en passant
 			if (move_type(m) == ENPASSANT) {
-				//set capture square to correct pos and not ep square
+				//set capture square to correct pos and not ep square //////////////////////////////////////////////////////////////////////////////EP IS WHAT"S CAUSING PROBLEMS STILL
 				capSq += pawn_push(them);
 			}
 			//update the pawn hashkey on capture

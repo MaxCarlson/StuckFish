@@ -170,6 +170,7 @@ int Ai_Logic::searchRoot(BitBoards& board, int depth, int alpha, int beta, searc
 	(ss + 2)->killers[0] = (ss + 2)->killers[1] = MOVE_NONE;
 
 	const HashEntry* ttentry = TT.probe(board.TTKey());
+	Move ttMove = ttentry ? ttentry->move : MOVE_NONE;
 
 	sd.nodes++;
 	ss->ply = 1;
@@ -181,7 +182,7 @@ int Ai_Logic::searchRoot(BitBoards& board, int depth, int alpha, int beta, searc
 
 	CheckInfo ci(board);
 
-	MovePicker mp(board, MOVE_NONE, depth, history, ss); //CHANGE MOVE NONE TO TTMOVE ONCE IMPLEMENTED
+	MovePicker mp(board, ttMove, depth, history, ss); //CHANGE MOVE NONE TO TTMOVE ONCE IMPLEMENTED
 
 	Move newMove;
 
@@ -429,7 +430,7 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 	CheckInfo ci(board);
 
 	Move newMove, bestMove = MOVE_NONE;
-	MovePicker mp(board, MOVE_NONE, depth, history, ss); //CHANGE MOVE NONE TO TTMOVE ONCE IMPLEMENTED!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	MovePicker mp(board, ttMove, depth, history, ss); 
 
 	while((newMove = mp.nextMove()) != MOVE_NONE){
 
