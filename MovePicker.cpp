@@ -178,7 +178,7 @@ Move MovePicker::nextMove()
 			if (   m != MOVE_NONE
 				&& m != ttMove
 				&&   !  b.capture(m) 
-				&& b.pseudoLegal(m))// && m is psuedoLegal 
+				&& b.pseudoLegal(m))
 
 				return m;
 

@@ -179,27 +179,27 @@ int Ai_Logic::searchRoot(BitBoards& board, int depth, int alpha, int beta, searc
     // Are we in check?	
 	flagInCheck = board.checkers();
 
+	CheckInfo ci(board);
 
 	MovePicker mp(board, MOVE_NONE, depth, history, ss); //CHANGE MOVE NONE TO TTMOVE ONCE IMPLEMENTED
 
 	Move newMove;
 
     while((newMove = mp.nextMove()) != MOVE_NONE){
-        //find best move generated
+        
+		if (!board.isLegal(newMove, ci.pinned)) {
+			continue;
+		}
 
         board.makeMove(newMove, st, color);  
 
 		/*
 		if (isRepetition(board, newMove)) { //if position from root move is a two fold repetition, discard that move
-			board.unmakeMove(newMove, color);							 ////////////////////////////////////////////////////////////////////////////////////////////////////////////REENABLE ONCE EVERYTHING IS WORKING AND CONVERT TO NEW MOVE STANDARD
-			continue;
-		}	
+		board.unmakeMove(newMove, color);							 ////////////////////////////////////////////////////////////////////////////////////////////////////////////REENABLE ONCE EVERYTHING IS WORKING AND CONVERT TO NEW MOVE STANDARD
+		continue;
+		}
 		*/
 
-		if (!board.isLegal(newMove, color)) {
-			board.unmakeMove(newMove, color);
-			continue;
-		}
         legalMoves ++;
 
         //PV search at root
@@ -435,16 +435,16 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 
 		//if (sd.excludedMove && newMove.score >= SORT_HASH) continue;
 
+		//is move legal? if not skip it
+		if (!board.isLegal(newMove, ci.pinned)) {
+			continue;
+		}
+
 		captureOrPromotion = board.capture_or_promotion(newMove);
 
 		//make move on BB's store data to string so move can be undone
 		board.makeMove(newMove, st, color);
 
-		//is move legal? if not skip it
-		if (!board.isLegal(newMove, color)) {
-			board.unmakeMove(newMove, color);
-			continue;
-		}
 
 		legalMoves++;
 		newDepth   = depth - 1;
@@ -681,14 +681,20 @@ int Ai_Logic::quiescent(BitBoards& board, int alpha, int beta, searchStack *ss, 
 		alpha = standingPat;
 	}
 
-	MovePicker mp(board, ttMove, history, ss); //CHANGE MOVE NONE TO TTMOVE ONCE IMPLEMENTED
-
 	//set hash flag equal to alpha Flag
 	int hashFlag = TT_ALPHA;
+
+	CheckInfo ci(board);
+
+	MovePicker mp(board, ttMove, history, ss); //CHANGE MOVE NONE TO TTMOVE ONCE IMPLEMENTED
 
 	Move newMove, bestMove = MOVE_NONE;
 	while((newMove = mp.nextMove()) != MOVE_NONE)
 	{
+
+		if (!board.isLegal(newMove, ci.pinned)) {
+			continue;
+		}
 		
 		// If the move is gurenteed to be below alpha, don't search it
 		// unless we're in endgame, where that's not safe ~~ possibly use more advanced board.game_phase()?
@@ -702,11 +708,6 @@ int Ai_Logic::quiescent(BitBoards& board, int alpha, int beta, searchStack *ss, 
 		
 
 		board.makeMove(newMove, st, color);
-
-		if (!board.isLegal(newMove, color)) {
-			board.unmakeMove(newMove, color);
-			continue;
-		}
 
 		score = -quiescent(board, -beta, -alpha, ss, isPV);
 

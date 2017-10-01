@@ -70,7 +70,7 @@ public:
 	//constructs boards from FEN string
 	void readFenString(const std::string& FEN);
 
-	bool isLegal(const Move & m, int color);
+	bool isLegal(const Move & m, U64 pinned) const;
 	bool pseudoLegal(Move m) const;
 
 	//helper function for isLegal + for finding if in check

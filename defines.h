@@ -229,6 +229,7 @@ const int SORT_VALUE[7] = { 0, 100, 325, 335, 500, 975, 0 };
 #define CAPTURES 1
 #define EVASIONS 2
 #define QUIETS   3
+#define LEGAL    4
 
 #define PAWN_VAL 100 //should pieces have a mid and end game value??
 #define KNIGHT_VAL 325

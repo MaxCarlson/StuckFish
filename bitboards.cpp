@@ -9,6 +9,7 @@
 #include "zobristh.h"
 #include "TranspositionT.h"
 #include "Evaluate.h"
+#include "movegen.h"
 
 
 
@@ -358,14 +359,43 @@ void BitBoards::readFenString(const std::string& FEN)
 // Just test to see if our king is attacked by any enemy pieces
 // castling moves are checked for legality durning move gen, aside from
 // this king in check test. En passants are done the same way
-bool BitBoards::isLegal(const Move & m, int color)
+bool BitBoards::isLegal(const Move & m, U64 pinned) const
 {
 	// There's a better way of doing this than checking
 	// all moves to see if our king is attacked.
 	// Right now though, this function is at 1~2%
 	// if search is speed up than this should be revisited!
 
-	return !isSquareAttacked(king_square(color), color);
+	//return !isSquareAttacked(king_square(color), color);
+
+
+	int color = stm();
+	int from = from_sq(m);
+
+	
+	// Move our pawn on occupied board,
+	// remove their pawn behind EP square,
+	// Test if our king is attacked.
+	if (move_type(m) == ENPASSANT) {
+
+		int ksq = king_square(color);
+		int to = to_sq(m);
+		int capsq = to - pawn_push(color);
+		U64 occ = (FullTiles ^ squareBB[from] ^ squareBB[capsq]) | to;
+
+		return !(attacks_from<ROOK  >(ksq, occ) & pieces(!color, QUEEN,   ROOK))
+			&& !(attacks_from<BISHOP>(ksq, occ) & pieces(!color, QUEEN, BISHOP));
+	}
+
+	// Castling moves are checked for legality
+	// in move generation, otherwise
+	// figure out if our king is attacked
+	if (pieceOnSq(from) == KING)
+		return move_type(m) == CASTLING || !isSquareAttacked(to_sq(m), color) & ~pieces(color); // DO we test total legality in move gen? will need to test
+
+	// If the move isn't a king move it's legal
+	// if it's not pinned, or it's moving along the pinning ray
+	return !pinned || !(pinned & squareBB[from]) || aligned(from, to_sq(m), king_square(color));
 }
 
 bool BitBoards::pseudoLegal(Move m) const
@@ -375,24 +405,78 @@ bool BitBoards::pseudoLegal(Move m) const
 	int to    =        to_sq(m);
 	int piece = pieceOnSq(from);
 
+
+	// If move isn't a normal move,
+	// generate a list of all legal moves for a position
+	// loop through the list seeing if our move is in the list
+	if (move_type(m) != NORMAL) {
+		SMove list[256];
+		SMove * i = generate<LEGAL>(*this, list);
+
+		for (i; i->move != MOVE_NONE; ++i) {
+			if (i->move == m) return true;
+		}
+		return false;
+	}
+		
+
 	if (to == from)
 		return false;
 
-	// If there's no piece of or the piece is 
+	// If there's no piece or if the piece is 
 	// not of our color it can't be pslegal
-	if (color_of_pc(from) != color)
+	if (piece == PIECE_EMPTY || color_of_pc(from) != color )
 		return false;
 
 	// Landing on own color piece
 	if (square_bb(to) & pieces(color))
 		return false;
-
-
-
-	if (move_type(m) == NORMAL) {
-
 		
+	// Is not a promotion, so promotion piece must be empty
+	if (promotion_type(m) - 2 != PIECE_EMPTY)
+		return false;
+
+	if (piece == PAWN) {
+
+		// Move can not be a promotion
+		if (rank_of(to) == relative_rankSq(color, 7))
+			return false;
+
+		if (!(attacks_from<PAWN>(from, color) & pieces(!color) & squareBB[to]) // Not a capture
+
+			&& !((from + pawn_push(color) == to) && empty(to)) // Not a single push
+
+			&& !((from + 2 * pawn_push(color) == to) // Not a double pawn push
+				&& rank_of(from) == relative_rank(color, 3))
+			&& empty(to)
+			&& empty(to - pawn_push(color)))
+			return false;
 	}
+
+	// If the from - to square is not a real piece move, 
+	// considering the occupied board, the move isn't legal
+	else if (  !(  (  (piece == ROOK || piece == BISHOP || piece == QUEEN) ? attacks_bb(piece, from, FullTiles) : psuedoAttacks(piece, color, from)) & squareBB[to]))
+		return false;
+
+
+	if (checkers()) {
+
+		if (piece != KING) {
+
+			// Double check
+			if (more_than_one(checkers()))
+				return false;
+
+			// If the move doesn't block the check, or capture the checking piece, it's not pslegal
+			if (   !(   (BetweenSquares[lsb(checkers())][king_square(color)] | checkers()   ) & squareBB[to]  ))
+				return false;
+		}
+
+		else if (attackers_to(to, FullTiles ^ squareBB[from])  & pieces(!color))
+			return false;
+
+	}
+
 
 	return true;
 }

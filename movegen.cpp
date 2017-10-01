@@ -294,4 +294,27 @@ SMove* generate<EVASIONS>(const BitBoards & board, SMove *mlist) {
 				          : generateAll<BLACK, EVASIONS>(board, mlist, target);
 }
 
+template<>
+SMove* generate<LEGAL>(const BitBoards & board, SMove *mlist)
+{
+	SMove *end, *current = mlist, *begin = mlist;
+	U64 pinned = board.pinned_pieces(board.stm());
+	int ksq = board.king_square(board.stm());
+
+	end = board.checkers() ? generate<EVASIONS>(board, mlist)
+						   : generate<MAIN_GEN>(board, mlist);
+	
+	while (current != end) {
+		if ((pinned || from_sq(current->move) == ksq || move_type(current->move) == ENPASSANT)
+			&& board.isLegal(current->move, pinned))
+			current->move = (--end)->move;
+
+		else
+			++current;
+	}
+	//set so we can terminate looping through them outside function.
+	(++current)->move = MOVE_NONE;
+
+	return begin;
+}
 

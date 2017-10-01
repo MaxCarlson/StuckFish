@@ -63,8 +63,8 @@ extern int futileMoveCounts[2][32];
 struct searchDriver{
 
 	Move PV[130];
-	int nodes = 0;
-	int depth = 0;
+	int  nodes = 0;
+	int  depth = 0;
 	long startTime;
 	long moveTime = 2500;
 	bool isWhite;
@@ -83,7 +83,7 @@ struct Historys { //holds history info for search
 	int cutoffs[2][64][64] = { { { 0 } } };
 
 	//holds info about gain move made in static eval from last turn, use in futility
-	int gains[2][7][64] = { { { 0 } } }; //color, piece type, to square ////TRY same method as history for storing instead??????
+	int gains[2][7][64] = { { { 0 } } }; //color, piece type, to square ////TRY same method as history for storing instead?????? ////////////////////////////////////MOVE this into move picker
 
 	std::vector<U64> twoFoldRep; //stores zobrist keys of all positions encountered thus far
 
@@ -118,13 +118,13 @@ extern const U64 FILE_AB;
 extern const U64 FILE_GH;
 
 
-//holds a array of lines "forward" relative from side to move
-//in front of a particualar square
+// Different pre-computed arrays of usefull bit masks
 extern U64 forwardBB[COLOR][SQ_ALL];
 extern U64 BetweenSquares[SQ_ALL][SQ_ALL];
 extern U64 PassedPawnMask[COLOR][SQ_ALL];
 extern U64 PawnAttackSpan[COLOR][SQ_ALL];
 extern U64 LineBB[SQ_ALL][SQ_ALL];
+
 extern int SquareDistance[SQ_ALL][SQ_ALL];
 
 

@@ -1,15 +1,7 @@
-﻿  bitboards.cpp
-  ai_logic.cpp
-  MovePicker.cpp
+﻿  MovePicker.cpp
   Generating Code...
   Compiling...
-  zobristh.cpp
-  movegen.cpp
-  material.cpp
-  main.cpp
-  UCI.cpp
-  Pawns.cpp
-  Evaluate.cpp
+  ai_logic.cpp
   Generating Code...
   StuckFish.vcxproj -> C:\Users\C-60\Desktop\cppPrograms\StuckFish\x64\Debug\StuckFish.exe
   StuckFish.vcxproj -> C:\Users\C-60\Desktop\cppPrograms\StuckFish\x64\Debug\StuckFish.pdb (Partial PDB)
