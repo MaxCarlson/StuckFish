@@ -412,10 +412,12 @@ bool BitBoards::pseudoLegal(Move m) const
 	// If move isn't a normal move,
 	// generate a list of all legal moves for a position
 	// loop through the list seeing if our move is in the list
-	if (move_type(m) != 33) {
+	if (move_type(m) != NORMAL) {
 		SMove list[256];
 		SMove * i = generate<LEGAL>(*this, list);
 
+		// If special move is on the list of legal moves 
+		// It's definitely valid.
 		for (i; i->move != MOVE_NONE; ++i) {
 			if (i->move == m) return true;
 		}
@@ -439,10 +441,12 @@ bool BitBoards::pseudoLegal(Move m) const
 	if (promotion_type(m) - 2 != PIECE_EMPTY)
 		return false;
 
+	// Pawns handled differently due to odd attack
+	// and movement patterns
 	if (piece == PAWN) {
 
 		// Move can not be a promotion
-		if (rank_of(to) == relative_rankSq(color, 7))
+		if (rank_of(to) == relative_rank(color, 7))
 			return false;
 
 		if (!(attacks_from<PAWN>(from, color) & pieces(!color) & squareBB[to]) // Not a capture
@@ -450,18 +454,21 @@ bool BitBoards::pseudoLegal(Move m) const
 			&& !((from + pawn_push(color) == to) && empty(to)) // Not a single push
 
 			&& !((from + 2 * pawn_push(color) == to) // Not a double pawn push
-				&& rank_of(from) == relative_rank(color, 3))
+			&& (rank_of(from) == relative_rank(color, 2))
 			&& empty(to)
-			&& empty(to - pawn_push(color)))
+			&& empty(to - pawn_push(color))))
 			return false;
 	}
 
 	// If the from - to square is not a real piece move, 
 	// considering the occupied board, the move isn't legal
-	else if (  !(  (  (piece == ROOK || piece == BISHOP || piece == QUEEN) ? attacks_bb(piece, from, FullTiles) : psuedoAttacks(piece, color, from)) & squareBB[to]))
+	else if (  !(  (  (piece == ROOK || piece == BISHOP || piece == QUEEN) ? attacks_bb(piece, from, FullTiles) : psuedoAttacks(piece, color, from)) & squareBB[to] ) )
 		return false;
 
-
+	// If we're in check, because of the way isLegal checks moves
+	// and the way they are generated, we need to make sure 
+	// we filter out the moves that generate<EVASIONS> would
+	// filter out for us normally.
 	if (checkers()) {
 
 		if (piece != KING) {
@@ -477,9 +484,7 @@ bool BitBoards::pseudoLegal(Move m) const
 
 		else if (attackers_to(to, FullTiles ^ squareBB[from])  & pieces(!color))
 			return false;
-
 	}
-
 
 	return true;
 }

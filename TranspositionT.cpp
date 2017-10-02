@@ -37,7 +37,7 @@ void TranspositionT::clearTable()
 
 const HashEntry * TranspositionT::probe(const U64 key) const
 {
-/*
+///*
 	HashEntry *tte = first_entry(key);
 
 	//is there an entry with the same key inside the cluster?                /////////////////////////////////////////////////////////////////   Obviously Re Enable Once We Want To Test New Scheme
@@ -51,6 +51,7 @@ const HashEntry * TranspositionT::probe(const U64 key) const
 	return NULL;
 }
 
+// Save transposition and best move to the main TTable
 void TranspositionT::save(Move m, const U64 zkey, U8 depth, S16 eval, U8 flag)
 {
 	HashEntry *tte, *replace;
@@ -72,14 +73,15 @@ void TranspositionT::save(Move m, const U64 zkey, U8 depth, S16 eval, U8 flag)
 	}
 
 	//save replace
-	replace->depth = depth;
-	replace->eval = eval;
-	replace->flag = flag;
-	replace->move = m;
-	replace->zobrist = zkey;
+	replace->depth   = depth;
+	replace->eval    =  eval;
+	replace->flag    =  flag;
+	replace->move    =     m;
+	replace->zobrist =  zkey;
 }
 
-void TranspositionT::save(const U64 zkey, U8 depth, S16 eval, U8 flag) //save for when there is no move
+// Save for when there is no move
+void TranspositionT::save(const U64 zkey, U8 depth, S16 eval, U8 flag) 
 {
 	HashEntry *tte, *replace;
 
@@ -98,10 +100,10 @@ void TranspositionT::save(const U64 zkey, U8 depth, S16 eval, U8 flag) //save fo
 	}
 
 	//save replace
-	replace->depth = depth;
-	replace->eval = eval;
-	replace->flag = flag;
-	replace->zobrist = zkey;
+	replace->depth   = depth;
+	replace->eval    =  eval;
+	replace->flag    =  flag;
+	replace->zobrist =  zkey;
 }
 
 /* //pawn hash table?? Not good at the moment
