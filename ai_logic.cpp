@@ -183,10 +183,9 @@ int Ai_Logic::searchRoot(BitBoards& board, int depth, int alpha, int beta, searc
 
 	CheckInfo ci(board);
 
-	MovePicker mp(board, ttMove, depth, history, ss); //CHANGE MOVE NONE TO TTMOVE ONCE IMPLEMENTED
+	MovePicker mp(board, ttMove, depth, history, ss); 
 
-	Move newMove;
-
+	Move newMove, bestMove = MOVE_NONE;
 
     while((newMove = mp.nextMove()) != MOVE_NONE){
         
@@ -231,13 +230,15 @@ int Ai_Logic::searchRoot(BitBoards& board, int depth, int alpha, int beta, searc
 			quietsCount++;
 		}
 
-		if (timeOver) break;
+		if (timeOver) 
+			break;
 
-        if(score > best) best = score;
+        if(score > best) 
+			best = score;
 
         if(score > alpha){
             //store the principal variation
-			sd.PV[ss->ply] = newMove;
+			sd.PV[ss->ply] = bestMove = newMove;
 
             if(score > beta){
 				hashFlag = TT_BETA;
@@ -245,14 +246,14 @@ int Ai_Logic::searchRoot(BitBoards& board, int depth, int alpha, int beta, searc
 				break;
             }
 			
-            alpha = score;
+            alpha    =    score;
 			hashFlag = TT_ALPHA;
         }
 
     }
 
 	//save info and move to TT
-	//TT.save(sd.PV[ss->ply], board.TTKey(), depth, valueToTT(alpha, ss->ply), hashFlag);
+	TT.save(bestMove, board.TTKey(), depth, valueToTT(alpha, ss->ply), hashFlag);
 
 	
 	if (alpha >= beta && !flagInCheck && !board.capture_or_promotion(sd.PV[1])) {
@@ -613,6 +614,7 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 			bestScore = score;
 
 			if (score > alpha) {
+
 				//store the principal variation
 				sd.PV[ss->ply] = bestMove = newMove; //NEED TO DELETE AFTER A SEARCH!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
@@ -641,8 +643,8 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 
 	}
 	
-	else if (alpha >= beta && !FlagInCheck && !board.capture_or_promotion(sd.PV[ss->ply])) { ///////////////////////////////////////////////////////////////////////TEST THAT CAPTURE_OR_PROMOTION IS WORKING APPROPRIATLY
-		updateStats(sd.PV[ss->ply], ss, depth, quiets, quietsC, color);
+	else if (alpha >= beta && !FlagInCheck && !board.capture_or_promotion(bestMove)) { ///////////////////////////////////////////////////////////////////////TEST THAT CAPTURE_OR_PROMOTION IS WORKING APPROPRIATLY
+		updateStats(bestMove, ss, depth, quiets, quietsC, color);
 	}
 	
 
@@ -727,7 +729,7 @@ int Ai_Logic::quiescent(BitBoards& board, int alpha, int beta, searchStack *ss, 
 		
 
 		//Don't search losing capture moves if not in PV
-		if (!isPV && board.SEE(newMove, color, true) < 0) continue; ////////////////////////////////////////////////////////////////PROBABLY NEED TO DEBUG SEE
+		if (!isPV && board.SEE(newMove, color, false) < 0) continue; ////////////////////////////////////////////////////////////////PROBABLY NEED TO DEBUG SEE
 		
 
 		board.makeMove(newMove, st, color);
