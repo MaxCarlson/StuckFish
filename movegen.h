@@ -6,7 +6,6 @@ typedef unsigned long long  U64; // supported by MSC 13.00+ and C99
 
 #include <iostream>
 #include <string>
-#include <vector>
 #include "defines.h"
 
 

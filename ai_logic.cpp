@@ -91,7 +91,7 @@ Move Ai_Logic::searchStart(BitBoards& board, bool isWhite) {
 	
 	return m;
 }
-
+#include "movegen.h"
 Move Ai_Logic::iterativeDeep(BitBoards& board, int depth, bool isWhite)
 {
 	//reset ply
@@ -446,6 +446,25 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 		//make move on BB's store data to string so move can be undone
 		board.makeMove(newMove, st, color);
 
+		if (board.isSquareAttacked(board.king_square(color), color)) {
+			board.drawBB(board.checkers());
+			board.drawBBA();
+
+			board.unmakeMove(newMove, color);
+
+			int ff = from_sq(newMove);
+			int ttt = to_sq(newMove);
+			board.drawBBA();
+
+			SMove mm[256];
+			SMove * a = generate<MAIN_GEN>(board, mm);
+
+			//is move legal? if not skip it
+			if (!board.isLegal(newMove, ci.pinned)) {
+				continue;
+			}
+		}
+
 
 		legalMoves++;
 		newDepth   = depth - 1;
@@ -799,14 +818,16 @@ void Ai_Logic::insert_pv(BitBoards & board)
 void Ai_Logic::updateStats(Move move, searchStack * ss, int depth, Move * quiets, int qCount, int color)
 {	
 	static const int limit = SORT_KILL;
+	
 	//update Killers for ply
 	//make sure killer is different
 	if (move != ss->killers[0]) {
-		//save primary killer to secondary slot
+		//save primary killer to secondary slot                 
 		ss->killers[1] = ss->killers[0];
 		//save primary killer
 		ss->killers[0] = move;
 	}
+	
 
 	//update historys, increasing the cutoffs score, decreasing every other moves score
 	int val = 4 * depth * depth;

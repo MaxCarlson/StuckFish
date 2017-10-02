@@ -107,7 +107,7 @@ void MovePicker::generateNextStage()
 		end = current + 2;
 
 		killers[0].move = s->killers[0];
-		killers[1].move = s->killers[1]; //NEED TO CHANGE searchStack TO HOLD NEW MOVE TYPE
+		killers[1].move = s->killers[1]; 
 		return;
 
 	case QUIETS_M:
@@ -178,7 +178,7 @@ Move MovePicker::nextMove()
 			if (   m != MOVE_NONE
 				&& m != ttMove
 				&&   !  b.capture(m) 
-				&& b.pseudoLegal(m))
+				&&      b.pseudoLegal(m))
 
 				return m;
 

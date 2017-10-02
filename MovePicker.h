@@ -67,7 +67,9 @@ MovePicker::MovePicker(const BitBoards & board, Move ttmove, int depth, const Hi
 // For Qsearch
 MovePicker::MovePicker(const BitBoards & board, Move ttmove, const Historys & hist, searchStack * ss) : b(board), h(hist), s(ss)
 {
-	Stage = QSEARCH_; //Modify this?? // generate evasions if in check?>?
+	if (b.checkers()) Stage = EVASIONS_; // Change is legal function to is king attacked so we only look at captures here??
+
+	else Stage = QSEARCH_;
 
 	// Check for psuedo legality!!!
 	ttMove = (ttMove && b.pseudoLegal(ttMove)) ? ttmove : MOVE_NONE;
