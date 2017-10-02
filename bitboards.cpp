@@ -900,7 +900,8 @@ int BitBoards::SEE(const Move& m, int color, bool isCapture) const /////////////
 
 												  //remove captured pawn
 	if (type == ENPASSANT) {
-		occupied ^= square_bb(to - pawn_push(!color));
+		occupied   ^= square_bb(to - pawn_push(!color));
+		swapList[0] = SORT_VALUE[PAWN];
 	}
 
 	//finds all attackers to the square
@@ -921,7 +922,6 @@ int BitBoards::SEE(const Move& m, int color, bool isCapture) const /////////////
 
 	//loop through and add pieces that can capture on the square to swapList
 	do {
-		if (index > 31) break;
 
 		//add entry to swap list
 		swapList[index] = -swapList[index - 1] + SORT_VALUE[captured];
@@ -930,6 +930,7 @@ int BitBoards::SEE(const Move& m, int color, bool isCapture) const /////////////
 		captured = min_attacker<PAWN>(color, to, stmAttackers, occupied, attackers);
 
 		if (captured == KING) {
+
 			if (stmAttackers == attackers) {
 				index++;
 			}

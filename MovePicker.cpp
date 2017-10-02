@@ -4,7 +4,7 @@
 #include "movegen.h"
 #include "externs.h"
 
-#include "ai_logic.h" //NEED this enable once unresolved sig is fixed
+#include "ai_logic.h" 
 
 
 
@@ -127,7 +127,7 @@ void MovePicker::generateNextStage()
 
 	case BAD_CAPTURES_M:
 		current = mList + 255;
-		end = endBadCaptures;
+		end     = endBadCaptures;
 		return;
 
 	case EVASIONS_S1:
@@ -175,10 +175,11 @@ Move MovePicker::nextMove()
 
 		case KILLERS_M:
 			m = (current++)->move;
-			if (   m != MOVE_NONE
-				&& m != ttMove
-				&&   !  b.capture(m) 
-				&&      b.pseudoLegal(m))
+
+			if (   m != MOVE_NONE  // Check that the move isn't a repeat, 				                   
+				&& m != ttMove     // and is a reasonable move for board position
+				&&   !  b.capture(m)  
+				&&      b.pseudoLegal(m)) 
 
 				return m;
 
@@ -200,6 +201,7 @@ Move MovePicker::nextMove()
 
 		case EVASIONS_S1: case CAPTURES_Q:
 			m = pick(current++, end)->move;
+
 			if (m != ttMove)
 				return m;
 			break;

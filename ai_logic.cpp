@@ -13,6 +13,7 @@
 #include "TimeManager.h"
 #include "TranspositionT.h"
 #include "MovePicker.h"
+#include "movegen.h"
 
 
 //#include <advisor-annotate.h> // INTEL ADVISOR FOR THREAD ANNOTATION
@@ -35,7 +36,7 @@ TimeManager timeM;
 
 //mate values are measured in distance from root, so need to be converted to and from TT
 inline int valueFromTT(int val, int ply); 
-inline int valueToTT(int val, int ply); 
+inline int valueToTT(  int val, int ply); 
 
 //reduction tables: pv, is node improving?, depth, move number
 int reductions[2][2][64][64];
@@ -91,7 +92,7 @@ Move Ai_Logic::searchStart(BitBoards& board, bool isWhite) {
 	
 	return m;
 }
-#include "movegen.h"
+
 Move Ai_Logic::iterativeDeep(BitBoards& board, int depth, bool isWhite)
 {
 	//reset ply
@@ -185,6 +186,7 @@ int Ai_Logic::searchRoot(BitBoards& board, int depth, int alpha, int beta, searc
 	MovePicker mp(board, ttMove, depth, history, ss); //CHANGE MOVE NONE TO TTMOVE ONCE IMPLEMENTED
 
 	Move newMove;
+
 
     while((newMove = mp.nextMove()) != MOVE_NONE){
         
@@ -353,7 +355,7 @@ int Ai_Logic::alphaBeta(BitBoards& board, int depth, int alpha, int beta, search
 		}
 	}
 
-	//Null move heuristics, disabled if in PV, check, or depth is too low //RE ENABLE ONCE DONE EP TESTING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	//Null move heuristics, disabled if in PV, check, or depth is too low 
 ///*
 	if (allowNull && !isPV && depth > R) {
 		if (depth > 6) R = 3;
@@ -368,11 +370,11 @@ int Ai_Logic::alphaBeta(BitBoards& board, int depth, int alpha, int beta, search
 		}
 	}
 
-	if (!isPV ///TESTTESTTESTTEST
+	if (!isPV 
 		&& depth < 4
 		&& ss->staticEval + 300 * (depth - 1) * 60 <= alpha
 		&& !ttMove
-		&& !board.pawnOn7th(color)) { //need to add no pawn on 7th rank
+		&& !board.pawnOn7th(color)) {
 
 		if (depth <= 1 && ss->staticEval + 300 * 3 * 60 <= alpha) {
 			return quiescent(board, alpha, beta, ss, NO_PV);
@@ -446,7 +448,8 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 		//make move on BB's store data to string so move can be undone
 		board.makeMove(newMove, st, color);
 
-		if (board.isSquareAttacked(board.king_square(color), color)) {
+		/*
+		if (board.isSquareAttacked(board.king_square(color), color)) { //////////////////////////////////////////////////////////////////////////DELETE THIS AS SOON IS REASONABL
 			board.drawBB(board.checkers());
 			board.drawBBA();
 
@@ -464,7 +467,7 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 				continue;
 			}
 		}
-
+		*/
 
 		legalMoves++;
 		newDepth   = depth - 1;
@@ -574,25 +577,25 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 			}
 		}
 //*/
-		newDepth -= ss->reduction;
+			newDepth -= ss->reduction;
 
-		ss->currentMove = newMove; 
+			ss->currentMove = newMove; 
 
-		//jump back here if our LMR raises Alpha ~~ NOT IN USE
-	//re_search:
-		if (!raisedAlpha) {
-			//we're in principal variation search or full window search
+			//jump back here if our LMR raises Alpha ~~ NOT IN USE
+		//re_search:
+			if (!raisedAlpha) {
+				//we're in principal variation search or full window search
 
-			score = -alphaBeta(board, newDepth, -beta, -alpha, ss + 1, DO_NULL, isPV);
-		}
-		else {
-			//zero window search
-			score = -alphaBeta(board, newDepth, -alpha - 1, -alpha, ss + 1, DO_NULL, NO_PV);
-			//if our zero window search failed, do a full window search
-			if (score > alpha) {
-				//PV search after failed zero window
-				score = -alphaBeta(board, newDepth, -beta, -alpha, ss + 1, DO_NULL, IS_PV);
+				score = -alphaBeta(board, newDepth, -beta, -alpha, ss + 1, DO_NULL, isPV);
 			}
+			else {
+				//zero window search
+				score = -alphaBeta(board, newDepth, -alpha - 1, -alpha, ss + 1, DO_NULL, NO_PV);
+				//if our zero window search failed, do a full window search
+				if (score > alpha) {
+					//PV search after failed zero window
+					score = -alphaBeta(board, newDepth, -beta, -alpha, ss + 1, DO_NULL, IS_PV);
+				}
 		}
 
 		//store queit moves so we can decrease their value later, find a more effecient way or storing than a huge move array?, possibly 2D array by ply?
@@ -693,7 +696,7 @@ int Ai_Logic::quiescent(BitBoards& board, int alpha, int beta, searchStack *ss, 
 
 	if (standingPat >= beta) {
 
-		if (!ttentry) TT.save(board.TTKey(), DEPTH_QS, valueToTT(standingPat, ss->ply), TT_BETA); //save to TT if there's no entry MAJOR PROBLEMS WITH THIS  ////////////////////////////////////////////////////////////REENABLE ONCE EVERYTHING IS WOKRING
+		if (!ttentry) TT.save(board.TTKey(), DEPTH_QS, valueToTT(standingPat, ss->ply), TT_BETA); //save to TT if there's no entry 
 		return beta;
 	}
 
@@ -706,7 +709,7 @@ int Ai_Logic::quiescent(BitBoards& board, int alpha, int beta, searchStack *ss, 
 
 	CheckInfo ci(board);
 
-	MovePicker mp(board, ttMove, history, ss); //CHANGE MOVE NONE TO TTMOVE ONCE IMPLEMENTED
+	MovePicker mp(board, ttMove, history, ss); 
 
 	Move newMove, bestMove = MOVE_NONE;
 	while((newMove = mp.nextMove()) != MOVE_NONE)
@@ -719,12 +722,12 @@ int Ai_Logic::quiescent(BitBoards& board, int alpha, int beta, searchStack *ss, 
 		// If the move is gurenteed to be below alpha, don't search it
 		// unless we're in endgame, where that's not safe ~~ possibly use more advanced board.game_phase()?
 		if ((standingPat + SORT_VALUE[board.pieceOnSq(to_sq(newMove))] + 200 < alpha)
-			&& (board.bInfo.sideMaterial[!color] - SORT_VALUE[board.pieceOnSq(to_sq(newMove))] > END_GAME_MAT)  //////////////////////////////////////////////////////////////////////////////////////////////////REENABLE ONCE EVERYTHING IS WOKRING
+			&& (board.bInfo.sideMaterial[!color] - SORT_VALUE[board.pieceOnSq(to_sq(newMove))] > END_GAME_MAT)  
 			&& move_type(newMove) != PROMOTION) continue;
 		
 
 		//Don't search losing capture moves if not in PV
-		if (!isPV && board.SEE(newMove, color, true) < 0) continue;
+		if (!isPV && board.SEE(newMove, color, true) < 0) continue; ////////////////////////////////////////////////////////////////PROBABLY NEED TO DEBUG SEE
 		
 
 		board.makeMove(newMove, st, color);

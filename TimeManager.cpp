@@ -45,20 +45,8 @@ TimeManager::TimeManager()
 
 void TimeManager::calcMoveTime(bool isWhite)
 {
-	//add #defines for infinite search time
-	//if (chronos.flags & (FINFINITE | FDEPTH | FNODES)) return;
-/*
-	//only for if move time is given to us, not implemented yet
-	if (chronos.flags & FMOVETIME) {
-		if (chronos.movetime > TIMEBUFFER) {
-			sd.moveTime = chronos.movetime - TIMEBUFFER;
-		}
-		else {
-			sd.moveTime = -1;
-		}
-		return;
-	}
-*/
+	//add code for infinite and other search types search time
+
 	//reset search timer
 	timeOver = false;
 
@@ -91,10 +79,7 @@ bool TimeManager::timeStopRoot()
 
 bool TimeManager::timeStopSearch()
 {
-
 	if (sd.depth <= 1) return false;
-
-	//if ((int)(gettime() - sd.startTime) > sd.moveTime) return true;
 
 	if ((int)(gettime() - sd.startTime) > sd.moveTime) {
 		int movesToGo = MOVESTOGO;

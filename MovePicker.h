@@ -59,9 +59,9 @@ MovePicker::MovePicker(const BitBoards & board, Move ttmove, int depth, const Hi
 
 
 	// Check for psuedo legality!!!
-	ttMove = ( ttMove && b.pseudoLegal(ttMove) ) ? ttmove : MOVE_NONE;
+	ttMove = ( ttMove && b.pseudoLegal(ttMove)  ? ttmove : MOVE_NONE);
 
-	end += (ttmove != MOVE_NONE);
+	end += (ttMove != MOVE_NONE);
 }
 
 // For Qsearch
@@ -72,7 +72,7 @@ MovePicker::MovePicker(const BitBoards & board, Move ttmove, const Historys & hi
 	else Stage = QSEARCH_;
 
 	// Check for psuedo legality!!!
-	ttMove = (ttMove && b.pseudoLegal(ttMove)) ? ttmove : MOVE_NONE;
+	ttMove = (ttMove && b.pseudoLegal(ttMove) ? ttmove : MOVE_NONE);
 
-	end += (ttmove != MOVE_NONE);
+	end += (ttMove != MOVE_NONE);
 }
