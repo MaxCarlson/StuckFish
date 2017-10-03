@@ -355,20 +355,9 @@ void BitBoards::readFenString(const std::string& FEN)
 
 }
 
-
-// Just test to see if our king is attacked by any enemy pieces
-// castling moves are checked for legality durning move gen, aside from
-// this king in check test. En passants are done the same way
+// Test if the un made move is legal
 bool BitBoards::isLegal(const Move & m, U64 pinned) const
 {
-	// There's a better way of doing this than checking
-	// all moves to see if our king is attacked.
-	// Right now though, this function is at 1~2%
-	// if search is speed up than this should be revisited!
-
-	//return !isSquareAttacked(king_square(color), color);
-
-
 	int color =      stm();
 	int from  = from_sq(m);
 
@@ -392,7 +381,7 @@ bool BitBoards::isLegal(const Move & m, U64 pinned) const
 	// in move generation, otherwise
 	// figure out if our king is attacked
 	if (pieceOnSq(from) == KING)
-		return move_type(m) == CASTLING || !attackers_to(to_sq(m), FullTiles) & ~pieces(color); // DO we test total legality in move gen? will need to test
+		return move_type(m) == CASTLING || ! (attackers_to(to_sq(m), FullTiles) & pieces(!color)); 
 
 	// If the move isn't a king move it's legal
 	// if it's not pinned, or it's moving along the pinning ray
@@ -419,7 +408,8 @@ bool BitBoards::pseudoLegal(Move m) const
 		// If special move is on the list of legal moves 
 		// It's definitely valid.
 		for (i; i->move != MOVE_NONE; ++i) {
-			if (i->move == m) return true;
+			if (i->move == m) 
+				return true;
 		}
 		return false;
 	}
@@ -437,17 +427,18 @@ bool BitBoards::pseudoLegal(Move m) const
 	if (square_bb(to) & pieces(color))
 		return false;
 		
-	// Is not a promotion, so promotion piece must be empty
+	// It's not a promotion, so promotion piece must be empty
 	if (promotion_type(m) - 2 != PIECE_EMPTY)
 		return false;
 
 	// Pawns handled differently due to odd attack
 	// and movement patterns
-	if (piece == PAWN) {
+	if (piece == PAWN) {                       ////////////////////////////////////////////////////////////// It looks like error that shows up on fist search MIGHT be located in here
 
 		// Move can not be a promotion
-		if (rank_of(to) == relative_rank(color, 7))
+		if (rank_of(to) == relative_rank(color, 7))          //////////////////////after this for sure?
 			return false;
+
 
 		if (!(attacks_from<PAWN>(from, color) & pieces(!color) & squareBB[to]) // Not a capture
 
@@ -509,9 +500,21 @@ bool BitBoards::gives_check(Move m, int from, int to, const CheckInfo & ci)
 	case NORMAL:
 		return false;
 
-		// Promotions
-	case PROMOTION:
-		return attacks_from<QUEEN>(to, FullTiles ^ squareBB[from]); // Other promotions not implemented
+		// Castling
+	case CASTLING:
+	{
+		// Find rook to and from squares
+		int rfrom = relative_square(stm(), (to < from ? A1 : H1));
+		int rto = relative_square(stm(), (to < from ? D1 : F1));
+
+		// First we use a psuedo attack lookup table to check if their
+		// king would recieve a check if there were no other pieces on the board
+		// from this castle. If that's true, then we "move" the pieces and pass
+		// attacks_from a occluded full tiles board with the pieces "moved"
+		// and generate rook moves to see if the castle truely causes check. 
+		return (PseudoAttacks[ROOK][rto] & squareBB[ci.ksq])
+			&& (attacks_from<ROOK>(rto, (FullTiles ^ squareBB[from] ^ squareBB[rfrom]) | squareBB[rto] | squareBB[to]) & squareBB[ci.ksq]); //also test this!!!
+	}
 
 	// En passants
 	case ENPASSANT:
@@ -524,30 +527,19 @@ bool BitBoards::gives_check(Move m, int from, int to, const CheckInfo & ci)
 		// through the captured pawn.
 		U64 bb = (FullTiles ^ squareBB[from] ^ squareBB[capsq]) | squareBB[to];
 
-		return   (attacks_from<ROOK  >(ci.ksq, bb) & pieces(stm(), ROOK,   QUEEN))
-			   | (attacks_from<BISHOP>(ci.ksq, bb) & pieces(stm(), BISHOP, QUEEN));
+		return   (attacks_from<ROOK  >(ci.ksq, bb) & pieces(stm(), ROOK, QUEEN))
+			| (attacks_from<BISHOP>(ci.ksq, bb) & pieces(stm(), BISHOP, QUEEN));
 	}
 
-	// Castling
-	case CASTLING:
-	{
-		// Find rook to and from squares
-		int rfrom = relative_square(stm(), (to < from ? A1 : H1));
-		int rto   = relative_square(stm(), (to < from ? D1 : F1));
+	// Promotions
+	case PROMOTION:
+		return attacks_from<QUEEN>(to, FullTiles ^ squareBB[from]); // Other promotions not implemented
 
-		// First we use a psuedo attack lookup table to check if their
-		// king would recieve a check if there were no other pieces on the board
-		// from this castle. If that's true, then we "move" the pieces and pass
-		// attacks_from a occluded full tiles board with the pieces "moved"
-		// and generate rook moves to see if the castle truely causes check. 
-		return (PseudoAttacks[ROOK][rto] & squareBB[ci.ksq])
-			&& (attacks_from<ROOK>(rto, (FullTiles ^ squareBB[from] ^ squareBB[rfrom]) | squareBB[rto] | squareBB[to]) & squareBB[ci.ksq]); //also test this!!!
+
+	default:
+		std::cout << "gives check error!!!!!!!!!!!!" << std::endl;
+		return false;
 	}
-
-	}
-
-	std::cout << "gives check error!!!!!!!!!!!!" << std::endl;
-	return false;
 }
 
 // returns a bitboard of all pieces of color
@@ -635,7 +627,7 @@ void BitBoards::makeMove(const Move& m, StateInfo& newSt, int color)
 			
 			//en passant
 			if (move_type(m) == ENPASSANT) {
-				//set capture square to correct pos and not ep square //////////////////////////////////////////////////////////////////////////////EP IS WHAT"S CAUSING PROBLEMS STILL
+				//set capture square to correct pos and not ep square 
 				capSq += pawn_push(them);
 			}
 			//update the pawn hashkey on capture
@@ -684,7 +676,7 @@ void BitBoards::makeMove(const Move& m, StateInfo& newSt, int color)
 			//remove pawn placed
 			removePiece(PAWN, color, to);
 
-			int promT = promotion_type(m); /////////////////////////////// Use this once everything else is working to add other promotion types
+			int promT = promotion_type(m); /////////////////////////////// Use this once everything else is working to add other promotion types!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 			//add queen to to square
 			addPiece(QUEEN, color, to);
@@ -761,7 +753,7 @@ void BitBoards::makeMove(const Move& m, StateInfo& newSt, int color)
 	//flip internal side to move
 	bInfo.sideToMove = !bInfo.sideToMove;
 
-	if (EmptyTiles & FullTiles || allPiecesColorBB[WHITE] & allPiecesColorBB[BLACK]) { //comment out in release
+	if (EmptyTiles & FullTiles || allPiecesColorBB[WHITE] & allPiecesColorBB[BLACK] || m == MOVE_NONE) { //comment out in release
 		drawBBA();
 	}
 }
@@ -770,10 +762,10 @@ void BitBoards::unmakeMove(const Move & m, int color)
 {
 	int them = !color;
 
-	int type = move_type(m);
-	int from = from_sq(m);
-	int to = to_sq(m);
-	int piece = pieceOnSq(to);
+	int to    =  to_sq(m);
+	int from  =  from_sq(m);
+	int type  =  move_type(m);
+	int piece =  pieceOnSq(to);
 
 	assert(posOkay());
 
@@ -785,7 +777,7 @@ void BitBoards::unmakeMove(const Move & m, int color)
 	//pawn promotion
 	else if (type == PROMOTION){
 
-		int promType = promotion_type(m); //////////////////// USE THIS TO DO OTHER PROMOTIONS
+		int promType = promotion_type(m); //////////////////// USE THIS TO DO OTHER PROMOTIONS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 		addPiece(PAWN, color, from);
 		//remove queen

@@ -166,7 +166,7 @@ Move MovePicker::nextMove()
 			m = pick(current++, end)->move;
 
 			if (m != ttMove) {
-				if (b.SEE(m, b.stm(), true) > 0) {
+				if (b.SEE(m, b.stm(), true) > 0) {   //////////////////////////////////////////////////////////TEST THESE TO BE SURE SEE IS WORKING CORRECTLY!!!
 					return m;
 				}
 				(endBadCaptures--)->move = m;
