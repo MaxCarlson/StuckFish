@@ -6,7 +6,6 @@
 #include "bitboards.h"
 #include "externs.h"
 #include "psqTables.h"
-#include "hashentry.h"
 #include "Pawns.h"
 
 
@@ -604,6 +603,7 @@ int Evaluate::evaluate(const BitBoards & boards)
 {
 	const int color = boards.stm();
 
+	/*
 	 //is this needed with TT lookup in quiet??
 	int hash = boards.TTKey() & 5021982; //REPLACE THIS!!
 	HashEntry entry = transpositionEval[hash];
@@ -621,6 +621,7 @@ int Evaluate::evaluate(const BitBoards & boards)
 		}
 
 	}
+	*/
 
 	EvalInfo ev;
 	Scores score;	
@@ -745,7 +746,7 @@ int Evaluate::evaluate(const BitBoards & boards)
 	result = color == WHITE ? result : -result;
 
 	//save to TT eval table
-	saveTT(color, result, hash, boards);
+	//saveTT(color, result, hash, boards);
 
 	return result;
 }
@@ -818,6 +819,7 @@ int Evaluate::bKingShield(const BitBoards & boards)
 
 void Evaluate::saveTT(int color, int result, int hash, const BitBoards &boards) //replace this scheme
 {
+	/*
 	//store eval into eval hash table
 	transpositionEval[hash].eval = result;
 	transpositionEval[hash].zobrist = boards.TTKey();
@@ -826,6 +828,7 @@ void Evaluate::saveTT(int color, int result, int hash, const BitBoards &boards) 
 	//the color of the eval was opposite
 	if (color == WHITE) transpositionEval[hash].flag = 0;
 	else transpositionEval[hash].flag = 1;
+	*/
 }
 
 void Evaluate::blockedPieces(int side, const BitBoards& boards, EvalInfo & ev) //REPLACE THIS SOON, DEF BETTER WAY

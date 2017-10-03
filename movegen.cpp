@@ -2,7 +2,6 @@
 
 #include <algorithm> 
 
-#include "hashentry.h"
 #include "bitboards.h"
 #include "slider_attacks.h"
 #include "externs.h"

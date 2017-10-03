@@ -9,7 +9,6 @@
 #include "externs.h"
 #include "Evaluate.h"
 #include "bitboards.h"
-#include "hashentry.h"
 #include "TimeManager.h"
 #include "TranspositionT.h"
 #include "MovePicker.h"
@@ -171,7 +170,7 @@ int Ai_Logic::searchRoot(BitBoards& board, int depth, int alpha, int beta, searc
 	(ss + 2)->killers[0] = (ss + 2)->killers[1] = MOVE_NONE;
 
 	const HashEntry* ttentry = TT.probe(board.TTKey());
-	Move ttMove = ttentry ? ttentry->move : MOVE_NONE;
+	Move ttMove = ttentry ? ttentry->move() : MOVE_NONE;
 
 	sd.nodes++;
 	ss->ply = 1;
@@ -302,17 +301,17 @@ int Ai_Logic::alphaBeta(BitBoards& board, int depth, int alpha, int beta, search
 	int ttValue;
 
 	ttentry = TT.probe(board.TTKey());
-	ttMove  = ttentry ? ttentry->move : MOVE_NONE; //is there a move stored in transposition table?
-	ttValue = ttentry ? valueFromTT(ttentry->eval, ss->ply) : INVALID; //if there is a TT entry, grab its value
+	ttMove  = ttentry ? ttentry->move() : MOVE_NONE; //is there a move stored in transposition table?
+	ttValue = ttentry ? valueFromTT(ttentry->eval(), ss->ply) : INVALID; //if there is a TT entry, grab its value
 
 
 	//is the a TT entry? If so, are we in PV? If in PV only accept and exact entry with a depth >= our depth, 
 	//accept all if the entry has a equal or greater depth compared to our depth.
 	if (ttentry
-		&& ttentry->depth >= depth
-		&& (isPV ? ttentry->flag == TT_EXACT
-			: ttValue >= beta ? ttentry->flag == TT_BETA
-			: ttentry->flag == TT_ALPHA)
+		&& ttentry->depth() >= depth
+		&& (isPV ? ttentry->flag() == TT_EXACT
+			: ttValue >= beta ? ttentry->flag() == TT_BETA
+			: ttentry->flag() == TT_ALPHA)
 		) {
 
 		return ttValue;
@@ -676,14 +675,14 @@ int Ai_Logic::quiescent(BitBoards& board, int alpha, int beta, searchStack *ss, 
 	StateInfo st;
 
 	ttentry     = TT.probe(board.TTKey());
-	Move ttMove = ttentry ? ttentry->move : MOVE_NONE; //is there a move stored in transposition table?
-	ttValue     = ttentry ? valueFromTT(ttentry->eval, ss->ply) : INVALID; //if there is a TT entry, grab its value
+	Move ttMove = ttentry ? ttentry->move() : MOVE_NONE; //is there a move stored in transposition table?
+	ttValue     = ttentry ? valueFromTT(ttentry->eval(), ss->ply) : INVALID; //if there is a TT entry, grab its value
 
 	if (ttentry
-		&& ttentry->depth >= DEPTH_QS
-		&& (isPV ? ttentry->flag == TT_EXACT
-			: ttValue >= beta ? ttentry->flag == TT_BETA
-			: ttentry->flag == TT_ALPHA)
+		&& ttentry->depth() >= DEPTH_QS
+		&& (isPV ? ttentry->flag() == TT_EXACT
+			: ttValue >= beta ? ttentry->flag() == TT_BETA
+			: ttentry->flag() == TT_ALPHA)
 		) {
 
 		return ttValue;
@@ -698,7 +697,7 @@ int Ai_Logic::quiescent(BitBoards& board, int alpha, int beta, searchStack *ss, 
 
 	if (standingPat >= beta) {
 
-		if (!ttentry) TT.save(board.TTKey(), DEPTH_QS, valueToTT(standingPat, ss->ply), TT_BETA); //save to TT if there's no entry 
+		if (!ttentry) TT.save(MOVE_NONE, board.TTKey(), DEPTH_QS, valueToTT(standingPat, ss->ply), TT_BETA); //save to TT if there's no entry 
 		return beta;
 	}
 

@@ -1,11 +1,11 @@
 #include <iostream>
 
 #include "externs.h"
-#include "hashentry.h"
 #include "zobristh.h"
 #include "movegen.h"
 #include "UCI.h"
 #include "bitboards.h"
+#include "TranspositionT.h"
 
 //#include <vld.h> //memory leak detection in visual studio
 
@@ -14,8 +14,6 @@ int turns = 0;
 
 //TTable of evals //UPDATE TO NEW TT SCHEME
 HashEntry transpositionEval[5021983];
-//pawn config hash table
-HashEntry transpositionPawn[400000];
 
 //user for magic sliders -- figure out how to make thread safe?
 SliderAttacks slider_attacks;
