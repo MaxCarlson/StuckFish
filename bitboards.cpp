@@ -403,11 +403,11 @@ bool BitBoards::pseudoLegal(Move m) const
 	// loop through the list seeing if our move is in the list
 	if (move_type(m) != NORMAL) {
 		SMove list[256];
-		SMove * i = generate<LEGAL>(*this, list);
+		SMove * end = generate<LEGAL>(*this, list);
 
 		// If special move is on the list of legal moves 
 		// It's definitely valid.
-		for (i; i->move != MOVE_NONE; ++i) {
+		for (SMove * i = list; i != end; ++i) {
 			if (i->move == m) 
 				return true;
 		}
@@ -676,19 +676,19 @@ void BitBoards::makeMove(const Move& m, StateInfo& newSt, int color)
 			//remove pawn placed
 			removePiece(PAWN, color, to);
 
-			int promT = promotion_type(m); /////////////////////////////// Use this once everything else is working to add other promotion types!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+			int promT = promotion_type(m);
 
 			//add queen to to square
-			addPiece(QUEEN, color, to);
+			addPiece(promT, color, to);
 			//update material
-			bInfo.sideMaterial[color]    += SORT_VALUE[QUEEN] - SORT_VALUE[PAWN];
-			bInfo.nonPawnMaterial[color] += SORT_VALUE[QUEEN];
+			bInfo.sideMaterial[color]    += SORT_VALUE[promT] - SORT_VALUE[PAWN];
+			bInfo.nonPawnMaterial[color] += SORT_VALUE[promT];
 
-			st->Key ^= Zobrist::ZobArray[color][QUEEN][to] ^ Zobrist::ZobArray[color][PAWN][to];
+			st->Key ^= Zobrist::ZobArray[color][promT][to] ^ Zobrist::ZobArray[color][PAWN][to];
 			//update pawn key
 			st->PawnKey ^= Zobrist::ZobArray[color][PAWN][to];
 			//update material key
-			st->MaterialKey   ^= Zobrist::ZobArray[color][QUEEN][pieceCount[color][QUEEN]]
+			st->MaterialKey   ^= Zobrist::ZobArray[color][promT][pieceCount[color][promT]]
 							  ^  Zobrist::ZobArray[color][PAWN ][pieceCount[color][PAWN]+1];
 		}
 		
@@ -780,14 +780,14 @@ void BitBoards::unmakeMove(const Move & m, int color)
 	//pawn promotion
 	else if (type == PROMOTION){
 
-		int promType = promotion_type(m); //////////////////// USE THIS TO DO OTHER PROMOTIONS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		int promT = promotion_type(m); //////////////////// USE THIS TO DO OTHER PROMOTIONS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 		addPiece(PAWN, color, from);
 		//remove queen
-		removePiece(QUEEN, color, to);
+		removePiece(promT, color, to);
 
-		bInfo.sideMaterial[color]    += SORT_VALUE[PAWN ] - SORT_VALUE[QUEEN];
-		bInfo.nonPawnMaterial[color] -= SORT_VALUE[QUEEN];
+		bInfo.sideMaterial[color]    += SORT_VALUE[PAWN ] - SORT_VALUE[promT];
+		bInfo.nonPawnMaterial[color] -= SORT_VALUE[promT];
 	}
 
 	//add captured piece from BB's similar to above for moving piece

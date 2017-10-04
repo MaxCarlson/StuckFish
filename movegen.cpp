@@ -99,7 +99,10 @@ SMove* pawnMoves(const BitBoards& boards, SMove *mlist, U64 target) {
 		while (moves) {
 			int index = pop_lsb(&moves);
 
-			(mlist++)->move = create_special<PROMOTION, QUEEN>(index + Down, index);
+			(mlist++)->move = create_special<PROMOTION,  QUEEN>(index + Down, index);
+			(mlist++)->move = create_special<PROMOTION,   ROOK>(index + Down, index);
+			(mlist++)->move = create_special<PROMOTION, BISHOP>(index + Down, index);
+			(mlist++)->move = create_special<PROMOTION, KNIGHT>(index + Down, index);
 		}
 
 		// pawn capture promotions
@@ -109,7 +112,10 @@ SMove* pawnMoves(const BitBoards& boards, SMove *mlist, U64 target) {
 		while (moves) {
 			int index = pop_lsb(&moves);
 
-			(mlist++)->move = create_special<PROMOTION, QUEEN>(index - Right, index);
+			(mlist++)->move = create_special<PROMOTION,  QUEEN>(index - Right, index);
+			(mlist++)->move = create_special<PROMOTION,   ROOK>(index - Right, index);
+			(mlist++)->move = create_special<PROMOTION, BISHOP>(index - Right, index);
+			(mlist++)->move = create_special<PROMOTION, KNIGHT>(index - Right, index);
 		}
 
 		// capture left
@@ -118,7 +124,10 @@ SMove* pawnMoves(const BitBoards& boards, SMove *mlist, U64 target) {
 		while (moves) {
 			int index = pop_lsb(&moves);
 
-			(mlist++)->move = create_special<PROMOTION, QUEEN>(index - Left, index);
+			(mlist++)->move = create_special<PROMOTION,  QUEEN>(index - Left, index);
+			(mlist++)->move = create_special<PROMOTION,   ROOK>(index - Left, index);
+			(mlist++)->move = create_special<PROMOTION, BISHOP>(index - Left, index);
+			(mlist++)->move = create_special<PROMOTION, KNIGHT>(index - Left, index);
 		}
 	}
 
@@ -331,6 +340,6 @@ SMove* generate<LEGAL>(const BitBoards & board, SMove *mlist)
 	//set so we can terminate looping through them outside function.
 	current->move = MOVE_NONE;
 
-	return begin;
+	return end; 
 }
 

@@ -79,11 +79,11 @@ void MovePicker::score<EVASIONS>()
 
 		m = i->move;
 		if (seeVal = b.SEE(m, color, true) < 0)
-			i->score = seeVal - SORT_CAPT;
+			i->score = seeVal;
 
 		else if (b.capture(m))
 			i->score = SORT_VALUE[b.pieceOnSq(to_sq(  m))]
-			         - SORT_VALUE[b.pieceOnSq(from_sq(m))] + SORT_CAPT;
+			         - SORT_VALUE[b.pieceOnSq(from_sq(m))];
 
 		else
 			i->score = h.history[color][from_sq(m)][to_sq(m)];

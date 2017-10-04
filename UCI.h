@@ -23,6 +23,8 @@ public:
 
 	void test(BitBoards& newBoard, StateInfo & si);
 
+	void perftUCI(BitBoards& newBoard, std::istringstream & input);
+
 	std::string moveToStr(const Move & m);
 
 	Move strToMove(BitBoards& newBoard, std::string & input);

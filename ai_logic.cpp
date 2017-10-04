@@ -913,3 +913,41 @@ void Ai_Logic::print(bool isWhite, int bestScore)
 
 
 
+template<bool Root>
+U64 Ai_Logic::perft(BitBoards & board, int depth)
+{
+
+	StateInfo st;
+	U64 count, nodes = 0;
+
+	CheckInfo ci(board);
+
+	SMove mlist[256];
+	SMove * end = generate<LEGAL>(board, mlist);
+
+	for (SMove * i = mlist; i != end; ++i)
+	{
+		if (depth == 0)
+			return 1;
+
+		else {
+
+
+			board.makeMove(i->move, st, board.stm());
+
+			nodes++;
+
+			count = perft<false>(board, depth - 1);
+
+			nodes += count;
+
+			board.unmakeMove(i->move, !board.stm());
+		}
+	}
+	return nodes;
+
+}
+
+template U64 Ai_Logic::perft<true>(BitBoards & board, int depth);
+
+

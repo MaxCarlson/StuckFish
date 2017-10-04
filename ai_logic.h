@@ -39,6 +39,9 @@ public:
 	//clear historys, for new games
 	void clearHistorys();
 
+	template<bool Root>
+	U64 perft(BitBoards & board, int depth);
+
 private:
 	
 	//root of search ~~ experimental

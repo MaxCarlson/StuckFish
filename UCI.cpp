@@ -85,6 +85,9 @@ void UCI::uciLoop()
 		else if (token == "test") { //used to enable quick testing
 			test(newBoard, si);
 		}
+		else if (token == "perft") {
+			perftUCI(newBoard, is);
+		}
 		else if (token == "position") {
 			updatePosition(newBoard, is, si);
 		}
@@ -370,6 +373,7 @@ void UCI::test(BitBoards & newBoard, StateInfo & si)
 		nodes += sd.nodes;
 	}
 
+
 	time_t endtimer;
 
 	time(&endtimer);
@@ -379,5 +383,23 @@ void UCI::test(BitBoards & newBoard, StateInfo & si)
 	std::cout << "Total time taken    : " << endTotalTime << " seconds." << std::endl;
 	std::cout << "Total nodes searched: " << nodes << std::endl;
 	std::cout << "Nodes per second    : " << nodes / endTotalTime << std::endl;
+}
+
+void UCI::perftUCI(BitBoards & newBoard, std::istringstream & input)
+{
+
+	newGame(newBoard);
+	searchM.clearHistorys();
+	TT.clearTable(); //need to clear other TTables too at somepoint ??
+
+	std::string tk;
+
+	input >> tk;
+
+	int d = std::stoi(tk);
+
+	U64 result = searchM.perft<true>(newBoard, d);
+
+	std::cout << result << std::endl;
 }
 
