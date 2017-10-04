@@ -45,12 +45,22 @@ void ZobristH::zobristFill()
         zEnPassant[column] = random64();
     }
     
-
-    for (int i = 0; i < 16; i++)
+	/*
+    for (int i = NO_CASTLING; i <= ANY_CASTLING; ++i)
     {
-        zCastle[i] = random64(); //white queen side, white king side, black qs, bks
-    }
+		U64 bb = i;
 
+		while (bb) {
+			U64 key = zCastle[1ULL << pop_lsb(&bb)];
+			zCastle[i] ^= key ? key : random64(); //white queen side, white king side, black qs, bks
+		}    
+    }
+	*/
+	///*
+	for (int i = NO_CASTLING; i <= ANY_CASTLING; ++i) {
+		zCastle[i] =  random64();
+	}
+	//*/
     //random is it blacks turn or not
     zBlackMove = random64();
 }
@@ -63,69 +73,28 @@ void ZobristH::UpdateColor() //inline this? remove this?
 U64 ZobristH::getZobristHash(const BitBoards& BBBoard)
 {
     U64 returnZKey = 0LL;
-    for (int square = 0; square < 64; square++){
-        //if tile is empty skip to next i
-        /*
-        if(((EmptyTiles >> square) & 1) == 1){
-            continue;
-        }
-        */
-        //white and black pawns
-        //if there is a white pawn on i square
-        if(((BBBoard.byColorPiecesBB[0][1] >> square) & 1) == 1)
-        {
-            //XOR the zkey with the U64 in the white pawns square
-            //that was generated from rand64
-            returnZKey ^= zArray[0][1][square];
-        }
-        else if(((BBBoard.byColorPiecesBB[1][1] >> square) & 1) == 1)
-        {
-            returnZKey ^= zArray[1][1][square];
-        }
-        //white pieces
-        else if(((BBBoard.byColorPiecesBB[0][2] >> square) & 1) == 1)
-        {
-            returnZKey ^= zArray[0][2][square];
-        }
-        else if(((BBBoard.byColorPiecesBB[0][3] >> square) & 1) == 1)
-        {
-            returnZKey ^= zArray[0][3][square];
-        }
-		else if (((BBBoard.byColorPiecesBB[0][4] >> square) & 1) == 1)
-		{
-			returnZKey ^= zArray[0][4][square];
-		}
-        else if(((BBBoard.byColorPiecesBB[0][5] >> square) & 1) == 1)
-        {
-            returnZKey ^= zArray[0][5][square];
-        }
-        else if(((BBBoard.byColorPiecesBB[0][6] >> square) & 1) == 1)
-        {
-            returnZKey ^= zArray[0][6][square];
-        }
 
-        //black pieces       
-        else if(((BBBoard.byColorPiecesBB[1][2] >> square) & 1) == 1)
-        {
-            returnZKey ^= zArray[1][2][square];
-        }
-        else if(((BBBoard.byColorPiecesBB[1][3] >> square) & 1) == 1)
-        {
-            returnZKey ^= zArray[1][3][square];
-        }
-		else if (((BBBoard.byColorPiecesBB[1][4] >> square) & 1) == 1)
-		{
-			returnZKey ^= zArray[1][4][square];
-		}
-        else if(((BBBoard.byColorPiecesBB[1][5] >> square) & 1) == 1)
-        {
-            returnZKey ^= zArray[1][5][square];
-        }
-        else if(((BBBoard.byColorPiecesBB[1][6] >> square) & 1) == 1)
-        {
-            returnZKey ^= zArray[1][6][square];
-        }
-    }
+	U64 pieces = BBBoard.pieces(WHITE);
+
+	while (pieces) {
+		int square = pop_lsb(&pieces);
+		int piece = BBBoard.pieceOnSq(square);
+
+		returnZKey ^= zArray[WHITE][piece][square];
+	}
+
+	pieces = BBBoard.pieces(BLACK);
+
+	while (pieces) {
+		int square = pop_lsb(&pieces);
+		int piece = BBBoard.pieceOnSq(square);
+
+		returnZKey ^= zArray[BLACK][piece][square];
+	}
+
+	if (BBBoard.can_enpassant()) {
+		returnZKey ^= zEnPassant[file_of(BBBoard.ep_square())];
+	}
 
 	// if en passant square is on board
 	if (BBBoard.can_enpassant()) {
@@ -133,7 +102,10 @@ U64 ZobristH::getZobristHash(const BitBoards& BBBoard)
 	}
 
 	//XOR by current castling rights
-	zobristKey ^= zCastle[BBBoard.castling_rights()];
+	returnZKey ^= zCastle[BBBoard.castling_rights()];
+
+	if (BBBoard.stm() == BLACK)
+		returnZKey ^= zBlackMove;
 
     zobristKey = returnZKey;
 
@@ -163,70 +135,31 @@ void ZobristH::testDistibution()
 U64 ZobristH::debugKey(bool isWhite, const BitBoards& BBBoard)
 {
     U64 returnZKey = 0LL;
-    for (int square = 0; square < 64; square++){
 
-        //if there is a white pawn on i square
-		if (((BBBoard.byColorPiecesBB[0][1] >> square) & 1) == 1)
-		{
-			//XOR the zkey with the U64 in the white pawns square
-			//that was generated from rand64
-			returnZKey ^= zArray[0][1][square];
-		}
-		else if (((BBBoard.byColorPiecesBB[1][1] >> square) & 1) == 1)
-		{
-			returnZKey ^= zArray[1][1][square];
-		}
-		//white pieces
-		else if (((BBBoard.byColorPiecesBB[0][2] >> square) & 1) == 1)
-		{
-			returnZKey ^= zArray[0][2][square];
-		}
-		else if (((BBBoard.byColorPiecesBB[0][3] >> square) & 1) == 1)
-		{
-			returnZKey ^= zArray[0][3][square];
-		}
-		else if (((BBBoard.byColorPiecesBB[0][4] >> square) & 1) == 1)
-		{
-			returnZKey ^= zArray[0][4][square];
-		}
-		else if (((BBBoard.byColorPiecesBB[0][5] >> square) & 1) == 1)
-		{
-			returnZKey ^= zArray[0][5][square];
-		}
-		else if (((BBBoard.byColorPiecesBB[0][6] >> square) & 1) == 1)
-		{
-			returnZKey ^= zArray[0][6][square];
-		}
+	U64 pieces = BBBoard.pieces(WHITE);
 
-		//black pieces       
-		else if (((BBBoard.byColorPiecesBB[1][2] >> square) & 1) == 1)
-		{
-			returnZKey ^= zArray[1][2][square];
-		}
-		else if (((BBBoard.byColorPiecesBB[1][3] >> square) & 1) == 1)
-		{
-			returnZKey ^= zArray[1][3][square];
-		}
-		else if (((BBBoard.byColorPiecesBB[1][4] >> square) & 1) == 1)
-		{
-			returnZKey ^= zArray[1][4][square];
-		}
-		else if (((BBBoard.byColorPiecesBB[1][5] >> square) & 1) == 1)
-		{
-			returnZKey ^= zArray[1][5][square];
-		}
-		else if (((BBBoard.byColorPiecesBB[1][6] >> square) & 1) == 1)
-		{
-			returnZKey ^= zArray[1][6][square];
-		}
-    }
+	while (pieces) {
+		int square = pop_lsb(&pieces);
+		int piece = BBBoard.pieceOnSq(square);
+
+		returnZKey ^= zArray[WHITE][piece][square];
+	}
+
+	pieces = BBBoard.pieces(BLACK);
+
+	while (pieces) {
+		int square = pop_lsb(&pieces);
+		int piece = BBBoard.pieceOnSq(square);
+
+		returnZKey ^= zArray[BLACK][piece][square];
+	}
     
 	if (BBBoard.can_enpassant()) {
 		returnZKey ^= zEnPassant[file_of(BBBoard.ep_square())];
 	}
 
 	//XOR by current castling rights
-	zobristKey ^= zCastle[BBBoard.castling_rights()];
+	returnZKey ^= zCastle[BBBoard.castling_rights()];
 
     //if it isn't whites turn, XOR test zobrist key with black move U64
     if(isWhite == false){

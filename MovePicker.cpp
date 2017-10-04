@@ -162,7 +162,7 @@ Move MovePicker::nextMove()
 			++current;
 			return ttMove;
 		
-		case CAPTURES_M:
+		case CAPTURES_M: 
 			m = pick(current++, end)->move;
 
 			if (m != ttMove) {

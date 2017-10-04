@@ -632,7 +632,7 @@ int Evaluate::evaluate(const BitBoards & boards)
 
 	//find pinned pieces of color
 	ev.pinnedPieces[WHITE] = boards.pinned_pieces(WHITE);
-	ev.pinnedPieces[BLACK] = boards.pinned_pieces(WHITE);
+	ev.pinnedPieces[BLACK] = boards.pinned_pieces(BLACK);
 
 	//probe the material hash table for an end game scenario,
 	//a factor to scale to evaluation score by, and/or

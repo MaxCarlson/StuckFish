@@ -709,15 +709,18 @@ void BitBoards::makeMove(const Move& m, StateInfo& newSt, int color)
 
 		int cr = castlingRightsMasks[from] | castlingRightsMasks[to];
 
-		st->Key ^= Zobrist::Castling[st->castlingRights & cr];
+		st->Key ^= Zobrist::Castling[st->castlingRights];
 
 		st->castlingRights &= ~cr;
+
+		st->Key ^= Zobrist::Castling[st->castlingRights];
 	}
 
 	//update the TT key, capture update done in capture above
 	st->Key ^= Zobrist::ZobArray[color][piece][from]
 		    ^  Zobrist::ZobArray[color][piece][to  ]
 		    ^  Zobrist::Color;
+
 
 	// prefetch TT entry into cache ~THIS IS WAY TOO TIME INTENSIVE? 6.1% on just this call from here?
 	// SWITCH TT to single address lookup instead of cluster of two?

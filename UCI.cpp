@@ -266,9 +266,7 @@ Move UCI::strToMove(BitBoards& newBoard, std::string& input)
 	int typeOfMove = NORMAL;
 
 	// en passants
-	if (piece == PAWN 
-		&& (to != from + pawn_push(!isWhite)
-		&& (to != from + pawn_push(!isWhite) * 2) )) {
+	if (piece == PAWN && to == newBoard.ep_square()) {
 
 		typeOfMove = ENPASSANT;
 	}

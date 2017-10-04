@@ -194,6 +194,7 @@ int Ai_Logic::searchRoot(BitBoards& board, int depth, int alpha, int beta, searc
 
         board.makeMove(newMove, st, color);  
 
+
 		/*
 		if (isRepetition(board, newMove)) { //if position from root move is a two fold repetition, discard that move
 		board.unmakeMove(newMove, color);							 ////////////////////////////////////////////////////////////////////////////////////////////////////////////REENABLE ONCE EVERYTHING IS WORKING AND CONVERT TO NEW MOVE STANDARD
@@ -325,7 +326,7 @@ int Ai_Logic::alphaBeta(BitBoards& board, int depth, int alpha, int beta, search
 	}
 
 	//are we in check?
-	FlagInCheck = board.isSquareAttacked(board.king_square(color), color);
+	FlagInCheck = board.checkers();
 
 	//if in check, or in reduced search extension: skip nulls, statics evals, razoring, etc to moves_loop:
 	if (FlagInCheck || (ss - 1)->excludedMove || sd.skipEarlyPruning) goto moves_loop;
@@ -398,7 +399,7 @@ int Ai_Logic::alphaBeta(BitBoards& board, int depth, int alpha, int beta, search
 	}
 	//*/
 
-///*  //Internal iterative deepening search same ply to a shallow depth..
+    //Internal iterative deepening search same ply to a shallow depth..
 	//and see if we can get a TT entry to speed up search
 
 	if (depth >= 6 && !ttMove
@@ -412,15 +413,9 @@ int Ai_Logic::alphaBeta(BitBoards& board, int depth, int alpha, int beta, search
 		ttentry = TT.probe(board.TTKey());
 	}
 
-	//*/
+	
 moves_loop: //jump to here if in check or in a search extension or skip early pruning is true
-/*
-	singularExtension = depth >= 8
-		&& !sd.excludedMove
-		&& ttMove && ttValue != INVALID
-		&& ttentry->flag == TT_BETA
-		&& ttentry->depth >= depth - 3;
-*/
+
 
 	//has this current node variation improved our static_eval ?
 	bool improving =        ss->staticEval >= (ss - 2)->staticEval
@@ -435,8 +430,6 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 	MovePicker mp(board, ttMove, depth, history, ss); 
 
 	while((newMove = mp.nextMove()) != MOVE_NONE){
-
-		//if (sd.excludedMove && newMove.score >= SORT_HASH) continue;
 
 		//is move legal? if not skip it
 		if (!board.isLegal(newMove, ci.pinned)) {
@@ -653,13 +646,10 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 		hashFlag = TT_EXACT; //NEED TO TEST
 	}
 
-	
-	if (!ss->excludedMove) { //only write to TTable if we're not in partial search 
-		//save info + move to transposition table 
-		TT.save(bestMove, board.TTKey(), depth, valueToTT(alpha, ss->ply), hashFlag);
-	}
-	
 
+	//save info + move to transposition table 
+	TT.save(bestMove, board.TTKey(), depth, valueToTT(alpha, ss->ply), hashFlag);
+	
 	return alpha;
 }
 
