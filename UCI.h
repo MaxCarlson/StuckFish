@@ -21,6 +21,8 @@ public:
 
 	void search(BitBoards& newBoard);
 
+	void test(BitBoards& newBoard, StateInfo & si);
+
 	std::string moveToStr(const Move & m);
 
 	Move strToMove(BitBoards& newBoard, std::string & input);

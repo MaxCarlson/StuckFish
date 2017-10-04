@@ -9,12 +9,18 @@
 #define TIMEBUFFER 500
 #define MOVESTOGO 24
 
+//structtime chronos;
+
+extern bool timeOver;
+
+extern TimeManager timeM;
+
 #if defined(_MSC_VER) || defined(_WINDOWS_)
 #include <Windows.h>
 unsigned int gettime() {
 	FILETIME ft;
 	GetSystemTimeAsFileTime(&ft);
-	return (unsigned int)((((U64)ft.dwHighDateTime << 32) | ft.dwLowDateTime) / 10000);
+	return (unsigned int)((((uint64_t)ft.dwHighDateTime << 32) | ft.dwLowDateTime) / 10000);
 }
 
 #else
@@ -31,12 +37,6 @@ unsigned int gettime() {
 	return t;
 }
 #endif
-
-//structtime chronos;
-
-extern bool timeOver;
-
-extern TimeManager timeM;
 
 
 TimeManager::TimeManager()

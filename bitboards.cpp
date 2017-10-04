@@ -225,7 +225,7 @@ void BitBoards::constructBoards(const std::string* FEN) //replace this with fen 
 		const std::string startpos = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 		readFenString(startpos);
 	}
-	delete FEN; //posibly change this? not much reason for ptr anymore
+	//delete FEN; //posibly change this? not much reason for ptr anymore
 
 
 	set_state(st);

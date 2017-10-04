@@ -44,19 +44,19 @@ const U64 FILE_GH = FileGBB + FileHBB;
 template<int color, int genType>
 SMove* pawnMoves(const BitBoards& boards, SMove *mlist, U64 target) {
 
-	const int them = color == WHITE ? BLACK : WHITE;
-	const int Up = color == WHITE ? N : S;
-	const int Down = color == WHITE ? S : N;
-	const int Right = color == WHITE ? NE : SE;
-	const int Left = color == WHITE ? NW : SW;
-	const int dpush = color == WHITE ? 16 : -16;
+	const int them  = color == WHITE ? BLACK : WHITE;
+	const int Up    = color == WHITE ? N     :     S;
+	const int Down  = color == WHITE ? S     :     N;
+	const int Right = color == WHITE ? NE    :    SE;
+	const int Left  = color == WHITE ? NW    :    SW;
+	const int dpush = color == WHITE ? 16    :   -16;
 
-	const U64 thirdRank = color == WHITE ? rank3 : rank6;
+	const U64 thirdRank   = color == WHITE ? rank3 : rank6;
 	const U64 seventhRank = color == WHITE ? rank7 : rank2;
-	const U64 eighthRank = color == WHITE ? rank8 : rank1;
+	const U64 eighthRank  = color == WHITE ? rank8 : rank1;
 
 
-	const U64 pawns = boards.pieces(color, PAWN) & ~seventhRank;
+	const U64 pawns			 = boards.pieces(color, PAWN) & ~seventhRank;
 	const U64 candidatePawns = boards.pieces(color, PAWN) &  seventhRank;
 
 	const U64 enemys = (genType == EVASIONS ? (boards.pieces(them) ^ boards.pieces(them, KING)) & target
