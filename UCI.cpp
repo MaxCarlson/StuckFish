@@ -26,7 +26,7 @@ int fixedDepthSearch = 0;
 
 UCI::UCI()
 {
-	TT.resize(1024); //change later to be an input option for TT!!!!!
+	TT.resize(1024); //change later to be an input option for TT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	//TT.resizePawnT(128); //play with sizes for speed
 }
 
@@ -48,6 +48,10 @@ void UCI::uciLoop()
 	std::cout.setf(std::ios::unitbuf);
 
 	//printOptions();
+
+	newGame(newBoard);
+	searchM.initSearch();
+	searchM.clearHistorys();
 
 	while (std::getline(std::cin, line))
 	{
@@ -80,13 +84,18 @@ void UCI::uciLoop()
 			newGame(newBoard); 
 			searchM.clearHistorys();
 			TT.clearTable(); //need to clear other TTables too at somepoint
-			searchM.initSearch();
 		}
 		else if (token == "test") { //used to enable quick testing
 			test(newBoard, si);
 		}
 		else if (token == "perft") {
 			perftUCI(newBoard, is);
+		}
+		else if (token == "divide") {  /////////////////NEED TO WRITE ERROR CATCHING FOR NO NUMBER ENTERED
+			divideUCI(newBoard, is);
+		}
+		else if (token == "draw") {
+			drawUCI(newBoard);
 		}
 		else if (token == "position") {
 			updatePosition(newBoard, is, si);
@@ -401,5 +410,21 @@ void UCI::perftUCI(BitBoards & newBoard, std::istringstream & input)
 	U64 result = searchM.perft<true>(newBoard, d);
 
 	std::cout << result << std::endl;
+}
+
+void UCI::divideUCI(BitBoards & newBoard, std::istringstream & input)
+{
+	std::string tk;
+
+	input >> tk;
+
+	int d = std::stoi(tk);
+
+	searchM.perftDivide<true>(newBoard, d);
+}
+
+void UCI::drawUCI(BitBoards & newBoard)
+{
+	newBoard.drawBBA();
 }
 

@@ -920,22 +920,19 @@ U64 Ai_Logic::perft(BitBoards & board, int depth)
 	StateInfo st;
 	U64 count, nodes = 0;
 
-	CheckInfo ci(board);
 
 	SMove mlist[256];
 	SMove * end = generate<LEGAL>(board, mlist);
 
 	for (SMove * i = mlist; i != end; ++i)
 	{
-		if (depth == 0)
-			return 1;
+		if (depth == 1) //if (depth <= 0) //for testing captures
+			nodes++; //return 0; //for testing captures
 
 		else {
-
+			//nodes += board.capture(i->move); //for testing captures
 
 			board.makeMove(i->move, st, board.stm());
-
-			nodes++;
 
 			count = perft<false>(board, depth - 1);
 
@@ -945,9 +942,68 @@ U64 Ai_Logic::perft(BitBoards & board, int depth)
 		}
 	}
 	return nodes;
-
 }
 
 template U64 Ai_Logic::perft<true>(BitBoards & board, int depth);
 
+std::string flipsL[8] = { "a", "b", "c", "d", "e", "f", "g", "h" };
+int flipsN[8]		  = {   8,   7,   6,   5,   4,   3,   2,   1 };
 
+template<bool Root>
+U64 Ai_Logic::perftDivide(BitBoards & board, int depth)
+{
+	StateInfo st;
+	U64 count, nodes = 0, tNodes = 0;
+
+	SMove mlist[256];
+	SMove * end = generate<LEGAL>(board, mlist);
+
+	if (depth == 0)
+		return 0;
+
+	for (SMove * i = mlist; i != end; ++i)
+	{
+		Move m = i->move;
+
+		if (depth == 1)
+			nodes++;
+
+
+		if (Root) {
+			
+
+			int x = file_of(from_sq(m));
+			int y = rank_of(from_sq(m)) ^ 7; // Note: Move scheme was changed and too lazy to change array
+			int x1 = file_of(to_sq(m));
+			int y1 = rank_of(to_sq(m)) ^ 7;
+
+			board.makeMove(m, st, board.stm());
+
+			U64 nodesFromMove = perftDivide<false>(board, depth - 1);
+
+			tNodes += nodesFromMove;
+
+			std::cout << flipsL[x] << flipsN[y] << flipsL[x1] << flipsN[y1] << "   " << nodesFromMove << std::endl;
+
+			board.unmakeMove(m, !board.stm());
+		}
+
+		if(!Root && depth != 1)
+		{
+			board.makeMove(m, st, board.stm());
+
+			count = perftDivide<false>(board, depth - 1);
+
+			nodes += count;
+
+			board.unmakeMove(m, !board.stm());
+		}
+	}
+
+	if (Root)
+		std::cout << std::endl << "Nodes: " << tNodes << std::endl;
+
+	return nodes;
+}
+
+template U64 Ai_Logic::perftDivide<true>(BitBoards & board, int depth);

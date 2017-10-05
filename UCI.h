@@ -25,6 +25,10 @@ public:
 
 	void perftUCI(BitBoards& newBoard, std::istringstream & input);
 
+	void divideUCI(BitBoards& newBoard, std::istringstream & input);
+
+	void drawUCI(BitBoards& newBoard);
+
 	std::string moveToStr(const Move & m);
 
 	Move strToMove(BitBoards& newBoard, std::string & input);

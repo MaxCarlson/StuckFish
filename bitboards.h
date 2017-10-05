@@ -400,7 +400,7 @@ inline bool BitBoards::pawnOn7th(int color)
 inline bool BitBoards::non_pawn_material(int color) const
 {
 	return (pieceCount[color][KNIGHT] != 0 || pieceCount[color][BISHOP] != 0
-		&& pieceCount[color][ROOK] != 0 || pieceCount[color][QUEEN] != 0) ? true : false;
+	   	 && pieceCount[color][ROOK  ] != 0 || pieceCount[color][QUEEN ] != 0) ? true : false; //this can be reduced to remove true : false just returning the ( || || || )
 }
 
 inline U64 BitBoards::square_bb(int sq) const

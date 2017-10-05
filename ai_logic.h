@@ -42,6 +42,9 @@ public:
 	template<bool Root>
 	U64 perft(BitBoards & board, int depth);
 
+	template<bool Root>
+	U64 perftDivide(BitBoards & board, int depth);
+
 private:
 	
 	//root of search ~~ experimental
