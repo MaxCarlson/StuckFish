@@ -87,7 +87,7 @@ SMove* pawnMoves(const BitBoards& boards, SMove *mlist, U64 target) {
 			(mlist++)->move = create_move(index + dpush, index);
 		}
 	}
-/*
+
 	// Pawn promotions, if we have pawns on the 7th..
 	// generate promotions
 	if (candidatePawns && (genType != EVASIONS || (target & eighthRank) )) {
@@ -131,7 +131,7 @@ SMove* pawnMoves(const BitBoards& boards, SMove *mlist, U64 target) {
 		}
 	}
 
-*/
+
 	
 	if (genType == CAPTURES || genType == EVASIONS || genType == MAIN_GEN) {
 
@@ -150,7 +150,7 @@ SMove* pawnMoves(const BitBoards& boards, SMove *mlist, U64 target) {
 
 			(mlist++)->move = create_move(index - Left, index);
 		}
-		/*
+		
 		// en passant
 		if (boards.can_enpassant()) {
 
@@ -170,8 +170,6 @@ SMove* pawnMoves(const BitBoards& boards, SMove *mlist, U64 target) {
 				(mlist++)->move = create_special<ENPASSANT, PIECE_EMPTY>(from, epSq);
 			}	
 		}
-		*/
-
 	}
 
 	return mlist;
@@ -272,7 +270,8 @@ SMove* generate(const BitBoards & board, SMove *mlist)
 	// occupied by our friends or E king.
 	target = genType == CAPTURES ?  (board.pieces(!color) ^ board.pieces(!color, KING))
 		   : genType == MAIN_GEN ? ~(board.pieces(color)  | board.pieces(!color, KING))
-		   : genType == QUIETS   ?   board.EmptyTiles     : 0;                                  /////////////////////////////////////////////NEED TO ADD THIS TO OTHER TEMPLATES TO MAKE SURE ONLY QUIETS ARE GENERATED~~ partially done / complete?
+		   : genType == QUIETS   ?   board.EmptyTiles     : 0;   /////////////////////////////////////////////NEED TO ADD THIS TO OTHER TEMPLATES TO MAKE SURE ONLY QUIETS ARE GENERATED~~ partially done / complete?
+
 
 	return color == WHITE ? generateAll<WHITE, genType>(board, mlist, target)
 			              : generateAll<BLACK, genType>(board, mlist, target);
@@ -329,16 +328,13 @@ SMove* generate<LEGAL>(const BitBoards & board, SMove *mlist)
 	
 	end = board.checkers() ? generate<EVASIONS>(board, mlist)
 						   : generate<MAIN_GEN>(board, mlist);
-	
-	//end = generate<MAIN_GEN>(board, mlist);
-
-	//end = generate<CAPTURES>(board, mlist); //Perft 4 for using these 194,000 ish, need to test once move gen is geting correct perft.
-	//end = generate<QUIETS>(board, mlist);
-
 
 	while (current != end) {
+
+		//bool legal = board.isLegal(current->move, pinned);
+
 		if ( (pinned || from_sq(current->move) == ksq || move_type(current->move) == ENPASSANT)
-			&& board.isLegal(current->move, pinned))
+			&& !board.isLegal(current->move, pinned))
 			current->move = (--end)->move;
 
 		else

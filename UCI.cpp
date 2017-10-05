@@ -396,11 +396,6 @@ void UCI::test(BitBoards & newBoard, StateInfo & si)
 
 void UCI::perftUCI(BitBoards & newBoard, std::istringstream & input)
 {
-
-	newGame(newBoard);
-	searchM.clearHistorys();
-	TT.clearTable(); //need to clear other TTables too at somepoint ??
-
 	std::string tk;
 
 	input >> tk;

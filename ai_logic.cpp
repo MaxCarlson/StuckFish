@@ -957,6 +957,7 @@ U64 Ai_Logic::perftDivide(BitBoards & board, int depth)
 
 	SMove mlist[256];
 	SMove * end = generate<LEGAL>(board, mlist);
+	int RootMoves = 0;
 
 	if (depth == 0)
 		return 0;
@@ -978,6 +979,8 @@ U64 Ai_Logic::perftDivide(BitBoards & board, int depth)
 			int y1 = rank_of(to_sq(m)) ^ 7;
 
 			board.makeMove(m, st, board.stm());
+
+			RootMoves++;
 
 			U64 nodesFromMove = perftDivide<false>(board, depth - 1);
 
@@ -1001,7 +1004,10 @@ U64 Ai_Logic::perftDivide(BitBoards & board, int depth)
 	}
 
 	if (Root)
+	{
 		std::cout << std::endl << "Nodes: " << tNodes << std::endl;
+		std::cout << "Moves: " << RootMoves << std::endl;
+	}
 
 	return nodes;
 }
