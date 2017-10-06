@@ -333,6 +333,9 @@ SMove* generate<LEGAL>(const BitBoards & board, SMove *mlist)
 
 	while (current != end) {
 
+		//if(!board.pseudoLegal(current->move)) //SERIOUS ISSUES WITH PSUEDO LEGAL!!!!!!!
+		//	current->move = (--end)->move;
+
 		if ( (pinned || from_sq(current->move) == ksq || move_type(current->move) == ENPASSANT)
 			&& !board.isLegal(current->move, pinned))
 			current->move = (--end)->move;

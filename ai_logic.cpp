@@ -149,10 +149,6 @@ Move Ai_Logic::iterativeDeep(BitBoards& board, int depth, bool isWhite)
     //make final move on bitboards + draw board
     board.makeMove(bestMove, st, color);
     board.drawBBA();
-	//std::cout << board.sideMaterial[0] << " " << board.sideMaterial[1] <<std::endl;
-
-    //evaluateBB ev; //used for prininting static eval after move
-    //std::cout << "Board evalutes to: " << ev.evalBoard(true, board, zobrist) << " for white." << std::endl;
 
     return bestMove;
 }
@@ -293,8 +289,8 @@ int Ai_Logic::alphaBeta(BitBoards& board, int depth, int alpha, int beta, search
 
 	//mate distance pruning, prevents looking for mates longer than one we've already found
 	// NEED to add is draw detection
-	alpha = std::max(mated_in(ss->ply), alpha);
-	beta = std::min(mate_in(ss->ply + 1), beta);
+	alpha = std::max(mated_in(ss->ply),    alpha);
+	beta  = std::min(mate_in( ss->ply + 1), beta);
 	if (alpha >= beta) return alpha;
 
 	const HashEntry *ttentry;
@@ -440,27 +436,6 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 
 		//make move on BB's store data to string so move can be undone
 		board.makeMove(newMove, st, color);
-
-		/*
-		if (board.isSquareAttacked(board.king_square(color), color)) { //////////////////////////////////////////////////////////////////////////DELETE THIS AS SOON IS REASONABL
-			board.drawBB(board.checkers());
-			board.drawBBA();
-
-			board.unmakeMove(newMove, color);
-
-			int ff = from_sq(newMove);
-			int ttt = to_sq(newMove);
-			board.drawBBA();
-
-			SMove mm[256];
-			SMove * a = generate<MAIN_GEN>(board, mm);
-
-			//is move legal? if not skip it
-			if (!board.isLegal(newMove, ci.pinned)) {
-				continue;
-			}
-		}
-		*/
 
 		legalMoves++;
 		newDepth   = depth - 1;
@@ -845,7 +820,7 @@ inline int valueFromTT(int val, int ply)
 {
 	//does the opposite of valueToTT, adjusts mate score from TTable to the appropriate score and the current ply
 	return  val == 0 ? 0
-		: val >= VALUE_MATE_IN_MAX_PLY ? val - ply
+		: val >= VALUE_MATE_IN_MAX_PLY  ? val - ply
 		: val <= VALUE_MATED_IN_MAX_PLY ? val + ply : val;
 }
 

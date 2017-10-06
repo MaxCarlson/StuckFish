@@ -445,7 +445,7 @@ bool BitBoards::pseudoLegal(Move m) const
 			&& !((from + pawn_push(color) == to) && empty(to)) // Not a single push
 
 			&& !((from + 2 * pawn_push(color) == to) // Not a double pawn push
-			&& (rank_of(from) == relative_rank(color, 2))
+			&& (rank_of(from) == relative_rank(color, 1))
 			&& empty(to)
 			&& empty(to - pawn_push(color))))
 			return false;

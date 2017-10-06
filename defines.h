@@ -406,8 +406,8 @@ inline int file_of(int sq) {
 	return sq & 7;
 }
 
-//returns the correct rank of the square for our bitboard layout.
-//with the XOR 7 it returns the reverse correct
+// Returns the correct rank of the square for our bitboard layout.
+// Ranking starts from a ZERO index!!!
 inline int rank_of(int sq) {
 	return (sq >> 3) ^ 7;
 }
