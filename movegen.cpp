@@ -40,6 +40,28 @@ const U64 FileHBB = FileABB << 7;
 const U64 FILE_AB = FileABB + FileBBB;
 const U64 FILE_GH = FileGBB + FileHBB;
 
+template<int Shift, int genType>
+SMove * generatePromotions(const BitBoards& boards, U64 pawns, SMove *mlist, U64 target) {
+
+	U64 moves = shift_bb<Shift>(pawns) & target;
+
+	while (moves) {
+
+		int index = pop_lsb(&moves);
+
+		if (genType == CAPTURES || genType == MAIN_GEN || genType == EVASIONS )
+			(mlist++)->move = create_special<PROMOTION,  QUEEN>(index - Shift, index);
+
+		if (genType == QUIETS   || genType == MAIN_GEN || genType == EVASIONS) {
+
+			(mlist++)->move = create_special<PROMOTION,   ROOK>(index - Shift, index);
+			(mlist++)->move = create_special<PROMOTION, BISHOP>(index - Shift, index);
+			(mlist++)->move = create_special<PROMOTION, KNIGHT>(index - Shift, index);
+		}
+	}
+
+	return mlist;
+}
 
 template<int color, int genType>
 SMove* pawnMoves(const BitBoards& boards, SMove *mlist, U64 target) {
@@ -89,50 +111,20 @@ SMove* pawnMoves(const BitBoards& boards, SMove *mlist, U64 target) {
 	}
 
 	// Pawn promotions, if we have pawns on the 7th..
-	// generate promotions
+	// generate promotions													 
 	if (candidatePawns && (genType != EVASIONS || (target & eighthRank) )) {
 
+		U64 targetP = boards.EmptyTiles;
 
-		// moving forward one
-		moves = shift_bb<Up>(candidatePawns) & boards.EmptyTiles & target & eighthRank;
-
-		while (moves) {
-			int index = pop_lsb(&moves);
-
-			(mlist++)->move = create_special<PROMOTION,  QUEEN>(index + Down, index);
-			(mlist++)->move = create_special<PROMOTION,   ROOK>(index + Down, index);
-			(mlist++)->move = create_special<PROMOTION, BISHOP>(index + Down, index);
-			(mlist++)->move = create_special<PROMOTION, KNIGHT>(index + Down, index);
-		}
-
-		// pawn capture promotions
-		// capture right
-		moves = shift_bb<Right>(candidatePawns) & enemys & eighthRank;
-
-		while (moves) {
-			int index = pop_lsb(&moves);
-
-			(mlist++)->move = create_special<PROMOTION,  QUEEN>(index - Right, index);
-			(mlist++)->move = create_special<PROMOTION,   ROOK>(index - Right, index);
-			(mlist++)->move = create_special<PROMOTION, BISHOP>(index - Right, index);
-			(mlist++)->move = create_special<PROMOTION, KNIGHT>(index - Right, index);
-		}
-
-		// capture left
-		moves = shift_bb<Left>(candidatePawns) & enemys & eighthRank;
-
-		while (moves) {
-			int index = pop_lsb(&moves);
-
-			(mlist++)->move = create_special<PROMOTION,  QUEEN>(index - Left, index);
-			(mlist++)->move = create_special<PROMOTION,   ROOK>(index - Left, index);
-			(mlist++)->move = create_special<PROMOTION, BISHOP>(index - Left, index);
-			(mlist++)->move = create_special<PROMOTION, KNIGHT>(index - Left, index);
-		}
+		if (genType == EVASIONS)
+			targetP &= target;
+	
+		mlist = generatePromotions<Up,    genType>(boards, candidatePawns, mlist, targetP);
+		mlist = generatePromotions<Right, genType>(boards, candidatePawns, mlist,  enemys);
+		mlist = generatePromotions<Left,  genType>(boards, candidatePawns, mlist,  enemys);	
 	}
 
 
-	
 	if (genType == CAPTURES || genType == EVASIONS || genType == MAIN_GEN) {
 
 		//capture right
@@ -329,11 +321,17 @@ SMove* generate<LEGAL>(const BitBoards & board, SMove *mlist)
 	end = board.checkers() ? generate<EVASIONS>(board, mlist)
 						   : generate<MAIN_GEN>(board, mlist);
 
-	while (current != end) {
+	/* //FOR PERFT TESTING
+	if (board.checkers())
+		end = generate<EVASIONS>(board, mlist);
 
-		//int from = from_sq(current->move); //used for temp debugging
-		//int to = to_sq(current->move);
-		//bool legal = board.isLegal(current->move, pinned);
+	else {
+		end = generate<QUIETS>(board, mlist);
+		end = generate<CAPTURES>(board, end);
+	}
+	//*/
+
+	while (current != end) {
 
 		if ( (pinned || from_sq(current->move) == ksq || move_type(current->move) == ENPASSANT)
 			&& !board.isLegal(current->move, pinned))
