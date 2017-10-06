@@ -234,7 +234,7 @@ void BitBoards::constructBoards(const std::string* FEN) //replace this with fen 
   	EmptyTiles = ~FullTiles;	
 }
 
-void BitBoards::set_state(StateInfo * si)
+void BitBoards::set_state(StateInfo * si)  ///////////////////////////////////// Remove bInfo and transfer stuff to stateInfo once more stuff is working. Possibly move zobrist key debug like stuff to here, so we can check board isokay better internally
 {
 	//get zobrist key of current position and store to board
 	si->Key = zobrist.getZobristHash(*this);
@@ -279,7 +279,7 @@ void BitBoards::set_state(StateInfo * si)
 void BitBoards::readFenString(const std::string& FEN)
 {								
 				     //  B                          K        N     P  Q  R
-	int lookup[18] = {0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 6, 0, 0, 2, 0, 1, 5, 4};
+	int lookup[18] = {0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 6, 0, 0, 2, 0, 1, 5, 4}; // upper case values - 'A'
 
 	int spCount = 0;
 

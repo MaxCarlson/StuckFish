@@ -94,7 +94,7 @@ SMove* pawnMoves(const BitBoards& boards, SMove *mlist, U64 target) {
 
 
 		// moving forward one
-		moves = shift_bb<Up>(candidatePawns) & target & eighthRank;
+		moves = shift_bb<Up>(candidatePawns) & boards.EmptyTiles & target & eighthRank;
 
 		while (moves) {
 			int index = pop_lsb(&moves);
@@ -331,6 +331,8 @@ SMove* generate<LEGAL>(const BitBoards & board, SMove *mlist)
 
 	while (current != end) {
 
+		//int from = from_sq(current->move); //used for temp debugging
+		//int to = to_sq(current->move);
 		//bool legal = board.isLegal(current->move, pinned);
 
 		if ( (pinned || from_sq(current->move) == ksq || move_type(current->move) == ENPASSANT)
