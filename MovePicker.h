@@ -53,11 +53,9 @@ MovePicker::MovePicker(const BitBoards & board, Move ttm, int depth, const Histo
 	current = end  = mList;
 	endBadCaptures = mList + 255;
 
-	if (b.checkers()) 
-		Stage = EVASIONS_;
+	
+	Stage = b.checkers() ? EVASIONS_ : MAIN_M;
 
-	else 
-		Stage = MAIN_M;
 
 	// Check for psuedo legality!!!
 	ttMove = ( ttm && b.pseudoLegal(ttm)  ? ttm : MOVE_NONE);

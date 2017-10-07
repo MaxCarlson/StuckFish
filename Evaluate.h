@@ -18,10 +18,6 @@ private:
 	int wKingShield(const BitBoards & boards);
 	int bKingShield(const BitBoards & boards);
 
-
-	void saveTT(int color, int result, int hash, const BitBoards & boards);
-
-
 	void blockedPieces(int side, const BitBoards & boards, EvalInfo & ev);
 
 	bool isPiece(const U64 & piece, const BitBoards & boards, int sq);

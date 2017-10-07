@@ -60,7 +60,7 @@ private:
     int contempt(const BitBoards& newBoard, int color); //need some way to check board material before implementing
 
 	//repetition checker
-	bool isRepetition(const BitBoards& newBoard, const Move& m);
+	bool isRepetition(const BitBoards& newBoard, Move m);
 
 	void insert_pv(BitBoards & board);
 	

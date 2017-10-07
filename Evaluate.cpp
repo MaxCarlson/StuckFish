@@ -216,7 +216,7 @@ Scores evaluatePieces(const BitBoards & boards, EvalInfo & ev, U64 * mobilityAre
 			   : boards.PseudoAttacks[KNIGHT][square]; 
 
 		// If piece is pinned, be sure that we only look at
-		// Mobility and move data for it moving along it's pinned line ///////////////////////////////////////THIS NEEDS SERIOUS TESTING, SLOWS DOWN SEARCH SIGNIFICANTLY
+		// Mobility and move data for it moving along it's pinned line // Does this still slow down search?????????????????
 		if (ev.pinnedPieces[color] & boards.square_bb(square))
 			bb &= LineBB[boards.king_square(color)][square];
 
@@ -603,26 +603,6 @@ int Evaluate::evaluate(const BitBoards & boards)
 {
 	const int color = boards.stm();
 
-	/*
-	 //is this needed with TT lookup in quiet??
-	int hash = boards.TTKey() & 5021982; //REPLACE THIS!!
-	HashEntry entry = transpositionEval[hash];
-	//if we get a hash-table hit, return the evaluation
-	if (entry.zobrist == boards.TTKey()) {
-		if (color == WHITE) {
-			//if eval was from blacks POV, return -eval
-			if (entry.flag) return -entry.eval;
-			else return entry.eval; //if eval was from our side, return normally
-		}
-		else {
-
-			if (entry.flag) return entry.eval;
-			else return -entry.eval;
-		}
-
-	}
-	*/
-
 	EvalInfo ev;
 	Scores score;	
 	int result = 0;
@@ -745,9 +725,6 @@ int Evaluate::evaluate(const BitBoards & boards)
 	//switch score for color
 	result = color == WHITE ? result : -result;
 
-	//save to TT eval table
-	//saveTT(color, result, hash, boards);
-
 	return result;
 }
 
@@ -815,20 +792,6 @@ int Evaluate::bKingShield(const BitBoards & boards)
 		else if (pawns & (location << C6)) result += 5;
 	}
 	return result;
-}
-
-void Evaluate::saveTT(int color, int result, int hash, const BitBoards &boards) //replace this scheme
-{
-	/*
-	//store eval into eval hash table
-	transpositionEval[hash].eval = result;
-	transpositionEval[hash].zobrist = boards.TTKey();
-
-	//set flag for TT so we can switch value if we get a TT hit but
-	//the color of the eval was opposite
-	if (color == WHITE) transpositionEval[hash].flag = 0;
-	else transpositionEval[hash].flag = 1;
-	*/
 }
 
 void Evaluate::blockedPieces(int side, const BitBoards& boards, EvalInfo & ev) //REPLACE THIS SOON, DEF BETTER WAY

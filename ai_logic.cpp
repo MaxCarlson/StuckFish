@@ -190,13 +190,14 @@ int Ai_Logic::searchRoot(BitBoards& board, int depth, int alpha, int beta, searc
 
         board.makeMove(newMove, st, color);  
 
-
-		/*
-		if (isRepetition(board, newMove)) { //if position from root move is a two fold repetition, discard that move
-		board.unmakeMove(newMove, color);							 ////////////////////////////////////////////////////////////////////////////////////////////////////////////REENABLE ONCE EVERYTHING IS WORKING AND CONVERT TO NEW MOVE STANDARD
-		continue;
+		///*
+		//if position from root move is a two fold repetition, discard that move
+		if (isRepetition(board, newMove)) { 
+			board.unmakeMove(newMove, color);							
+			continue;
 		}
-		*/
+		//*/
+		
 
         legalMoves ++;
 
@@ -407,6 +408,7 @@ int Ai_Logic::alphaBeta(BitBoards& board, int depth, int alpha, int beta, search
 		sd.skipEarlyPruning = false;
 
 		ttentry = TT.probe(board.TTKey());
+		ttMove  = ttentry ? ttentry->move() : MOVE_NONE;
 	}
 
 	
@@ -419,6 +421,8 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 		           || (ss - 2)->staticEval == 0;
 	
 	int hashFlag = TT_ALPHA, legalMoves = 0, bestScore = -INF;
+
+	bool ttMoveCapture = (ttMove && board.capture(ttMove));
 
 	CheckInfo ci(board);
 
@@ -524,10 +528,13 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 			if (ss->reduction
 				&& move_type(newMove) == NORMAL
 				&& board.pieceOnSq(to_sq(newMove)) != PAWN
-				&& board.SEE(create_move(to_sq(newMove), from_sq(newMove)), color, false) < 0){ //////////////////////////////////////////////////////////////////////////TEST THIS TO TRY AND MAKE SURE SEE IS WORKING CORRECTLY HERE!!!!
+				&& board.SEE(create_move(to_sq(newMove), from_sq(newMove)), color, false) < 0){ 
 
 					ss->reduction = std::max(1, ss->reduction - 2); //play with reduction value
 			}
+
+			if (ttMoveCapture)
+				ss->reduction += 1; // THIS NEEDS TESTING!!!
 
 			int d1 =  std::max(newDepth - ss->reduction, 1);
 
@@ -614,13 +621,13 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 		updateStats(bestMove, ss, depth, quiets, quietsC, color);
 	}
 	
-
+	/*
 	if (futileMoves && !raisedAlpha && hashFlag != TT_BETA) {
 
 		if (!legalMoves) alpha = ss->staticEval; //testing needed as well
 		hashFlag = TT_EXACT; //NEED TO TEST
 	}
-
+	*/
 
 	//save info + move to transposition table 
 	TT.save(bestMove, board.TTKey(), depth, valueToTT(alpha, ss->ply), hashFlag);
@@ -739,50 +746,27 @@ int Ai_Logic::contempt(const BitBoards& board, int color)
 	return 0;
 }
 
-bool Ai_Logic::isRepetition(const BitBoards& board, const Move& m) //Ai_Logic::
+bool Ai_Logic::isRepetition(const BitBoards& board, Move m) 
 {
-	if (board.pieceOnSq(m) == PAWN) return false;
-	//add in castling logic to quit early
+	if (board.pieceOnSq(from_sq(m)) == PAWN) 
+		return false;
+
+	if (move_type(m) != NORMAL)
+		return false;
 
 	int repCount = 0;
 
 	for (int i = 0; i < history.twoFoldRep.size(); ++i) {
-		if (board.TTKey() == history.twoFoldRep[i]) repCount++;
+		if (board.TTKey() == history.twoFoldRep[i]) 
+			repCount++;
 	}
 
 	if (repCount >= 2) {
 		return true;
 	}
-
+	
 	return false;
 }
-
-/*
-void Ai_Logic::insert_pv(BitBoards & board)
-{
-	StateInfo state[MAX_PLY + 6], *st = state;
-	const HashEntry * tte;
-	int id = 1;
-
-	do {
-		tte = TT.probe(board.TTKey());
-
-		if (!tte || tte->move != sd.PV[id])
-			TT.save(sd.PV[id], board.TTKey(), 0, 0, TT_ALPHA); //////////////////////////////////////////////////////////////////////////////////////////////////REENABLE ONCE EVERYTHING IS WOKRING
-
-		board.makeMove(sd.PV[id++], *st++, board.stm());
-
-		board.drawBBA();
-
-	} while (sd.PV[id].tried);
-
-	while (id > 1) {
-		board.drawBBA();
-		board.unmakeMove(sd.PV[--id], !board.stm());
-	}
-	board.drawBBA();
-}
-*/
 
 void Ai_Logic::updateStats(Move move, searchStack * ss, int depth, Move * quiets, int qCount, int color)
 {	
@@ -1023,3 +1007,30 @@ U64 Ai_Logic::perftDivide(BitBoards & board, int depth)
 }
 
 template U64 Ai_Logic::perftDivide<true>(BitBoards & board, int depth);
+
+/*
+void Ai_Logic::insert_pv(BitBoards & board)
+{
+StateInfo state[MAX_PLY + 6], *st = state;
+const HashEntry * tte;
+int id = 1;
+
+do {
+tte = TT.probe(board.TTKey());
+
+if (!tte || tte->move != sd.PV[id])
+TT.save(sd.PV[id], board.TTKey(), 0, 0, TT_ALPHA); //////////////////////////////////////////////////////////////////////////////////////////////////REENABLE ONCE EVERYTHING IS WOKRING
+
+board.makeMove(sd.PV[id++], *st++, board.stm());
+
+board.drawBBA();
+
+} while (sd.PV[id].tried);
+
+while (id > 1) {
+board.drawBBA();
+board.unmakeMove(sd.PV[--id], !board.stm());
+}
+board.drawBBA();
+}
+*/
