@@ -29,6 +29,9 @@ public:
 
 	void drawUCI(BitBoards& newBoard);
 
+	// Prints a list of commands for user
+	void helpUCI();
+
 	std::string moveToStr(const Move & m);
 
 	Move strToMove(BitBoards& newBoard, std::string & input);

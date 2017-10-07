@@ -21,8 +21,8 @@ class MovePicker
 {
 
 public:
-	MovePicker(const BitBoards & board, Move ttmove, int depth, const Historys & hist, searchStack * ss);
-	MovePicker(const BitBoards & board, Move ttmove, const Historys & hist, searchStack * ss);
+	MovePicker(const BitBoards & board, Move ttm, int depth, const Historys & hist, searchStack * ss);
+	MovePicker(const BitBoards & board, Move ttm, const Historys & hist, searchStack * ss);
 
 	Move nextMove();
 	
@@ -46,9 +46,9 @@ private:
 	SMove *current, *end, *endBadCaptures, *endQuiets;
 	SMove mList[256];
 };
-							////Causes extern symbol error in .cpp file?
+							
 // Main search initilization 
-MovePicker::MovePicker(const BitBoards & board, Move ttmove, int depth, const Historys & hist, searchStack * ss) : b(board), h(hist), s(ss), Depth(depth)
+MovePicker::MovePicker(const BitBoards & board, Move ttm, int depth, const Historys & hist, searchStack * ss) : b(board), h(hist), s(ss), Depth(depth)
 {
 	current = end  = mList;
 	endBadCaptures = mList + 255;
@@ -59,24 +59,26 @@ MovePicker::MovePicker(const BitBoards & board, Move ttmove, int depth, const Hi
 	else 
 		Stage = MAIN_M;
 
-
 	// Check for psuedo legality!!!
-	ttMove = ( ttMove && b.pseudoLegal(ttMove)  ? ttmove : MOVE_NONE);
+	ttMove = ( ttm && b.pseudoLegal(ttm)  ? ttm : MOVE_NONE);
 
 	end += (ttMove != MOVE_NONE);
 }
 
 // For Qsearch
-MovePicker::MovePicker(const BitBoards & board, Move ttmove, const Historys & hist, searchStack * ss) : b(board), h(hist), s(ss)
+MovePicker::MovePicker(const BitBoards & board, Move ttm, const Historys & hist, searchStack * ss) : b(board), h(hist), s(ss)
 {
+	current = end = mList;
+	endBadCaptures = mList + 255;
 
 	Stage = QSEARCH_;
 
-	if (ttmove && !b.capture_or_promotion(ttmove))
-		ttmove = MOVE_NONE;
+	if (ttm && !b.capture_or_promotion(ttm)) 
+		ttm = MOVE_NONE;
 
+	
 	// Check for psuedo legality!!!
-	ttMove = (ttMove && b.pseudoLegal(ttMove) ? ttmove : MOVE_NONE);
+	ttMove = (ttm && b.pseudoLegal(ttm) ? ttm : MOVE_NONE);
 
 	end += (ttMove != MOVE_NONE);
 }

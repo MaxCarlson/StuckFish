@@ -16,8 +16,8 @@ Ai_Logic searchM;
 bool isWhite = true;
 
 //UCI inputs for go
-int wtime; //time left on whites clock
-int btime; //black clock
+long wtime; //time left on whites clock
+long btime; //black clock
 int winc;
 int binc;
 int movestogo;
@@ -94,14 +94,15 @@ void UCI::uciLoop()
 		else if (token == "divide") {  /////////////////NEED TO WRITE ERROR CATCHING FOR NO NUMBER ENTERED
 			divideUCI(newBoard, is);
 		}
-		else if (token == "draw") {
-			drawUCI(newBoard);
-		}
 		else if (token == "position") {
 			updatePosition(newBoard, is, si);
 		}
-		else if (token == "print"){
+		else if (token == "print" || token == "draw"){
 			newBoard.drawBBA();
+		}
+		else if (token == "help")
+		{
+			helpUCI();
 		}
 		else if (token == "printOptions") {
 			//printOptions();
@@ -368,6 +369,7 @@ void UCI::test(BitBoards & newBoard, StateInfo & si)
 		searchM.clearHistorys();
 		TT.clearTable(); //need to clear other TTables too at somepoint ??
 		wtime = btime = 290000;
+		fixedDepthSearch = 13;  ///make this an input string for test >?
 
 		std::string testFen = "fen ";
 
@@ -381,6 +383,8 @@ void UCI::test(BitBoards & newBoard, StateInfo & si)
 
 		nodes += sd.nodes;
 	}
+
+	fixedDepthSearch = 0;
 
 
 	time_t endtimer;
@@ -421,5 +425,21 @@ void UCI::divideUCI(BitBoards & newBoard, std::istringstream & input)
 void UCI::drawUCI(BitBoards & newBoard)
 {
 	newBoard.drawBBA();
+}
+
+void UCI::helpUCI()
+{
+	std::cout << std::endl << ENGINE_NAME << " by Max Carlson" << std::endl;
+	std::cout << "ucinewgame...............Resets current position to a clean slate. Clears TTable as well" << std::endl;
+	std::cout << "draw.....................Draws ASCI representation of the current board"<< std::endl;
+	std::cout << "perft x..................Perft  results for current position at depth x" << std::endl;
+	std::cout << "divide y.................Divide results for current position at depth y" << std::endl;
+	std::cout << "position fen <FEN>.......Sets position to input fen string"<< std::endl;
+	std::cout << "position startpos........Sets position to start position"<< std::endl;
+	std::cout << "position x moves x.......Sets position fen or startpos and makes input moves "<< std::endl;
+	std::cout << "go wtime x  btime y......Starts search with white remaining time x and black remaining time y"<< std::endl;
+	std::cout << "go depth x...............Starts search and will search to x depth"<< std::endl;
+	std::cout << "test.....................Runs through a test suite of positions at a fixed depth, designed for benchmarking search"<< std::endl;
+	std::cout << "quit.....................Quits engine"<< std::endl;
 }
 

@@ -9,8 +9,8 @@
 
 
 
-// Taken almost directly from Stockfish.S
-// Our insertion sort, which is guaranteed (and also needed) to be stable
+// Taken almost directly from Stockfish.
+// Our insertion sort, which is guaranteed to be stable
 void insertion_sort(SMove* begin, SMove* end)
 {
 	SMove tmp, *p, *q;

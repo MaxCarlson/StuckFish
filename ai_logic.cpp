@@ -79,7 +79,7 @@ Move Ai_Logic::searchStart(BitBoards& board, bool isWhite) {
 
 	//if we're only allowed to search to this depth,
 	//only search to specified depth.
-	if (fixedDepthSearch) depth = fixedDepthSearch;
+	if (fixedDepthSearch) depth = fixedDepthSearch, wtime = btime = 9999999999;
 
 	//decrease history values and clear gains stats after a search
 	ageHistorys();
@@ -894,20 +894,34 @@ U64 Ai_Logic::perft(BitBoards & board, int depth)
 
 	StateInfo st;
 	U64 count, nodes = 0;
-
-
 	SMove mlist[256];
-	SMove * end = generate<LEGAL>(board, mlist);
+	SMove * end = generate<PERFT_TESTING>(board, mlist);
+
+	/*	//TESTING TESTING
+	searchStack stack[6], *ss = stack + 2;
+	std::memset(ss - 2, 0, 5 * sizeof(searchStack));
+	MovePicker mpp(board, MOVE_NONE, depth, history, ss);
+	Move testM;
+	CheckInfo ci(board);
+	int mppCounter = 0, perftCounter = 0;
+
+	while ((testM = mpp.nextMove()) != MOVE_NONE) {
+		if (!board.isLegal(testM, ci.pinned))
+			continue;
+		mppCounter++;
+	}
+	*/
 
 	for (SMove * i = mlist; i != end; ++i)
 	{
-		if (depth == 1) //if (depth <= 0) //for testing captures
-			nodes++; //return 0; //for testing captures
+		if (depth == 1)
+			nodes++;// perftCounter++;
 
 		else {
-			//nodes += board.capture(i->move); //for testing captures
 
 			board.makeMove(i->move, st, board.stm());
+
+			//perftCounter++;
 
 			count = perft<false>(board, depth - 1);
 
@@ -916,6 +930,26 @@ U64 Ai_Logic::perft(BitBoards & board, int depth)
 			board.unmakeMove(i->move, !board.stm());
 		}
 	}
+
+	/*
+	if (perftCounter == 52 && mppCounter == 53) {
+
+		MovePicker mp(board, MOVE_NONE, depth, history, ss);
+		
+		while ((testM = mp.nextMove()) != MOVE_NONE) {
+			if (!board.isLegal(testM, ci.pinned))
+				continue;
+			if (move_type(testM) == PROMOTION)
+				board.drawBBA();
+		}
+	}
+
+
+	if (perftCounter != mppCounter) {
+		board.drawBBA();
+	}
+	*/
+
 	return nodes;
 }
 
@@ -929,10 +963,11 @@ U64 Ai_Logic::perftDivide(BitBoards & board, int depth)
 {
 	StateInfo st;
 	U64 count, nodes = 0, tNodes = 0;
-
 	SMove mlist[256];
-	SMove * end = generate<LEGAL>(board, mlist);
+	SMove * end = generate<PERFT_TESTING>(board, mlist);
 	int RootMoves = 0;
+
+	const bool leaf = (depth == 1);
 
 	if (depth == 0)
 		return 0;

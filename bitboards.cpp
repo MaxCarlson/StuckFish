@@ -881,6 +881,7 @@ int BitBoards::SEE(const Move& m, int color, bool isCapture) const /////////////
 	int captured =   pieceOnSq(to);
 	int type     =    move_type(m);
 
+
 	//early return, SEE can't be a losing capture
 	//is capture flag is used for when we're checking to see if the move is escaping capture
 	//we don't want an early return if that's the case
@@ -901,10 +902,6 @@ int BitBoards::SEE(const Move& m, int color, bool isCapture) const /////////////
 
 	//finds all attackers to the square
 	attackers = attackers_to(to, occupied) & occupied;
-
-	//if there are no attacking pieces, return
-	if (!(attackers & allPiecesColorBB[color])) return swapList[0];
-
 
 	//switch sides
 	color = !color;

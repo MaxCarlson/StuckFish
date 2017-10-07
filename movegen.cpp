@@ -321,20 +321,8 @@ SMove* generate<LEGAL>(const BitBoards & board, SMove *mlist)
 	end = board.checkers() ? generate<EVASIONS>(board, mlist)
 						   : generate<MAIN_GEN>(board, mlist);
 
-	/* //FOR PERFT TESTING
-	if (board.checkers())
-		end = generate<EVASIONS>(board, mlist);
-
-	else {
-		end = generate<QUIETS>(board, mlist);
-		end = generate<CAPTURES>(board, end);
-	}
-	//*/
 
 	while (current != end) {
-
-		//if(!board.pseudoLegal(current->move)) //SERIOUS ISSUES WITH PSUEDO LEGAL!!!!!!!
-		//	current->move = (--end)->move;
 
 		if ( (pinned || from_sq(current->move) == ksq || move_type(current->move) == ENPASSANT)
 			&& !board.isLegal(current->move, pinned))
@@ -345,5 +333,43 @@ SMove* generate<LEGAL>(const BitBoards & board, SMove *mlist)
 	}
 
 	return end; 
+}
+
+
+// This template is used for when we need to test pseudoLegal in perft or divide
+// So we don't get infinite recursion (psuedo legal has a call to generate<LEGAL> in it).
+// Or when we want to make sure sepperated batch movement generation is correct. 
+template<>
+SMove* generate<PERFT_TESTING>(const BitBoards & board, SMove *mlist) 
+{
+	SMove *end, *current = mlist;
+	U64 pinned = board.pinned_pieces(board.stm());
+	int ksq = board.king_square(board.stm());
+
+
+	end = board.checkers() ? generate<EVASIONS>(board, mlist)
+					       : generate<MAIN_GEN>(board, mlist);
+
+	/* 
+	if (board.checkers())
+		end = generate<EVASIONS>(board, mlist);
+
+	else {
+		end = generate<QUIETS>(board, mlist);
+		end = generate<CAPTURES>(board, end);
+	}
+	*/
+
+	while (current != end) {
+
+		if ((pinned || from_sq(current->move) == ksq || move_type(current->move) == ENPASSANT)
+			&& !board.isLegal(current->move, pinned))
+			current->move = (--end)->move;
+
+		else
+			++current;
+	}
+
+	return end;
 }
 

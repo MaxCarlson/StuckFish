@@ -129,8 +129,8 @@ extern int SquareDistance[SQ_ALL][SQ_ALL];
 
 
 //UCI input varibles for "go"
-extern int wtime; //time left on whites clock
-extern int btime; //black clock
+extern long wtime; //time left on whites clock
+extern long btime; //black clock
 extern int winc;
 extern int binc;
 extern int movestogo;

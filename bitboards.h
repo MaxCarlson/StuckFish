@@ -249,20 +249,20 @@ inline U64 BitBoards::piecesByType(int p1, int p2) const
 	return byPieceType[p1] | byPieceType[p2];
 }
 
-inline bool BitBoards::empty(int sq) const
+// Returns 3 if the square is empty
+inline int BitBoards::color_of_pc(int sq) const
 {
-	return pieceOn[sq] == PIECE_EMPTY;
+	return empty(sq) ? 3 : !(squareBB[sq] & allPiecesColorBB[WHITE]);
 }
 
 inline int BitBoards::pieceOnSq(int sq) const
 {
 	return pieceOn[sq];
 }
-
-// Returns 3 if the square is empty
-inline int BitBoards::color_of_pc(int sq) const
+// Is a square empty?
+inline bool BitBoards::empty(int sq) const
 {
-	return empty(sq) ? 3 : !(squareBB[sq] & allPiecesColorBB[WHITE]);
+	return pieceOn[sq] == PIECE_EMPTY;
 }
 
 inline bool BitBoards::capture(Move m) const
@@ -286,13 +286,15 @@ inline int BitBoards::castling_rights() const
 	return st->castlingRights;
 }
 
-inline int BitBoards::can_castle(int color) const {
+inline int BitBoards::can_castle(int color) const 
+{
 	return st->castlingRights & ((WHITE_OO | WHITE_OOO) << (2 * color));
 }
 
 // & all pieces board by the castling path indexed by
 // castiling rights
-inline bool BitBoards::castling_impeded(int cr) const {
+inline bool BitBoards::castling_impeded(int cr) const 
+{
 	return FullTiles & castlingPath[cr];
 }
 

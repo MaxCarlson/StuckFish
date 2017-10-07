@@ -1,16 +1,9 @@
-﻿  zobristh.cpp
-  slider_attacks.cpp
-  movegen.cpp
-  material.cpp
-  main.cpp
-  bitboards.cpp
-  ai_logic.cpp
-  UCI.cpp
-  TranspositionT.cpp
-  TimeManager.cpp
-  Pawns.cpp
-  MovePicker.cpp
-  Evaluate.cpp
+﻿  MovePicker.cpp
   Generating Code...
+  Compiling...
+  ai_logic.cpp
+  Generating Code...
+  Skipping... (no relevant changes detected)
+  movegen.cpp
   StuckFish.vcxproj -> C:\Users\C-60\Desktop\cppPrograms\StuckFish\x64\Debug\StuckFish.exe
   StuckFish.vcxproj -> C:\Users\C-60\Desktop\cppPrograms\StuckFish\x64\Debug\StuckFish.pdb (Partial PDB)
