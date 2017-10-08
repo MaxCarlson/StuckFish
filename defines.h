@@ -57,7 +57,8 @@ void prefetch(char* addr) {
 // 13-14 move flag, 1 Castle, 2 EP, 3 Promotion
 // 15-16 promotion piece type
 enum Move { 
-	MOVE_NONE
+	MOVE_NONE,
+	MOVE_NULL = 65
 };
 
 // Struct that holds moves and their scores
@@ -112,7 +113,10 @@ inline Move create_special(int from, int to) {
 	return Move((from | (to << 6) | T | (Pt ? (Pt - KNIGHT) << 15 : 0LL)));
 }
 
-
+// Catches MOVE_NONE and MOVE_NULL
+inline bool is_ok(Move m) {
+	return from_sq(m) != to_sq(m);
+}
 
 
 // holds mid and end game values
@@ -240,8 +244,7 @@ const int SORT_VALUE[7] = { 0, 100, 325, 335, 500, 975, 0 };
 #define KING_VAL 0 //change later??
 
 
-#define DRAW_OPENING -10 //re define these? //DELETE??
-#define DRAW_ENDGAME 0
+#define VALUE_DRAW   0
 #define END_GAME_MAT 1300
 
 #define MIDGAME_LIMIT 6090 //values subject to serious changes!!!!!!!!!!

@@ -1,12 +1,14 @@
 #pragma once
 
 #include "defines.h"
+#include "bitboards.h"
 
 #include <sstream> 
 
 
 class BitBoards;
 class StateInfo;
+
 
 class UCI
 {
@@ -15,15 +17,15 @@ public:
 	
 	//main loop for UCI communication
 	void uciLoop();
-	void newGame(BitBoards& newBoard);
-	void updatePosition(BitBoards& newBoard, std::istringstream & input, StateInfo & si);
+	void newGame(BitBoards& newBoard, StateListPtr& states);
+	void updatePosition(BitBoards& newBoard, std::istringstream & input, StateListPtr& states);
 
 	void printOptions();
 	void setOption(std::istringstream & input);
 
 	void search(BitBoards& newBoard);
 
-	void test(BitBoards& newBoard, StateInfo & si);
+	void test(BitBoards& newBoard, StateListPtr& states);
 
 	void perftUCI(BitBoards& newBoard, std::istringstream & input);
 

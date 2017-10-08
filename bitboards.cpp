@@ -180,7 +180,7 @@ void BitBoards::initBoards()
 	}	
 }
 
-void BitBoards::constructBoards(const std::string* FEN, Thread * th) //replace this with fen string reader
+void BitBoards::constructBoards(const std::string* FEN, Thread * th, StateInfo * si) //replace this with fen string reader
 {
 	//set the start state
 	startState.epSquare = SQ_NONE;
@@ -195,7 +195,8 @@ void BitBoards::constructBoards(const std::string* FEN, Thread * th) //replace t
 	//there are probable issues with this, it seems after setting a position
 	//once we break into search, there's an infinite list of identical positions to search start
 	//in st->previous
-	st = &startState;
+	//st = &startState;
+	st = si;
 
 	FullTiles = 0LL;
 
@@ -230,7 +231,7 @@ void BitBoards::constructBoards(const std::string* FEN, Thread * th) //replace t
 	//delete FEN; //posibly change this? not much reason for ptr anymore
 
 
-	set_state(st);
+	set_state(si);
 
 	// mark empty tiles opposite of full tiles
   	EmptyTiles = ~FullTiles;	
@@ -351,10 +352,7 @@ void BitBoards::readFenString(const std::string& FEN)
 		
 	}
 	
-	// need to implement half move clock 
-	char notUSED;
-	ss >> std::skipws >> notUSED >> turns;
-
+	ss >> std::skipws >> st->rule50 >> turns;
 }
 
 // Test if the un made move is legal
@@ -621,6 +619,9 @@ void BitBoards::makeMove(const Move& m, StateInfo& newSt, int color)
 	//use st to modify values on ply
 	st = &newSt;
 
+	++st->rule50;
+	++st->plysFromNull;
+
 	//remove or add captured piece from BB's same as above for moving piece
 	if (captured) {
 		int capSq = to;
@@ -647,6 +648,9 @@ void BitBoards::makeMove(const Move& m, StateInfo& newSt, int color)
 		st->Key ^= Zobrist::ZobArray[them][captured][capSq];
 		//update material key
 		st->MaterialKey ^= Zobrist::ZobArray[them][captured][pieceCount[them][captured]+1];
+
+		// Reset 50 move rule.
+		st->rule50 = 0;
 	}
 
 	//move the piece from - to
@@ -692,6 +696,9 @@ void BitBoards::makeMove(const Move& m, StateInfo& newSt, int color)
 			//update material key
 			st->MaterialKey   ^= Zobrist::ZobArray[color][promT][pieceCount[color][promT]]
 							  ^  Zobrist::ZobArray[color][PAWN ][pieceCount[color][PAWN]+1];
+
+			// Reset 50 move rule
+			st->rule50;
 		}
 		
 		//update the pawn key, if it's a promotion it cancels out and updates correctly
@@ -854,6 +861,9 @@ void BitBoards::makeNullMove(StateInfo& newSt)
 	//use st to modify values on ply
 	st = &newSt;
 
+	++st->rule50;
+	st->plysFromNull = 0;
+
 	st->Key ^= Zobrist::Color;
 
 	if (st->epSquare != SQ_NONE) {
@@ -870,6 +880,30 @@ void BitBoards::undoNullMove()
 	st = st->previous;
 
 	bInfo.sideToMove = !bInfo.sideToMove;
+}
+
+bool BitBoards::isDraw(int ply)
+{
+	int end = std::min(st->rule50, st->plysFromNull);
+
+	if (end < 4)
+		return false;
+
+	StateInfo * stp = st->previous->previous;
+	int count = 0;
+
+	for (int i = 4; i <= end; i += 2) {
+
+		stp = stp->previous->previous;
+
+		// Return a draw score if a position repeats once earlier but strictly
+		// after the root, or repeats twice before or at the root.
+
+		if (stp->Key == st->Key
+			&& ++count + (ply > i) == 2)
+			return true;
+	}
+	return false;
 }
 
 int BitBoards::SEE(const Move& m, int color, bool isCapture) const ///////////////////////////////////////////////////////////////////////////////////////////NOTE we might need to make stm here equal to the color of piece on from sq for reduction SEE to work

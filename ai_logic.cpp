@@ -43,6 +43,9 @@ int reductions[2][2][64][64];
 //futile move count arrays
 int futileMoveCounts[2][32];
 
+
+int DrawValue[COLOR];
+
 //holds history and cutoff info for search, global
 Historys history;
 
@@ -87,6 +90,12 @@ void Search::clear()
 Move MainThread::search() {
 	//max depth
 	rootDepth = MAX_PLY;
+	sd.nodes = 0;
+	const int color = board.stm();
+
+	int contempt = SORT_VALUE[PAWN] / 100;
+	DrawValue[color ] = VALUE_DRAW - contempt;
+	DrawValue[!color] = VALUE_DRAW + contempt;
 
 	//if we're only allowed to search to this depth,
 	//only search to specified depth.
@@ -94,10 +103,6 @@ Move MainThread::search() {
 		rootDepth = fixedDepthSearch;
 		wtime = btime = 99999999;  ///Need to alter this so time isn't checked in fixed depth searches. Easy fix.
 	}
-
-	//decrease history values and clear gains stats after a search
-	ageHistorys();
-
 
 	//calc move time for us, send to search driver
 	timeM.calcMoveTime(!board.stm()); // this !board.stm() needs to be changed, currently timM.calc takes a bool isWhite
@@ -171,6 +176,7 @@ int Search::searchRoot(BitBoards& board, int depth, int alpha, int beta, searchS
 	int quietsCount = 0;
 	StateInfo st;
 	(ss + 2)->killers[0] = (ss + 2)->killers[1] = MOVE_NONE;
+	ss->currentMove = MOVE_NONE;
 
 	const HashEntry* ttentry = TT.probe(board.TTKey());
 	Move ttMove = ttentry ? ttentry->move() : MOVE_NONE;
@@ -187,7 +193,7 @@ int Search::searchRoot(BitBoards& board, int depth, int alpha, int beta, searchS
 
 	CheckInfo ci(board);
 
-	MovePicker mp(board, ttMove, depth, &thisThread->mainHistory, ss->killers); 
+	MovePicker mp(board, ttMove, depth, &thisThread->mainHistory, MOVE_NONE, ss->killers); 
 
 	Move newMove, bestMove = MOVE_NONE;
 
@@ -198,15 +204,6 @@ int Search::searchRoot(BitBoards& board, int depth, int alpha, int beta, searchS
 		}
 
         board.makeMove(newMove, st, color);  
-
-		///*
-		//if position from root move is a two fold repetition, discard that move
-		if (isRepetition(board, newMove)) { 
-			board.unmakeMove(newMove, color);							
-			continue;
-		}
-		//*/
-		
 
         legalMoves ++;
 
@@ -238,6 +235,8 @@ int Search::searchRoot(BitBoards& board, int depth, int alpha, int beta, searchS
 
 		if (timeOver) 
 			break;
+
+		ss->currentMove = newMove;
 
         if(score > best) 
 			best = score;
@@ -277,6 +276,11 @@ int Search::alphaBeta(BitBoards& board, int depth, int alpha, int beta, searchSt
 	FlagInCheck = raisedAlpha = doFullDepthSearch = futileMoves = false;
 	singularExtension = captureOrPromotion = givesCheck = false;
 
+	ss->currentMove = MOVE_NONE;
+	int prevSq = to_sq((ss - 1)->currentMove);
+
+	Thread * thisThread = board.this_thread();
+
 	(ss + 2)->killers[0] = (ss + 2)->killers[1] = MOVE_NONE;
 
 	//holds state of board on current ply info
@@ -293,6 +297,10 @@ int Search::alphaBeta(BitBoards& board, int depth, int alpha, int beta, searchSt
 	(ss + 1)->skipNull = false;
 
 	const int color = board.stm();
+
+	if (board.isDraw(ss->ply) || ss->ply == MAX_PLY)
+		return DrawValue[color];
+
 
 	//checks if time over is true everytime if( nodes & 4095 ) ///NEED METHOD THAT CHECKS MUCH LESS
 	checkInput();
@@ -323,8 +331,6 @@ int Search::alphaBeta(BitBoards& board, int depth, int alpha, int beta, searchSt
 
 		return ttValue;
 	}
-
-	Thread * thisThread = board.this_thread();
 
 	int score;
 	if (depth < 1 || timeOver) {
@@ -435,10 +441,12 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 
 	bool ttMoveCapture = (ttMove && board.capture(ttMove));
 
+	Move counterMove = thisThread->counterMoves[board.pieceOnSq(prevSq)][prevSq];
+
 	CheckInfo ci(board);
 
 	Move newMove, bestMove = MOVE_NONE;
-	MovePicker mp(board, ttMove, depth, &thisThread->mainHistory, ss->killers); 
+	MovePicker mp(board, ttMove, depth, &thisThread->mainHistory, counterMove, ss->killers); 
 
 	while((newMove = mp.nextMove()) != MOVE_NONE){
 
@@ -522,6 +530,9 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 		}
 		//*/
 ///*
+		ss->currentMove = newMove;
+
+
 		//late move reductions, reduce the depth of the search in non dangerous situations. 
 		if (newDepth > 3
 			&& legalMoves > 3
@@ -564,8 +575,6 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 		}
 //*/
 			newDepth -= ss->reduction;
-
-			ss->currentMove = newMove; 
 
 			//jump back here if our LMR raises Alpha ~~ NOT IN USE
 		//re_search:
@@ -619,14 +628,10 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 		}
 	}
 
+	//if there are no legal moves and we are in checkmate this node
+	if (!legalMoves && FlagInCheck) 
+		alpha = mated_in(ss->ply);
 
-	if (!legalMoves) {
-		//if there are no legal moves and we are in checkmate this node
-		if (FlagInCheck) alpha = mated_in(ss->ply);
-		//else it's a stalemate, return contempt score - prefering mate to draw
-		else alpha = contempt(board, color);
-
-	}
 	
 	else if (alpha >= beta && !FlagInCheck && !board.capture_or_promotion(bestMove)) { ///////////////////////////////////////////////////////////////////////TEST THAT CAPTURE_OR_PROMOTION IS WORKING APPROPRIATLY
 		updateStats(board, bestMove, ss, depth, quiets, quietsC, color);
@@ -656,6 +661,11 @@ int Search::quiescent(BitBoards& board, int alpha, int beta, searchStack *ss, in
 	int oldAlpha, bestScore, score;
 	ss->ply = (ss - 1)->ply + 1;
 	StateInfo st;
+	Move bestMove, newMove;
+	ss->currentMove = bestMove = MOVE_NONE;
+
+	if (board.isDraw(ss->ply) || ss->ply == MAX_PLY)
+		return DrawValue[color];
 
 	ttentry     = TT.probe(board.TTKey());
 	Move ttMove = ttentry ? ttentry->move() : MOVE_NONE; //is there a move stored in transposition table?
@@ -697,7 +707,6 @@ int Search::quiescent(BitBoards& board, int alpha, int beta, searchStack *ss, in
 
 	MovePicker mp(board, ttMove, &thisThread->mainHistory); 
 
-	Move newMove, bestMove = MOVE_NONE;
 	while((newMove = mp.nextMove()) != MOVE_NONE)
 	{
 
@@ -741,25 +750,7 @@ int Search::quiescent(BitBoards& board, int alpha, int beta, searchStack *ss, in
 
 	return alpha;
 }
-
-int Search::contempt(const BitBoards& board, int color)
-{
-	//used to make engine prefer checkmate over stalemate, escpecially if not in end game
-    //NEED TO TEST VARIABLES MIGHT NOT BE ACCURATE
-
-	int value = DRAW_OPENING;
-
-	//if my sides material is below endgame mat, use DRAW_ENDGAME val sideMat[0] is white
-	if (board.bInfo.sideMaterial[color] < END_GAME_MAT) {
-		value = DRAW_ENDGAME;
-	}
-
-	if (color == WHITE) return value;
-	else return -value;
-
-	return 0;
-}
-
+/*
 bool Search::isRepetition(const BitBoards& board, Move m)
 {
 	if (board.pieceOnSq(from_sq(m)) == PAWN) 
@@ -781,6 +772,7 @@ bool Search::isRepetition(const BitBoards& board, Move m)
 	
 	return false;
 }
+*/
 
 void Search::updateStats(const BitBoards & board, Move move, searchStack * ss, int depth, Move * quiets, int qCount, int color)
 {	
@@ -797,16 +789,20 @@ void Search::updateStats(const BitBoards & board, Move move, searchStack * ss, i
 
 	Thread * thisThread = board.this_thread();
 	
+	// Update counter moves
+	if (is_ok((ss - 1)->currentMove)) {
+
+		int prevSq = to_sq((ss - 1)->currentMove);
+		thisThread->counterMoves[board.pieceOnSq(prevSq)][prevSq] = move;
+	}
 
 	//update historys, increasing the cutoffs score, decreasing every other moves score
 	int val = 4 * depth * depth;
-	history.updateHist(move, val, color); //CHange to index by ply? or index just by piece type and to location>? TEST
 
 	thisThread->mainHistory.update(color, move, val);
 
 	for(int i = 0; i < qCount; ++i){
 		thisThread->mainHistory.update(color, quiets[i], -val);
-		history.updateHist(quiets[i], -val, color);
 	}
 }
 
@@ -825,44 +821,6 @@ inline int valueFromTT(int val, int ply)
 	return  val == 0 ? 0
 		: val >= VALUE_MATE_IN_MAX_PLY  ? val - ply
 		: val <= VALUE_MATED_IN_MAX_PLY ? val + ply : val;
-}
-
-void Search::ageHistorys()
-{
-	//used to decrease value after a search
-	for (int cl = 0; cl < 2; cl++)
-		for (int i = 0; i < 64; i++)
-			for (int j = 0; j < 64; j++) {
-				history.history[cl][i][j] = history.history[cl][i][j] / 8;
-				history.cutoffs[cl][i][j] = 100;
-			}
-	sd.nodes = 0;
-
-	//clears gains stats
-	for (int cl = 0; cl < 2; cl++)
-		for (int i = 0; i < 7; i++)
-			for (int j = 0; j < 64; j++) {
-				history.cutoffs[cl][i][j] = 0;
-			}
-}
-
-void Search::clearHistorys()
-{
-	//used to decrease value after a search
-	for (int cl = 0; cl < 2; cl++)
-		for (int i = 0; i < 64; i++)
-			for (int j = 0; j < 64; j++) {
-				history.history[cl][i][j] = history.history[cl][i][j] = 0;
-				history.cutoffs[cl][i][j] = 100;
-			}
-	sd.nodes = 0;
-
-	//clears gains stats
-	for (int cl = 0; cl < 2; cl++)
-		for (int i = 0; i < 7; i++)
-			for (int j = 0; j < 64; j++) {
-				history.cutoffs[cl][i][j] = 0;
-			}
 }
 
 void Search::checkInput()

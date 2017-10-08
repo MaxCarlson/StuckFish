@@ -7,6 +7,9 @@ typedef unsigned long long  U64; // supported by MSC 13.00+ and C99
 
 #include <string>
 #include <algorithm>
+#include <memory> 
+#include <deque>
+
 #include "zobristh.h"
 
 class ZobristH;
@@ -41,15 +44,20 @@ struct StateInfo {
 	//int sideMaterial[COLOR]; // need to use these and delete struct above
 	//int nonPawnMaterial[COLOR];
 
-	int capturedPiece; //add once we switch over to numerically represented moves
+	int capturedPiece; 
 
 	int epSquare;
 	int castlingRights;
+
+	int rule50;
+	int plysFromNull;
 
 	U64 checkers;
 
 	StateInfo* previous;
 };
+
+typedef std::unique_ptr<std::deque<StateInfo>> StateListPtr;
 
 class BitBoards
 {
@@ -66,7 +74,7 @@ public:
 	ZobristH zobrist; //REMOVE THIS FROM THE OBJECT WHEN YOU CAN
 
     //builds boards through reading an array
-    void constructBoards(const std::string* FEN, Thread * th);
+    void constructBoards(const std::string* FEN, Thread * th, StateInfo * si);
 
 	//constructs boards from FEN string
 	void readFenString(const std::string& FEN);
@@ -84,6 +92,8 @@ public:
 
 	void makeNullMove(StateInfo& newSt);
 	void undoNullMove();
+
+	bool isDraw(int ply);
 
 	//Holds board information, struct above
 	BoardInfo bInfo;

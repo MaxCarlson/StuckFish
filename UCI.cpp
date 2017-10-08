@@ -45,16 +45,16 @@ void UCI::uciLoop()
 
 	Threads.initialize();
 
-	StateInfo si;
+	//StateInfo si;
+	StateListPtr states(new std::deque<StateInfo>(1));
 
 	// Make sure that the outputs are sent straight away to the GUI
 	std::cout.setf(std::ios::unitbuf);
 
 	//printOptions();
 
-	newGame(newBoard);
+	newGame(newBoard, states);
 	Search::initSearch();
-	Search::clearHistorys();
 
 	while (std::getline(std::cin, line))
 	{
@@ -84,12 +84,11 @@ void UCI::uciLoop()
 		}
 		else if (token == "ucinewgame")
 		{
-			newGame(newBoard); 
-			Search::clearHistorys();
-			TT.clearTable(); //need to clear other TTables too at somepoint
+			newGame(newBoard, states);
+			Search::clear();
 		}
 		else if (token == "test") { //used to enable quick testing
-			test(newBoard, si);
+			test(newBoard, states);
 		}
 		else if (token == "perft") {
 			perftUCI(newBoard, is);
@@ -98,7 +97,7 @@ void UCI::uciLoop()
 			divideUCI(newBoard, is);
 		}
 		else if (token == "position") {
-			updatePosition(newBoard, is, si);
+			updatePosition(newBoard, is, states);
 		}
 		else if (token == "print" || token == "draw"){
 			newBoard.drawBBA();
@@ -138,23 +137,26 @@ void UCI::uciLoop()
 	}
 }
 
-void UCI::updatePosition(BitBoards& newBoard, std::istringstream& input, StateInfo & si)
+//void UCI::updatePosition(BitBoards& newBoard, std::istringstream& input, StateInfo & si)
+void UCI::updatePosition(BitBoards& newBoard, std::istringstream& input, StateListPtr& states)
 {
 	Move m;
 	std::string token, fen;
 
 	input >> token;
 
+	states = StateListPtr(new std::deque<StateInfo>(1)); // Drop old and create a new one
+
 	if (token == "startpos")
 	{
-		newGame(newBoard);
+		newGame(newBoard, states);
 	}
 	else if (token == "fen")
 	{
 		while (input >> token && token != "moves")
 			fen += token + " ";
 
-		newBoard.constructBoards(&fen, Threads.main());
+		newBoard.constructBoards(&fen, Threads.main(), &states->back());
 		isWhite = !newBoard.bInfo.sideToMove;
 	}
 	else
@@ -171,8 +173,9 @@ void UCI::updatePosition(BitBoards& newBoard, std::istringstream& input, StateIn
 			//parse string from gui/command line and create move
 			m = strToMove(newBoard, token);
 
+			states->emplace_back();
 			//make move + increment turns
-			newBoard.makeMove(m, si, !isWhite);
+			newBoard.makeMove(m, states->back(), !isWhite);
 			turns += 1;
 			
 			//push board position U64 to search driver.two fold repeitions
@@ -185,9 +188,9 @@ void UCI::updatePosition(BitBoards& newBoard, std::istringstream& input, StateIn
 
 }
 
-void UCI::newGame(BitBoards& newBoard)
+void UCI::newGame(BitBoards& newBoard, StateListPtr& states)
 {
-	newBoard.constructBoards(NULL, Threads.main());
+	newBoard.constructBoards(NULL, Threads.main(), &states->back());
 
 	//create zobrist hash for startpos that is used to check TT entrys and repetitions 
 	newBoard.zobrist.getZobristHash(newBoard);
@@ -359,9 +362,8 @@ static const char* Defaults[] = {
 // Function runs through and searches all the positions
 // that are in Defaults above. Good for benchmarking.
 // Just be sure to keep wtime and btime the same.
-void UCI::test(BitBoards & newBoard, StateInfo & si)
+void UCI::test(BitBoards & newBoard, StateListPtr& states)		// Give this an input for searching to certain depth, and possibly an option to choose divide or perft as well
 {
-
 	long nodes = 0;
 
 	time_t starttimer;
@@ -369,11 +371,9 @@ void UCI::test(BitBoards & newBoard, StateInfo & si)
 	time(&starttimer);
 
 	for (int i = 0; i < 30; ++i) {
-		newGame(newBoard);
-		Search::clearHistorys();
-		TT.clearTable(); //need to clear other TTables too at somepoint ??
-		//wtime = btime = 290000;
-		fixedDepthSearch = 14;  ///make this an input string for test >?
+		newGame(newBoard, states);
+		Search::clear();
+		fixedDepthSearch = 14;  
 
 		std::string testFen = "fen ";
 
@@ -381,7 +381,7 @@ void UCI::test(BitBoards & newBoard, StateInfo & si)
 
 		std::istringstream is(testFen);
 
-		updatePosition(newBoard, is, si);
+		updatePosition(newBoard, is, states);
 
 		search(newBoard);
 

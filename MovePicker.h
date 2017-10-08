@@ -9,10 +9,18 @@
 class Historys;
 class searchStack;
 
+/*
 enum Stages {
 	MAIN_M,    CAPTURES_M, KILLERS_M, QUIETS_M, QUIETS_M1, BAD_CAPTURES_M,
 	QSEARCH_,  CAPTURES_Q, 
 	EVASIONS_, EVASIONS_S1,
+	STOP
+};
+*/
+enum Stages {
+	MAIN_SEARCH, CAPTURES_INIT, GOOD_CAPTURES, KILLERS, COUNTER_MOVE, QUIETS_INIT, QUIET, BAD_CAPTURES,
+	Q_SEARCH, CAPTURES_Q_INIT, CAPTURES_Q,
+	EVASION, EVASIONS_INIT, EVASIONS_S1,
 	STOP
 };
 
@@ -50,7 +58,7 @@ struct ButterflyHistory : public ButterflyBoards
 struct PieceToHistory : public PieceToBoards
 {
 	void update(int piece, int to, int bonus) {
-		StatBoards::update( (*this)[piece][to], bonus, 800); //Needs to be implemented as well as value tested
+		StatBoards::update( (*this)[piece][to], bonus, 715); //Needs to be value tested
 	}
 };
 
@@ -62,7 +70,7 @@ class MovePicker
 {
 
 public:
-	MovePicker(const BitBoards & board, Move ttm, int depth, const ButterflyHistory * hist, Move * killers_p);
+	MovePicker(const BitBoards & board, Move ttm, int depth, const ButterflyHistory * hist, Move cm, Move * killers_p);
 	MovePicker(const BitBoards & board, Move ttm, const ButterflyHistory * hist);
 
 	Move nextMove();
@@ -76,16 +84,14 @@ private:
 
 	void generateNextStage();
 
-	const BitBoards   & b;
-	//const Historys    & h;
+	const BitBoards        & b;
 	const ButterflyHistory * mainHist;
-	const searchStack * s;
+	
 
 	int Depth;
-	Move ttMove;
+	Move ttMove, counterMove;
 
 	SMove killers[2];
 	SMove *current, *end, *endBadCaptures, *endQuiets;
 	SMove mList[256];
 };
-						

@@ -31,11 +31,9 @@ namespace Search {
 	int searchRoot(BitBoards & board, int depth, int alpha, int beta, searchStack * ss);
 	int alphaBeta(BitBoards & board, int depth, int alpha, int beta, searchStack * ss, bool allowNull, int isPV);
 	int quiescent(BitBoards & board, int alpha, int beta, searchStack * ss, int isPV);
-	int contempt(const BitBoards & board, int color);
-	bool isRepetition(const BitBoards & board, Move m);
+
+
 	void updateStats(const BitBoards & board, Move move, searchStack * ss, int depth, Move * quiets, int qCount, int color);
-	void ageHistorys();
-	void clearHistorys();
 	void checkInput();
 	void print(bool isWhite, int bestScore);
 

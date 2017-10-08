@@ -38,7 +38,7 @@ inline U64 attacks_bb(int Pt, int sq, U64 occ)
 		return slider_attacks.QueenAttacks( occ, sq);
 
 	default:
-		std::cout << "attacks_bb invalid Input" << std::endl;
+		std::cout << "attacks_bb invalid Input" << std::endl; //Need to move psuedoAttacks out of bitboards and use a lookup here by Pt
 		return 0;
 	}
 }
@@ -67,37 +67,13 @@ struct searchDriver{
 	int  depth = 0;
 	long startTime;
 	long moveTime = 2500;
-	bool isWhite;
 	bool skipEarlyPruning = false;
 };
 extern searchDriver sd;
 
 struct Historys { //holds history info for search 
 
-	//color, from, to
-	int history[2][64][64] = { { { 0 } } };
-
-	//TEST THIS FOR SPEED/ELO below ///NOT IN USE
-	//int hist[2][7][64] = { { { 0 } } }; //color, piece, square to
-
-	int cutoffs[2][64][64] = { { { 0 } } };
-
-	//holds info about gain move made in static eval from last turn, use in futility
-	int gains[2][7][64] = { { { 0 } } }; //color, piece type, to square ////TRY same method as history for storing instead?????? ////////////////////////////////////MOVE this into move picker
-
 	std::vector<U64> twoFoldRep; //stores zobrist keys of all positions encountered thus far
-
-	void updateHist(Move m, int v, int color) {
-		if (abs(history[color][from_sq(m)][to_sq(m)]) < SORT_KILL) {
-			history[color][from_sq(m)][to_sq(m)] += v;
-		}
-	}
-	/*
-	void updateGain(Move m, int v, int color) {
-		gains[color][m.piece][m.to] = std::max(v, gains[color][m.piece][m.to] - 1);
-	}
-	*/
-
 };
 extern Historys history; 
 
