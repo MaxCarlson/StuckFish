@@ -1,2 +1,6 @@
-﻿  UCI.cpp
+﻿  MovePicker.cpp
+  Thread.cpp
+  UCI.cpp
+  ai_logic.cpp
+  movegen.cpp
   StuckFish.vcxproj -> C:\Users\C-60\Desktop\cppPrograms\StuckFish\x64\Release\StuckFish.exe

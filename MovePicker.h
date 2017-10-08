@@ -42,7 +42,7 @@ typedef StatBoards<PIECES, SQ_ALL> PieceToBoards;
 struct ButterflyHistory : public ButterflyBoards 
 {
 	void update(int color, Move m, int bonus) {
-		StatBoards::update( (*this)[color][from_sq(m)], bonus, 200);
+		StatBoards::update( (*this)[color][from_sq(m)], bonus, 300); ///Bonus value needs to be played with in auto games
 	}
 };
 
@@ -50,7 +50,7 @@ struct ButterflyHistory : public ButterflyBoards
 struct PieceToHistory : public PieceToBoards
 {
 	void update(int piece, int to, int bonus) {
-		StatBoards::update( (*this)[piece][to], bonus, 800);
+		StatBoards::update( (*this)[piece][to], bonus, 800); //Needs to be implemented as well as value tested
 	}
 };
 
@@ -62,8 +62,8 @@ class MovePicker
 {
 
 public:
-	MovePicker(const BitBoards & board, Move ttm, int depth, const Historys & hist, Move * killers_p);
-	MovePicker(const BitBoards & board, Move ttm, const Historys & hist);
+	MovePicker(const BitBoards & board, Move ttm, int depth, const ButterflyHistory * hist, Move * killers_p);
+	MovePicker(const BitBoards & board, Move ttm, const ButterflyHistory * hist);
 
 	Move nextMove();
 	
@@ -77,7 +77,8 @@ private:
 	void generateNextStage();
 
 	const BitBoards   & b;
-	const Historys    & h;
+	//const Historys    & h;
+	const ButterflyHistory * mainHist;
 	const searchStack * s;
 
 	int Depth;

@@ -11,6 +11,7 @@ typedef unsigned long long  U64; // supported by MSC 13.00+ and C99
 
 class ZobristH;
 class MoveGen;
+class Thread;
 
 struct BoardInfo { //possibly remove this and move this info to bitboards object? //DELETE THIS, REPLACED BY st
 	int sideMaterial[COLOR]; //updated on make/unmake moves	
@@ -65,7 +66,7 @@ public:
 	ZobristH zobrist; //REMOVE THIS FROM THE OBJECT WHEN YOU CAN
 
     //builds boards through reading an array
-    void constructBoards(const std::string* FEN);
+    void constructBoards(const std::string* FEN, Thread * th);
 
 	//constructs boards from FEN string
 	void readFenString(const std::string& FEN);
@@ -138,9 +139,6 @@ public:
 	//returns true if side color has any pieces aside from pawn/s or king
 	bool non_pawn_material(int color) const;
 	U64 square_bb(int sq) const;
-
-
-
 	
 	int stm() const; //returns side to move
 
@@ -200,6 +198,8 @@ public:
 	//draw out bitboards like a full chessboard array
 	void drawBBA() const;
 
+
+	Thread * this_thread() const;
 	// holds the state info for the very start
 	// st eventually points to this at the end
 	StateInfo startState;
@@ -209,6 +209,8 @@ private:
 	void set_state(StateInfo * si);
 	
 	StateInfo* st;
+
+	Thread * thisThread;
 
 	template<int make>
 	void do_castling(int from, int to, int color);
@@ -320,6 +322,10 @@ inline U64 BitBoards::pawn_key() const {
 inline U64 BitBoards::material_key() const
 {
 	return st->MaterialKey;
+}
+
+inline Thread * BitBoards::this_thread() const {
+	return thisThread;
 }
 
 inline int BitBoards::king_square(int color) const

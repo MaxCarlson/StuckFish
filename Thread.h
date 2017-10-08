@@ -24,6 +24,7 @@ class Thread
 public:
 	explicit Thread();
 
+	virtual Move search();
 
 	void clear();
 
@@ -33,11 +34,15 @@ public:
 	BitBoards board;
 	CounterMoveHistory counterMoves;
 	ButterflyHistory    mainHistory;
+
+	int rootDepth;
 };
 
 struct MainThread : public Thread
 {
 	using Thread::Thread;
+
+	Move search() override;
 
 	//double bestMoveChanges; //Not in use yet
 };
@@ -46,9 +51,10 @@ struct ThreadPool : public std::vector<Thread*>
 {
 	void initialize();
 
+	Move searchStart(BitBoards & board);
 
 	MainThread * main() const { return static_cast<MainThread*>(front()); }
 };
 
-extern ThreadPool threadPool;
+extern ThreadPool Threads;
 

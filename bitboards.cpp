@@ -180,7 +180,7 @@ void BitBoards::initBoards()
 	}	
 }
 
-void BitBoards::constructBoards(const std::string* FEN) //replace this with fen string reader
+void BitBoards::constructBoards(const std::string* FEN, Thread * th) //replace this with fen string reader
 {
 	//set the start state
 	startState.epSquare = SQ_NONE;
@@ -188,6 +188,8 @@ void BitBoards::constructBoards(const std::string* FEN) //replace this with fen 
 	startState.MaterialKey = 0LL;
 	startState.PawnKey = 0LL;
 	startState.capturedPiece = 0;
+
+	thisThread = th;
 
 	//set state to start state
 	//there are probable issues with this, it seems after setting a position

@@ -75,17 +75,23 @@ void Search::initSearch()
 	}
 }
 
+void Search::clear()
+{
+	TT.clearTable();
 
+	for (Thread * th : Threads)
+		th->clear();
 
-Move Search::searchStart(BitBoards& board, bool isWhite) {
-	
+}
+
+Move MainThread::search() {
 	//max depth
-	int depth = MAX_PLY;
+	rootDepth = MAX_PLY;
 
 	//if we're only allowed to search to this depth,
 	//only search to specified depth.
 	if (fixedDepthSearch) {
-		depth = fixedDepthSearch;
+		rootDepth = fixedDepthSearch;
 		wtime = btime = 99999999;  ///Need to alter this so time isn't checked in fixed depth searches. Easy fix.
 	}
 
@@ -94,62 +100,64 @@ Move Search::searchStart(BitBoards& board, bool isWhite) {
 
 
 	//calc move time for us, send to search driver
-	timeM.calcMoveTime(isWhite);
+	timeM.calcMoveTime(!board.stm()); // this !board.stm() needs to be changed, currently timM.calc takes a bool isWhite
 
-	Move m = iterativeDeep(board, depth, isWhite);
-	
+	//Loop through threads here and assign them variable depths to start searching!!!
+
+	Move m = Thread::search();
+
 	return m;
 }
 
-Move Search::iterativeDeep(BitBoards& board, int depth, bool isWhite)
+Move Thread::search() 
 {
 	//reset ply
-    int ply = 0;
-	int color = !isWhite;
+	int ply = 0;
+	int color = board.stm();
 
 	//create array of stack objects starting at +2 so we can look two plys back
 	//in order to see if a node has improved, as well as prior stats
-	searchStack stack[MAX_PLY + 6], *ss = stack + 2;
-	std::memset(ss - 2, 0, 5 * sizeof(searchStack));
+	Search::searchStack stack[MAX_PLY + 6], *ss = stack + 2;
+	std::memset(ss - 2, 0, 5 * sizeof(Search::searchStack));
 
-    //best overall move as calced
-    Move bestMove;
-    int bestScore, alpha = -INF, beta = INF;
+	//best overall move as calced
+	Move bestMove;
+	int bestScore, alpha = -INF, beta = INF;
 	int delta = 8;
 	sd.depth = 1;
 
-    //iterative deepening loop starts at depth 1, iterates up till max depth or time cutoff
-    while(sd.depth <= depth){
+	//iterative deepening loop starts at depth 1, iterates up till max depth or time cutoff
+	while (sd.depth <= rootDepth) {
 
 		if (timeM.timeStopRoot() || timeOver) break;
 
-        //main search
-        bestScore = searchRoot(board, sd.depth, alpha, beta, ss);
+		//main search
+		bestScore = searchRoot(board, sd.depth, alpha, beta, ss);
 
+		//if the search is not cutoff
+		if (!timeOver) {
 
-        //if the search is not cutoff
-        if(!timeOver){
-
-            //grab best move out of PV array ~~ need better method of grabbing best move, not based on "distance"
-            //Maybe if statement is a bad fix? sometimes a max of specified depth is not reached near checkmates/possibly checks
-            //if statement makes sure the move has been tried before storing it
-            if(sd.PV[1] != MOVE_NONE) bestMove = sd.PV[1];
+			//grab best move out of PV array ~~ need better method of grabbing best move, not based on "distance"
+			//Maybe if statement is a bad fix? sometimes a max of specified depth is not reached near checkmates/possibly checks
+			//if statement makes sure the move has been tried before storing it
+			if (sd.PV[1] != MOVE_NONE) 
+				bestMove = sd.PV[1];
 
 			//insert_pv(board);
 
 			//print data on search 
-			print(isWhite, bestScore);
-        }
+			print(!color, bestScore); //print takes bool isWhite, need to change this
+		}
 		//increment depth 
-		sd.depth++;    
-    }
+		sd.depth++;
+	}
 
 	StateInfo st;
-    //make final move on bitboards + draw board
-    board.makeMove(bestMove, st, color);
-    board.drawBBA();
+	//make final move on bitboards + draw board
+	board.makeMove(bestMove, st, color);
+	board.drawBBA();
 
-    return bestMove;
+	return bestMove;
 }
 
 int Search::searchRoot(BitBoards& board, int depth, int alpha, int beta, searchStack *ss)
@@ -167,6 +175,8 @@ int Search::searchRoot(BitBoards& board, int depth, int alpha, int beta, searchS
 	const HashEntry* ttentry = TT.probe(board.TTKey());
 	Move ttMove = ttentry ? ttentry->move() : MOVE_NONE;
 
+	Thread * thisThread = board.this_thread();
+
 	sd.nodes++;
 	ss->ply = 1;
 	(ss + 1)->skipNull = false;
@@ -177,7 +187,7 @@ int Search::searchRoot(BitBoards& board, int depth, int alpha, int beta, searchS
 
 	CheckInfo ci(board);
 
-	MovePicker mp(board, ttMove, depth, history, ss->killers); 
+	MovePicker mp(board, ttMove, depth, &thisThread->mainHistory, ss->killers); 
 
 	Move newMove, bestMove = MOVE_NONE;
 
@@ -253,7 +263,7 @@ int Search::searchRoot(BitBoards& board, int depth, int alpha, int beta, searchS
 
 	
 	if (alpha >= beta && !flagInCheck && !board.capture_or_promotion(sd.PV[1])) {
-		updateStats(sd.PV[1], ss, depth, quiets, quietsCount, color);
+		updateStats(board, bestMove, ss, depth, quiets, quietsCount, color);
 	}
 		
     return alpha;
@@ -313,6 +323,8 @@ int Search::alphaBeta(BitBoards& board, int depth, int alpha, int beta, searchSt
 
 		return ttValue;
 	}
+
+	Thread * thisThread = board.this_thread();
 
 	int score;
 	if (depth < 1 || timeOver) {
@@ -426,7 +438,7 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 	CheckInfo ci(board);
 
 	Move newMove, bestMove = MOVE_NONE;
-	MovePicker mp(board, ttMove, depth, history, ss->killers); 
+	MovePicker mp(board, ttMove, depth, &thisThread->mainHistory, ss->killers); 
 
 	while((newMove = mp.nextMove()) != MOVE_NONE){
 
@@ -617,7 +629,7 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 	}
 	
 	else if (alpha >= beta && !FlagInCheck && !board.capture_or_promotion(bestMove)) { ///////////////////////////////////////////////////////////////////////TEST THAT CAPTURE_OR_PROMOTION IS WORKING APPROPRIATLY
-		updateStats(bestMove, ss, depth, quiets, quietsC, color);
+		updateStats(board, bestMove, ss, depth, quiets, quietsC, color);
 	}
 	
 	/*
@@ -659,6 +671,8 @@ int Search::quiescent(BitBoards& board, int alpha, int beta, searchStack *ss, in
 		return ttValue;
 	}
 
+	Thread * thisThread = board.this_thread();
+
 	Evaluate eval;
 	int standingPat = eval.evaluate(board);
 
@@ -681,7 +695,7 @@ int Search::quiescent(BitBoards& board, int alpha, int beta, searchStack *ss, in
 
 	CheckInfo ci(board);
 
-	MovePicker mp(board, ttMove, history); 
+	MovePicker mp(board, ttMove, &thisThread->mainHistory); 
 
 	Move newMove, bestMove = MOVE_NONE;
 	while((newMove = mp.nextMove()) != MOVE_NONE)
@@ -768,7 +782,7 @@ bool Search::isRepetition(const BitBoards& board, Move m)
 	return false;
 }
 
-void Search::updateStats(Move move, searchStack * ss, int depth, Move * quiets, int qCount, int color)
+void Search::updateStats(const BitBoards & board, Move move, searchStack * ss, int depth, Move * quiets, int qCount, int color)
 {	
 	static const int limit = SORT_KILL;
 	
@@ -780,13 +794,18 @@ void Search::updateStats(Move move, searchStack * ss, int depth, Move * quiets, 
 		//save primary killer
 		ss->killers[0] = move;
 	}
+
+	Thread * thisThread = board.this_thread();
 	
 
 	//update historys, increasing the cutoffs score, decreasing every other moves score
 	int val = 4 * depth * depth;
 	history.updateHist(move, val, color); //CHange to index by ply? or index just by piece type and to location>? TEST
 
+	thisThread->mainHistory.update(color, move, val);
+
 	for(int i = 0; i < qCount; ++i){
+		thisThread->mainHistory.update(color, quiets[i], -val);
 		history.updateHist(quiets[i], -val, color);
 	}
 }

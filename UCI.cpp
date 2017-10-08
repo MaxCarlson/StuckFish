@@ -43,7 +43,7 @@ void UCI::uciLoop()
 	//initalize things
 	newBoard.initBoards();
 
-	threadPool.initialize();
+	Threads.initialize();
 
 	StateInfo si;
 
@@ -154,7 +154,7 @@ void UCI::updatePosition(BitBoards& newBoard, std::istringstream& input, StateIn
 		while (input >> token && token != "moves")
 			fen += token + " ";
 
-		newBoard.constructBoards(&fen);
+		newBoard.constructBoards(&fen, Threads.main());
 		isWhite = !newBoard.bInfo.sideToMove;
 	}
 	else
@@ -187,7 +187,7 @@ void UCI::updatePosition(BitBoards& newBoard, std::istringstream& input, StateIn
 
 void UCI::newGame(BitBoards& newBoard)
 {
-	newBoard.constructBoards(NULL);
+	newBoard.constructBoards(NULL, Threads.main());
 
 	//create zobrist hash for startpos that is used to check TT entrys and repetitions 
 	newBoard.zobrist.getZobristHash(newBoard);
@@ -226,7 +226,9 @@ void UCI::setOption(std::istringstream & input)
 
 void UCI::search(BitBoards& newBoard)
 {	
-	Move m = Search::searchStart(newBoard, isWhite);
+	//Move m = Search::searchStart(newBoard, isWhite);
+
+	Move m = Threads.searchStart(newBoard);
 
 	std::cout << "bestmove " << moveToStr(m) << std::endl; //send move to std output for UCI GUI to pickup
 

@@ -37,7 +37,8 @@ inline SMove * pick(SMove * begin, SMove * end) {
 }
 
 // Main search initilization 
-MovePicker::MovePicker(const BitBoards & board, Move ttm, int depth, const Historys & hist, Move * killers_p) : b(board), Depth(depth), h(hist), killers{ killers_p[0], killers_p[1] }
+//MovePicker::MovePicker(const BitBoards & board, Move ttm, int depth, const Historys & hist, Move * killers_p) : b(board), Depth(depth), h(hist), killers{ killers_p[0], killers_p[1] }
+MovePicker::MovePicker(const BitBoards & board, Move ttm, int depth, const ButterflyHistory * hist, Move * killers_p) : b(board), Depth(depth), mainHist(hist), killers{ killers_p[0], killers_p[1] }
 {
 	current = end = mList;
 	endBadCaptures = mList + 255;
@@ -53,7 +54,8 @@ MovePicker::MovePicker(const BitBoards & board, Move ttm, int depth, const Histo
 }
 
 // For Qsearch
-MovePicker::MovePicker(const BitBoards & board, Move ttm, const Historys & hist) : b(board), h(hist)
+//MovePicker::MovePicker(const BitBoards & board, Move ttm, const Historys & hist) : b(board), h(hist)
+MovePicker::MovePicker(const BitBoards & board, Move ttm, const ButterflyHistory * hist) : b(board), mainHist(hist)
 {
 	current = end = mList;
 	endBadCaptures = mList + 255;
@@ -98,7 +100,8 @@ void MovePicker::score<QUIETS>()
 	for (SMove* i = mList; i != end; ++i) {
 		
 		m = i->move;
-		i->score = h.history[b.stm()][from_sq(m)][to_sq(m)];
+		//i->score = h.history[b.stm()][from_sq(m)][to_sq(m)];
+		i->score = (*mainHist)[b.stm()][from_sq(m)];
 	}
 }
 
@@ -120,7 +123,7 @@ void MovePicker::score<EVASIONS>()
 			         - SORT_VALUE[b.pieceOnSq(from_sq(m))];
 
 		else
-			i->score = h.history[color][from_sq(m)][to_sq(m)];
+			i->score = (*mainHist)[b.stm()][from_sq(m)]; //i->score = h.history[color][from_sq(m)][to_sq(m)];
 	}
 
 }
