@@ -13,6 +13,7 @@
 #include "TranspositionT.h"
 #include "MovePicker.h"
 #include "movegen.h"
+#include "Thread.h"
 
 
 //#include <advisor-annotate.h> // INTEL ADVISOR FOR THREAD ANNOTATION
@@ -45,8 +46,10 @@ int futileMoveCounts[2][32];
 //holds history and cutoff info for search, global
 Historys history;
 
+using namespace Search;
 
-void Ai_Logic::initSearch()
+
+void Search::initSearch()
 {
 	//values taken from stock fish, playing with numbers still
 	int hd, d, mc; //half depth, depth, move count
@@ -72,17 +75,23 @@ void Ai_Logic::initSearch()
 	}
 }
 
-Move Ai_Logic::searchStart(BitBoards& board, bool isWhite) {
+
+
+Move Search::searchStart(BitBoards& board, bool isWhite) {
 	
 	//max depth
 	int depth = MAX_PLY;
 
 	//if we're only allowed to search to this depth,
 	//only search to specified depth.
-	if (fixedDepthSearch) depth = fixedDepthSearch, wtime = btime = 9999999999;
+	if (fixedDepthSearch) {
+		depth = fixedDepthSearch;
+		wtime = btime = 99999999;  ///Need to alter this so time isn't checked in fixed depth searches. Easy fix.
+	}
 
 	//decrease history values and clear gains stats after a search
 	ageHistorys();
+
 
 	//calc move time for us, send to search driver
 	timeM.calcMoveTime(isWhite);
@@ -92,7 +101,7 @@ Move Ai_Logic::searchStart(BitBoards& board, bool isWhite) {
 	return m;
 }
 
-Move Ai_Logic::iterativeDeep(BitBoards& board, int depth, bool isWhite)
+Move Search::iterativeDeep(BitBoards& board, int depth, bool isWhite)
 {
 	//reset ply
     int ply = 0;
@@ -116,18 +125,8 @@ Move Ai_Logic::iterativeDeep(BitBoards& board, int depth, bool isWhite)
 
         //main search
         bestScore = searchRoot(board, sd.depth, alpha, beta, ss);
-/*
-        if(bestScore <= alpha){ //ISSUES WITH ASPIRATION WINDOWS
-			alpha = std::max(bestScore - delta, -INF);			
-		}
-		else if (bestScore >= beta) {
-			beta = std::min(bestScore + delta, INF);
-		}
 
-		if (bestScore <= alpha || bestScore >= beta) continue;
 
-		delta += 3 * delta / 8;
-*/
         //if the search is not cutoff
         if(!timeOver){
 
@@ -153,7 +152,7 @@ Move Ai_Logic::iterativeDeep(BitBoards& board, int depth, bool isWhite)
     return bestMove;
 }
 
-int Ai_Logic::searchRoot(BitBoards& board, int depth, int alpha, int beta, searchStack *ss)
+int Search::searchRoot(BitBoards& board, int depth, int alpha, int beta, searchStack *ss)
 {
     bool flagInCheck;
     int score = 0;
@@ -178,7 +177,7 @@ int Ai_Logic::searchRoot(BitBoards& board, int depth, int alpha, int beta, searc
 
 	CheckInfo ci(board);
 
-	MovePicker mp(board, ttMove, depth, history, ss); 
+	MovePicker mp(board, ttMove, depth, history, ss->killers); 
 
 	Move newMove, bestMove = MOVE_NONE;
 
@@ -260,7 +259,7 @@ int Ai_Logic::searchRoot(BitBoards& board, int depth, int alpha, int beta, searc
     return alpha;
 }
 
-int Ai_Logic::alphaBeta(BitBoards& board, int depth, int alpha, int beta, searchStack *ss, bool allowNull, int isPV)
+int Search::alphaBeta(BitBoards& board, int depth, int alpha, int beta, searchStack *ss, bool allowNull, int isPV)
 {
 	bool FlagInCheck, raisedAlpha, doFullDepthSearch, futileMoves;
 	bool singularExtension, captureOrPromotion, givesCheck;
@@ -427,7 +426,7 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 	CheckInfo ci(board);
 
 	Move newMove, bestMove = MOVE_NONE;
-	MovePicker mp(board, ttMove, depth, history, ss); 
+	MovePicker mp(board, ttMove, depth, history, ss->killers); 
 
 	while((newMove = mp.nextMove()) != MOVE_NONE){
 
@@ -635,7 +634,7 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 	return alpha;
 }
 
-int Ai_Logic::quiescent(BitBoards& board, int alpha, int beta, searchStack *ss, int isPV)
+int Search::quiescent(BitBoards& board, int alpha, int beta, searchStack *ss, int isPV)
 {
 	//node count, sepperate q count needed?
 	sd.nodes++;
@@ -682,7 +681,7 @@ int Ai_Logic::quiescent(BitBoards& board, int alpha, int beta, searchStack *ss, 
 
 	CheckInfo ci(board);
 
-	MovePicker mp(board, ttMove, history, ss); 
+	MovePicker mp(board, ttMove, history); 
 
 	Move newMove, bestMove = MOVE_NONE;
 	while((newMove = mp.nextMove()) != MOVE_NONE)
@@ -700,7 +699,8 @@ int Ai_Logic::quiescent(BitBoards& board, int alpha, int beta, searchStack *ss, 
 		
 
 		//Don't search losing capture moves if not in PV
-		if (!isPV && board.SEE(newMove, color, false) < 0) continue; ////////////////////////////////////////////////////////////////PROBABLY NEED TO DEBUG SEE
+		if (!isPV && board.SEE(newMove, color, true) < 0) 
+			continue; 
 		
 
 		board.makeMove(newMove, st, color);
@@ -728,7 +728,7 @@ int Ai_Logic::quiescent(BitBoards& board, int alpha, int beta, searchStack *ss, 
 	return alpha;
 }
 
-int Ai_Logic::contempt(const BitBoards& board, int color)
+int Search::contempt(const BitBoards& board, int color)
 {
 	//used to make engine prefer checkmate over stalemate, escpecially if not in end game
     //NEED TO TEST VARIABLES MIGHT NOT BE ACCURATE
@@ -746,7 +746,7 @@ int Ai_Logic::contempt(const BitBoards& board, int color)
 	return 0;
 }
 
-bool Ai_Logic::isRepetition(const BitBoards& board, Move m) 
+bool Search::isRepetition(const BitBoards& board, Move m)
 {
 	if (board.pieceOnSq(from_sq(m)) == PAWN) 
 		return false;
@@ -768,7 +768,7 @@ bool Ai_Logic::isRepetition(const BitBoards& board, Move m)
 	return false;
 }
 
-void Ai_Logic::updateStats(Move move, searchStack * ss, int depth, Move * quiets, int qCount, int color)
+void Search::updateStats(Move move, searchStack * ss, int depth, Move * quiets, int qCount, int color)
 {	
 	static const int limit = SORT_KILL;
 	
@@ -808,7 +808,7 @@ inline int valueFromTT(int val, int ply)
 		: val <= VALUE_MATED_IN_MAX_PLY ? val + ply : val;
 }
 
-void Ai_Logic::ageHistorys()
+void Search::ageHistorys()
 {
 	//used to decrease value after a search
 	for (int cl = 0; cl < 2; cl++)
@@ -827,7 +827,7 @@ void Ai_Logic::ageHistorys()
 			}
 }
 
-void Ai_Logic::clearHistorys()
+void Search::clearHistorys()
 {
 	//used to decrease value after a search
 	for (int cl = 0; cl < 2; cl++)
@@ -846,7 +846,7 @@ void Ai_Logic::clearHistorys()
 			}
 }
 
-void Ai_Logic::checkInput()
+void Search::checkInput()
 {
 	//test for a condition that does less checks
 	//way too many atm
@@ -856,7 +856,7 @@ void Ai_Logic::checkInput()
 	}
 }
 
-void Ai_Logic::print(bool isWhite, int bestScore)
+void Search::print(bool isWhite, int bestScore)
 {
 	std::stringstream ss;
 	
@@ -873,7 +873,7 @@ void Ai_Logic::print(bool isWhite, int bestScore)
 
 
 template<bool Root>
-U64 Ai_Logic::perft(BitBoards & board, int depth)
+U64 Search::perft(BitBoards & board, int depth)
 {
 
 	StateInfo st;
@@ -883,7 +883,7 @@ U64 Ai_Logic::perft(BitBoards & board, int depth)
 
 	/*	//TESTING TESTING
 	searchStack stack[6], *ss = stack + 2;
-	std::memset(ss - 2, 0, 5 * sizeof(searchStack));
+	std::memset(ss - 2, 0, 5 * sizeof(searchStack));    //// IT LOOKS LIKE MP TRYS BUT DOESN"T GENERATE 1 extra promotion on very rare occasions. Possibly fix this eventually.
 	MovePicker mpp(board, MOVE_NONE, depth, history, ss);
 	Move testM;
 	CheckInfo ci(board);
@@ -915,7 +915,7 @@ U64 Ai_Logic::perft(BitBoards & board, int depth)
 		}
 	}
 
-	/*
+	/* //Left in for eventually testing why MP tries an extra move!!!
 	if (perftCounter == 52 && mppCounter == 53) {
 
 		MovePicker mp(board, MOVE_NONE, depth, history, ss);
@@ -937,13 +937,13 @@ U64 Ai_Logic::perft(BitBoards & board, int depth)
 	return nodes;
 }
 
-template U64 Ai_Logic::perft<true>(BitBoards & board, int depth);
+template U64 Search::perft<true>(BitBoards & board, int depth);
 
 std::string flipsL[8] = { "a", "b", "c", "d", "e", "f", "g", "h" };
 int flipsN[8]		  = {   8,   7,   6,   5,   4,   3,   2,   1 };
 
 template<bool Root>
-U64 Ai_Logic::perftDivide(BitBoards & board, int depth)
+U64 Search::perftDivide(BitBoards & board, int depth)
 {
 	StateInfo st;
 	U64 count, nodes = 0, tNodes = 0;
@@ -1006,7 +1006,7 @@ U64 Ai_Logic::perftDivide(BitBoards & board, int depth)
 	return nodes;
 }
 
-template U64 Ai_Logic::perftDivide<true>(BitBoards & board, int depth);
+template U64 Search::perftDivide<true>(BitBoards & board, int depth);
 
 /*
 void Ai_Logic::insert_pv(BitBoards & board)

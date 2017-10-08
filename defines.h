@@ -56,7 +56,7 @@ void prefetch(char* addr) {
 // 6-12 desitination square
 // 13-14 move flag, 1 Castle, 2 EP, 3 Promotion
 // 15-16 promotion piece type
-enum Move { //later change to move once entire move class has been removed.
+enum Move { 
 	MOVE_NONE
 };
 

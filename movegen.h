@@ -17,14 +17,6 @@ class searchStack;
 template<int genType>
 SMove* generate(const BitBoards & board, SMove *mlist);
 
-class MoveGen // defunct class, delete once everything else is working
-{
-public:
-
-
-private:
-
-};
 
 
 

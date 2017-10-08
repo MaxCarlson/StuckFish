@@ -11,20 +11,42 @@ class BitBoards;
 class evaluateBB;
 class HashEntry;
 
-//holds info about past and current searches, passed to search
-struct searchStack {
-	int ply;
-	//Move currentMove;
-	Move killers[2];
-	Move ttMove;
-	Move currentMove;
-	Move excludedMove;
+namespace Search {
 
-	int reduction;
-	int staticEval;
-	bool skipNull = false;
-};
+	//holds info about past and current searches, passed to search
+	struct searchStack {
+		int ply;
+		//Move currentMove;
+		Move killers[2];
+		Move ttMove;
+		Move currentMove;
+		Move excludedMove;
 
+		int reduction;
+		int staticEval;
+		bool skipNull = false;
+	};
+	void initSearch();
+	Move searchStart(BitBoards & board, bool isWhite);
+	Move iterativeDeep(BitBoards & board, int depth, bool isWhite);
+	int searchRoot(BitBoards & board, int depth, int alpha, int beta, searchStack * ss);
+	int alphaBeta(BitBoards & board, int depth, int alpha, int beta, searchStack * ss, bool allowNull, int isPV);
+	int quiescent(BitBoards & board, int alpha, int beta, searchStack * ss, int isPV);
+	int contempt(const BitBoards & board, int color);
+	bool isRepetition(const BitBoards & board, Move m);
+	void updateStats(Move move, searchStack * ss, int depth, Move * quiets, int qCount, int color);
+	void ageHistorys();
+	void clearHistorys();
+	void checkInput();
+	void print(bool isWhite, int bestScore);
+
+	template<bool Root>
+	U64 perft(BitBoards & board, int depth);
+
+	template<bool Root>
+	U64 perftDivide(BitBoards & board, int depth);
+}
+/*
 class Ai_Logic
 {
 public:
@@ -85,6 +107,7 @@ private:
 	void print(bool isWhite, int bestScore);
 
 };
+*/
 
 #endif // AI_LOGIC_H
 

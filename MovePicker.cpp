@@ -36,6 +36,40 @@ inline SMove * pick(SMove * begin, SMove * end) {
 	return begin;
 }
 
+// Main search initilization 
+MovePicker::MovePicker(const BitBoards & board, Move ttm, int depth, const Historys & hist, Move * killers_p) : b(board), Depth(depth), h(hist), killers{ killers_p[0], killers_p[1] }
+{
+	current = end = mList;
+	endBadCaptures = mList + 255;
+
+
+	Stage = b.checkers() ? EVASIONS_ : MAIN_M;
+
+
+	// Check for psuedo legality!!!
+	ttMove = (ttm && b.pseudoLegal(ttm) ? ttm : MOVE_NONE);
+
+	end += (ttMove != MOVE_NONE);
+}
+
+// For Qsearch
+MovePicker::MovePicker(const BitBoards & board, Move ttm, const Historys & hist) : b(board), h(hist)
+{
+	current = end = mList;
+	endBadCaptures = mList + 255;
+
+	Stage = QSEARCH_;
+
+	if (ttm && !b.capture_or_promotion(ttm))
+		ttm = MOVE_NONE;
+
+
+	// Check for psuedo legality!!!
+	ttMove = (ttm && b.pseudoLegal(ttm) ? ttm : MOVE_NONE);
+
+	end += (ttMove != MOVE_NONE);
+}
+
 template<>
 void MovePicker::score<CAPTURES>()
 {
@@ -105,9 +139,6 @@ void MovePicker::generateNextStage()
 	case KILLERS_M:
 		current = killers;
 		end = current + 2;
-
-		killers[0].move = s->killers[0];
-		killers[1].move = s->killers[1]; 
 		return;
 
 	case QUIETS_M:

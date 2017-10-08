@@ -8,9 +8,11 @@
 #include "bitboards.h"
 #include "ai_logic.h"
 #include "TranspositionT.h"
+#include "Thread.h"
+
 
 //master search obj
-Ai_Logic searchM;
+//Ai_Logic searchM;
 
 //is it whites turn?
 bool isWhite = true;
@@ -27,7 +29,6 @@ int fixedDepthSearch = 0;
 UCI::UCI()
 {
 	TT.resize(1024); //change later to be an input option for TT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	//TT.resizePawnT(128); //play with sizes for speed
 }
 
 void UCI::uciLoop()
@@ -42,6 +43,8 @@ void UCI::uciLoop()
 	//initalize things
 	newBoard.initBoards();
 
+	threadPool.initialize();
+
 	StateInfo si;
 
 	// Make sure that the outputs are sent straight away to the GUI
@@ -50,8 +53,8 @@ void UCI::uciLoop()
 	//printOptions();
 
 	newGame(newBoard);
-	searchM.initSearch();
-	searchM.clearHistorys();
+	Search::initSearch();
+	Search::clearHistorys();
 
 	while (std::getline(std::cin, line))
 	{
@@ -82,7 +85,7 @@ void UCI::uciLoop()
 		else if (token == "ucinewgame")
 		{
 			newGame(newBoard); 
-			searchM.clearHistorys();
+			Search::clearHistorys();
 			TT.clearTable(); //need to clear other TTables too at somepoint
 		}
 		else if (token == "test") { //used to enable quick testing
@@ -223,7 +226,7 @@ void UCI::setOption(std::istringstream & input)
 
 void UCI::search(BitBoards& newBoard)
 {	
-	Move m = searchM.searchStart(newBoard, isWhite); 
+	Move m = Search::searchStart(newBoard, isWhite);
 
 	std::cout << "bestmove " << moveToStr(m) << std::endl; //send move to std output for UCI GUI to pickup
 
@@ -356,7 +359,6 @@ static const char* Defaults[] = {
 // Just be sure to keep wtime and btime the same.
 void UCI::test(BitBoards & newBoard, StateInfo & si)
 {
-	searchM.initSearch();
 
 	long nodes = 0;
 
@@ -366,10 +368,10 @@ void UCI::test(BitBoards & newBoard, StateInfo & si)
 
 	for (int i = 0; i < 30; ++i) {
 		newGame(newBoard);
-		searchM.clearHistorys();
+		Search::clearHistorys();
 		TT.clearTable(); //need to clear other TTables too at somepoint ??
-		wtime = btime = 290000;
-		fixedDepthSearch = 13;  ///make this an input string for test >?
+		//wtime = btime = 290000;
+		fixedDepthSearch = 14;  ///make this an input string for test >?
 
 		std::string testFen = "fen ";
 
@@ -406,7 +408,7 @@ void UCI::perftUCI(BitBoards & newBoard, std::istringstream & input)
 
 	int d = std::stoi(tk);
 
-	U64 result = searchM.perft<true>(newBoard, d);
+	U64 result = Search::perft<true>(newBoard, d);
 
 	std::cout << result << std::endl;
 }
@@ -419,7 +421,7 @@ void UCI::divideUCI(BitBoards & newBoard, std::istringstream & input)
 
 	int d = std::stoi(tk);
 
-	searchM.perftDivide<true>(newBoard, d);
+	Search::perftDivide<true>(newBoard, d);
 }
 
 void UCI::drawUCI(BitBoards & newBoard)

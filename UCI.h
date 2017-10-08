@@ -1,7 +1,9 @@
 #pragma once
 
-#include <sstream> 
 #include "defines.h"
+
+#include <sstream> 
+
 
 class BitBoards;
 class StateInfo;

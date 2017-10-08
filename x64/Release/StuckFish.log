@@ -1,2 +1,2 @@
-﻿  ai_logic.cpp
-LINK : fatal error LNK1201: error writing to program database 'C:\Users\C-60\Desktop\cppPrograms\StuckFish\x64\Release\StuckFish.pdb'; check for insufficient disk space, invalid path, or insufficient privilege
+﻿  UCI.cpp
+  StuckFish.vcxproj -> C:\Users\C-60\Desktop\cppPrograms\StuckFish\x64\Release\StuckFish.exe
