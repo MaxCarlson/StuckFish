@@ -54,6 +54,9 @@ inline int stat_bonus(int depth) // This needs to be played with value wise agai
 	return depth > 14 ? 0 : depth * depth + 2 * depth - 2;
 }
 
+const int razor_margin[] = { 0, 275, 320, 257 };
+int futile_margin(int depth) { return 85 * depth; }
+
 
 void Search::initSearch()
 {
@@ -189,7 +192,7 @@ int Search::searchRoot(BitBoards& board, int depth, int alpha, int beta, searchS
 	ss->contiHistory = &thisThread->contiHistory[PIECE_EMPTY][0];
 
 	const HashEntry* ttentry = TT.probe(board.TTKey());
-	Move ttMove = ttentry ? ttentry->move() : MOVE_NONE;
+	Move ttMove = sd.PV[1];
 
 	sd.nodes++;
 	ss->ply = 1;
@@ -327,9 +330,9 @@ int Search::alphaBeta(BitBoards& board, int depth, int alpha, int beta, searchSt
 
 	ttentry = TT.probe(board.TTKey());
 	ttMove  = ttentry ? ttentry->move() : MOVE_NONE; //is there a move stored in transposition table?
-	ttValue = ttentry ? valueFromTT(ttentry->eval(), ss->ply) : INVALID; //if there is a TT entry, grab its value
+	ttValue = ttentry ? valueFromTT(ttentry->eval(), ss->ply) : 0; //if there is a TT entry, grab its value
 
-
+/*
 	//is the a TT entry? If so, are we in PV? If in PV only accept and exact entry with a depth >= our depth, 
 	//accept all if the entry has a equal or greater depth compared to our depth.
 	if (ttentry
@@ -339,6 +342,35 @@ int Search::alphaBeta(BitBoards& board, int depth, int alpha, int beta, searchSt
 			: ttentry->flag() == TT_ALPHA)
 		) {
 
+		return ttValue;
+	}
+	*/
+	if(!isPV ///////////////Needs to be tested against version above.
+		&& ttentry
+		&& ttentry->depth() >= depth
+		&& (ttValue >= beta
+			? ttentry->flag() == TT_BETA
+			: ttentry->flag() == TT_ALPHA))
+	{
+		if (ttMove)
+		{
+			if (ttValue >= beta)
+			{
+				if (!board.capture_or_promotion(ttMove))
+					updateStats(board, ttMove, ss, depth, nullptr, 0, stat_bonus(depth));
+
+				// Penalty if the TT move from previous ply is quiet and gets refuted
+				if ((ss - 1)->moveCount == 1 && !board.captured_piece())
+					updateContinuationHistories(ss - 1, board.pieceOnSq(prevSq), prevSq, -stat_bonus(depth + 1));
+
+			}
+			else if (!board.capture_or_promotion(ttMove))
+			{
+				int penalty = -stat_bonus(depth);
+				thisThread->mainHistory.update(board.stm(), ttMove, penalty);
+				updateContinuationHistories(ss, board.pieceOnSq(from_sq(ttMove)), to_sq(ttMove), penalty);
+			}
+		}
 		return ttValue;
 	}
 
@@ -353,22 +385,16 @@ int Search::alphaBeta(BitBoards& board, int depth, int alpha, int beta, searchSt
 	FlagInCheck = board.checkers();
 
 	//if in check, or in reduced search extension: skip nulls, statics evals, razoring, etc to moves_loop:
-	if (FlagInCheck || (ss - 1)->excludedMove || sd.skipEarlyPruning) goto moves_loop;
+	if (FlagInCheck) 
+	{
+		ss->staticEval = 0;
+		goto moves_loop;
+	}
+		
 
 	//evaluateBB eval;
 	Evaluate eval;
 	ss->staticEval = eval.evaluate(board);
-
-	/*
-	//update gain from previous ply stats for previous move
-	if ((ss - 1)->currentMove.captured == PIECE_EMPTY
-		&& (ss - 1)->currentMove.flag != 'Q'
-		&& ss->staticEval != 0 && (ss - 1)->staticEval != 0
-		&& (ss - 1)->currentMove.tried) {
-
-		history.updateGain((ss - 1)->currentMove, -(ss - 1)->staticEval - ss->staticEval, !color);          //RE ENABLE ONCE DONE EP TESTING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	}
-	*/
 
 
 	//eval pruning / static null move
@@ -379,25 +405,8 @@ int Search::alphaBeta(BitBoards& board, int depth, int alpha, int beta, searchSt
 			return ss->staticEval - eval_margin;
 		}
 	}
-
-	//Null move heuristics, disabled if in PV, check, or depth is too low 
-///*
-	if (allowNull && !isPV && depth > R) {
-		if (depth > 6) R = 3;
-
-		ss->currentMove = MOVE_NULL;
-		ss->contiHistory = &thisThread->contiHistory[PIECE_EMPTY][0];
-
-		board.makeNullMove(st);
-		score = -alphaBeta(board, depth - R - 1, -beta, -beta + 1, ss + 1, NO_NULL, NO_PV);
-		board.undoNullMove();
-
-		//if after getting a free move the score is too good, prune this branch
-		if (score >= beta) {
-			return score;
-		}
-	}
-
+/*
+	// Razoring 
 	if (!isPV 
 		&& depth < 4
 		&& ss->staticEval + 300 * (depth - 1) * 60 <= alpha
@@ -414,17 +423,44 @@ int Search::alphaBeta(BitBoards& board, int depth, int alpha, int beta, searchSt
 
 		if (val <= alpha) return val;
 	}
+*/	
+	
+	// Razoring ///////////////////////////Needs to be tested against old version
+	if (!isPV
+		&& depth < 4
+		&& ss->staticEval + razor_margin[depth] <= alpha)
+	{
 
-	/* //Still a bit slow?
-//do we want to futility prune?
-	int fmargin[4] = { 0, 200, 300, 500 };
-	//int fmargin[8] = {0, 100, 150, 200, 250, 300, 400, 500};
-	if (depth < 4 && !isPV
-		&& abs(alpha) < 9000
-		&& ss->staticEval + fmargin[depth] <= alpha) {
-		f_prune = 1;
+		if (depth <= 1) {
+			return quiescent(board, alpha, beta, ss, NO_PV);
+		}
+
+		int ralpha = alpha - razor_margin[depth];
+
+		int val = quiescent(board, ralpha, ralpha + 1, ss, NO_PV);
+
+		if (val <= alpha) 
+			return val;
 	}
-	//*/
+	
+
+	//Null move heuristics, disabled if in PV, check, or depth is too low 
+	///*
+	if (allowNull && !isPV && depth > R) {
+		if (depth > 6) R = 3;
+
+		ss->currentMove = MOVE_NULL;
+		ss->contiHistory = &thisThread->contiHistory[PIECE_EMPTY][0];
+
+		board.makeNullMove(st);
+		score = -alphaBeta(board, depth - R - 1, -beta, -beta + 1, ss + 1, NO_NULL, NO_PV);
+		board.undoNullMove();
+
+		//if after getting a free move the score is too good, prune this branch
+		if (score >= beta) {
+			return score;
+		}
+	}
 
     //Internal iterative deepening search same ply to a shallow depth..
 	//and see if we can get a TT entry to speed up search
