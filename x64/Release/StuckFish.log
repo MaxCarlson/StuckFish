@@ -1,2 +1,16 @@
 ﻿  ai_logic.cpp
+  bitboards.cpp
+  EndGame.cpp
+  Evaluate.cpp
+  main.cpp
+  material.cpp
+  movegen.cpp
+  MovePicker.cpp
+  Pawns.cpp
+  slider_attacks.cpp
+  Thread.cpp
+  TimeManager.cpp
+  TranspositionT.cpp
+  UCI.cpp
+  zobristh.cpp
   StuckFish.vcxproj -> C:\Users\C-60\Desktop\cppPrograms\StuckFish\x64\Release\StuckFish.exe

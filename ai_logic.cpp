@@ -33,9 +33,18 @@ bool timeOver;
 //master time manager
 TimeManager timeM;
 
+using namespace Search;
+
+
+
+enum NodeType {
+	NonPv,
+	PV
+};
+
 //mate values are measured in distance from root, so need to be converted to and from TT
-inline int valueFromTT(int val, int ply); 
-inline int valueToTT(  int val, int ply); 
+inline int valueFromTT(int val, int ply);
+inline int valueToTT(int val, int ply);
 
 //reduction tables: pv, is node improving?, depth, move number
 int reductions[2][2][64][64];
@@ -45,7 +54,8 @@ int futileMoveCounts[2][32];
 
 int DrawValue[COLOR];
 
-using namespace Search;
+template<NodeType NT>
+int alphaBeta(BitBoards& board, int depth, int alpha, int beta, Search::searchStack *ss, bool allowNull);
 
 // Used for applying bonuses and penalties to
 // Quiet moves, continuation historys, counter moves, etc. 
@@ -56,6 +66,7 @@ inline int stat_bonus(int depth) // This needs to be played with value wise agai
 
 const int razor_margin[] = { 0, 275, 320, 257 };
 int futile_margin(int depth) { return 85 * depth; }
+
 
 
 void Search::initSearch()
@@ -221,15 +232,15 @@ int Search::searchRoot(BitBoards& board, int depth, int alpha, int beta, searchS
         //PV search at root
         if(best == -INF){
             //full window PV search
-            score = -alphaBeta(board, depth-1, -beta, -alpha, ss + 1, DO_NULL, IS_PV);
+            score = -alphaBeta<PV>(board, depth-1, -beta, -alpha, ss + 1, DO_NULL);
 
        } else {
             //zero window search
-            score = -alphaBeta(board, depth-1, -alpha -1, -alpha, ss + 1, DO_NULL, NO_PV);
+            score = -alphaBeta<NonPv>(board, depth-1, -alpha -1, -alpha, ss + 1, DO_NULL);
 
             //if we've gained a new alpha we need to do a full window search
             if(score > alpha){
-                score = -alphaBeta(board, depth-1, -beta, -alpha, ss + 1, DO_NULL, IS_PV);
+                score = -alphaBeta<PV>(board, depth-1, -beta, -alpha, ss + 1, DO_NULL);
             }
         }
 
@@ -279,8 +290,11 @@ int Search::searchRoot(BitBoards& board, int depth, int alpha, int beta, searchS
     return alpha;
 }
 
-int Search::alphaBeta(BitBoards& board, int depth, int alpha, int beta, searchStack *ss, bool allowNull, int isPV)
+
+template<NodeType NT>
+int alphaBeta(BitBoards& board, int depth, int alpha, int beta, Search::searchStack *ss, bool allowNull)
 {
+	const bool isPV = (NT == PV);
 	bool FlagInCheck, raisedAlpha, doFullDepthSearch, futileMoves;
 	bool singularExtension, captureOrPromotion, givesCheck;
 
@@ -442,6 +456,13 @@ int Search::alphaBeta(BitBoards& board, int depth, int alpha, int beta, searchSt
 		if (val <= alpha) 
 			return val;
 	}
+
+	// Futility pruning
+	if (depth < 7
+		&& ss->staticEval - futile_margin(depth) >= beta  // ALSO NEEDS TO BE PLAY TESTED FOR ELO LOSS/GAIN
+		&& ss->staticEval < VALUE_KNOWN_WIN
+		&& board.non_pawn_material(board.stm()))
+		return ss->staticEval;
 	
 
 	//Null move heuristics, disabled if in PV, check, or depth is too low 
@@ -453,7 +474,7 @@ int Search::alphaBeta(BitBoards& board, int depth, int alpha, int beta, searchSt
 		ss->contiHistory = &thisThread->contiHistory[PIECE_EMPTY][0];
 
 		board.makeNullMove(st);
-		score = -alphaBeta(board, depth - R - 1, -beta, -beta + 1, ss + 1, NO_NULL, NO_PV);
+		score = -alphaBeta<NonPv>(board, depth - R - 1, -beta, -beta + 1, ss + 1, NO_NULL);
 		board.undoNullMove();
 
 		//if after getting a free move the score is too good, prune this branch
@@ -468,10 +489,8 @@ int Search::alphaBeta(BitBoards& board, int depth, int alpha, int beta, searchSt
 	if (depth >= 6 && !ttMove
 		&& (isPV || ss->staticEval + 100 >= beta)) {
 		int d = (int)(3 * depth / 4 - 2);
-		sd.skipEarlyPruning = true;
 
-		alphaBeta(board, d, alpha, beta, ss, NO_NULL, isPV);
-		sd.skipEarlyPruning = false;
+		alphaBeta<NT>(board, d, alpha, beta, ss, NO_NULL);
 
 		ttentry = TT.probe(board.TTKey());
 		ttMove  = ttentry ? ttentry->move() : MOVE_NONE;
@@ -546,13 +565,13 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 
 			int d1 =  std::max(newDepth - ss->reduction, 1);
 
-			int val = -alphaBeta(board, d1, -(alpha + 1), -alpha, ss + 1, DO_NULL, NO_PV);
+			int val = -alphaBeta<NonPv>(board, d1, -(alpha + 1), -alpha, ss + 1, DO_NULL);
 
 			//if reduction is very high, and we fail high above, re-search with a lower reduction
 			if (val > alpha && ss->reduction >= 4) {
 
 				int d2 = std::max(newDepth - 2, 1);
-				val = -alphaBeta(board, d2, -(alpha + 1), -alpha, ss + 1, DO_NULL, NO_PV);
+				val = -alphaBeta<NonPv>(board, d2, -(alpha + 1), -alpha, ss + 1, DO_NULL);
 			}
 			//if we still fail high, do a full depth search
 			if (val > alpha && ss->reduction != 0) {
@@ -567,15 +586,15 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 			if (!raisedAlpha) {
 				//we're in principal variation search or full window search
 
-				score = -alphaBeta(board, newDepth, -beta, -alpha, ss + 1, DO_NULL, isPV);
+				score = -alphaBeta<NT>(board, newDepth, -beta, -alpha, ss + 1, DO_NULL);
 			}
 			else {
 				//zero window search
-				score = -alphaBeta(board, newDepth, -alpha - 1, -alpha, ss + 1, DO_NULL, NO_PV);
+				score = -alphaBeta<NonPv>(board, newDepth, -alpha - 1, -alpha, ss + 1, DO_NULL);
 				//if our zero window search failed, do a full window search
 				if (score > alpha) {
 					//PV search after failed zero window
-					score = -alphaBeta(board, newDepth, -beta, -alpha, ss + 1, DO_NULL, IS_PV);
+					score = -alphaBeta<PV>(board, newDepth, -beta, -alpha, ss + 1, DO_NULL);
 				}
 		}
 

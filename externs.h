@@ -58,7 +58,6 @@ struct searchDriver{
 	int  depth = 0;
 	long startTime;
 	long moveTime = 2500;
-	bool skipEarlyPruning = false;
 };
 extern searchDriver sd;
 

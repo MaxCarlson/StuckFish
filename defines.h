@@ -248,7 +248,9 @@ const int SORT_VALUE[7] = { 0, 100, 325, 335, 500, 975, 0 };
 
 
 #define VALUE_DRAW   0
-#define END_GAME_MAT 1300
+#define VALUE_KNOWN_WIN 9000 // Up for testing this value with changes!
+#define END_GAME_MAT 1300 // phase this out???
+
 
 #define MIDGAME_LIMIT 6090 //values subject to serious changes!!!!!!!!!!
 #define ENDGAME_LIMIT 1475

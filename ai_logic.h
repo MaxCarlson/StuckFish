@@ -33,7 +33,7 @@ namespace Search {
 	void initSearch();
 	void clear();
 	int searchRoot(BitBoards & board, int depth, int alpha, int beta, searchStack * ss);
-	int alphaBeta(BitBoards & board, int depth, int alpha, int beta, searchStack * ss, bool allowNull, int isPV);
+	//int alphaBeta(BitBoards & board, int depth, int alpha, int beta, searchStack * ss, bool allowNull, int isPV);
 	int quiescent(BitBoards & board, int alpha, int beta, searchStack * ss, int isPV);
 
 
