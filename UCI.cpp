@@ -229,7 +229,6 @@ void UCI::setOption(std::istringstream & input)
 
 void UCI::search(BitBoards& newBoard)
 {	
-	//Move m = Search::searchStart(newBoard, isWhite);
 
 	Move m = Threads.searchStart(newBoard);
 
@@ -373,7 +372,7 @@ void UCI::test(BitBoards & newBoard, StateListPtr& states)		// Give this an inpu
 	for (int i = 0; i < 30; ++i) {
 		newGame(newBoard, states);
 		Search::clear();
-		fixedDepthSearch = 14;  
+		fixedDepthSearch = 15;  
 
 		std::string testFen = "fen ";
 

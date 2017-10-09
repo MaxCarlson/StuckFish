@@ -216,7 +216,7 @@ public:
 
 private:
 
-	void set_state(StateInfo * si);
+	void set_state(StateInfo * si, Thread * th);
 	
 	StateInfo* st;
 

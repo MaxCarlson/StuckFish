@@ -182,20 +182,9 @@ void BitBoards::initBoards()
 
 void BitBoards::constructBoards(const std::string* FEN, Thread * th, StateInfo * si) //replace this with fen string reader
 {
-	//set the start state
-	startState.epSquare = SQ_NONE;
-	startState.castlingRights = 0;
-	startState.MaterialKey = 0LL;
-	startState.PawnKey = 0LL;
-	startState.capturedPiece = 0;
-
-	thisThread = th;
-
-	//set state to start state
-	//there are probable issues with this, it seems after setting a position
-	//once we break into search, there's an infinite list of identical positions to search start
-	//in st->previous
-	//st = &startState;
+	// Set our internal state pointer to that
+	// of the first entry in the 
+	// StateListPtr deque
 	st = si;
 
 	FullTiles = 0LL;
@@ -231,20 +220,30 @@ void BitBoards::constructBoards(const std::string* FEN, Thread * th, StateInfo *
 	//delete FEN; //posibly change this? not much reason for ptr anymore
 
 
-	set_state(si);
+	set_state(st, th);
 
 	// mark empty tiles opposite of full tiles
   	EmptyTiles = ~FullTiles;	
 }
 
-void BitBoards::set_state(StateInfo * si)  ///////////////////////////////////// Remove bInfo and transfer stuff to stateInfo once more stuff is working. Possibly move zobrist key debug like stuff to here, so we can check board isokay better internally
+void BitBoards::set_state(StateInfo * si, Thread * th)  ///////////////////////////////////// Remove bInfo and transfer stuff to stateInfo once more stuff is working. Possibly move zobrist key debug like stuff to here, so we can check board isokay better internally
 {
+	//set the start state
+	//si->epSquare = SQ_NONE; // EP square set above in readFenString.!!
+	si->MaterialKey = 0LL;
+	si->PawnKey = 0LL;
+	si->capturedPiece = 0;
 	//get zobrist key of current position and store to board
 	si->Key = zobrist.getZobristHash(*this);
 
-	si->checkers = attackers_to(king_square(stm()), FullTiles) & pieces(!stm()); //IS THIS working as intended????
+	si->checkers = attackers_to(king_square(stm()), FullTiles) & pieces(!stm()); 
 
 	//si->Key ^= Zobrist::Castling[st->castlingRights]; //already done in zobrist.gethash above!!
+
+	// Set our internal thread ptr equal
+	// to the thread who carrys this board.
+	thisThread = th;
+
 
 	for (int c = 0; c < COLOR; ++c) {
 
@@ -345,12 +344,12 @@ void BitBoards::readFenString(const std::string& FEN)
 
 		st->epSquare = (col - 'a') * 8 + (row - '1'); //test this 
 
-		if (!(psuedoAttacks(PAWN, bInfo.sideToMove, st->epSquare) //also needs testing
-			& pieces(bInfo.sideToMove, PAWN))) { 
-			st->epSquare = SQ_NONE;
-		}
-		
+		if (!(attackers_to(st->epSquare, FullTiles) & pieces(stm(), PAWN))
+			|| !(pieces(!stm(), PAWN) & square_bb(st->epSquare + pawn_push(!stm()))))
+			st->epSquare = SQ_NONE;			
 	}
+	else
+		st->epSquare = SQ_NONE;
 	
 	ss >> std::skipws >> st->rule50 >> turns;
 }
@@ -884,6 +883,11 @@ void BitBoards::undoNullMove()
 
 bool BitBoards::isDraw(int ply)
 {
+	// If we've reached 100 half moves and we either don't have checkers,
+	// or we have atleast one move it's a draw by the 50 move rule.
+	if (st->rule50 > 99 && (!checkers() || MoveList<LEGAL>(*this).size() ))
+		return true;
+
 	int end = std::min(st->rule50, st->plysFromNull);
 
 	if (end < 4)
@@ -906,7 +910,7 @@ bool BitBoards::isDraw(int ply)
 	return false;
 }
 
-int BitBoards::SEE(const Move& m, int color, bool isCapture) const ///////////////////////////////////////////////////////////////////////////////////////////NOTE we might need to make stm here equal to the color of piece on from sq for reduction SEE to work
+int BitBoards::SEE(const Move& m, int color, bool isCapture) const
 {
 	U64 attackers, occupied, stmAttackers;
 	int swapList[32], index = 1;

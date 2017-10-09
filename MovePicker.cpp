@@ -299,12 +299,13 @@ Move MovePicker::nextMove()
 
 		++Stage;
 
+		// First Killer
 		m = killers[0].move;
 
-		if (m != MOVE_NONE  // Check that the move isn't a repeat, 				                   
-			&& m != ttMove     // and is a reasonable move for board position
+		if (    m != MOVE_NONE  // Check that the move isn't a repeat, 				                   
+			&&  m != ttMove     // and is a reasonable move for board position
 			&& !b.capture(m)
-			&& b.pseudoLegal(m))
+			&&  b.pseudoLegal(m))
 			return m;
 
 	// Fall Through...
@@ -312,12 +313,13 @@ Move MovePicker::nextMove()
 	case KILLERS:
 		++Stage;
 
+		// Second Killer
 		m = killers[1].move;
 
-		if (m != MOVE_NONE  // Check that the move isn't a repeat, 				                   
-			&& m != ttMove     // and is a reasonable move for board position
+		if (    m != MOVE_NONE   				                   
+			&&  m != ttMove     
 			&& !b.capture(m)
-			&& b.pseudoLegal(m))
+			&&  b.pseudoLegal(m))
 			return m;
 
 	// Fall Through...
@@ -325,13 +327,14 @@ Move MovePicker::nextMove()
 	case COUNTER_MOVE:
 		++Stage;
 		m = counterMove;
-		if (m != MOVE_NONE
+		if (   m != MOVE_NONE
 			&& m != ttMove
 			&& m != killers[0].move
 			&& m != killers[1].move
 			&&  b.pseudoLegal(m)
 			&& !b.capture(m))
 			return m;
+	// Fall Through...
 
 	case QUIETS_INIT:
 		current = endBadCaptures;
@@ -357,6 +360,8 @@ Move MovePicker::nextMove()
 		}
 		++Stage;
 		current = mList; // Point to front of badCaptures
+
+	// Fall Through...
 
 	case BAD_CAPTURES:
 		if(current < endBadCaptures)
