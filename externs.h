@@ -50,15 +50,6 @@ extern Material::Table MaterialTable;
 //half turns
 extern int turns;
 
-//array for storing objects containing zorbist key for position as well as depth and eval
-extern HashEntry transpositionEval[5021983];
-extern HashEntry transpositionPawn[400000];
-
-//reduction tables: pv, is node improving?, depth, move number
-extern int reductions[2][2][64][64];
-//futile move count arrays
-extern int futileMoveCounts[2][32];
-
 //holds search info, killers, historys, PV, etc
 struct searchDriver{
 
@@ -71,11 +62,6 @@ struct searchDriver{
 };
 extern searchDriver sd;
 
-struct Historys { //holds history info for search 
-
-	std::vector<U64> twoFoldRep; //stores zobrist keys of all positions encountered thus far
-};
-extern Historys history; 
 
 //Bitboard of all king movements that can then be shifted
 extern const U64 KING_SPAN;

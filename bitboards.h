@@ -139,6 +139,7 @@ public:
 
 	bool capture(Move m) const;
 	bool capture_or_promotion(Move m) const;
+	int captured_piece() const;
 
 	//returns the square the king is on
 	int king_square(int color) const;
@@ -285,6 +286,11 @@ inline bool BitBoards::capture(Move m) const
 inline bool BitBoards::capture_or_promotion(Move m) const
 {
 	return move_type(m) != NORMAL ? move_type(m) != CASTLING : !empty(to_sq(m));
+}
+
+inline int BitBoards::captured_piece() const
+{
+	return st->capturedPiece;
 }
 
 inline int BitBoards::stm() const

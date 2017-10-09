@@ -32,8 +32,9 @@ public:
 	//Material::Table materialTable;
 
 	BitBoards board;
-	CounterMoveHistory counterMoves;
-	ButterflyHistory    mainHistory;
+	CounterMoveHistory  counterMoves;
+	ButterflyHistory     mainHistory;
+	ContinuationHistory contiHistory;
 
 	int rootDepth;
 };

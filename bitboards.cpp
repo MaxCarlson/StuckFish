@@ -400,6 +400,7 @@ bool BitBoards::pseudoLegal(Move m) const
 	// If move isn't a normal move,
 	// generate a list of all legal moves for a position
 	// loop through the list seeing if our move is in the list
+	/*
 	if (move_type(m) != NORMAL) {
 		SMove list[256];
 		SMove * end = generate<LEGAL>(*this, list);
@@ -411,6 +412,11 @@ bool BitBoards::pseudoLegal(Move m) const
 				return true;
 		}
 		return false;
+	}
+	*/
+
+	if (move_type(m) != NORMAL) {
+		return MoveList<LEGAL>(*this).contains(m);
 	}
 		
 

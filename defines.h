@@ -65,6 +65,9 @@ enum Move {
 struct SMove {
 	Move move;
 	int score;
+
+	operator Move() const { return move; }
+	void operator=(Move m) { move = m; }
 };
 
 // Removes error from std::algorithm about std::less no overload found.

@@ -164,7 +164,6 @@ void UCI::updatePosition(BitBoards& newBoard, std::istringstream& input, StateLi
 		return;
 	}
 
-	int repCount = 0;
 	// Parse move list (if any)
 	while (input >> token)
 	{
@@ -177,10 +176,6 @@ void UCI::updatePosition(BitBoards& newBoard, std::istringstream& input, StateLi
 			//make move + increment turns
 			newBoard.makeMove(m, states->back(), !isWhite);
 			turns += 1;
-			
-			//push board position U64 to search driver.two fold repeitions
-			history.twoFoldRep.push_back(newBoard.TTKey());
-			repCount++;
 			
 			isWhite = !isWhite;
 		}
@@ -196,9 +191,6 @@ void UCI::newGame(BitBoards& newBoard, StateListPtr& states)
 	newBoard.zobrist.getZobristHash(newBoard);
 
 	turns = 0;
-
-	//clear move repetitions vector
-	history.twoFoldRep.clear();
 
 	isWhite = true;
 }

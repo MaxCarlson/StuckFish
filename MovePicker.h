@@ -9,14 +9,6 @@
 class Historys;
 class searchStack;
 
-/*
-enum Stages {
-	MAIN_M,    CAPTURES_M, KILLERS_M, QUIETS_M, QUIETS_M1, BAD_CAPTURES_M,
-	QSEARCH_,  CAPTURES_Q, 
-	EVASIONS_, EVASIONS_S1,
-	STOP
-};
-*/
 enum Stages {
 	MAIN_SEARCH, CAPTURES_INIT, GOOD_CAPTURES, KILLERS, COUNTER_MOVE, QUIETS_INIT, QUIET, BAD_CAPTURES,
 	Q_SEARCH, CAPTURES_Q_INIT, CAPTURES_Q,
@@ -62,7 +54,14 @@ struct PieceToHistory : public PieceToBoards
 	}
 };
 
+// CounterMoveHistory stores counter moves indexed by [piece][to] of the previous
+// move, see chessprogramming.wikispaces.com/Countermove+Heuristic
 typedef StatBoards<PIECES, SQ_ALL, Move> CounterMoveHistory;
+
+// ContinuationHistory is the history of a given pair of moves, usually the
+// current one given a previous one. History table is based on PieceToBoards
+// instead of ButterflyBoards.
+typedef StatBoards<PIECES, SQ_ALL, PieceToHistory> ContinuationHistory;
 
 
 
@@ -70,7 +69,7 @@ class MovePicker
 {
 
 public:
-	MovePicker(const BitBoards & board, Move ttm, int depth, const ButterflyHistory * hist, Move cm, Move * killers_p);
+	MovePicker(const BitBoards & board, Move ttm, int depth, const ButterflyHistory * hist, const PieceToHistory**, Move cm, Move * killers_p);
 	MovePicker(const BitBoards & board, Move ttm, const ButterflyHistory * hist);
 
 	Move nextMove();
@@ -82,10 +81,9 @@ private:
 
 	int Stage;
 
-	void generateNextStage();
-
 	const BitBoards        & b;
 	const ButterflyHistory * mainHist;
+	const PieceToHistory   ** contiHistory;
 	
 
 	int Depth;

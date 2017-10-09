@@ -1,5 +1,5 @@
 #include "Thread.h"
-
+#include "ai_logic.h"
 
 ThreadPool Threads;
 
@@ -13,6 +13,12 @@ void Thread::clear()
 {
 	counterMoves.fill(MOVE_NONE);
 	mainHistory.fill(0);
+
+	for (auto& to : contiHistory)
+		for (auto& h : to)
+			h.fill(0);
+
+	contiHistory[PIECE_EMPTY][0].fill(Search::counterMovePruneThreshold - 1);
 }
 
 void ThreadPool::initialize()

@@ -53,31 +53,21 @@ inline SMove * pick(SMove * begin, SMove * end) {
 }
 
 // Main search initilization 
-MovePicker::MovePicker(const BitBoards & board, Move ttm, int depth, const ButterflyHistory * hist, Move cm, Move * killers_p)
-										: b(board), Depth(depth), mainHist(hist), counterMove(cm), killers{ killers_p[0], killers_p[1] }
+MovePicker::MovePicker(const BitBoards & board, Move ttm, int depth, const ButterflyHistory * hist, const PieceToHistory** ch, Move cm, Move * killers_p)
+										: b(board), Depth(depth), mainHist(hist), contiHistory(ch), counterMove(cm), killers{ killers_p[0], killers_p[1] }
 {
-	//current = end = mList;
-	//endBadCaptures = mList + 255;
-
-
-	//Stage = b.checkers() ? EVASIONS_ : MAIN_M;
 	Stage = b.checkers() ? EVASION : MAIN_SEARCH;
 
 
 	// Check for psuedo legality!!!
 	ttMove = (ttm && b.pseudoLegal(ttm) ? ttm : MOVE_NONE);
 
-	//end += (ttMove != MOVE_NONE);
 	Stage += (ttMove == MOVE_NONE);
 }
 
-// For Qsearch
+// Qsearch
 MovePicker::MovePicker(const BitBoards & board, Move ttm, const ButterflyHistory * hist) : b(board), mainHist(hist)
 {
-	//current = end = mList;
-	//endBadCaptures = mList + 255;
-
-	//Stage = QSEARCH_;
 	Stage = Q_SEARCH;
 
 	if (ttm && !b.capture_or_promotion(ttm))
@@ -87,7 +77,6 @@ MovePicker::MovePicker(const BitBoards & board, Move ttm, const ButterflyHistory
 	// Check for psuedo legality!!!
 	ttMove = (ttm && b.pseudoLegal(ttm) ? ttm : MOVE_NONE);
 
-	//end += (ttMove != MOVE_NONE);
 	Stage += (ttMove == MOVE_NONE);
 }
 
@@ -120,8 +109,11 @@ void MovePicker::score<QUIETS>()
 	for (SMove* i = mList; i != end; ++i) {
 		
 		m = i->move;
-		//i->score = h.history[b.stm()][from_sq(m)][to_sq(m)];
-		i->score = (*mainHist)[b.stm()][from_sq(m)];
+
+		i->score = (*mainHist)[b.stm()][from_sq(m)]
+				 + (*contiHistory[0])[b.pieceOnSq(from_sq(m))][to_sq(m)] // These need to be play tested for ELO loss/gain
+				 + (*contiHistory[1])[b.pieceOnSq(from_sq(m))][to_sq(m)]
+				 + (*contiHistory[3])[b.pieceOnSq(from_sq(m))][to_sq(m)];
 	}
 }
 

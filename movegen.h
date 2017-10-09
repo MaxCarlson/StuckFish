@@ -26,7 +26,8 @@ struct MoveList {
 	explicit MoveList(const BitBoards & board) : last(generate<genType>(board, mList)) {}
 	const SMove * begin() const { return mList; }
 	const SMove *   end() const { return  last; }
-	size_t size() const { return last - mList; }
+	size_t size() const { return last -  mList; }
+
 	bool contains(Move m) const {
 		return std::find(begin(), end(), m) != end();
 	}

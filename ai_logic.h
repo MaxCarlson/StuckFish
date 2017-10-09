@@ -5,26 +5,30 @@
 #include <thread>
 #include "slider_attacks.h"
 #include "defines.h"
+#include "MovePicker.h"
 
 
 class BitBoards;
 class evaluateBB;
 class HashEntry;
 
+
 namespace Search {
+
+	const int counterMovePruneThreshold = 0;
 
 	//holds info about past and current searches, passed to search
 	struct searchStack {
 		int ply;
-		//Move currentMove;
+		int moveCount;
 		Move killers[2];
-		Move ttMove;
 		Move currentMove;
 		Move excludedMove;
 
+		PieceToHistory * contiHistory;
+
 		int reduction;
 		int staticEval;
-		bool skipNull = false;
 	};
 	void initSearch();
 	void clear();
@@ -33,7 +37,9 @@ namespace Search {
 	int quiescent(BitBoards & board, int alpha, int beta, searchStack * ss, int isPV);
 
 
-	void updateStats(const BitBoards & board, Move move, searchStack * ss, int depth, Move * quiets, int qCount, int color);
+	void updateContinuationHistories(searchStack * ss, int piece, int to, int bonus);
+
+	void updateStats(const BitBoards & board, Move move, searchStack * ss, int depth, Move * quiets, int qCount, int bonus);
 	void checkInput();
 	void print(bool isWhite, int bestScore);
 
