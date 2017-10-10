@@ -9,6 +9,7 @@
 #include "ai_logic.h"
 #include "TranspositionT.h"
 #include "Thread.h"
+#include "movegen.h"
 
 
 //master search obj
@@ -44,8 +45,9 @@ void UCI::uciLoop()
 	newBoard.initBoards();
 
 	Threads.initialize();
-
-	//StateInfo si;
+	
+	// Holds all the stateInfo's throughout plys of the search,
+	// that allow easy recovery of board information after undoing a move.
 	StateListPtr states(new std::deque<StateInfo>(1));
 
 	// Make sure that the outputs are sent straight away to the GUI
@@ -79,9 +81,6 @@ void UCI::uciLoop()
 		else if (token == "setoption") {
 			setOption(is);
 		}
-		else if (token == "color") {
-
-		}
 		else if (token == "ucinewgame")
 		{
 			newGame(newBoard, states);
@@ -93,7 +92,7 @@ void UCI::uciLoop()
 		else if (token == "perft") {
 			perftUCI(newBoard, is);
 		}
-		else if (token == "divide") {  /////////////////NEED TO WRITE ERROR CATCHING FOR NO NUMBER ENTERED
+		else if (token == "divide") {  
 			divideUCI(newBoard, is);
 		}
 		else if (token == "position") {
@@ -102,7 +101,7 @@ void UCI::uciLoop()
 		else if (token == "print" || token == "draw"){
 			newBoard.drawBBA();
 		}
-		else if (token == "help")
+		else if (token == "help" || token == "?")
 		{
 			helpUCI();
 		}
@@ -235,14 +234,20 @@ std::string UCI::moveToStr(const Move& m)
 	std::string flipsL[8] = { "a", "b", "c", "d", "e", "f", "g", "h" };
 	int flipsN[8]         = {  8,   7,   6,   5,   4,   3,   2,   1  };
 
+	if (m == MOVE_NONE)
+		return "(none)";
+
+	if (m == MOVE_NULL)
+		return "0000";
+
 	int x  = file_of(from_sq(m));
 	int y  = rank_of(from_sq(m)) ^ 7; // Note: Move scheme was changed and too lazy to change array
 	int x1 = file_of(to_sq(  m));
 	int y1 = rank_of(to_sq(  m)) ^ 7;
 
-	std::string promL = "";
-
-	if (move_type(m) == PROMOTION) promL = "q"; //promotion flags
+	std::string promL;
+	if (move_type(m) == PROMOTION)
+		promL = " pnbrqk"[promotion_type(m)];
 
 
 	std::stringstream ss;
@@ -254,6 +259,8 @@ std::string UCI::moveToStr(const Move& m)
 Move UCI::strToMove(BitBoards& newBoard, std::string& input)
 {
 	Move m;
+
+	/*
 	int flipsN[9] = {0, 7, 6, 5, 4, 3, 2, 1, 0};
 	char flipsA[8]{ 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h' };
 
@@ -311,9 +318,17 @@ Move UCI::strToMove(BitBoards& newBoard, std::string& input)
 	else if (typeOfMove == CASTLING)
 		m = create_special<CASTLING, PIECE_EMPTY>(from, to);
 
+	*/
+
+	if (input.length() == 5)
+		input[4] = char(tolower(input[4]));
+
+	for (const auto& m : MoveList<LEGAL>(newBoard))
+		if (input == moveToStr(m))
+			return m;
 
 
-	return m;
+	return MOVE_NONE;
 }
 
 static const char* Defaults[] = {
@@ -401,6 +416,9 @@ void UCI::perftUCI(BitBoards & newBoard, std::istringstream & input)
 
 	int d = std::stoi(tk);
 
+	if (d == 0)
+		d = 1;
+
 	U64 result = Search::perft<true>(newBoard, d);
 
 	std::cout << result << std::endl;
@@ -413,6 +431,9 @@ void UCI::divideUCI(BitBoards & newBoard, std::istringstream & input)
 	input >> tk;
 
 	int d = std::stoi(tk);
+
+	if (d == 0)
+		d = 1;
 
 	Search::perftDivide<true>(newBoard, d);
 }
@@ -428,7 +449,7 @@ void UCI::helpUCI()
 	std::cout << "ucinewgame...............Resets current position to a clean slate. Clears TTable as well" << std::endl;
 	std::cout << "draw.....................Draws ASCI representation of the current board"<< std::endl;
 	std::cout << "perft x..................Perft  results for current position at depth x" << std::endl;
-	std::cout << "divide y.................Divide results for current position at depth y" << std::endl;
+	std::cout << "divide y.................Runs a similar function to perft, except that move counts for all root moves are printed instead of just a total count." << std::endl;
 	std::cout << "position fen <FEN>.......Sets position to input fen string"<< std::endl;
 	std::cout << "position startpos........Sets position to start position"<< std::endl;
 	std::cout << "position x moves x.......Sets position fen or startpos and makes input moves "<< std::endl;

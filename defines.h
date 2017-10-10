@@ -227,7 +227,7 @@ enum epiece {
 /*************************************************
 * Values used for sorting captures are the same  *
 * as normal piece values, except for a king.     *
-*************************************************/
+*************************************************/ // This needs to be replaced, with an enum perhaps? mid and end game values ?
 const int SORT_VALUE[7] = { 0, 100, 325, 335, 500, 975, 0 };
 
 // Used to determine which type of 
@@ -237,7 +237,7 @@ const int SORT_VALUE[7] = { 0, 100, 325, 335, 500, 975, 0 };
 #define EVASIONS 2
 #define QUIETS   3
 #define LEGAL    4
-#define PERFT_TESTING 5
+#define PERFT_TESTING 5 
 
 #define PAWN_VAL 100 //should pieces have a mid and end game value??
 #define KNIGHT_VAL 325

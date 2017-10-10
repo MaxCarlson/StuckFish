@@ -37,7 +37,7 @@ namespace Search {
 	int quiescent(BitBoards & board, int alpha, int beta, searchStack * ss, int isPV);
 
 
-	void updateContinuationHistories(searchStack * ss, int piece, int to, int bonus);
+	//void updateContinuationHistories(searchStack * ss, int piece, int to, int bonus);
 
 	void updateStats(const BitBoards & board, Move move, searchStack * ss, int depth, Move * quiets, int qCount, int bonus);
 	void checkInput();

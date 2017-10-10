@@ -69,7 +69,8 @@ class MovePicker
 {
 
 public:
-	MovePicker(const BitBoards & board, Move ttm, int depth, const ButterflyHistory * hist, const PieceToHistory**, Move cm, Move * killers_p);
+	//MovePicker(const BitBoards & board, Move ttm, int depth, const ButterflyHistory * hist, const PieceToHistory**, Move cm, Move * killers_p);
+	MovePicker(const BitBoards & board, Move ttm, int depth, const ButterflyHistory * hist, Move cm, Move * killers_p);
 	MovePicker(const BitBoards & board, Move ttm, const ButterflyHistory * hist);
 
 	Move nextMove();
@@ -83,7 +84,7 @@ private:
 
 	const BitBoards        & b;
 	const ButterflyHistory * mainHist;
-	const PieceToHistory   ** contiHistory;
+	//const PieceToHistory   ** contiHistory;
 	
 
 	int Depth;

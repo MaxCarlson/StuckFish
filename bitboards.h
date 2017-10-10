@@ -140,6 +140,7 @@ public:
 	bool capture(Move m) const;
 	bool capture_or_promotion(Move m) const;
 	int captured_piece() const;
+	int moved_piece(Move m) const;
 
 	//returns the square the king is on
 	int king_square(int color) const;
@@ -176,7 +177,7 @@ public:
 
 	U64 PseudoAttacks[PIECES][SQ_ALL]; //zero index is white pawns, 1 black pawns, pieces after are index by their number ~~ Move Outside Object
 
-	U64 psuedoAttacks(int piece, int color, int sq) const;
+	U64 psuedoAttacks(int piece, int color, int sq) const; // move outside object!!
 
 
 	//checks
@@ -211,9 +212,6 @@ public:
 
 
 	Thread * this_thread() const;
-	// holds the state info for the very start
-	// st eventually points to this at the end
-	StateInfo startState;
 
 private:
 
@@ -221,6 +219,8 @@ private:
 	
 	StateInfo* st;
 
+	// Holds a pointer to the thread
+	// this object is currently in
 	Thread * thisThread;
 
 	template<int make>
@@ -231,12 +231,6 @@ private:
 	void addPiece(int piece, int color, int sq);
 	void removePiece(int piece, int color, int sq);
 };
-/*
-inline int BitBoards::stm() const
-{
-	return bInfo.sideToMove;
-}
-*/
 
 //these function return a board of particular pieces/combination of pieces
 inline U64 BitBoards::pieces(int color) const{
@@ -291,6 +285,12 @@ inline bool BitBoards::capture_or_promotion(Move m) const
 inline int BitBoards::captured_piece() const
 {
 	return st->capturedPiece;
+}
+
+// Can only be used if the move hasn't been made!!
+inline int BitBoards::moved_piece(Move m) const
+{
+	return pieceOnSq(from_sq(m));
 }
 
 inline int BitBoards::stm() const
