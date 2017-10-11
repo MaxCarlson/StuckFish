@@ -35,7 +35,7 @@ TimeManager timeM;
 
 using namespace Search;
 
-
+const int Tempo = 10;
 
 enum NodeType {
 	NonPv,
@@ -143,8 +143,8 @@ Move Thread::search()
 	Search::searchStack stack[MAX_PLY + 6], *ss = stack + 4;
 	std::memset(ss - 4, 0, 7 * sizeof(Search::searchStack));
 
-	//for (int i = 4; i > 0; i--)
-	//	(ss - i)->contiHistory = &this->contiHistory[PIECE_EMPTY][0]; // Use this as a start location
+	for (int i = 4; i > 0; i--)
+		(ss - i)->contiHistory = &this->contiHistory[PIECE_EMPTY][0]; // Use this as a start location
 
 	//best overall move as calced
 	Move bestMove;
@@ -201,7 +201,7 @@ int Search::searchRoot(BitBoards& board, int depth, int alpha, int beta, searchS
 	ss->moveCount = quietsCount = 0;
 	(ss + 2)->killers[0] = (ss + 2)->killers[1] = MOVE_NONE;
 	ss->currentMove = ss->excludedMove = MOVE_NONE;
-	//ss->contiHistory = &thisThread->contiHistory[PIECE_EMPTY][0];
+	ss->contiHistory = &thisThread->contiHistory[PIECE_EMPTY][0];
 
 	const HashEntry* ttentry = TT.probe(board.TTKey());
 	Move ttMove = sd.PV[1];
@@ -214,9 +214,9 @@ int Search::searchRoot(BitBoards& board, int depth, int alpha, int beta, searchS
 	flagInCheck = board.checkers();
 
 	CheckInfo ci(board);
-	//const PieceToHistory* contiHist[] = { (ss - 1)->contiHistory, (ss - 2)->contiHistory, nullptr, (ss - 4)->contiHistory };
-	//MovePicker mp(board, ttMove, depth, &thisThread->mainHistory, contiHist, MOVE_NONE, ss->killers); 
-	MovePicker mp(board, ttMove, depth, &thisThread->mainHistory, MOVE_NONE, ss->killers);
+	const PieceToHistory* contiHist[] = { (ss - 1)->contiHistory, (ss - 2)->contiHistory, nullptr, (ss - 4)->contiHistory };
+	MovePicker mp(board, ttMove, depth, &thisThread->mainHistory, contiHist, MOVE_NONE, ss->killers); 
+	//MovePicker mp(board, ttMove, depth, &thisThread->mainHistory, MOVE_NONE, ss->killers);
 
 	Move newMove, bestMove = MOVE_NONE;
 
@@ -295,11 +295,13 @@ template<NodeType NT>
 int alphaBeta(BitBoards& board, int depth, int alpha, int beta, Search::searchStack *ss, bool allowNull)
 {
 	const bool isPV = (NT == PV);
-	bool FlagInCheck, raisedAlpha, doFullDepthSearch, futileMoves;
-	bool singularExtension, captureOrPromotion, givesCheck;
+	const int color = board.stm();
 
-	FlagInCheck = raisedAlpha = doFullDepthSearch = futileMoves = false;
-	singularExtension = captureOrPromotion = givesCheck = false;
+	bool FlagInCheck, raisedAlpha;
+	bool captureOrPromotion, givesCheck;
+
+	FlagInCheck        = raisedAlpha = false;
+	captureOrPromotion = givesCheck  = false;
 
 	Thread * thisThread = board.this_thread();
 
@@ -308,8 +310,8 @@ int alphaBeta(BitBoards& board, int depth, int alpha, int beta, Search::searchSt
 
 	int R = 2, newDepth, predictedDepth = 0, quietsCount;
 
-	//container holding quiet moves so we can reduce their score 
-	// if they're not the ply winning move
+	// Container holding quiet moves so we can reduce their score 
+	// if they're not the ply winning move.
 	Move quiets[64]; 
 
 	sd.nodes++;
@@ -320,10 +322,9 @@ int alphaBeta(BitBoards& board, int depth, int alpha, int beta, Search::searchSt
 	(ss + 2)->killers[0] = (ss + 2)->killers[1] = MOVE_NONE;
 
 	ss->currentMove = ss->excludedMove = MOVE_NONE;
-	//ss->contiHistory = &thisThread->contiHistory[PIECE_EMPTY][0];
+	ss->contiHistory = &thisThread->contiHistory[PIECE_EMPTY][0];
 	int prevSq = to_sq((ss - 1)->currentMove);
 
-	const int color = board.stm();
 
 	// Draw detection by 50 move rule
 	// as well as by 3-fold repetition.  ///////////////// Not sure if three fold rep is working correctly. Seems to come up too much in games. 
@@ -331,13 +332,15 @@ int alphaBeta(BitBoards& board, int depth, int alpha, int beta, Search::searchSt
 		return DrawValue[color];
 
 
-	//checks if time over is true everytime if( nodes & 4095 ) ///NEED METHOD THAT CHECKS MUCH LESS
+	//checks if time over is true everytime if( nodes & 4095 ) 
 	checkInput();
 
-	//mate distance pruning, prevents looking for mates longer than one we've already found
+	// Mate distance pruning, 
+	// prevents looking for mates longer than one we've already found
 	alpha = std::max(mated_in(ss->ply),    alpha);
 	beta  = std::min(mate_in( ss->ply + 1), beta);
-	if (alpha >= beta) return alpha;
+	if (alpha >= beta)
+		return alpha;
 
 	const HashEntry *ttentry;
 	Move ttMove;
@@ -347,12 +350,12 @@ int alphaBeta(BitBoards& board, int depth, int alpha, int beta, Search::searchSt
 	ttMove  = ttentry ? ttentry->move() : MOVE_NONE; //is there a move stored in transposition table?
 	ttValue = ttentry ? valueFromTT(ttentry->eval(), ss->ply) : 0; //if there is a TT entry, grab its value
 
-//	/*
-	//is the a TT entry? If so, are we in PV? If in PV only accept and exact entry with a depth >= our depth, 
-	//accept all if the entry has a equal or greater depth compared to our depth.
+	/*
+	// Is there a TT entry? If so, are we in PV? If in PV only accept an exact entry with a depth >= our depth, 
+	// if not PV accept all if the entry has a equal or greater depth relative to our depth.
 	if (ttentry
-		&& ttentry->depth() >= depth
-		&& (isPV ? ttentry->flag() == TT_EXACT
+			&& ttentry->depth() >= depth
+			&& (isPV ? ttentry->flag() == TT_EXACT
 			: ttValue >= beta ? ttentry->flag() == TT_BETA
 			: ttentry->flag() == TT_ALPHA)
 		) {
@@ -360,7 +363,7 @@ int alphaBeta(BitBoards& board, int depth, int alpha, int beta, Search::searchSt
 		return ttValue;
 	}
 	//*/
-	/*
+	///*
 	if(!isPV ///////////////Needs to be tested against version above.
 		&& ttentry
 		&& ttentry->depth() >= depth
@@ -376,15 +379,15 @@ int alphaBeta(BitBoards& board, int depth, int alpha, int beta, Search::searchSt
 					updateStats(board, ttMove, ss, depth, nullptr, 0, stat_bonus(depth));
 
 				// Penalty if the TT move from previous ply is quiet and gets refuted
-				//if ((ss - 1)->moveCount == 1 && !board.captured_piece())
-				//	updateContinuationHistories(ss - 1, board.pieceOnSq(prevSq), prevSq, -stat_bonus(depth + 1));
+				if ((ss - 1)->moveCount == 1 && !board.captured_piece())
+					updateContinuationHistories(ss - 1, board.pieceOnSq(prevSq), prevSq, -stat_bonus(depth + 1));
 
 			}
 			else if (!board.capture_or_promotion(ttMove))
 			{
 				int penalty = -stat_bonus(depth);
 				thisThread->mainHistory.update(board.stm(), ttMove, penalty);
-				//updateContinuationHistories(ss, board.pieceOnSq(from_sq(ttMove)), to_sq(ttMove), penalty);
+				updateContinuationHistories(ss, board.pieceOnSq(from_sq(ttMove)), to_sq(ttMove), penalty);
 			}
 		}
 		return ttValue;
@@ -408,9 +411,11 @@ int alphaBeta(BitBoards& board, int depth, int alpha, int beta, Search::searchSt
 	}
 		
 
-	//evaluateBB eval;
-	Evaluate eval;
-	ss->staticEval = eval.evaluate(board);
+	// Make this into a namespace so we don't need to create this object each time, no reason atm
+	Evaluate eval;   
+	ss->staticEval =  (ss - 1)->currentMove != MOVE_NULL // Test for ELO loss / gain
+		           ? eval.evaluate(board) 
+		           : -(ss - 1)->staticEval + 2 * Tempo;
 
 
 	//eval pruning / static null move
@@ -460,22 +465,23 @@ int alphaBeta(BitBoards& board, int depth, int alpha, int beta, Search::searchSt
 			return val;
 	}
 	*/
-///*
+
 	// Futility pruning
 	if (	depth < 7
-			&& ss->staticEval - futile_margin(depth) >= beta  // ALSO NEEDS TO BE PLAY TESTED FOR ELO LOSS/GAIN
+			&& ss->staticEval - futile_margin(depth) >= beta // Need to play test futile_margin with different values per margin * depth
 			&& ss->staticEval < VALUE_KNOWN_WIN
 			&& board.non_pawn_material(board.stm()))
 		return ss->staticEval;
-//*/
+
 
 	//Null move heuristics, disabled if in PV, check, or depth is too low 
-	///*
+
+
 	if (allowNull && !isPV && depth > R) {
 		if (depth > 6) R = 3;
 
 		ss->currentMove = MOVE_NULL;
-		//ss->contiHistory = &thisThread->contiHistory[PIECE_EMPTY][0];
+		ss->contiHistory = &thisThread->contiHistory[PIECE_EMPTY][0];
 
 		board.makeNullMove(st);
 		score = -alphaBeta<NonPv>(board, depth - R - 1, -beta, -beta + 1, ss + 1, NO_NULL);
@@ -509,17 +515,18 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 		           || (ss - 2)->staticEval == 0;
 	
 	int hashFlag = TT_ALPHA, legalMoves = 0, bestScore = -INF;
+	score = bestScore;
 
-	bool ttMoveCapture = (ttMove && board.capture(ttMove));
+	bool ttMoveCapture = false, doFullDepthSearch;
 
-	//const PieceToHistory* contiHist[] = { (ss - 1)->contiHistory, (ss - 2)->contiHistory, nullptr, (ss - 4)->contiHistory };
+	const PieceToHistory* contiHist[] = { (ss - 1)->contiHistory, (ss - 2)->contiHistory, nullptr, (ss - 4)->contiHistory };
 	Move counterMove = thisThread->counterMoves[board.pieceOnSq(prevSq)][prevSq];
 
 	CheckInfo ci(board);
 
 	Move newMove, bestMove = MOVE_NONE;
-	//MovePicker mp(board, ttMove, depth, &thisThread->mainHistory, contiHist, counterMove, ss->killers); 
-	MovePicker mp(board, ttMove, depth, &thisThread->mainHistory, counterMove, ss->killers);
+	MovePicker mp(board, ttMove, depth, &thisThread->mainHistory, contiHist, counterMove, ss->killers); 
+	//MovePicker mp(board, ttMove, depth, &thisThread->mainHistory, counterMove, ss->killers);
 
 	while((newMove = mp.nextMove()) != MOVE_NONE){
 
@@ -530,6 +537,9 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 
 		captureOrPromotion = board.capture_or_promotion(newMove);
 
+		if (ttMove && board.capture_or_promotion(ttMove))
+			ttMoveCapture = true;
+
 		//make move on BB's store data to string so move can be undone
 		board.makeMove(newMove, st, color);
 
@@ -539,9 +549,9 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 		int movedPiece = board.pieceOnSq(to_sq(newMove));
 
 		ss->currentMove  = newMove;
-		//ss->contiHistory = &thisThread->contiHistory[movedPiece][to_sq(newMove)];
+		ss->contiHistory = &thisThread->contiHistory[movedPiece][to_sq(newMove)];
 
-
+///*
 		//late move reductions, reduce the depth of the search in non dangerous situations. 
 		if (newDepth > 3
 			&& legalMoves > 3
@@ -583,24 +593,69 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 			}
 		}
 //*/
-			newDepth -= ss->reduction;
 
-			//jump back here if our LMR raises Alpha ~~ NOT IN USE
-		//re_search:
-			if (!raisedAlpha) {
-				//we're in principal variation search or full window search
+/*
+		if (depth >= 3
+			&& legalMoves > 1
+			&& !captureOrPromotion)
+		{
+			int depthR = reductions[NT][improving][depth][legalMoves];
 
-				score = -alphaBeta<NT>(board, newDepth, -beta, -alpha, ss + 1, DO_NULL);
-			}
-			else {
-				//zero window search
-				score = -alphaBeta<NonPv>(board, newDepth, -alpha - 1, -alpha, ss + 1, DO_NULL);
-				//if our zero window search failed, do a full window search
-				if (score > alpha) {
-					//PV search after failed zero window
-					score = -alphaBeta<PV>(board, newDepth, -beta, -alpha, ss + 1, DO_NULL);
-				}
+			if ((ss - 1)->moveCount > 15)
+				depthR -= 1;
+
+			if (ttentry && ttentry->flag() == TT_EXACT)
+				depthR -= 1;
+
+			if (ttMoveCapture)
+				depthR += 1;
+
+			if (depthR
+				&& move_type(newMove) == NORMAL
+				&& !board.SEE(create_move(to_sq(newMove), from_sq(newMove)), color, false))
+				depthR -= 2;
+
+			int d = std::max(newDepth - depthR, 1);
+
+			score = -alphaBeta<NonPv>(board, d, -(alpha + 1), -alpha, ss + 1, DO_NULL);
+
+			doFullDepthSearch = (score > alpha && d != newDepth);
 		}
+		else
+			doFullDepthSearch = !isPV || legalMoves > 1;
+
+
+		if (doFullDepthSearch)
+			score = newDepth < 1 ?
+							       -quiescent(board, -(alpha + 1), -alpha, ss + 1, NO_PV)
+						         : -alphaBeta<NonPv>(board, newDepth, -(alpha + 1), -alpha, ss + 1, allowNull);
+
+		if (isPV && (legalMoves == 1 || (score > alpha && score < beta)))
+		{
+			score = newDepth < 1 ? -quiescent(board, -beta, -alpha, ss + 1, IS_PV)
+				                 : -alphaBeta<PV>(board, newDepth, -beta, -alpha, ss + 1, allowNull);
+		}
+
+*/
+
+		///*
+		newDepth -= ss->reduction;
+
+		if (!raisedAlpha) {
+			//we're in principal variation search or full window search
+
+			score = -alphaBeta<NT>(board, newDepth, -beta, -alpha, ss + 1, DO_NULL);
+		}
+		else {
+			//zero window search
+			score = -alphaBeta<NonPv>(board, newDepth, -alpha - 1, -alpha, ss + 1, DO_NULL);
+			//if our zero window search failed, do a full window search
+			if (score > alpha) {
+				//PV search after failed zero window
+				score = -alphaBeta<PV>(board, newDepth, -beta, -alpha, ss + 1, DO_NULL);
+			}
+		}
+		//*/
 
 		// Store queit moves so we can decrease their History value later.
 		if (!captureOrPromotion && newMove != bestMove && quietsCount < 64) {
@@ -650,15 +705,15 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 			updateStats(board, bestMove, ss, depth, quiets, quietsCount, stat_bonus(depth));
 
 		// Penalty if the TT move from previous ply is quiet and gets refuted
-		//if ((ss - 1)->moveCount == 1 && !board.captured_piece())
-		//	updateContinuationHistories(ss - 1, board.pieceOnSq(prevSq), prevSq, -stat_bonus(depth + 1)); 
+		if ((ss - 1)->moveCount == 1 && !board.captured_piece())
+			updateContinuationHistories(ss - 1, board.pieceOnSq(prevSq), prevSq, -stat_bonus(depth + 1)); 
 	}
-	/* // This needs to be PLAY tested!!!
+	// This needs to be PLAY tested!!!
 	else if (depth >= 3 
 			&& !board.captured_piece() 
 			&& is_ok((ss-1)->currentMove))
 		updateContinuationHistories(ss - 1, board.pieceOnSq(prevSq), prevSq, stat_bonus(depth));
-	*/
+	
 
 	//save info + move to transposition table 
 	TT.save(bestMove, board.TTKey(), depth, valueToTT(alpha, ss->ply), hashFlag);
@@ -789,7 +844,7 @@ void Search::updateStats(const BitBoards & board, Move move, searchStack * ss, i
 	Thread * thisThread = board.this_thread();
 
 	thisThread->mainHistory.update(color, move, val);
-	//updateContinuationHistories(ss, board.pieceOnSq(from_sq(move)), to_sq(move), val);
+	updateContinuationHistories(ss, board.pieceOnSq(from_sq(move)), to_sq(move), val);
 	
 	// Update counter moves
 	if (is_ok((ss - 1)->currentMove)) {
@@ -800,17 +855,17 @@ void Search::updateStats(const BitBoards & board, Move move, searchStack * ss, i
 
 	for(int i = 0; i < qCount; ++i){
 		thisThread->mainHistory.update(color, quiets[i], -val);
-		//updateContinuationHistories(ss, board.pieceOnSq(from_sq(quiets[i])), to_sq(move), -val);
+		updateContinuationHistories(ss, board.pieceOnSq(from_sq(quiets[i])), to_sq(move), -val);
 	}
 }
-/*
+///*
 void Search::updateContinuationHistories(searchStack * ss, int piece, int to, int bonus)
 {
 	for (int i : {1, 2, 4})
 		if (is_ok((ss - i)->currentMove))
 			(ss - i)->contiHistory->update(piece, to, bonus);
 }
-*/
+//*/
 inline int valueToTT(int val, int ply) 
 {
 	//for adjusting value from "plys to mate from root", to "ply to mate from current ply". - taken from stockfish

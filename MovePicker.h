@@ -26,9 +26,6 @@ struct StatBoards : public std::array<std::array<T, index1>, index>
 
 	void update(T& entry, int bonus, const int D) {
 
-		assert(abs(bonus) <= D); // Ensure range is [-32 * D, 32 * D]
-		assert(abs(32 * D) < INT16_MAX); // Ensure we don't overflow
-
 		entry += bonus * 32 - entry * abs(bonus) / D;
 	}
 };
@@ -42,7 +39,7 @@ typedef StatBoards<PIECES, SQ_ALL> PieceToBoards;
 struct ButterflyHistory : public ButterflyBoards 
 {
 	void update(int color, Move m, int bonus) {
-		StatBoards::update( (*this)[color][from_sq(m)], bonus, 300); ///Bonus value needs to be played with in auto games
+		StatBoards::update( (*this)[color][from_sq(m)], bonus, 324); ///Bonus value needs to be played with in auto games
 	}
 };
 
@@ -50,7 +47,7 @@ struct ButterflyHistory : public ButterflyBoards
 struct PieceToHistory : public PieceToBoards
 {
 	void update(int piece, int to, int bonus) {
-		StatBoards::update( (*this)[piece][to], bonus, 715); //Needs to be value tested
+		StatBoards::update( (*this)[piece][to], bonus, 936); //Needs to be value tested
 	}
 };
 
@@ -69,8 +66,8 @@ class MovePicker
 {
 
 public:
-	//MovePicker(const BitBoards & board, Move ttm, int depth, const ButterflyHistory * hist, const PieceToHistory**, Move cm, Move * killers_p);
-	MovePicker(const BitBoards & board, Move ttm, int depth, const ButterflyHistory * hist, Move cm, Move * killers_p);
+	MovePicker(const BitBoards & board, Move ttm, int depth, const ButterflyHistory * hist, const PieceToHistory**, Move cm, Move * killers_p);
+	//MovePicker(const BitBoards & board, Move ttm, int depth, const ButterflyHistory * hist, Move cm, Move * killers_p);
 	MovePicker(const BitBoards & board, Move ttm, const ButterflyHistory * hist);
 
 	Move nextMove();
@@ -84,7 +81,7 @@ private:
 
 	const BitBoards        & b;
 	const ButterflyHistory * mainHist;
-	//const PieceToHistory   ** contiHistory;
+	const PieceToHistory   ** contiHistory;
 	
 
 	int Depth;

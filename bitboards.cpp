@@ -396,30 +396,10 @@ bool BitBoards::pseudoLegal(Move m) const
 	int from  =      from_sq(m);
 	int piece = pieceOnSq(from);
 
-
-	// If move isn't a normal move,
-	// generate a list of all legal moves for a position
-	// loop through the list seeing if our move is in the list
-	/*
-	if (move_type(m) != NORMAL) {
-		SMove list[256];
-		SMove * end = generate<LEGAL>(*this, list);
-
-		// If special move is on the list of legal moves 
-		// It's definitely valid.
-		for (SMove * i = list; i != end; ++i) {
-			if (i->move == m) 
-				return true;
-		}
-		return false;
-	}
-	*/
-
 	if (move_type(m) != NORMAL) {
 		return MoveList<LEGAL>(*this).contains(m);
 	}
 		
-
 	if (to == from)
 		return false;
 
@@ -438,21 +418,21 @@ bool BitBoards::pseudoLegal(Move m) const
 
 	// Pawns handled differently due to odd attack
 	// and movement patterns
-	if (piece == PAWN) {                       ////////////////////////////////////////////////////////////// It looks like error that shows up on fist search MIGHT be located in here
+	if (piece == PAWN) {                      
 
 		// Move can not be a promotion
-		if (rank_of(to) == relative_rank(color, 7))          //////////////////////after this for sure?
+		if (rank_of(to) == relative_rank(color, 7))         
 			return false;
 
 
 		if (!(attacks_from<PAWN>(from, color) & pieces(!color) & squareBB[to]) // Not a capture
 
-			&& !((from + pawn_push(color) == to) && empty(to)) // Not a single push
+				&& !((from + pawn_push(color) == to) && empty(to)) // Not a single push
 
-			&& !((from + 2 * pawn_push(color) == to) // Not a double pawn push
-			&& (rank_of(from) == relative_rank(color, 1))
-			&& empty(to)
-			&& empty(to - pawn_push(color))))
+				&& !((from + 2 * pawn_push(color) == to) // Not a double pawn push
+				&& (rank_of(from) == relative_rank(color, 1))
+				&& empty(to)
+				&& empty(to - pawn_push(color))))
 			return false;
 	}
 
