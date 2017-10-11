@@ -465,9 +465,12 @@ bool BitBoards::pseudoLegal(Move m) const
 	return true;
 }
 
-bool BitBoards::gives_check(Move m, int from, int to, const CheckInfo & ci)
+bool BitBoards::gives_check(Move m, const CheckInfo & ci)
 {
+	int from  =		 from_sq(m);
+	int to    =        to_sq(m);
 	int piece = pieceOnSq(from);
+	
 
 	// direct check?
 	if (ci.checkSq[piece] & squareBB[to])
@@ -512,8 +515,8 @@ bool BitBoards::gives_check(Move m, int from, int to, const CheckInfo & ci)
 		// through the captured pawn.
 		U64 bb = (FullTiles ^ squareBB[from] ^ squareBB[capsq]) | squareBB[to];
 
-		return   (attacks_from<ROOK  >(ci.ksq, bb) & pieces(stm(), ROOK, QUEEN))
-			| (attacks_from<BISHOP>(ci.ksq, bb) & pieces(stm(), BISHOP, QUEEN));
+		return   (attacks_from<ROOK  >(ci.ksq, bb) & pieces(stm(), ROOK,   QUEEN))
+			   | (attacks_from<BISHOP>(ci.ksq, bb) & pieces(stm(), BISHOP, QUEEN));
 	}
 
 	// Promotions
@@ -593,7 +596,7 @@ void BitBoards::makeMove(const Move& m, StateInfo& newSt, int color)
 	int captured = move_type(m) == ENPASSANT ? PAWN : pieceOnSq(to);
 
 	CheckInfo ci(*this);
-	bool checking = gives_check(m, from, to, ci);
+	bool checking = gives_check(m, ci);
 
 	assert(posOkay());
 
@@ -967,6 +970,59 @@ int BitBoards::SEE(const Move& m, int color, bool isCapture) const
 	}
 
 	return swapList[0];
+}
+
+bool BitBoards::seeGe(Move m, int Threshold)
+{
+	if (move_type(m) != NORMAL)
+		return 0 >= Threshold;
+
+	 
+	int to     =	   	   to_sq(m);
+	int from   =         from_sq(m);
+	int victim =    pieceOnSq(from); 
+	int stm    = !color_of_pc(from); // Look at opponenets move first
+	int balance;					 // Value of pieces captured by us, minus opponents captures.
+	U64 occupied, stmAttackers;
+
+	balance = SORT_VALUE[pieceOnSq(to)];
+
+	if (balance < Threshold)
+		return false;
+
+	balance -= SORT_VALUE[victim];
+
+	if (balance >= Threshold)
+		return true;
+
+	bool relativeStm = true;
+	occupied = FullTiles ^ squareBB[from] ^ squareBB[to];
+
+	U64 attackers = attackers_to(to, occupied);
+
+	while (true)
+	{
+		stmAttackers = attackers & pieces(stm);
+
+		if (!stmAttackers)
+			return relativeStm;
+
+		victim = min_attacker<PAWN>(stm, to, stmAttackers, occupied, attackers);
+
+		if (victim == KING)
+			return relativeStm = bool(attackers & pieces(!stm));
+
+		balance += relativeStm ?  SORT_VALUE[victim]
+							   : -SORT_VALUE[victim];
+
+		relativeStm = !relativeStm;
+
+		if (relativeStm == (balance >= Threshold))
+			return relativeStm;
+
+		stm = !stm;
+	}
+
 }
 
 // Find the smallest attacker to a square

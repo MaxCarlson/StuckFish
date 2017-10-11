@@ -7,7 +7,7 @@
 //#include "material.h"
 
 #include <thread>
-
+#include <atomic>
 
 
 
@@ -31,6 +31,8 @@ public:
 	//Pawns::Table pawnsTable;
 	//Material::Table materialTable;
 
+	std::atomic<U64> nodes;
+
 	BitBoards board;
 	CounterMoveHistory  counterMoves;
 	ButterflyHistory     mainHistory;
@@ -38,6 +40,8 @@ public:
 
 	int rootDepth;
 };
+
+
 
 struct MainThread : public Thread
 {
@@ -55,6 +59,23 @@ struct ThreadPool : public std::vector<Thread*>
 	Move searchStart(BitBoards & board);
 
 	MainThread * main() const { return static_cast<MainThread*>(front()); }
+
+	U64 nodes_searched() const { return accumulateMember( &Thread::nodes ); }
+
+private:
+	// Will be used later to detach the main thread's stateListPtr
+	// when transfering state list ptr's to other threads
+	//StateListPtr setStates;
+
+	U64 accumulateMember(std::atomic<U64> Thread::* member) const
+	{
+		U64 sum = 0;
+		for (Thread * th : *this)
+		{
+			sum += (th->*member).load(std::memory_order_relaxed);
+		}
+		return sum;
+	}
 };
 
 extern ThreadPool Threads;

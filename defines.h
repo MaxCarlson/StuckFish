@@ -5,7 +5,15 @@
 
 
 #include <iostream>
+#include <chrono>
 
+typedef std::chrono::milliseconds::rep TimePoint; // A value in milliseconds
+
+// Clock function, taken from StockFish.
+inline TimePoint now() {
+	return std::chrono::duration_cast<std::chrono::milliseconds>
+		(std::chrono::steady_clock::now().time_since_epoch()).count();
+}
 
 #define NDEBUG
 
@@ -474,7 +482,5 @@ inline int mate_in(int ply) {
 inline int mated_in(int ply) {
 	return -VALUE_MATE + ply;
 }
-
-
 
 

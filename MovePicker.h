@@ -21,7 +21,7 @@ struct StatBoards : public std::array<std::array<T, index1>, index>
 {
 	void fill(const T& v) {
 		T* p = &(*this)[0][0];
-		std::fill(p, p + sizeof(*this) / sizeof(*p), v); // Use memset here instad? We don't need to fill
+		std::fill(p, p + sizeof(*this) / sizeof(*p), v); 
 	}
 
 	void update(T& entry, int bonus, const int D) {
@@ -39,7 +39,7 @@ typedef StatBoards<PIECES, SQ_ALL> PieceToBoards;
 struct ButterflyHistory : public ButterflyBoards 
 {
 	void update(int color, Move m, int bonus) {
-		StatBoards::update( (*this)[color][from_sq(m)], bonus, 324); ///Bonus value needs to be played with in auto games
+		StatBoards::update( (*this)[color][from_sq(m)], bonus, 324); //Bonus value needs to be played with in auto games
 	}
 };
 

@@ -1,5 +1,1 @@
-﻿  MovePicker.cpp
-  Thread.cpp
-  UCI.cpp
-  ai_logic.cpp
-  movegen.cpp
+﻿  ai_logic.cpp

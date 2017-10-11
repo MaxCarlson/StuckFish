@@ -100,6 +100,7 @@ public:
 
 	//static exhange eval
 	int SEE(const Move& m, int color, bool isCapture) const;
+	bool seeGe(Move m, int Threshold = 0);
 	//finds the smallest attacker for side to move, out of the stm attackers board,
 	//removes the attacker from the attackers and occuied board, then finds any x-ray attackers behind that piece
 	//and returns the int representing the piece
@@ -149,7 +150,8 @@ public:
 	//is there a pawn on the 7 th rank relative to stm
 	bool pawnOn7th(int color);
 	//returns true if side color has any pieces aside from pawn/s or king
-	bool non_pawn_material(int color) const;
+	int non_pawn_material(int color) const;
+	int non_pawn_material() const;
 	U64 square_bb(int sq) const;
 	
 	int stm() const; //returns side to move
@@ -184,7 +186,7 @@ public:
 	U64 checkers() const;
 	U64 check_candidates() const;
 	U64 pinned_pieces(int color) const;
-	bool gives_check(Move m, int from, int to, const CheckInfo& ci);
+	bool gives_check(Move m, const CheckInfo& ci);
 	U64 check_blockers(int color, int kingColor) const;
 
 	//castling
@@ -421,10 +423,14 @@ inline bool BitBoards::pawnOn7th(int color)
 }
 
 //returns true if side color has any pieces aside from pawn/s or king
-inline bool BitBoards::non_pawn_material(int color) const
+inline int BitBoards::non_pawn_material(int color) const
 {
-	return (pieceCount[color][KNIGHT] != 0 || pieceCount[color][BISHOP] != 0
-	   	 && pieceCount[color][ROOK  ] != 0 || pieceCount[color][QUEEN ] != 0) ? true : false; //this can be reduced to remove true : false just returning the ( || || || )
+	return bInfo.nonPawnMaterial[color];
+}
+
+inline int BitBoards::non_pawn_material() const
+{
+	return bInfo.nonPawnMaterial[WHITE] + bInfo.nonPawnMaterial[BLACK];
 }
 
 inline U64 BitBoards::square_bb(int sq) const

@@ -46,6 +46,11 @@ enum NodeType {
 inline int valueFromTT(int val, int ply);
 inline int valueToTT(int val, int ply);
 
+template <bool isPV> int reduction(bool improving, int depth, int moveCount) {
+	return reductions[isPV][improving][std::min(depth, 63)][std::min(moveCount, 63)];
+}
+
+
 //reduction tables: pv, is node improving?, depth, move number
 int reductions[2][2][64][64];
 //futile move count arrays
@@ -112,7 +117,7 @@ Move MainThread::search() {
 	const int color = board.stm();
 
 	int contempt = SORT_VALUE[PAWN] / 100;
-	DrawValue[color ] = VALUE_DRAW - contempt;
+	DrawValue[ color] = VALUE_DRAW - contempt;
 	DrawValue[!color] = VALUE_DRAW + contempt;
 
 	//if we're only allowed to search to this depth,
@@ -124,8 +129,6 @@ Move MainThread::search() {
 
 	//calc move time for us, send to search driver
 	timeM.calcMoveTime(!board.stm()); // this !board.stm() needs to be changed, currently timM.calc takes a bool isWhite
-
-	//Loop through threads here and assign them variable depths to start searching!!!
 
 	Move m = Thread::search();
 
@@ -400,6 +403,7 @@ int alphaBeta(BitBoards& board, int depth, int alpha, int beta, Search::searchSt
 		return score;
 	}
 
+
 	//are we in check?
 	FlagInCheck = board.checkers();
 
@@ -467,10 +471,10 @@ int alphaBeta(BitBoards& board, int depth, int alpha, int beta, Search::searchSt
 	*/
 
 	// Futility pruning
-	if (	depth < 7
-			&& ss->staticEval - futile_margin(depth) >= beta // Need to play test futile_margin with different values per margin * depth
-			&& ss->staticEval < VALUE_KNOWN_WIN
-			&& board.non_pawn_material(board.stm()))
+	if (depth < 7
+		&& ss->staticEval - futile_margin(depth) >= beta // Need to play test futile_margin with different values per margin * depth
+		&& ss->staticEval < VALUE_KNOWN_WIN
+		&& board.non_pawn_material(board.stm()))
 		return ss->staticEval;
 
 
@@ -492,7 +496,7 @@ int alphaBeta(BitBoards& board, int depth, int alpha, int beta, Search::searchSt
 		}
 	}
 
-    //Internal iterative deepening search same ply to a shallow depth..
+	//Internal iterative deepening search same ply to a shallow depth..
 	//and see if we can get a TT entry to speed up search
 
 	if (depth >= 6 && !ttMove
@@ -502,18 +506,18 @@ int alphaBeta(BitBoards& board, int depth, int alpha, int beta, Search::searchSt
 		alphaBeta<NT>(board, d, alpha, beta, ss, NO_NULL);
 
 		ttentry = TT.probe(board.TTKey());
-		ttMove  = ttentry ? ttentry->move() : MOVE_NONE;
+		ttMove = ttentry ? ttentry->move() : MOVE_NONE;
 	}
 
-	
-moves_loop: //jump to here if in check or in a search extension or skip early pruning is true
+
+	moves_loop: //jump to here if in check or in a search extension or skip early pruning is true
 
 
-	//has this current node variation improved our static_eval ?
-	bool improving =        ss->staticEval >= (ss - 2)->staticEval
-		           ||       ss->staticEval == 0
-		           || (ss - 2)->staticEval == 0;
-	
+		//has this current node variation improved our static_eval ?
+	bool improving = ss->staticEval >= (ss - 2)->staticEval
+	|| ss->staticEval == 0
+	|| (ss - 2)->staticEval == 0;
+
 	int hashFlag = TT_ALPHA, legalMoves = 0, bestScore = -INF;
 	score = bestScore;
 
@@ -525,30 +529,65 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 	CheckInfo ci(board);
 
 	Move newMove, bestMove = MOVE_NONE;
-	MovePicker mp(board, ttMove, depth, &thisThread->mainHistory, contiHist, counterMove, ss->killers); 
+	MovePicker mp(board, ttMove, depth, &thisThread->mainHistory, contiHist, counterMove, ss->killers);
 	//MovePicker mp(board, ttMove, depth, &thisThread->mainHistory, counterMove, ss->killers);
 
-	while((newMove = mp.nextMove()) != MOVE_NONE){
+	while ((newMove = mp.nextMove()) != MOVE_NONE) {
 
 		//is move legal? if not skip it
 		if (!board.isLegal(newMove, ci.pinned)) {
 			continue;
 		}
+		int movedPiece = board.moved_piece(newMove);
 
 		captureOrPromotion = board.capture_or_promotion(newMove);
+	
+		givesCheck = move_type(newMove) == NORMAL && !board.check_candidates()
+				   ? ci.checkSq[board.pieceOnSq(from_sq(newMove))] & board.square_bb(to_sq(newMove))
+				   : board.gives_check(newMove, ci);
+
+		if (board.non_pawn_material(board.stm())
+			&& bestScore > VALUE_MATED_IN_MAX_PLY) {
+
+			if (    !captureOrPromotion
+				&&  !givesCheck
+				&& (!board.isPawnPush(newMove, board.stm()) || board.non_pawn_material() >= 2300))
+			{
+				int lmrDepth = std::max(newDepth - reduction<NT>(improving, depth, legalMoves), 0);
+
+				if (lmrDepth < 3
+						&& (*contiHist[0])[movedPiece][to_sq(newMove)] < counterMovePruneThreshold
+						&& (*contiHist[1])[movedPiece][to_sq(newMove)] < counterMovePruneThreshold)
+					continue;
+
+
+				/*
+				if(lmrDepth < 7
+						&& !FlagInCheck
+						&& ss->staticEval + 128 + 100 * lmrDepth <= alpha)			
+					continue;
+				
+				//*/
+				/*
+				if(lmrDepth < 8
+				&& !board.seeGe(newMove, (-17 * lmrDepth * lmrDepth))) // Play test the negative value
+					continue;
+
+				//*/
+			}
+		}
 
 		if (ttMove && board.capture_or_promotion(ttMove))
 			ttMoveCapture = true;
 
-		//make move on BB's store data to string so move can be undone
+		// Finally, make the move!
 		board.makeMove(newMove, st, color);
 
-		ss->moveCount  = ++legalMoves;
-		newDepth       = depth - 1;
-		givesCheck     = st.checkers;
-		int movedPiece = board.pieceOnSq(to_sq(newMove));
+		ss->moveCount = ++legalMoves;
+		newDepth = depth - 1;
+		//givesCheck = st.checkers;
 
-		ss->currentMove  = newMove;
+		ss->currentMove = newMove;
 		ss->contiHistory = &thisThread->contiHistory[movedPiece][to_sq(newMove)];
 
 ///*
@@ -563,7 +602,7 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 			&& newMove != ss->killers[1]) {
 
 
-			ss->reduction = reductions[isPV][improving][depth][legalMoves];
+			ss->reduction = reduction<NT>(improving, depth, legalMoves);
 
 			//reduce reductions for moves that escape capture
 			if (ss->reduction
@@ -574,8 +613,8 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 					ss->reduction = std::max(1, ss->reduction - 2); //play with reduction value
 			}
 
-			//if (ttMoveCapture)
-			//	ss->reduction += 1; // THIS NEEDS TESTING!!!
+			if (ttMoveCapture)
+				ss->reduction += 1; // THIS NEEDS TESTING!!!
 
 			int d1 =  std::max(newDepth - ss->reduction, 1);
 
@@ -628,15 +667,15 @@ moves_loop: //jump to here if in check or in a search extension or skip early pr
 		if (doFullDepthSearch)
 			score = newDepth < 1 ?
 							       -quiescent(board, -(alpha + 1), -alpha, ss + 1, NO_PV)
-						         : -alphaBeta<NonPv>(board, newDepth, -(alpha + 1), -alpha, ss + 1, allowNull);
+						         : -alphaBeta<NonPv>(board, newDepth, -(alpha + 1), -alpha, ss + 1, DO_NULL);
 
 		if (isPV && (legalMoves == 1 || (score > alpha && score < beta)))
 		{
 			score = newDepth < 1 ? -quiescent(board, -beta, -alpha, ss + 1, IS_PV)
-				                 : -alphaBeta<PV>(board, newDepth, -beta, -alpha, ss + 1, allowNull);
+				                 : -alphaBeta<PV>(board, newDepth, -beta, -alpha, ss + 1, DO_NULL);
 		}
 
-*/
+//*/
 
 		///*
 		newDepth -= ss->reduction;

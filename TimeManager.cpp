@@ -15,29 +15,6 @@ extern bool timeOver;
 
 extern TimeManager timeM;
 
-#if defined(_MSC_VER) || defined(_WINDOWS_)
-#include <Windows.h>
-unsigned int gettime() {
-	FILETIME ft;
-	GetSystemTimeAsFileTime(&ft);
-	return (unsigned int)((((uint64_t)ft.dwHighDateTime << 32) | ft.dwLowDateTime) / 10000);
-}
-
-#else
-#include <sys/time.h>
-#include <sys/timeb.h>
-unsigned int gettime() {
-	//    timeval t;
-	//    gettimeofday(&t, 0);
-	//    return t.tv_usec;
-
-	struct timeb timebuffer;
-	ftime(&timebuffer);
-	U32 t = 10 * (timebuffer.time * 1000) + timebuffer.millitm;
-	return t;
-}
-#endif
-
 
 TimeManager::TimeManager()
 {
@@ -62,7 +39,7 @@ void TimeManager::calcMoveTime(bool isWhite)
 
 	if (sd.moveTime > TIMEBUFFER) sd.moveTime -= TIMEBUFFER;
 
-	sd.startTime = gettime();
+	sd.startTime = now();
 
 	return;
 }
@@ -71,8 +48,7 @@ bool TimeManager::timeStopRoot()
 {
 	if (timeOver) return true;
 
-	//if ((int)(gettime() - sd.startTime) > sd.moveTime) return true;
-	return (((int)(gettime() - sd.startTime) * 2) > sd.moveTime);
+	return (((int)(now() - sd.startTime) * 2) > sd.moveTime);
 
 	return false;
 }
@@ -81,11 +57,11 @@ bool TimeManager::timeStopSearch()
 {
 	if (sd.depth <= 1) return false;
 
-	if ((int)(gettime() - sd.startTime) > sd.moveTime) {
+	if ((int)(now() - sd.startTime) > sd.moveTime) {
 		int movesToGo = MOVESTOGO;
 
 		if ((movesToGo > 5) &&
-			((int)(gettime() - sd.startTime) < (sd.moveTime * 2)) &&
+			((int)(now() - sd.startTime) < (sd.moveTime * 2)) &&
 			(sd.moveTime > 5000)) {
 			return false;
 		}
@@ -99,8 +75,8 @@ bool TimeManager::timeStopSearch()
 
 int TimeManager::getNPS()
 {
-	std::cout << (double)(gettime() - sd.startTime) / 1000 << std::endl;
-	return (sd.nodes / ((double)(gettime() - sd.startTime)/1000));
+	std::cout << (double)(now() - sd.startTime) / 1000 << std::endl;
+	return (sd.nodes / ((double)(now() - sd.startTime)/1000));
 }
 
 

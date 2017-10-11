@@ -54,7 +54,7 @@ inline SMove * pick(SMove * begin, SMove * end) {
 
 // Main search initilization 
 MovePicker::MovePicker(const BitBoards & board, Move ttm, int depth, const ButterflyHistory * hist, const PieceToHistory** ch, Move cm, Move * killers_p)
-										: b(board), Depth(depth), mainHist(hist), contiHistory(ch), counterMove(cm), killers{ killers_p[0], killers_p[1] }
+									   : b(board), Depth(depth), mainHist(hist), contiHistory(ch), counterMove(cm), killers{ killers_p[0], killers_p[1] }
 //MovePicker::MovePicker(const BitBoards & board, Move ttm, int depth, const ButterflyHistory * hist,  Move cm, Move * killers_p)
 //					           : b(board), Depth(depth), mainHist(hist), counterMove(cm), killers{ killers_p[0], killers_p[1] }
 {
@@ -141,132 +141,17 @@ void MovePicker::score<EVASIONS>()
 	}
 
 }
-/*
-void MovePicker::generateNextStage()
-{
-	current = mList;
 
-	switch (++Stage) {
-
-	case CAPTURES_M: case CAPTURES_Q:
-		end = generate<CAPTURES>(b, mList);
-		score<CAPTURES>();
-		return;
-
-	case KILLERS_M:
-		current = killers;
-		end = current + 2;
-		return;
-
-	case QUIETS_M:
-		endQuiets = end = generate<QUIETS>(b, mList);
-		score<QUIETS>();
-		std::partition(current, end, has_positive_value);
-		insertion_sort(current, end);
-		return;
-
-	case QUIETS_M1:
-		current = end;
-		end     = endQuiets;
-
-		if (Depth >= 3)
-			insertion_sort(current, end);
-		return;
-
-	case BAD_CAPTURES_M:
-		current = mList + 255;
-		end     = endBadCaptures;
-		return;
-
-	case EVASIONS_S1:
-		end = generate<EVASIONS>(b, mList);
-		if (end > mList + 1)
-			score<EVASIONS>();
-		return;
-	
-
-	case EVASIONS_: case QSEARCH_:		
-		Stage = STOP;
-
-	case STOP:
-		end = current + 1;
-		return;
-	}
-}
-
-Move MovePicker::nextMove()
-{
-	Move m;
-
-	while (true) {
-
-		while(current == end)
-			generateNextStage();
-
-		switch (Stage) {
-
-		// Return TT move first before generating anything
-		case MAIN_M: case QSEARCH_: case EVASIONS_:
-			++current;
-			return ttMove;
-		
-		case CAPTURES_M: 
-			m = pick(current++, end)->move;
-
-			if (m != ttMove) {
-				if (b.SEE(m, b.stm(), true) > 0) {   //////////////////////////////////////////////////////////TEST THESE TO BE SURE SEE IS WORKING CORRECTLY!!!
-					return m;
-				}
-				(endBadCaptures--)->move = m;
-			}
-			break;
-
-		case KILLERS_M:
-			m = (current++)->move;
-
-			if (   m != MOVE_NONE  // Check that the move isn't a repeat, 				                   
-				&& m != ttMove     // and is a reasonable move for board position
-				&&   !  b.capture(m)  
-				&&      b.pseudoLegal(m)) 
-				return m;
-
-			break;
-
-		case QUIETS_M: case QUIETS_M1:
-			m = (current++)->move;
-
-			if (   m != ttMove
-				&& m != killers[0].move
-				&& m != killers[1].move)
-				return m;
-
-			break;
-
-		case BAD_CAPTURES_M:
-			return (current--)->move;
-
-
-		case EVASIONS_S1: case CAPTURES_Q:
-			m = pick(current++, end)->move;
-
-			if (m != ttMove)
-				return m;
-			break;
-
-		case STOP:
-			return MOVE_NONE;
-
-		}
-	}
-}
-*/
+// This function finds the ( hopefully ) best move 
+// with the least amount of work and returns it to the search.
+// Generation is sepparated into stages.
 Move MovePicker::nextMove()
 {
 	Move m;
 
 	switch (Stage) {
 
-		// Return TT move first before generating anything
+	// Return TT move if it exists first before generating anything
 	case MAIN_SEARCH: case Q_SEARCH: case EVASION:
 		++Stage;
 		return ttMove;
@@ -335,7 +220,7 @@ Move MovePicker::nextMove()
 		end = generate<QUIETS>(b, current);
 		score<QUIETS>();
 
-		partial_insertion_sort(current, end, -2200 * Depth); ///Really Need to play test with changes to this value.
+		partial_insertion_sort(current, end, -2200 * Depth); ///Really Need to play test with changes to this value. !!!!!!!!!
 		++Stage;
 
 	// Fall Through...
