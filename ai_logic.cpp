@@ -202,6 +202,7 @@ int Search::searchRoot(BitBoards& board, int depth, int alpha, int beta, searchS
 	Thread * thisThread = board.this_thread();
 
 	ss->moveCount = quietsCount = 0;
+	ss->statScore = 0;
 	(ss + 2)->killers[0] = (ss + 2)->killers[1] = MOVE_NONE;
 	ss->currentMove = ss->excludedMove = MOVE_NONE;
 	ss->contiHistory = &thisThread->contiHistory[PIECE_EMPTY][0];
@@ -219,7 +220,6 @@ int Search::searchRoot(BitBoards& board, int depth, int alpha, int beta, searchS
 	CheckInfo ci(board);
 	const PieceToHistory* contiHist[] = { (ss - 1)->contiHistory, (ss - 2)->contiHistory, nullptr, (ss - 4)->contiHistory };
 	MovePicker mp(board, ttMove, depth, &thisThread->mainHistory, contiHist, MOVE_NONE, ss->killers); 
-	//MovePicker mp(board, ttMove, depth, &thisThread->mainHistory, MOVE_NONE, ss->killers);
 
 	Move newMove, bestMove = MOVE_NONE;
 
@@ -321,6 +321,7 @@ int alphaBeta(BitBoards& board, int depth, int alpha, int beta, Search::searchSt
 	ss->moveCount = quietsCount = 0;
 	ss->ply = (ss - 1)->ply + 1; 
 	ss->reduction = 0;
+	ss->statScore = 0;
 	
 	(ss + 2)->killers[0] = (ss + 2)->killers[1] = MOVE_NONE;
 
@@ -397,11 +398,13 @@ int alphaBeta(BitBoards& board, int depth, int alpha, int beta, Search::searchSt
 	}
 	//*/
 	int score;
+	/*
 	if (depth < 1 || timeOver) {
 		//run capture search to max depth of queitSD
 		score = quiescent(board, alpha, beta, ss, isPV);
 		return score;
 	}
+	*/
 
 
 	//are we in check?
@@ -417,8 +420,8 @@ int alphaBeta(BitBoards& board, int depth, int alpha, int beta, Search::searchSt
 
 	// Make this into a namespace so we don't need to create this object each time, no reason atm
 	Evaluate eval;   
-	ss->staticEval =  (ss - 1)->currentMove != MOVE_NULL // Test for ELO loss / gain
-		           ? eval.evaluate(board) 
+	ss->staticEval =  (ss - 1)->currentMove != MOVE_NULL 
+		           ?  eval.evaluate(board) 
 		           : -(ss - 1)->staticEval + 2 * Tempo;
 
 
@@ -484,7 +487,7 @@ int alphaBeta(BitBoards& board, int depth, int alpha, int beta, Search::searchSt
 	if (allowNull && !isPV && depth > R) {
 		if (depth > 6) R = 3;
 
-		ss->currentMove = MOVE_NULL;
+		ss->currentMove  = MOVE_NULL;
 		ss->contiHistory = &thisThread->contiHistory[PIECE_EMPTY][0];
 
 		board.makeNullMove(st);
@@ -523,6 +526,8 @@ int alphaBeta(BitBoards& board, int depth, int alpha, int beta, Search::searchSt
 
 	bool ttMoveCapture = false, doFullDepthSearch;
 
+
+
 	const PieceToHistory* contiHist[] = { (ss - 1)->contiHistory, (ss - 2)->contiHistory, nullptr, (ss - 4)->contiHistory };
 	Move counterMove = thisThread->counterMoves[board.pieceOnSq(prevSq)][prevSq];
 
@@ -530,7 +535,6 @@ int alphaBeta(BitBoards& board, int depth, int alpha, int beta, Search::searchSt
 
 	Move newMove, bestMove = MOVE_NONE;
 	MovePicker mp(board, ttMove, depth, &thisThread->mainHistory, contiHist, counterMove, ss->killers);
-	//MovePicker mp(board, ttMove, depth, &thisThread->mainHistory, counterMove, ss->killers);
 
 	while ((newMove = mp.nextMove()) != MOVE_NONE) {
 
@@ -538,66 +542,62 @@ int alphaBeta(BitBoards& board, int depth, int alpha, int beta, Search::searchSt
 		if (!board.isLegal(newMove, ci.pinned)) {
 			continue;
 		}
-		int movedPiece = board.moved_piece(newMove);
 
+		int movedPiece     = board.moved_piece(newMove);
 		captureOrPromotion = board.capture_or_promotion(newMove);
-	
-		givesCheck = move_type(newMove) == NORMAL && !board.check_candidates()
-				   ? ci.checkSq[board.pieceOnSq(from_sq(newMove))] & board.square_bb(to_sq(newMove))
-				   : board.gives_check(newMove, ci);
+		ttMoveCapture = (ttMove && board.capture_or_promotion(ttMove));
 
+		// Make the move!
+		board.makeMove(newMove, st, color);
+
+		ss->moveCount = ++legalMoves;
+		newDepth      =    depth - 1;
+		givesCheck    =  st.checkers;
+
+		ss->currentMove  = newMove;
+		ss->contiHistory = &thisThread->contiHistory[movedPiece][to_sq(newMove)];
+///*
+		// Early pruning, so far only continuation historys
+		// are giving ELO gain with this. 
 		if (board.non_pawn_material(board.stm())
 			&& bestScore > VALUE_MATED_IN_MAX_PLY) {
 
 			if (    !captureOrPromotion
 				&&  !givesCheck
-				&& (!board.isPawnPush(newMove, board.stm()) || board.non_pawn_material() >= 2300))
+				&& (!board.isMadePawnPush(newMove, color) 
+				||   board.non_pawn_material() >= 2100))
 			{
 				int lmrDepth = std::max(newDepth - reduction<NT>(improving, depth, legalMoves), 0);
 
 				if (lmrDepth < 3
-						&& (*contiHist[0])[movedPiece][to_sq(newMove)] < counterMovePruneThreshold
-						&& (*contiHist[1])[movedPiece][to_sq(newMove)] < counterMovePruneThreshold)
+					&& (*contiHist[0])[movedPiece][to_sq(newMove)] < counterMovePruneThreshold
+					&& (*contiHist[1])[movedPiece][to_sq(newMove)] < counterMovePruneThreshold)
+				{
+					board.unmakeMove(newMove, color);
 					continue;
+				}
+								
+				//if(lmrDepth < 7
+				//&& !FlagInCheck
+				//&& ss->staticEval + 128 + 100 * lmrDepth <= alpha)
+				//continue;
 
-
-				/*
-				if(lmrDepth < 7
-						&& !FlagInCheck
-						&& ss->staticEval + 128 + 100 * lmrDepth <= alpha)			
-					continue;
 				
-				//*/
-				/*
-				if(lmrDepth < 8
-				&& !board.seeGe(newMove, (-17 * lmrDepth * lmrDepth))) // Play test the negative value
-					continue;
-
-				//*/
+				//if(lmrDepth < 8
+				//&& !board.seeGe(newMove, (-17 * lmrDepth * lmrDepth))) // Play test the negative value
+				//continue;		
 			}
 		}
+//*/
 
-		if (ttMove && board.capture_or_promotion(ttMove))
-			ttMoveCapture = true;
-
-		// Finally, make the move!
-		board.makeMove(newMove, st, color);
-
-		ss->moveCount = ++legalMoves;
-		newDepth = depth - 1;
-		//givesCheck = st.checkers;
-
-		ss->currentMove = newMove;
-		ss->contiHistory = &thisThread->contiHistory[movedPiece][to_sq(newMove)];
-
-///*
-		//late move reductions, reduce the depth of the search in non dangerous situations. 
-		if (newDepth > 3
+/*
+		// Late move reductions,
+		// reduce the depth of the search in non dangerous situations. 
+		if (   newDepth   > 3
 			&& legalMoves > 3
 			&& !FlagInCheck
 			&& !captureOrPromotion
 			&& !givesCheck	
-			&& newMove != ttMove
 			&& newMove != ss->killers[0]
 			&& newMove != ss->killers[1]) {
 
@@ -608,13 +608,13 @@ int alphaBeta(BitBoards& board, int depth, int alpha, int beta, Search::searchSt
 			if (ss->reduction
 				&& move_type(newMove) == NORMAL
 				&& board.pieceOnSq(to_sq(newMove)) != PAWN
-				&& board.SEE(create_move(to_sq(newMove), from_sq(newMove)), color, false) < 0){ 
+				&& board.SEE(create_move(to_sq(newMove), from_sq(newMove)), color, false) < 0){  //Is see working correctly???????????????????????????????????????????
 
 					ss->reduction = std::max(1, ss->reduction - 2); //play with reduction value
 			}
 
-			if (ttMoveCapture)
-				ss->reduction += 1; // THIS NEEDS TESTING!!!
+			//if (ttMoveCapture)
+			//	ss->reduction += 1; // Possibly cause of losing ELO in latest test?
 
 			int d1 =  std::max(newDepth - ss->reduction, 1);
 
@@ -633,26 +633,46 @@ int alphaBeta(BitBoards& board, int depth, int alpha, int beta, Search::searchSt
 		}
 //*/
 
-/*
+///*
 		if (depth >= 3
 			&& legalMoves > 1
 			&& !captureOrPromotion)
 		{
-			int depthR = reductions[NT][improving][depth][legalMoves];
+			int depthR = reduction<NT>(improving, depth, legalMoves);
 
-			if ((ss - 1)->moveCount > 15)
-				depthR -= 1;
+			if (captureOrPromotion)
+				depthR -= depthR ? 1 : 0;
 
-			if (ttentry && ttentry->flag() == TT_EXACT)
-				depthR -= 1;
+			else 
+			{
+				if ((ss - 1)->moveCount > 15)
+					depthR -= 1;
 
-			if (ttMoveCapture)
-				depthR += 1;
+				if (ttentry && ttentry->flag() == TT_EXACT)
+					depthR -= 1;
 
-			if (depthR
-				&& move_type(newMove) == NORMAL
-				&& !board.SEE(create_move(to_sq(newMove), from_sq(newMove)), color, false))
-				depthR -= 2;
+				if (ttMoveCapture)
+					depthR += 1;
+
+				if (depthR
+					&& move_type(newMove) == NORMAL
+					&& !board.seeGe(create_move(to_sq(newMove), from_sq(newMove))))
+					depthR -= 2;
+
+				ss->statScore = thisThread->mainHistory[color][from_to(newMove)]
+					+ (*contiHist[0])[movedPiece][to_sq(newMove)]
+					+ (*contiHist[1])[movedPiece][to_sq(newMove)]
+					+ (*contiHist[3])[movedPiece][to_sq(newMove)]
+					- 4000;
+
+				if (ss->statScore >= 0 && (ss - 1)->statScore < 0)
+					depthR -= 1;
+
+				else if ((ss - 1)->statScore >= 0 && ss->statScore < 0)
+					depthR += 1;
+
+				depthR = std::max(0, (depthR - ss->statScore / 20000));
+			}		
 
 			int d = std::max(newDepth - depthR, 1);
 
@@ -665,8 +685,7 @@ int alphaBeta(BitBoards& board, int depth, int alpha, int beta, Search::searchSt
 
 
 		if (doFullDepthSearch)
-			score = newDepth < 1 ?
-							       -quiescent(board, -(alpha + 1), -alpha, ss + 1, NO_PV)
+			score = newDepth < 1 ? -quiescent(board, -(alpha + 1), -alpha, ss + 1, NO_PV)
 						         : -alphaBeta<NonPv>(board, newDepth, -(alpha + 1), -alpha, ss + 1, DO_NULL);
 
 		if (isPV && (legalMoves == 1 || (score > alpha && score < beta)))
@@ -677,7 +696,7 @@ int alphaBeta(BitBoards& board, int depth, int alpha, int beta, Search::searchSt
 
 //*/
 
-		///*
+		/*
 		newDepth -= ss->reduction;
 
 		if (!raisedAlpha) {
@@ -747,7 +766,7 @@ int alphaBeta(BitBoards& board, int depth, int alpha, int beta, Search::searchSt
 		if ((ss - 1)->moveCount == 1 && !board.captured_piece())
 			updateContinuationHistories(ss - 1, board.pieceOnSq(prevSq), prevSq, -stat_bonus(depth + 1)); 
 	}
-	// This needs to be PLAY tested!!!
+
 	else if (depth >= 3 
 			&& !board.captured_piece() 
 			&& is_ok((ss-1)->currentMove))

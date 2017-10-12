@@ -55,8 +55,6 @@ inline SMove * pick(SMove * begin, SMove * end) {
 // Main search initilization 
 MovePicker::MovePicker(const BitBoards & board, Move ttm, int depth, const ButterflyHistory * hist, const PieceToHistory** ch, Move cm, Move * killers_p)
 									   : b(board), Depth(depth), mainHist(hist), contiHistory(ch), counterMove(cm), killers{ killers_p[0], killers_p[1] }
-//MovePicker::MovePicker(const BitBoards & board, Move ttm, int depth, const ButterflyHistory * hist,  Move cm, Move * killers_p)
-//					           : b(board), Depth(depth), mainHist(hist), counterMove(cm), killers{ killers_p[0], killers_p[1] }
 {
 	Stage = b.checkers() ? EVASION : MAIN_SEARCH;
 
@@ -91,7 +89,7 @@ void MovePicker::score<CAPTURES>()
 		m = i->move;
 		i->score = SORT_VALUE[b.pieceOnSq(  to_sq(m))] 
 			     - SORT_VALUE[b.pieceOnSq(from_sq(m))];
-		//i->score = SORT_VALUE[b.pieceOnSq(to_sq(m))] - 65 * relative_rankSq(b.stm(), to_sq(m)); //WILL have to test this vs. above MVVLVA sometime.
+
 
 		if (move_type(m) == ENPASSANT)
 			i->score += SORT_VALUE[PAWN];
@@ -112,7 +110,7 @@ void MovePicker::score<QUIETS>()
 		
 		m = i->move;
 
-		i->score = (*mainHist)[b.stm()][from_sq(m)]
+		i->score = (*mainHist)[b.stm()][from_to(m)]
 				 + (*contiHistory[0])[b.pieceOnSq(from_sq(m))][to_sq(m)] // These need to be play tested for ELO loss/gain
 				 + (*contiHistory[1])[b.pieceOnSq(from_sq(m))][to_sq(m)]
 				 + (*contiHistory[3])[b.pieceOnSq(from_sq(m))][to_sq(m)];
@@ -137,7 +135,7 @@ void MovePicker::score<EVASIONS>()
 			         - SORT_VALUE[b.pieceOnSq(from_sq(m))];
 
 		else
-			i->score = (*mainHist)[b.stm()][from_sq(m)]; 
+			i->score = (*mainHist)[b.stm()][from_to(m)]; 
 	}
 
 }

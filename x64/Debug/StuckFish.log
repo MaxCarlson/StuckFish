@@ -1,1 +1,14 @@
-﻿  ai_logic.cpp
+﻿  Evaluate.cpp
+  MovePicker.cpp
+  Pawns.cpp
+  Thread.cpp
+  TimeManager.cpp
+  TranspositionT.cpp
+  UCI.cpp
+  ai_logic.cpp
+  bitboards.cpp
+  main.cpp
+  material.cpp
+  movegen.cpp
+  slider_attacks.cpp
+  zobristh.cpp

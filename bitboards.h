@@ -146,7 +146,8 @@ public:
 	//returns the square the king is on
 	int king_square(int color) const;
 	//is this a pawn move on the 5th or higher relative rank?
-	bool isPawnPush(const Move& m, int color);
+	bool isPawnPush( Move m, int color);
+	bool isMadePawnPush(Move m, int color);
 	//is there a pawn on the 7 th rank relative to stm
 	bool pawnOn7th(int color);
 	//returns true if side color has any pieces aside from pawn/s or king
@@ -410,10 +411,15 @@ inline U64 BitBoards::pinned_pieces(int color) const
 }
 
 
-//is there a pawn past their relative 4th rank?
-inline bool BitBoards::isPawnPush(const Move &m, int color) 
+// Is this move pushing a pawn past the reletive 4th rank?
+// Can only be used before move is made!!
+inline bool BitBoards::isPawnPush(Move m, int color) 
 {	
 	return (pieceOnSq(from_sq(m)) == PAWN && relative_rankSq(color, from_sq(m)) > 4);
+}
+// Only to be used after the move has been made!!
+inline bool BitBoards::isMadePawnPush(Move m, int color) {
+	return (pieceOnSq(to_sq(m)) == PAWN && relative_rankSq(color, from_sq(m)) > 4);
 }
 
 //is there a pawn on the 7th rank for side to move?

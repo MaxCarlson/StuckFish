@@ -35,11 +35,13 @@ typedef StatBoards<int(COLOR), int(SQ_ALL) * int(SQ_ALL)> ButterflyBoards;
 // PieceToBoards are addressed by a move's [piece][to] information
 typedef StatBoards<PIECES, SQ_ALL> PieceToBoards;
 
-
+// Similar to a standard history heuristics,
+// but index is color and the numerical representation
+// of the move (using only the from to information)
 struct ButterflyHistory : public ButterflyBoards 
 {
 	void update(int color, Move m, int bonus) {
-		StatBoards::update( (*this)[color][from_sq(m)], bonus, 324); //Bonus value needs to be played with in auto games
+		StatBoards::update( (*this)[color][from_to(m)], bonus, 324); //Bonus value needs to be played with in auto games
 	}
 };
 

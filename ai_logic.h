@@ -28,6 +28,7 @@ namespace Search {
 
 		int reduction;
 		int staticEval;
+		int statScore;
 	};
 	void initSearch();
 	void clear();

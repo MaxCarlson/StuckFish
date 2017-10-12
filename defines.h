@@ -105,6 +105,10 @@ inline int to_sq(Move m) {
 	return (m >> 6) & 0x3f;
 }
 
+inline int from_to(Move m) {
+	return m & 0xFFF;
+}
+
 // Returns 0 if the move is normal, 
 // and enum values above it is an EP, Castle, or promotion
 inline MoveType move_type(Move m) {
