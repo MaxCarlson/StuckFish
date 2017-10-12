@@ -33,6 +33,10 @@ bool timeOver;
 //master time manager
 TimeManager timeM;
 
+namespace Search {
+	SearchControls SearchControl;
+}
+
 using namespace Search;
 
 const int Tempo = 10;
@@ -77,6 +81,7 @@ int futile_margin(int depth) { return 85 * depth; }
 
 void Search::initSearch()
 {
+	/*
 	//values taken from stock fish, playing with numbers still
 	int hd, d, mc; //half depth, depth, move count
 	for (hd = 1; hd < 64; ++hd) for (mc = 1; mc < 64; ++mc) {
@@ -93,8 +98,22 @@ void Search::initSearch()
 		if (reductions[0][0][hd][mc] >= 2)
 			reductions[0][0][hd][mc] += 1;
 	}
+	*/
+	for (int imp = 0; imp <= 1; ++imp)
+		for (int d = 1; d < 64; ++d)
+			for (int mc = 1; mc < 64; ++mc)
+			{
+				double r = log(d) * log(mc) / 2.45; 
 
-	for (d = 0; d < 32; ++d)
+				reductions[NonPv][imp][d][mc] = int(std::round(r));
+				reductions[PV][imp][d][mc]    = std::max(reductions[NonPv][imp][d][mc] - 1, 0);
+
+				// Increase reduction for non-PV nodes when eval is not improving
+				if (!imp && reductions[NonPv][imp][d][mc] >= 2)
+					reductions[NonPv][imp][d][mc]++;
+			}
+
+	for (int d = 0; d < 32; ++d)
 	{
 		futileMoveCounts[0][d] = int(2.4 + 0.222 * pow(d * 2 + 0.00, 1.8));
 		futileMoveCounts[1][d] = int(3.0 + 0.300 * pow(d * 2 + 0.98, 1.8));
@@ -112,23 +131,15 @@ void Search::clear()
 
 Move MainThread::search() {
 	//max depth
-	rootDepth = MAX_PLY;
-	sd.nodes = 0;
+	sd.nodes  = 0;
 	const int color = board.stm();
 
 	int contempt = SORT_VALUE[PAWN] / 100;
 	DrawValue[ color] = VALUE_DRAW - contempt;
 	DrawValue[!color] = VALUE_DRAW + contempt;
 
-	//if we're only allowed to search to this depth,
-	//only search to specified depth.
-	if (fixedDepthSearch) {
-		rootDepth = fixedDepthSearch;
-		wtime = btime = 99999999;  ///Need to alter this so time isn't checked in fixed depth searches. Easy fix.
-	}
-
 	//calc move time for us, send to search driver
-	timeM.calcMoveTime(!board.stm()); // this !board.stm() needs to be changed, currently timM.calc takes a bool isWhite
+	timeM.calcMoveTime(color, SearchControl); // this !board.stm() needs to be changed, currently timM.calc takes a bool isWhite
 
 	Move m = Thread::search();
 
@@ -140,6 +151,7 @@ Move Thread::search()
 	//reset ply
 	int ply = 0;
 	int color = board.stm();
+	rootDepth = 1;
 
 	//create array of stack objects starting at +2 so we can look two plys back
 	//in order to see if a node has improved, as well as prior stats
@@ -152,16 +164,21 @@ Move Thread::search()
 	//best overall move as calced
 	Move bestMove;
 	int bestScore, alpha = -INF, beta = INF;
-	int delta = 8;
-	sd.depth = 1;
 
 	//iterative deepening loop starts at depth 1, iterates up till max depth or time cutoff
-	while (sd.depth <= rootDepth) {
+	while (rootDepth < MAX_PLY 
+		&& !(SearchControl.depth && rootDepth > SearchControl.depth)) 
+	{
 
-		if (timeM.timeStopRoot() || timeOver) break;
+		// If we're using time controls make 
+		// sure we're not over our time. 
+		if (SearchControl.use_time())
+		{
+			if (timeM.timeStopRoot() || timeOver) break;
+		}
 
 		//main search
-		bestScore = searchRoot(board, sd.depth, alpha, beta, ss);
+		bestScore = searchRoot(board, rootDepth, alpha, beta, ss);
 
 		//if the search is not cutoff
 		if (!timeOver) {
@@ -175,10 +192,10 @@ Move Thread::search()
 			//insert_pv(board);
 
 			//print data on search 
-			print(!color, bestScore); //print takes bool isWhite, need to change this
+			print(bestScore, rootDepth); //print takes bool isWhite, need to change this
 		}
 		//increment depth 
-		sd.depth++;
+		rootDepth++;
 	}
 
 	StateInfo st;
@@ -481,9 +498,7 @@ int alphaBeta(BitBoards& board, int depth, int alpha, int beta, Search::searchSt
 		return ss->staticEval;
 
 
-	//Null move heuristics, disabled if in PV, check, or depth is too low 
-
-
+	// Null move heuristics, disabled if in PV, check, or depth is too low 
 	if (allowNull && !isPV && depth > R) {
 		if (depth > 6) R = 3;
 
@@ -945,17 +960,17 @@ void Search::checkInput()
 {
 	//test for a condition that does less checks
 	//way too many atm
-	if (!timeOver && (sd.nodes & 4095)) {
+	if (SearchControl.use_time() && !timeOver && (sd.nodes & 4095)) {
 		timeOver = timeM.timeStopSearch();
 
 	}
 }
 
-void Search::print(bool isWhite, int bestScore)
+void Search::print(int bestScore, int depth)
 {
 	std::stringstream ss;
 	
-	ss << "info depth " << sd.depth << " nodes " << sd.nodes << " nps " << timeM.getNPS() << " score cp " << bestScore;
+	ss << "info depth " << depth << " nodes " << sd.nodes << " nps " << timeM.getNPS() << " score cp " << bestScore;
 
 	std::cout << ss.str() << std::endl;
 }
@@ -971,31 +986,14 @@ U64 Search::perft(BitBoards & board, int depth)
 	SMove mlist[256];
 	SMove * end = generate<PERFT_TESTING>(board, mlist);
 
-	/*	//TESTING TESTING
-	searchStack stack[6], *ss = stack + 2;
-	std::memset(ss - 2, 0, 5 * sizeof(searchStack));    //// IT LOOKS LIKE MP TRYS BUT DOESN"T GENERATE 1 extra promotion on very rare occasions. Possibly fix this eventually.
-	MovePicker mpp(board, MOVE_NONE, depth, history, ss);
-	Move testM;
-	CheckInfo ci(board);
-	int mppCounter = 0, perftCounter = 0;
-
-	while ((testM = mpp.nextMove()) != MOVE_NONE) {
-		if (!board.isLegal(testM, ci.pinned))
-			continue;
-		mppCounter++;
-	}
-	*/
-
 	for (SMove * i = mlist; i != end; ++i)
 	{
 		if (depth == 1)
-			nodes++;// perftCounter++;
+			nodes++;
 
 		else {
 
 			board.makeMove(i->move, st, board.stm());
-
-			//perftCounter++;
 
 			count = perft<false>(board, depth - 1);
 
@@ -1004,25 +1002,6 @@ U64 Search::perft(BitBoards & board, int depth)
 			board.unmakeMove(i->move, !board.stm());
 		}
 	}
-
-	/* //Left in for eventually testing why MP tries an extra move!!!
-	if (perftCounter == 52 && mppCounter == 53) {
-
-		MovePicker mp(board, MOVE_NONE, depth, history, ss);
-		
-		while ((testM = mp.nextMove()) != MOVE_NONE) {
-			if (!board.isLegal(testM, ci.pinned))
-				continue;
-			if (move_type(testM) == PROMOTION)
-				board.drawBBA();
-		}
-	}
-
-
-	if (perftCounter != mppCounter) {
-		board.drawBBA();
-	}
-	*/
 
 	return nodes;
 }
@@ -1097,59 +1076,3 @@ U64 Search::perftDivide(BitBoards & board, int depth)
 }
 
 template U64 Search::perftDivide<true>(BitBoards & board, int depth);
-
-
-/*
-//new futility pruning really looks like it's pruning way to much right now, maybe adjust futile move counts until we have better move ordering!!!!
-if (!isPV
-&& newMove.score <= SORT_HASH
-&& !captureOrPromotion
-&& !FlagInCheck
-&& !givesCheck
-&& !board.isPawnPush(newMove, color)
-&& bestScore > VALUE_MATED_IN_MAX_PLY) {
-
-bool shouldSkip = false;
-
-if (depth < 10 && legalMoves >= futileMoveCounts[improving][depth]+7) {
-shouldSkip = true;
-}
-
-predictedDepth = newDepth - reductions[isPV][improving][depth][legalMoves];
-
-int futileVal;
-if (!shouldSkip && predictedDepth < 7) {
-//int a = history.gains[color][newMove.piece][newMove.to];
-//if (predictedDepth < 0) predictedDepth = 0;
-//use predicted depth? Need to play with numbers!!
-futileVal = ss->staticEval + history.gains[color][newMove.piece][newMove.to] + (predictedDepth * 200) + 140;
-
-if (futileVal <= alpha) {
-//bestScore = std::max(futileVal, bestScore);
-shouldSkip = true;
-}
-}
-
-//don't search moves with negative SEE at low depths
-//if (!shouldSkip && depth < 4 && gen_moves.SEE(newMove, board, color, true) < 0) shouldSkip = true;
-
-if (shouldSkip) {
-board.unmakeMove(newMove, color);
-futileMoves = true; //flag so we know we skipped a move/not checkmate
-continue;
-}
-}
-//*/
-
-/* //This futility pruning works in conjuction with futile conditions above move loop, slight speed boost, unsure on ELO gain
-//futility pruning ~~ is not a promotion or hashmove, is not a capture, and does not give check, and we've tried one move already
-if(f_prune && newMove.score < SORT_HASH
-&& !captureOrPromotion && legalMoves
-&& !givesCheck){
-
-board.unmakeMove(newMove, color);
-futileMoves = true; //flag so we know we skipped a move/not checkmate
-continue;
-}
-//*/
-///*

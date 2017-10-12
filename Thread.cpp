@@ -1,5 +1,5 @@
 #include "Thread.h"
-#include "ai_logic.h"
+
 
 ThreadPool Threads;
 
@@ -27,12 +27,16 @@ void ThreadPool::initialize()
 	push_back(new MainThread());
 }
 
-Move ThreadPool::searchStart(BitBoards & board)
+Move ThreadPool::searchStart(BitBoards & board, const Search::SearchControls & sc)
 {
 
 	//Once there are multiple threads, we need to sepperate the stateInfo
 	//pointers from eachother
 	main()->board = board;
+
+	// Transfer search control variables to
+	// SearchCondition internal to Search::
+	Search::SearchControl = sc;
 
 	// Bitboards currently hold things like PseudoMoves that are initilized in BitBoards::initilize, only once
 	// At beginning of UCI::loop. We can either move those outside(best option), or set thread boards equal to, than reconstruct the boards through

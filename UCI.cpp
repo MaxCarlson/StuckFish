@@ -19,12 +19,12 @@
 bool isWhite = true;
 
 //UCI inputs for go
-long wtime; //time left on whites clock
-long btime; //black clock
-int winc;
-int binc;
-int movestogo;
-int fixedDepthSearch = 0;
+//long wtime; //time left on whites clock
+//long btime; //black clock
+//int winc;
+//int binc;
+//int movestogo;
+//int fixedDepthSearch = 0;
 
 
 UCI::UCI()
@@ -108,23 +108,8 @@ void UCI::uciLoop()
 		else if (token == "printOptions") {
 			//printOptions();
 		}
-		else if (token == "go")
-		{	
-			while (is >> token)
-			{
-				if (token == "wtime")          is >> wtime;
-				else if (token == "btime")     is >> btime;
-				else if (token == "winc")      is >> winc;
-				else if (token == "binc")      is >> binc;
-				else if (token == "movestogo") is >> movestogo;
-				else if (token == "depth")     is >> fixedDepthSearch;
-			}
+		else if (token == "go") go(newBoard, is);
 
-			//std::thread thr(&UCI::search, this, newBoard);  //THREAD CAUSES ERRORS WITH LARGE BTIBOARD OBJECT????
-			//thr.join(); //search on new thread -- need to implement so search thread can receive signals to stop from GUI.
-			search(newBoard);
-			
-		}
 		else if (token == "quit")
 		{
 			std::cout << "Terminating.." << std::endl;
@@ -218,15 +203,31 @@ void UCI::setOption(std::istringstream & input)
 	
 }
 
-void UCI::search(BitBoards& newBoard)
-{	
+void UCI::go(BitBoards & newBoard, std::istringstream & input)
+{
+	Search::SearchControls scs;
 
-	Move m = Threads.searchStart(newBoard);
+	// Start clock !!
+	scs.startTime = now();
+
+	std::string token;
+
+	while (input >> token)
+	{
+		if (token == "wtime")          input >> scs.time[WHITE];
+		else if (token == "btime")     input >> scs.time[BLACK];
+		else if (token == "winc")      input >> scs.inc[ WHITE]; //Not supported atm
+		else if (token == "binc")      input >> scs.inc[ BLACK];
+		else if (token == "movestogo") input >> scs.movesToGo; // Not supported atm
+		else if (token == "depth")     input >> scs.depth;
+	}
+
+	Move m = Threads.searchStart(newBoard, scs);
 
 	std::cout << "bestmove " << moveToStr(m) << std::endl; //send move to std output for UCI GUI to pickup
 
-	isWhite = !isWhite; //switch color after move
-	turns += 1;
+	isWhite = !isWhite; //switch color after move 					
+	turns += 1;    //// IS this and ^^ redundant? state isn't saved unless run through update pos from beginning anyways, TEST
 }
 
 std::string UCI::moveToStr(const Move& m) 
@@ -260,69 +261,13 @@ Move UCI::strToMove(BitBoards& newBoard, std::string& input)
 {
 	Move m;
 
-	/*
-	int flipsN[9] = {0, 7, 6, 5, 4, 3, 2, 1, 0};
-	char flipsA[8]{ 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h' };
-
-	int x, y, x1, y1;
-
-	char cx = input[0];
-	char cx1 = input[2];
-
-	for (int i = 0; i < 8; ++i) {
-		if (cx == flipsA[i]) x = i;
-		if (cx1 == flipsA[i]) x1 = i;
-	}
-
-	y = flipsN[input[1] - '0'];
-	y1 = flipsN[input[3] - '0'];
-
-	int from = y * 8 + x;
-	int to = y1 * 8 + x1;
-	int piece = newBoard.pieceOnSq(from);
-
-
-	int typeOfMove = NORMAL;
-
-	// en passants
-	if (piece == PAWN && to == newBoard.ep_square()) {
-
-		typeOfMove = ENPASSANT;
-	}
-
-	//promotions
-	if (input.length() == 5) {
-		if (input[4] == 'q')
-			typeOfMove = PROMOTION;
-		//below not implemented!!!!!!!!!!!
-		//else if (input[4] == 'r') m.flag = 'R';
-		//else if (input[4] == 'b') m.flag = 'B';
-		//else if (input[4] == 'n') m.flag = 'N';
-	}	
-
-	//NEED CASTLING CODE ONCE IMPLEMENTED
-	if (piece == KING) {
-		if (!(newBoard.psuedoAttacks(KING, 0, from) & newBoard.squareBB[to]))
-			typeOfMove = CASTLING;
-	}
-
-	if (typeOfMove == NORMAL)
-		m = create_move(from, to);
-
-	else if (typeOfMove == ENPASSANT)
-		m = create_special<ENPASSANT, PIECE_EMPTY>(from, to);
-
-	else if (typeOfMove == PROMOTION)
-		m = create_special<PROMOTION, QUEEN>(from, to);
-
-	else if (typeOfMove == CASTLING)
-		m = create_special<CASTLING, PIECE_EMPTY>(from, to);
-
-	*/
-
+	// In case promotion piece character is sent
+	// as upper case. 
 	if (input.length() == 5)
 		input[4] = char(tolower(input[4]));
 
+	// If move is in the list of legal moves, then it's valid.
+	// Return it.
 	for (const auto& m : MoveList<LEGAL>(newBoard))
 		if (input == moveToStr(m))
 			return m;
@@ -379,7 +324,6 @@ void UCI::test(BitBoards & newBoard, StateListPtr& states)		// Give this an inpu
 	for (int i = 0; i < 30; ++i) {
 		newGame(newBoard, states);
 		Search::clear();
-		fixedDepthSearch = 15;  
 
 		std::string testFen = "fen ";
 
@@ -389,12 +333,14 @@ void UCI::test(BitBoards & newBoard, StateListPtr& states)		// Give this an inpu
 
 		updatePosition(newBoard, is, states);
 
-		search(newBoard);
+		// Pass go the desired depth. Make this an input for test? 
+		std::string sdepth = "depth 15";
+		std::istringstream iss(sdepth);
+
+		go(newBoard, iss);
 
 		nodes += sd.nodes;
 	}
-
-	fixedDepthSearch = 0;
 
 
 	time_t endtimer;

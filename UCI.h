@@ -23,7 +23,9 @@ public:
 	void printOptions();
 	void setOption(std::istringstream & input);
 
-	void search(BitBoards& newBoard);
+	//void search(BitBoards& newBoard);
+
+	void go(BitBoards& newBoard, std::istringstream & input);
 
 	void test(BitBoards& newBoard, StateListPtr& states);
 

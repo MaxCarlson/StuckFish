@@ -7,7 +7,7 @@
 
 
 #define TIMEBUFFER 500
-#define MOVESTOGO 24
+#define MOVESTOGO   24
 
 //structtime chronos;
 
@@ -20,35 +20,40 @@ TimeManager::TimeManager()
 {
 }
 
-void TimeManager::calcMoveTime(bool isWhite)
+void TimeManager::calcMoveTime(int color, const Search::SearchControls & sc)
 {
 	//add code for infinite and other search types search time
 
 	//reset search timer
 	timeOver = false;
 
-	sd.moveTime = 0;
+	MaxMoveTime = 0;
+	startTime   = sc.startTime;
 
 	int movesToGo = MOVESTOGO;
 
-	if (isWhite) sd.moveTime += wtime / movesToGo;
-	else sd.moveTime += btime / movesToGo;
+	if (color == WHITE) MaxMoveTime += sc.time[WHITE] / movesToGo;
+	else				MaxMoveTime += sc.time[BLACK] / movesToGo;
 
-	if (winc) sd.moveTime += winc; //change later if both binc or winc are sent out of turn/at same time
-	if (binc) sd.moveTime += binc;
+	if (sc.inc[WHITE])
+		MaxMoveTime += sc.inc[WHITE]; //change later if both binc or winc are sent out of turn/at same time
 
-	if (sd.moveTime > TIMEBUFFER) sd.moveTime -= TIMEBUFFER;
+	else if (sc.inc[BLACK])
+		MaxMoveTime += sc.inc[BLACK];
 
-	sd.startTime = now();
+	if (MaxMoveTime > TIMEBUFFER) MaxMoveTime -= TIMEBUFFER;
 
 	return;
 }
 
 bool TimeManager::timeStopRoot()
 {
-	if (timeOver) return true;
+	if (timeOver) 
+		return true;
 
-	return (((int)(now() - sd.startTime) * 2) > sd.moveTime);
+	long aa = now() - startTime;
+
+	return (((int)(now() - startTime) * 2) > MaxMoveTime);
 
 	return false;
 }
@@ -57,12 +62,12 @@ bool TimeManager::timeStopSearch()
 {
 	if (sd.depth <= 1) return false;
 
-	if ((int)(now() - sd.startTime) > sd.moveTime) {
+	if ((int)(now() - startTime) > MaxMoveTime) {
 		int movesToGo = MOVESTOGO;
 
 		if ((movesToGo > 5) &&
-			((int)(now() - sd.startTime) < (sd.moveTime * 2)) &&
-			(sd.moveTime > 5000)) {
+			((int)(now() - startTime) < (MaxMoveTime * 2)) &&
+			(MaxMoveTime > 5000)) {
 			return false;
 		}
 		else {
@@ -75,8 +80,8 @@ bool TimeManager::timeStopSearch()
 
 int TimeManager::getNPS()
 {
-	std::cout << (double)(now() - sd.startTime) / 1000 << std::endl;
-	return (sd.nodes / ((double)(now() - sd.startTime)/1000));
+	std::cout << (double)(now() - startTime) / 1000 << std::endl;
+	return (sd.nodes / ((double)(now() - startTime)/1000));
 }
 
 

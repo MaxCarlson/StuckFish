@@ -1,16 +1,4 @@
-﻿  Evaluate.cpp
-  MovePicker.cpp
-  Pawns.cpp
-  Thread.cpp
-  TimeManager.cpp
-  TranspositionT.cpp
-  UCI.cpp
+﻿  TimeManager.cpp
   ai_logic.cpp
-  bitboards.cpp
-  main.cpp
-  material.cpp
-  movegen.cpp
-  slider_attacks.cpp
-  zobristh.cpp
 EndGame.obj : : warning LNK4204: 'C:\Users\C-60\Desktop\cppPrograms\StuckFish\x64\Release\vc140.pdb' is missing debugging information for referencing module; linking object as if no debug info
   StuckFish.vcxproj -> C:\Users\C-60\Desktop\cppPrograms\StuckFish\x64\Release\StuckFish.exe

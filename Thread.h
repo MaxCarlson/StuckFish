@@ -3,6 +3,7 @@
 
 //#include "defines.h"
 #include "MovePicker.h"
+#include "ai_logic.h"
 //#include "Pawns.h"
 //#include "material.h"
 
@@ -56,7 +57,7 @@ struct ThreadPool : public std::vector<Thread*>
 {
 	void initialize();
 
-	Move searchStart(BitBoards & board);
+	Move searchStart(BitBoards & board, const Search::SearchControls & sc);
 
 	MainThread * main() const { return static_cast<MainThread*>(front()); }
 

@@ -56,8 +56,6 @@ struct searchDriver{
 	Move PV[130];
 	int  nodes = 0;
 	int  depth = 0;
-	long startTime;
-	long moveTime = 2500;
 };
 extern searchDriver sd;
 
@@ -89,6 +87,7 @@ extern U64 LineBB[SQ_ALL][SQ_ALL];
 extern int SquareDistance[SQ_ALL][SQ_ALL];
 
 
+/*
 //UCI input varibles for "go"
 extern long wtime; //time left on whites clock
 extern long btime; //black clock
@@ -96,6 +95,7 @@ extern int winc;
 extern int binc;
 extern int movestogo;
 extern int fixedDepthSearch;
+*/
 
 
 #endif // EXTERNS_H
