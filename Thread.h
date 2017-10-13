@@ -57,7 +57,7 @@ struct ThreadPool : public std::vector<Thread*>
 {
 	void initialize();
 
-	Move searchStart(BitBoards & board, const Search::SearchControls & sc);
+	Move searchStart(BitBoards & board, StateListPtr& states, const Search::SearchControls & sc);
 
 	MainThread * main() const { return static_cast<MainThread*>(front()); }
 
@@ -66,7 +66,7 @@ struct ThreadPool : public std::vector<Thread*>
 private:
 	// Will be used later to detach the main thread's stateListPtr
 	// when transfering state list ptr's to other threads
-	//StateListPtr setStates;
+	StateListPtr setStates;
 
 	U64 accumulateMember(std::atomic<U64> Thread::* member) const
 	{

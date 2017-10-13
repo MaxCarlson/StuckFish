@@ -60,13 +60,13 @@ bool TimeManager::timeStopRoot()
 
 bool TimeManager::timeStopSearch()
 {
-	if (sd.depth <= 1) return false;
+	long elps = elapsed();
 
-	if ((int)(now() - startTime) > MaxMoveTime) {
+	if ((int)elps > MaxMoveTime) {
 		int movesToGo = MOVESTOGO;
 
 		if ((movesToGo > 5) &&
-			((int)(now() - startTime) < (MaxMoveTime * 2)) &&
+			((int)elps < (MaxMoveTime * 2)) &&
 			(MaxMoveTime > 5000)) {
 			return false;
 		}

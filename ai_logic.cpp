@@ -81,29 +81,11 @@ int futile_margin(int depth) { return 85 * depth; }
 
 void Search::initSearch()
 {
-	/*
-	//values taken from stock fish, playing with numbers still
-	int hd, d, mc; //half depth, depth, move count
-	for (hd = 1; hd < 64; ++hd) for (mc = 1; mc < 64; ++mc) {
-
-		double    pvReduciton = 0.00 + log(double(hd)) * log(double(mc)) / 3.00;
-		double nonPVReduction = 0.30 + log(double(hd)) * log(double(mc)) / 2.25;
-
-		reductions[1][1][hd][mc] = int8_t(pvReduciton >= 1.0    ? pvReduciton    + 0.5 : 0);
-		reductions[0][1][hd][mc] = int8_t(nonPVReduction >= 1.0 ? nonPVReduction + 0.5 : 0);
-
-		reductions[1][0][hd][mc] = reductions[1][1][hd][mc];
-		reductions[0][0][hd][mc] = reductions[0][1][hd][mc];
-
-		if (reductions[0][0][hd][mc] >= 2)
-			reductions[0][0][hd][mc] += 1;
-	}
-	*/
 	for (int imp = 0; imp <= 1; ++imp)
 		for (int d = 1; d < 64; ++d)
 			for (int mc = 1; mc < 64; ++mc)
 			{
-				double r = log(d) * log(mc) / 2.45; 
+				double r = log(d) * log(mc) / 2.45; // Best value so far, 2.45!
 
 				reductions[NonPv][imp][d][mc] = int(std::round(r));
 				reductions[PV][imp][d][mc]    = std::max(reductions[NonPv][imp][d][mc] - 1, 0);
@@ -139,7 +121,7 @@ Move MainThread::search() {
 	DrawValue[!color] = VALUE_DRAW + contempt;
 
 	//calc move time for us, send to search driver
-	timeM.calcMoveTime(color, SearchControl); // this !board.stm() needs to be changed, currently timM.calc takes a bool isWhite
+	timeM.calcMoveTime(color, SearchControl); 
 
 	Move m = Thread::search();
 
@@ -149,9 +131,11 @@ Move MainThread::search() {
 Move Thread::search() 
 {
 	//reset ply
-	int ply = 0;
+	int ply   = 0;
 	int color = board.stm();
 	rootDepth = 1;
+
+	MainThread * mainThread = (this == Threads.main() ? Threads.main() : nullptr);
 
 	//create array of stack objects starting at +2 so we can look two plys back
 	//in order to see if a node has improved, as well as prior stats
@@ -167,7 +151,7 @@ Move Thread::search()
 
 	//iterative deepening loop starts at depth 1, iterates up till max depth or time cutoff
 	while (rootDepth < MAX_PLY 
-		&& !(SearchControl.depth && rootDepth > SearchControl.depth)) 
+		&& !(SearchControl.depth && mainThread && rootDepth > SearchControl.depth)) 
 	{
 
 		// If we're using time controls make 
@@ -316,6 +300,7 @@ int alphaBeta(BitBoards& board, int depth, int alpha, int beta, Search::searchSt
 {
 	const bool isPV = (NT == PV);
 	const int color = board.stm();
+	int score;
 
 	bool FlagInCheck, raisedAlpha;
 	bool captureOrPromotion, givesCheck;
@@ -324,8 +309,9 @@ int alphaBeta(BitBoards& board, int depth, int alpha, int beta, Search::searchSt
 	captureOrPromotion = givesCheck  = false;
 
 	Thread * thisThread = board.this_thread();
+	++thisThread->nodes;
 
-	//holds state of board on current ply info
+	// Holds state of board on current ply info
 	StateInfo st;
 
 	int R = 2, newDepth, predictedDepth = 0, quietsCount;
@@ -348,12 +334,12 @@ int alphaBeta(BitBoards& board, int depth, int alpha, int beta, Search::searchSt
 
 
 	// Draw detection by 50 move rule
-	// as well as by 3-fold repetition.  ///////////////// Not sure if three fold rep is working correctly. Seems to come up too much in games. 
-	if (board.isDraw(ss->ply) || ss->ply == MAX_PLY)
+	// as well as by 3-fold repetition.  
+	if (board.isDraw(ss->ply) || ss->ply >= MAX_PLY)
 		return DrawValue[color];
 
 
-	//checks if time over is true everytime if( nodes & 4095 ) 
+	// Checks if time over  
 	checkInput();
 
 	// Mate distance pruning, 
@@ -371,21 +357,7 @@ int alphaBeta(BitBoards& board, int depth, int alpha, int beta, Search::searchSt
 	ttMove  = ttentry ? ttentry->move() : MOVE_NONE; //is there a move stored in transposition table?
 	ttValue = ttentry ? valueFromTT(ttentry->eval(), ss->ply) : 0; //if there is a TT entry, grab its value
 
-	/*
-	// Is there a TT entry? If so, are we in PV? If in PV only accept an exact entry with a depth >= our depth, 
-	// if not PV accept all if the entry has a equal or greater depth relative to our depth.
-	if (ttentry
-			&& ttentry->depth() >= depth
-			&& (isPV ? ttentry->flag() == TT_EXACT
-			: ttValue >= beta ? ttentry->flag() == TT_BETA
-			: ttentry->flag() == TT_ALPHA)
-		) {
-
-		return ttValue;
-	}
-	//*/
-	///*
-	if(!isPV ///////////////Needs to be tested against version above.
+	if(!isPV 
 		&& ttentry
 		&& ttentry->depth() >= depth
 		&& (ttValue >= beta
@@ -413,16 +385,6 @@ int alphaBeta(BitBoards& board, int depth, int alpha, int beta, Search::searchSt
 		}
 		return ttValue;
 	}
-	//*/
-	int score;
-	/*
-	if (depth < 1 || timeOver) {
-		//run capture search to max depth of queitSD
-		score = quiescent(board, alpha, beta, ss, isPV);
-		return score;
-	}
-	*/
-
 
 	//are we in check?
 	FlagInCheck = board.checkers();
@@ -605,50 +567,6 @@ int alphaBeta(BitBoards& board, int depth, int alpha, int beta, Search::searchSt
 		}
 //*/
 
-/*
-		// Late move reductions,
-		// reduce the depth of the search in non dangerous situations. 
-		if (   newDepth   > 3
-			&& legalMoves > 3
-			&& !FlagInCheck
-			&& !captureOrPromotion
-			&& !givesCheck	
-			&& newMove != ss->killers[0]
-			&& newMove != ss->killers[1]) {
-
-
-			ss->reduction = reduction<NT>(improving, depth, legalMoves);
-
-			//reduce reductions for moves that escape capture
-			if (ss->reduction
-				&& move_type(newMove) == NORMAL
-				&& board.pieceOnSq(to_sq(newMove)) != PAWN
-				&& board.SEE(create_move(to_sq(newMove), from_sq(newMove)), color, false) < 0){  //Is see working correctly???????????????????????????????????????????
-
-					ss->reduction = std::max(1, ss->reduction - 2); //play with reduction value
-			}
-
-			//if (ttMoveCapture)
-			//	ss->reduction += 1; // Possibly cause of losing ELO in latest test?
-
-			int d1 =  std::max(newDepth - ss->reduction, 1);
-
-			int val = -alphaBeta<NonPv>(board, d1, -(alpha + 1), -alpha, ss + 1, DO_NULL);
-
-			//if reduction is very high, and we fail high above, re-search with a lower reduction
-			if (val > alpha && ss->reduction >= 4) {
-
-				int d2 = std::max(newDepth - 2, 1);
-				val = -alphaBeta<NonPv>(board, d2, -(alpha + 1), -alpha, ss + 1, DO_NULL);
-			}
-			//if we still fail high, do a full depth search
-			if (val > alpha && ss->reduction != 0) {
-				ss->reduction = 0;
-			}
-		}
-//*/
-
-///*
 		if (depth >= 3
 			&& legalMoves > 1
 			&& !captureOrPromotion)
@@ -660,15 +578,22 @@ int alphaBeta(BitBoards& board, int depth, int alpha, int beta, Search::searchSt
 
 			else 
 			{
+				// High opponent move count, 
+				// reduce reduction
 				if ((ss - 1)->moveCount > 15)
 					depthR -= 1;
 
+				// If we had an exact PV match, reduce reduction
 				if (ttentry && ttentry->flag() == TT_EXACT)
 					depthR -= 1;
 
+				// If the ttmove was a capture 
+				// increase reduction
 				if (ttMoveCapture)
 					depthR += 1;
-
+				
+				// If the SEE of our move was negative,
+				// 
 				if (depthR
 					&& move_type(newMove) == NORMAL
 					&& !board.seeGe(create_move(to_sq(newMove), from_sq(newMove))))
@@ -709,27 +634,6 @@ int alphaBeta(BitBoards& board, int depth, int alpha, int beta, Search::searchSt
 				                 : -alphaBeta<PV>(board, newDepth, -beta, -alpha, ss + 1, DO_NULL);
 		}
 
-//*/
-
-		/*
-		newDepth -= ss->reduction;
-
-		if (!raisedAlpha) {
-			//we're in principal variation search or full window search
-
-			score = -alphaBeta<NT>(board, newDepth, -beta, -alpha, ss + 1, DO_NULL);
-		}
-		else {
-			//zero window search
-			score = -alphaBeta<NonPv>(board, newDepth, -alpha - 1, -alpha, ss + 1, DO_NULL);
-			//if our zero window search failed, do a full window search
-			if (score > alpha) {
-				//PV search after failed zero window
-				score = -alphaBeta<PV>(board, newDepth, -beta, -alpha, ss + 1, DO_NULL);
-			}
-		}
-		//*/
-
 		// Store queit moves so we can decrease their History value later.
 		if (!captureOrPromotion && newMove != bestMove && quietsCount < 64) {
 			quiets[quietsCount++] = newMove;                                    
@@ -765,9 +669,10 @@ int alphaBeta(BitBoards& board, int depth, int alpha, int beta, Search::searchSt
 		}
 	}
 
-	//if there are no legal moves and we are in checkmate this node
-	if (!legalMoves && FlagInCheck) 
-		alpha = mated_in(ss->ply);
+	//if there are no legal moves and we are in checkmate or stalemate this node
+	if (!legalMoves) 
+		alpha = FlagInCheck ? mated_in(ss->ply) 
+		                    : DrawValue[color];
 
 	
 	else if (bestMove) { 
@@ -962,7 +867,6 @@ void Search::checkInput()
 	//way too many atm
 	if (SearchControl.use_time() && !timeOver && (sd.nodes & 4095)) {
 		timeOver = timeM.timeStopSearch();
-
 	}
 }
 
@@ -970,7 +874,14 @@ void Search::print(int bestScore, int depth)
 {
 	std::stringstream ss;
 	
-	ss << "info depth " << depth << " nodes " << sd.nodes << " nps " << timeM.getNPS() << " score cp " << bestScore;
+
+
+	ss << "info depth " << depth << " nodes " << sd.nodes << " nps " << timeM.getNPS() << " score ";
+
+	if (bestScore < VALUE_MATE - MAX_PLY)
+		ss << "cp " << bestScore;
+	else
+		ss << "mate " << (bestScore > 0 ? VALUE_MATE - bestScore + 1 : -VALUE_MATE - bestScore) / 2;
 
 	std::cout << ss.str() << std::endl;
 }

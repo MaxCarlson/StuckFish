@@ -27,7 +27,7 @@ void ThreadPool::initialize()
 	push_back(new MainThread());
 }
 
-Move ThreadPool::searchStart(BitBoards & board, const Search::SearchControls & sc)
+Move ThreadPool::searchStart(BitBoards & board, StateListPtr& states, const Search::SearchControls & sc)
 {
 
 	//Once there are multiple threads, we need to sepperate the stateInfo
@@ -38,9 +38,23 @@ Move ThreadPool::searchStart(BitBoards & board, const Search::SearchControls & s
 	// SearchCondition internal to Search::
 	Search::SearchControl = sc;
 
+	// Ownership transfer
+	if (states.get())
+		setStates = std::move(states);
+
 	// Bitboards currently hold things like PseudoMoves that are initilized in BitBoards::initilize, only once
 	// At beginning of UCI::loop. We can either move those outside(best option), or set thread boards equal to, than reconstruct the boards through
 	// BitBoards::contructBoards() once we want to start some type of SMP.
+	StateInfo st = setStates->back();
+
+	for (Thread * th : Threads)
+	{
+		th->nodes = 0;
+		th->board = board;
+		th->board.set_state(&setStates->back(), th);
+	}
+
+	setStates->back() = st;
 
 	return main()->search();
 }

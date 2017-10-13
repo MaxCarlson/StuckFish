@@ -76,6 +76,9 @@ public:
     //builds boards through reading an array
     void constructBoards(const std::string* FEN, Thread * th, StateInfo * si);
 
+	// Seperate from construct, set states sets the board info and state pointer
+	void set_state(StateInfo * si, Thread * th);
+
 	//constructs boards from FEN string
 	void readFenString(const std::string& FEN);
 
@@ -217,8 +220,6 @@ public:
 	Thread * this_thread() const;
 
 private:
-
-	void set_state(StateInfo * si, Thread * th);
 	
 	StateInfo* st;
 

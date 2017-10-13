@@ -108,7 +108,7 @@ void UCI::uciLoop()
 		else if (token == "printOptions") {
 			//printOptions();
 		}
-		else if (token == "go") go(newBoard, is);
+		else if (token == "go") go(newBoard, is, states);
 
 		else if (token == "quit")
 		{
@@ -203,7 +203,7 @@ void UCI::setOption(std::istringstream & input)
 	
 }
 
-void UCI::go(BitBoards & newBoard, std::istringstream & input)
+void UCI::go(BitBoards & newBoard, std::istringstream & input, StateListPtr& states)
 {
 	Search::SearchControls scs;
 
@@ -222,7 +222,7 @@ void UCI::go(BitBoards & newBoard, std::istringstream & input)
 		else if (token == "depth")     input >> scs.depth;
 	}
 
-	Move m = Threads.searchStart(newBoard, scs);
+	Move m = Threads.searchStart(newBoard, states, scs);
 
 	std::cout << "bestmove " << moveToStr(m) << std::endl; //send move to std output for UCI GUI to pickup
 
@@ -322,7 +322,6 @@ void UCI::test(BitBoards & newBoard, StateListPtr& states)		// Give this an inpu
 	time(&starttimer);
 
 	for (int i = 0; i < 30; ++i) {
-		newGame(newBoard, states);
 		Search::clear();
 
 		std::string testFen = "fen ";
@@ -337,7 +336,7 @@ void UCI::test(BitBoards & newBoard, StateListPtr& states)		// Give this an inpu
 		std::string sdepth = "depth 15";
 		std::istringstream iss(sdepth);
 
-		go(newBoard, iss);
+		go(newBoard, iss, states);
 
 		nodes += sd.nodes;
 	}

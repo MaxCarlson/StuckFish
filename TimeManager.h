@@ -10,11 +10,13 @@ public:
 
 	bool timeStopRoot();
 	bool timeStopSearch();
-	int getNPS();
+	int  getNPS();
+
+	long elapsed() const { return now() - startTime; }
 
 private:
 	TimePoint startTime;
-	Search::SearchControls tscs;
+
 	int MaxMoveTime;
 };
 
