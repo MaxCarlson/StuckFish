@@ -10,7 +10,7 @@ public:
 
 	bool timeStopRoot();
 	bool timeStopSearch();
-	int  getNPS();
+	int  getNPS(int nodes);
 
 	long elapsed() const { return now() - startTime; }
 

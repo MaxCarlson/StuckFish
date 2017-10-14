@@ -1,1 +1,12 @@
-﻿  UCI.cpp
+﻿  Evaluate.cpp
+  MovePicker.cpp
+  Pawns.cpp
+  Thread.cpp
+  TimeManager.cpp
+  UCI.cpp
+  ai_logic.cpp
+  bitboards.cpp
+  main.cpp
+  material.cpp
+  movegen.cpp
+  zobristh.cpp

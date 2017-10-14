@@ -9,7 +9,31 @@
 
 #include <thread>
 #include <atomic>
+#include <condition_variable>
+#include <mutex>
 
+#ifndef NOMINMAX
+#  define NOMINMAX // Disable macros min() and max()
+#endif
+
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#undef WIN32_LEAN_AND_MEAN
+#undef NOMINMAX
+
+// Low level mutex lock/unlock as in Stockfish
+// 
+struct Mutex {
+	Mutex()       { InitializeCriticalSection(&cs); }
+	~Mutex()      {     DeleteCriticalSection(&cs); }
+	void lock()   {		 EnterCriticalSection(&cs); }
+	void unlock() {      LeaveCriticalSection(&cs); }
+
+private:
+	CRITICAL_SECTION cs;
+};
+
+typedef std::condition_variable_any ConditionVariable;
 
 
 
@@ -39,6 +63,8 @@ public:
 	ButterflyHistory     mainHistory;
 	ContinuationHistory contiHistory;
 
+	Search::RootMoves rootMoves;
+
 	int rootDepth;
 };
 
@@ -50,7 +76,7 @@ struct MainThread : public Thread
 
 	Move search() override;
 
-	//double bestMoveChanges; //Not in use yet
+	double bestMoveChanges; //Not in use yet
 };
 
 struct ThreadPool : public std::vector<Thread*>

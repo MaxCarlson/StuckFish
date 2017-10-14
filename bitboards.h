@@ -12,6 +12,7 @@ typedef unsigned long long  U64; // supported by MSC 13.00+ and C99
 
 #include "zobristh.h"
 
+
 class ZobristH;
 class MoveGen;
 class Thread;

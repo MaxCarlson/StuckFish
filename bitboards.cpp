@@ -10,6 +10,7 @@
 #include "TranspositionT.h"
 #include "Evaluate.h"
 #include "movegen.h"
+#include "Thread.h"
 
 
 
@@ -587,6 +588,9 @@ void BitBoards::set_castling_rights(int color, int rfrom)
 
 void BitBoards::makeMove(const Move& m, StateInfo& newSt, int color)
 {
+	// No need to enforce sequential consistancy here 
+	thisThread->nodes.fetch_add(1, std::memory_order_relaxed);
+
 	int them = !color;
 
 	int to       =        to_sq(m);

@@ -78,10 +78,10 @@ bool TimeManager::timeStopSearch()
 	return false;
 }
 
-int TimeManager::getNPS()
+int TimeManager::getNPS(int nodes)
 {
 	std::cout << (double)(now() - startTime) / 1000 << std::endl;
-	return (sd.nodes / ((double)(now() - startTime)/1000));
+	return (nodes / ((double)(now() - startTime)/1000));
 }
 
 

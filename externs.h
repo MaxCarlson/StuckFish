@@ -50,16 +50,6 @@ extern Material::Table MaterialTable;
 //half turns
 extern int turns;
 
-//holds search info, killers, historys, PV, etc
-struct searchDriver{
-
-	Move PV[130];
-	int  nodes = 0;
-	int  depth = 0;
-};
-extern searchDriver sd;
-
-
 //Bitboard of all king movements that can then be shifted
 extern const U64 KING_SPAN;
 //board for knight moves that can be shifted

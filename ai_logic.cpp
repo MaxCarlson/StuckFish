@@ -24,9 +24,6 @@
 #define ASP        50  //aspiration windows size
 
 
-//holds historys and killers + eventually nodes searched + other data
-searchDriver sd;
-
 //value to determine if time for search has run out
 bool timeOver;
 
@@ -49,6 +46,12 @@ enum NodeType {
 //mate values are measured in distance from root, so need to be converted to and from TT
 inline int valueFromTT(int val, int ply);
 inline int valueToTT(int val, int ply);
+
+void update_pv(Move *pv, Move m, Move *childPv) {
+	for (*pv++ = m; childPv && *childPv != MOVE_NONE; )
+		*pv++ = *childPv++;
+	*pv = MOVE_NONE;
+}
 
 template <bool isPV> int reduction(bool improving, int depth, int moveCount) {
 	return reductions[isPV][improving][std::min(depth, 63)][std::min(moveCount, 63)];
@@ -111,9 +114,8 @@ void Search::clear()
 
 }
 
-Move MainThread::search() {
-	//max depth
-	sd.nodes  = 0;
+Move MainThread::search() 
+{
 	const int color = board.stm();
 
 	int contempt = SORT_VALUE[PAWN] / 100;
@@ -149,6 +151,8 @@ Move Thread::search()
 	Move bestMove;
 	int bestScore, alpha = -INF, beta = INF;
 
+	int multiPV = rootMoves.size();
+
 	//iterative deepening loop starts at depth 1, iterates up till max depth or time cutoff
 	while (rootDepth < MAX_PLY 
 		&& !(SearchControl.depth && mainThread && rootDepth > SearchControl.depth)) 
@@ -161,22 +165,24 @@ Move Thread::search()
 			if (timeM.timeStopRoot() || timeOver) break;
 		}
 
+		for (RootMove& rm : rootMoves)
+			rm.previousScore = rm.score;
+
+		std::stable_sort(rootMoves.begin() , rootMoves.end());
+
 		//main search
 		bestScore = searchRoot(board, rootDepth, alpha, beta, ss);
+
+		std::stable_sort(rootMoves.begin(), rootMoves.end()); 
+
 
 		//if the search is not cutoff
 		if (!timeOver) {
 
-			//grab best move out of PV array ~~ need better method of grabbing best move, not based on "distance"
-			//Maybe if statement is a bad fix? sometimes a max of specified depth is not reached near checkmates/possibly checks
-			//if statement makes sure the move has been tried before storing it
-			if (sd.PV[1] != MOVE_NONE) 
-				bestMove = sd.PV[1];
-
-			//insert_pv(board);
+			bestMove = rootMoves[0].pv[0]; //NOT WORKING, UN FUNCTIONING ENGINE ATM
 
 			//print data on search 
-			print(bestScore, rootDepth); //print takes bool isWhite, need to change this
+			print(bestScore, rootDepth);
 		}
 		//increment depth 
 		rootDepth++;
@@ -197,6 +203,7 @@ int Search::searchRoot(BitBoards& board, int depth, int alpha, int beta, searchS
     int best = -INF;
     int legalMoves = 0;
 	int hashFlag = TT_ALPHA;
+	Move pv[MAX_PLY + 1];
 	Move quiets[64];
 	int quietsCount;
 	StateInfo st;
@@ -209,9 +216,9 @@ int Search::searchRoot(BitBoards& board, int depth, int alpha, int beta, searchS
 	ss->contiHistory = &thisThread->contiHistory[PIECE_EMPTY][0];
 
 	const HashEntry* ttentry = TT.probe(board.TTKey());
-	Move ttMove = sd.PV[1];
+	//Move ttMove = ttentry ? ttentry->move() : MOVE_NONE;
+	Move ttMove = thisThread->rootMoves[0].pv[0];
 
-	sd.nodes++;
 	ss->ply = 1;
 	const int color = board.stm();
 
@@ -232,14 +239,21 @@ int Search::searchRoot(BitBoards& board, int depth, int alpha, int beta, searchS
 
         board.makeMove(newMove, st, color);  
 
-        ss->moveCount = ++legalMoves;
+        ss->moveCount   = ++legalMoves;
+		ss->currentMove = newMove;
 
         //PV search at root
-        if(best == -INF){
+        if(best == -INF)
+		{
+			(ss + 1)->pv = pv;
+			(ss + 1)->pv[0] = MOVE_NONE;
+
             //full window PV search
             score = -alphaBeta<PV>(board, depth-1, -beta, -alpha, ss + 1, DO_NULL);
 
-       } else {
+        } 
+		else
+		{
             //zero window search
             score = -alphaBeta<NonPv>(board, depth-1, -alpha -1, -alpha, ss + 1, DO_NULL);
 
@@ -262,14 +276,32 @@ int Search::searchRoot(BitBoards& board, int depth, int alpha, int beta, searchS
 		if (timeOver) 
 			break;
 
-		ss->currentMove = newMove;
+		// Find the move in the list of root moves so we can either
+		// increase it's score if it's the new PV or decrease it if it's not.
+		RootMove & rm = *std::find(thisThread->rootMoves.begin(), thisThread->rootMoves.end(), newMove);
 
-        if(score > best) 
+		if (score > best) 
+		{
 			best = score;
+			bestMove = newMove;
+
+			rm.score = best;
+			rm.pv.resize(1);
+
+			// Store the principal variation
+			for (Move* m = (ss + 1)->pv; *m != MOVE_NONE; ++m)
+				rm.pv.push_back(*m);
+
+			// Record if the best move changes so we can allocate 
+			// more time if we have an unstable PV.
+			if (legalMoves > 1 && thisThread == Threads.main())
+				++static_cast<MainThread*>(thisThread)->bestMoveChanges;
+		}
+		else 
+			rm.score = -INF;
 
         if(score > alpha){
-            //store the principal variation
-			sd.PV[ss->ply] = bestMove = newMove;
+
 
             if(score > beta){
 				hashFlag = TT_BETA;
@@ -280,7 +312,7 @@ int Search::searchRoot(BitBoards& board, int depth, int alpha, int beta, searchS
             alpha    =    score;
 			hashFlag = TT_ALPHA;
         }
-
+		
     }
 
 	//save info and move to TT
@@ -302,33 +334,31 @@ int alphaBeta(BitBoards& board, int depth, int alpha, int beta, Search::searchSt
 	const int color = board.stm();
 	int score;
 
-	bool FlagInCheck, raisedAlpha;
+	bool FlagInCheck;
 	bool captureOrPromotion, givesCheck;
 
-	FlagInCheck        = raisedAlpha = false;
+	FlagInCheck = false;
 	captureOrPromotion = givesCheck  = false;
 
 	Thread * thisThread = board.this_thread();
-	++thisThread->nodes;
 
 	// Holds state of board on current ply info
 	StateInfo st;
 
 	int R = 2, newDepth, predictedDepth = 0, quietsCount;
 
+	Move pv[MAX_PLY + 1];
 	// Container holding quiet moves so we can reduce their score 
 	// if they're not the ply winning move.
 	Move quiets[64]; 
 
-	sd.nodes++;
 	ss->moveCount = quietsCount = 0;
 	ss->ply = (ss - 1)->ply + 1; 
-	ss->reduction = 0;
 	ss->statScore = 0;
 	
 	(ss + 2)->killers[0] = (ss + 2)->killers[1] = MOVE_NONE;
 
-	ss->currentMove = ss->excludedMove = MOVE_NONE;
+	ss->currentMove  = ss->excludedMove = MOVE_NONE;
 	ss->contiHistory = &thisThread->contiHistory[PIECE_EMPTY][0];
 	int prevSq = to_sq((ss - 1)->currentMove);
 
@@ -623,6 +653,8 @@ int alphaBeta(BitBoards& board, int depth, int alpha, int beta, Search::searchSt
 		else
 			doFullDepthSearch = !isPV || legalMoves > 1;
 
+		if (isPV)
+			(ss + 1)->pv = nullptr;
 
 		if (doFullDepthSearch)
 			score = newDepth < 1 ? -quiescent(board, -(alpha + 1), -alpha, ss + 1, NO_PV)
@@ -630,6 +662,9 @@ int alphaBeta(BitBoards& board, int depth, int alpha, int beta, Search::searchSt
 
 		if (isPV && (legalMoves == 1 || (score > alpha && score < beta)))
 		{
+			(ss + 1)->pv = pv;
+			(ss + 1)->pv[0] = MOVE_NONE;
+
 			score = newDepth < 1 ? -quiescent(board, -beta, -alpha, ss + 1, IS_PV)
 				                 : -alphaBeta<PV>(board, newDepth, -beta, -alpha, ss + 1, DO_NULL);
 		}
@@ -646,12 +681,16 @@ int alphaBeta(BitBoards& board, int depth, int alpha, int beta, Search::searchSt
 			return 0;
 
 		if (score > bestScore) {
+
 			bestScore = score;
 
 			if (score > alpha) {
 
+				bestMove = newMove;
+
 				//store the principal variation
-				sd.PV[ss->ply] = bestMove = newMove; //NEED TO DELETE PV AFTER A SEARCH!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+				if(isPV)
+					update_pv(ss->pv, bestMove, (ss + 1)->pv);
 
 				//if move causes a beta cutoff stop searching current branch
 				if (score >= beta) {
@@ -662,7 +701,6 @@ int alphaBeta(BitBoards& board, int depth, int alpha, int beta, Search::searchSt
 				}
 				//new best move
 				alpha = score;
-				raisedAlpha = true;
 				//if we've gained a new alpha set hash Flag equal to exact and store best move
 				hashFlag = TT_EXACT;
 			}
@@ -674,7 +712,6 @@ int alphaBeta(BitBoards& board, int depth, int alpha, int beta, Search::searchSt
 		alpha = FlagInCheck ? mated_in(ss->ply) 
 		                    : DrawValue[color];
 
-	
 	else if (bestMove) { 
 
 		// Update heuristics for Quiet best move.
@@ -702,7 +739,6 @@ int alphaBeta(BitBoards& board, int depth, int alpha, int beta, Search::searchSt
 int Search::quiescent(BitBoards& board, int alpha, int beta, searchStack *ss, int isPV)
 {
 	//node count, sepperate q count needed?
-	sd.nodes++;
 	const int color = board.stm();
 	const HashEntry *ttentry;
 	int ttValue;
@@ -865,7 +901,7 @@ void Search::checkInput()
 {
 	//test for a condition that does less checks
 	//way too many atm
-	if (SearchControl.use_time() && !timeOver && (sd.nodes & 4095)) {
+	if (SearchControl.use_time() && !timeOver && (Threads.nodes_searched() & 4095)) {
 		timeOver = timeM.timeStopSearch();
 	}
 }
@@ -874,9 +910,9 @@ void Search::print(int bestScore, int depth)
 {
 	std::stringstream ss;
 	
+	int nodes = Threads.nodes_searched();
 
-
-	ss << "info depth " << depth << " nodes " << sd.nodes << " nps " << timeM.getNPS() << " score ";
+	ss << "info depth " << depth << " nodes " << nodes << " nps " << timeM.getNPS(nodes) << " score ";
 
 	if (bestScore < VALUE_MATE - MAX_PLY)
 		ss << "cp " << bestScore;

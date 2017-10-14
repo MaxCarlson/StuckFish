@@ -1,5 +1,6 @@
 #include "Thread.h"
 
+#include "movegen.h"
 
 ThreadPool Threads;
 
@@ -34,6 +35,11 @@ Move ThreadPool::searchStart(BitBoards & board, StateListPtr& states, const Sear
 	//pointers from eachother
 	main()->board = board;
 
+	Search::RootMoves rootMoves;
+
+	for (const auto m : MoveList<LEGAL>(board))
+		rootMoves.emplace_back(m);
+
 	// Transfer search control variables to
 	// SearchCondition internal to Search::
 	Search::SearchControl = sc;
@@ -51,6 +57,7 @@ Move ThreadPool::searchStart(BitBoards & board, StateListPtr& states, const Sear
 	{
 		th->nodes = 0;
 		th->board = board;
+		th->rootMoves = rootMoves;
 		th->board.set_state(&setStates->back(), th);
 	}
 

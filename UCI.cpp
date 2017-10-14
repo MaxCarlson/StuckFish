@@ -121,7 +121,6 @@ void UCI::uciLoop()
 	}
 }
 
-//void UCI::updatePosition(BitBoards& newBoard, std::istringstream& input, StateInfo & si)
 void UCI::updatePosition(BitBoards& newBoard, std::istringstream& input, StateListPtr& states)
 {
 	Move m;
@@ -129,6 +128,9 @@ void UCI::updatePosition(BitBoards& newBoard, std::istringstream& input, StateLi
 
 	input >> token;
 
+	// This is important, with how state ptrs are handled in 
+	// Threads.searchStart it's neccasary to create a new one each time we want to
+	// change the state. 
 	states = StateListPtr(new std::deque<StateInfo>(1)); // Drop old and create a new one
 
 	if (token == "startpos")
@@ -220,6 +222,7 @@ void UCI::go(BitBoards & newBoard, std::istringstream & input, StateListPtr& sta
 		else if (token == "binc")      input >> scs.inc[ BLACK];
 		else if (token == "movestogo") input >> scs.movesToGo; // Not supported atm
 		else if (token == "depth")     input >> scs.depth;
+		else if (token == "infinite")  scs.infinite = 1;  // Not supported
 	}
 
 	Move m = Threads.searchStart(newBoard, states, scs);
@@ -338,7 +341,7 @@ void UCI::test(BitBoards & newBoard, StateListPtr& states)		// Give this an inpu
 
 		go(newBoard, iss, states);
 
-		nodes += sd.nodes;
+		nodes += Threads.nodes_searched();
 	}
 
 

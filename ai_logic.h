@@ -19,15 +19,16 @@ namespace Search {
 	// Holds info about past and current plys of
 	// current search.
 	struct searchStack {
-		int ply;
-		int moveCount;
+
+		Move * pv;
 		Move killers[2];
 		Move currentMove;
 		Move excludedMove;
 
 		PieceToHistory * contiHistory;
 
-		int reduction;
+		int ply;
+		int moveCount;
 		int staticEval;
 		int statScore;
 	};
@@ -49,8 +50,30 @@ namespace Search {
 		int  inc[COLOR], depth, movesToGo, infinite;
 		TimePoint startTime;
 	};
-
 	extern SearchControls SearchControl;
+
+	// Each RootMove holds a pv and
+	// is used as a base for the *ss->pv.
+	// Also used for sorting root moves
+	// and deciding on search order. 
+	struct RootMove {
+		explicit RootMove(Move m) : pv(1, m) {}
+		bool operator==(const Move& m) const { return pv[0] == m;  }
+
+		bool operator<(const RootMove & m) const {
+			return m.score != score 
+				           ? m.score < score 
+				           : m.previousScore < previousScore;
+		}
+
+		int score = -INF;
+		int previousScore = -INF;
+
+		std::vector<Move> pv;
+	};
+	typedef std::vector<RootMove> RootMoves;
+
+
 
 	void initSearch();
 	void clear();
