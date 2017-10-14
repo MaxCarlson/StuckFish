@@ -105,6 +105,8 @@ void Search::clear()
 {
 	TT.clearTable();
 
+	Threads.main()->wait_for_search_stop();
+
 	for (Thread * th : Threads)
 		th->clear();
 
@@ -124,7 +126,21 @@ Move MainThread::search()
 	//timeM.calcMoveTime(color, SearchControl); 
 	timeM.initTime(color, turns, SearchControl);
 
-	Move m = Thread::search();
+	for (Thread * th : Threads)
+	{
+		if (th != this)
+			th->start_searching();
+	}
+
+	Thread::search();
+
+	//Move m = Thread::search();
+
+	for (Thread* th : Threads)
+		if (th != this)
+			th->wait_for_search_stop();
+
+	Move m = rootMoves[0].pv[0];
 
 	previousScore = rootMoves[0].score;
 
@@ -191,20 +207,20 @@ Move Thread::search()
 			print(bestScore, rootDepth);
 
 
-			if (SearchControl.use_time())
+			if (SearchControl.use_time() && mainThread)
 			{
 
-				int f1 = bestScore - mainThread->previousScore;
-
-				int improvingFactor = std::max(229, std::min(715, 357 + 119 * -6 * f1));
+				int p0 = bestScore - mainThread->previousScore;
 
 				double unstablePv = 1 + mainThread->bestMoveChanges;
 
+				int improvingFactor = std::max(229, std::min(715, 357 + 119 * -6 * p0)); // Need to play with these numbers or completely redo this!!
+
 				if (timeM.elapsed() > timeM.optimum() * unstablePv * improvingFactor / 628)
 					Threads.stop = true;
+
+				//double tDiff = timeM.maximum() - timeM.optimum();
 			}
-
-
 		}
 		//increment depth 
 		rootDepth++;
@@ -301,7 +317,8 @@ int Search::searchRoot(BitBoards& board, int depth, int alpha, int beta, searchS
 		}
 
 		// Find the move in the list of root moves so we can either
-		// increase it's score if it's the new PV or decrease it if it's not.
+		// increase it's score if it's the new PV or drop it to -INF if it's not.
+		// Sorting in ID is stable so setting all but PV to -INF is not a problem.
 		RootMove & rm = *std::find(thisThread->rootMoves.begin(), thisThread->rootMoves.end(), newMove);
 
 		if (score > best) 

@@ -43,7 +43,10 @@ typedef std::condition_variable_any ConditionVariable;
 // each search thread. Multi-threading is not implemented.
 class Thread
 {
+	Mutex mutex;
+	ConditionVariable cv;
 
+	bool exit = false, searching = true;
 	std::thread stdThread;
 
 public:
@@ -52,6 +55,10 @@ public:
 	virtual Move search();
 
 	void clear();
+
+	void idle_loop();
+	void start_searching();
+	void wait_for_search_stop();
 
 	//Pawns::Table pawnsTable;
 	//Material::Table materialTable;
@@ -84,6 +91,7 @@ struct MainThread : public Thread
 struct ThreadPool : public std::vector<Thread*>
 {
 	void initialize();
+	void numberOfThreads(size_t);
 
 	Move searchStart(BitBoards & board, StateListPtr& states, const Search::SearchControls & sc);
 

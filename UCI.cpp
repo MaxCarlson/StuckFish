@@ -89,6 +89,11 @@ void UCI::uciLoop()
 		else if (token == "test") { //used to enable quick testing
 			test(newBoard, states);
 		}
+		else if (token == "thread") {
+			is >> token;
+			Threads.numberOfThreads(stoi(token));
+		}
+
 		else if (token == "perft") {
 			perftUCI(newBoard, is);
 		}
