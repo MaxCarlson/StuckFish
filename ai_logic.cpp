@@ -23,10 +23,6 @@
 #define NO_PV      0
 #define ASP        50  //aspiration windows size
 
-
-//value to determine if time for search has run out
-bool timeOver;
-
 //master time manager
 TimeManager timeM;
 
@@ -112,6 +108,7 @@ void Search::clear()
 	for (Thread * th : Threads)
 		th->clear();
 
+	Threads.main()->previousScore = INF;
 }
 
 Move MainThread::search() 
@@ -122,10 +119,14 @@ Move MainThread::search()
 	DrawValue[ color] = VALUE_DRAW - contempt;
 	DrawValue[!color] = VALUE_DRAW + contempt;
 
+
 	//calc move time for us, send to search driver
-	timeM.calcMoveTime(color, SearchControl); 
+	//timeM.calcMoveTime(color, SearchControl); 
+	timeM.initTime(color, turns, SearchControl);
 
 	Move m = Thread::search();
+
+	previousScore = rootMoves[0].score;
 
 	return m;
 }
@@ -135,7 +136,6 @@ Move Thread::search()
 	//reset ply
 	int ply   = 0;
 	int color = board.stm();
-	rootDepth = 1;
 
 	MainThread * mainThread = (this == Threads.main() ? Threads.main() : nullptr);
 
@@ -154,35 +154,57 @@ Move Thread::search()
 	int multiPV = rootMoves.size();
 
 	//iterative deepening loop starts at depth 1, iterates up till max depth or time cutoff
-	while (rootDepth < MAX_PLY 
+	while (  rootDepth < MAX_PLY 
+		&& ! Threads.stop
 		&& !(SearchControl.depth && mainThread && rootDepth > SearchControl.depth)) 
 	{
 
-		// If we're using time controls make 
-		// sure we're not over our time. 
-		if (SearchControl.use_time())
-		{
-			if (timeM.timeStopRoot() || timeOver) break;
-		}
-
+		// Save previous ID scores to rootMoves previous
 		for (RootMove& rm : rootMoves)
 			rm.previousScore = rm.score;
 
+		// Age best move changes
+		if (mainThread)
+			mainThread->bestMoveChanges *= 0.505;
+		
+		// Sort so we can have gurenteed Pv move first.
 		std::stable_sort(rootMoves.begin() , rootMoves.end());
 
-		//main search
+		// Start search from root
 		bestScore = searchRoot(board, rootDepth, alpha, beta, ss);
 
+		if (Threads.stop)
+			break;
+
+		// Sort so we know what the PV of this iteration was
 		std::stable_sort(rootMoves.begin(), rootMoves.end()); 
 
 
-		//if the search is not cutoff
-		if (!timeOver) {
+		// need stop if mate in X code here
 
-			bestMove = rootMoves[0].pv[0]; //NOT WORKING, UN FUNCTIONING ENGINE ATM
+		//if the search is not cutoff
+		if (!Threads.stop) {
+
+			bestMove = rootMoves[0].pv[0]; 
 
 			//print data on search 
 			print(bestScore, rootDepth);
+
+
+			if (SearchControl.use_time())
+			{
+
+				int f1 = bestScore - mainThread->previousScore;
+
+				int improvingFactor = std::max(229, std::min(715, 357 + 119 * -6 * f1));
+
+				double unstablePv = 1 + mainThread->bestMoveChanges;
+
+				if (timeM.elapsed() > timeM.optimum() * unstablePv * improvingFactor / 628)
+					Threads.stop = true;
+			}
+
+
 		}
 		//increment depth 
 		rootDepth++;
@@ -209,6 +231,9 @@ int Search::searchRoot(BitBoards& board, int depth, int alpha, int beta, searchS
 	StateInfo st;
 	Thread * thisThread = board.this_thread();
 
+	if (thisThread == Threads.main())
+		static_cast<MainThread *>(thisThread)->check_time();
+
 	ss->moveCount = quietsCount = 0;
 	ss->statScore = 0;
 	(ss + 2)->killers[0] = (ss + 2)->killers[1] = MOVE_NONE;
@@ -232,7 +257,9 @@ int Search::searchRoot(BitBoards& board, int depth, int alpha, int beta, searchS
 	Move newMove, bestMove = MOVE_NONE;
 
     while((newMove = mp.nextMove()) != MOVE_NONE){
-        
+	//for (RootMove& rm : thisThread->rootMoves){     // Will have to test and see if drawing from the root moves is faster or not!!
+		//newMove = rm.pv[0];
+
 		if (!board.isLegal(newMove, ci.pinned)) {
 			continue;
 		}
@@ -272,9 +299,6 @@ int Search::searchRoot(BitBoards& board, int depth, int alpha, int beta, searchS
 			quiets[quietsCount] = newMove;         
 			quietsCount++;
 		}
-
-		if (timeOver) 
-			break;
 
 		// Find the move in the list of root moves so we can either
 		// increase it's score if it's the new PV or decrease it if it's not.
@@ -342,6 +366,19 @@ int alphaBeta(BitBoards& board, int depth, int alpha, int beta, Search::searchSt
 
 	Thread * thisThread = board.this_thread();
 
+	if (thisThread == Threads.main())
+		static_cast<MainThread *>(thisThread)->check_time();
+
+
+	// Draw detection by 50 move rule
+	// as well as by 3-fold repetition.  
+	// Stop search check as well
+	if (Threads.stop.load(std::memory_order_relaxed) 
+		|| board.isDraw(ss->ply) 
+		|| ss->ply >= MAX_PLY)
+
+		return DrawValue[color];
+
 	// Holds state of board on current ply info
 	StateInfo st;
 
@@ -361,16 +398,6 @@ int alphaBeta(BitBoards& board, int depth, int alpha, int beta, Search::searchSt
 	ss->currentMove  = ss->excludedMove = MOVE_NONE;
 	ss->contiHistory = &thisThread->contiHistory[PIECE_EMPTY][0];
 	int prevSq = to_sq((ss - 1)->currentMove);
-
-
-	// Draw detection by 50 move rule
-	// as well as by 3-fold repetition.  
-	if (board.isDraw(ss->ply) || ss->ply >= MAX_PLY)
-		return DrawValue[color];
-
-
-	// Checks if time over  
-	checkInput();
 
 	// Mate distance pruning, 
 	// prevents looking for mates longer than one we've already found
@@ -677,7 +704,8 @@ int alphaBeta(BitBoards& board, int depth, int alpha, int beta, Search::searchSt
 		//undo move on BB's
 		board.unmakeMove(newMove, color);
 
-		if (timeOver) 
+		// Search stop has occured.
+		if (Threads.stop.load(std::memory_order_relaxed))
 			return 0;
 
 		if (score > bestScore) {
@@ -770,10 +798,6 @@ int Search::quiescent(BitBoards& board, int alpha, int beta, searchStack *ss, in
 
 	Evaluate eval;
 	int standingPat = eval.evaluate(board);
-
-	if (timeOver) {
-		return standingPat;
-	}
 
 	if (standingPat >= beta) {
 
@@ -897,13 +921,16 @@ inline int valueFromTT(int val, int ply)
 		: val <= VALUE_MATED_IN_MAX_PLY ? val + ply : val;
 }
 
-void Search::checkInput()
+void MainThread::check_time()
 {
 	//test for a condition that does less checks
 	//way too many atm
-	if (SearchControl.use_time() && !timeOver && (Threads.nodes_searched() & 4095)) {
-		timeOver = timeM.timeStopSearch();
-	}
+	//if (SearchControl.use_time() && !timeOver && (Threads.nodes_searched() & 4095)) {
+	//	timeOver = timeM.timeStopSearch();
+	//}
+
+	if (SearchControl.use_time() && timeM.elapsed() > timeM.maximum())
+		Threads.stop = true;
 }
 
 void Search::print(int bestScore, int depth)

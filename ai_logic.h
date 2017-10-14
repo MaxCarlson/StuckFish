@@ -85,7 +85,7 @@ namespace Search {
 	void updateContinuationHistories(searchStack * ss, int piece, int to, int bonus);
 
 	void updateStats(const BitBoards & board, Move move, searchStack * ss, int depth, Move * quiets, int qCount, int bonus);
-	void checkInput();
+
 	void print(int bestScore, int depth);
 
 	template<bool Root>

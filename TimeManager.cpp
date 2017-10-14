@@ -8,18 +8,36 @@
 
 #define TIMEBUFFER 500
 #define MOVESTOGO   24
-
-//structtime chronos;
-
-extern bool timeOver;
-
+// External time manager
 extern TimeManager timeM;
 
 
-TimeManager::TimeManager()
+void TimeManager::initTime(int color, int ply, const Search::SearchControls & sc)
 {
+	int fullMoves = (ply + 1) / 2;
+
+	startTime = sc.startTime;
+
+
+	optimumMoveTime = findMoveTime(sc.time[color], fullMoves, Optimum);
+	MaxMoveTime     = findMoveTime(sc.time[color], fullMoves, Maximum);
 }
 
+int TimeManager::findMoveTime(long ourTime, int moveNumber, TimeType t)
+{
+	
+	if (ourTime <= 0)
+		return 0;
+
+	double k = 1 + 20 * moveNumber / (500.0 + moveNumber); ///// Play with these numbers through play testing. 
+
+	double ratio = (t == Optimum ? 0.017 : 0.07) * (k + 0 / ourTime);
+
+	int time = int(std::min(1.0, ratio) * ourTime);
+
+	return time;
+}
+/*
 void TimeManager::calcMoveTime(int color, const Search::SearchControls & sc)
 {
 	//add code for infinite and other search types search time
@@ -77,6 +95,8 @@ bool TimeManager::timeStopSearch()
 	
 	return false;
 }
+*/
+
 
 int TimeManager::getNPS(int nodes)
 {

@@ -75,7 +75,9 @@ struct MainThread : public Thread
 	using Thread::Thread;
 
 	Move search() override;
+	void check_time();
 
+	int previousScore;
 	double bestMoveChanges; //Not in use yet
 };
 
@@ -88,6 +90,9 @@ struct ThreadPool : public std::vector<Thread*>
 	MainThread * main() const { return static_cast<MainThread*>(front()); }
 
 	U64 nodes_searched() const { return accumulateMember( &Thread::nodes ); }
+
+	// Stop condition for all threads
+	std::atomic_bool stop;
 
 private:
 	// Will be used later to detach the main thread's stateListPtr
