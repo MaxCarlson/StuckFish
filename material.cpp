@@ -1,9 +1,10 @@
 #include "material.h"
 #include "bitboards.h"
 #include "defines.h"
+#include "Thread.h"
 
 
-Material::Table MaterialTable;
+//Material::Table MaterialTable;
 
 const int Linear[6] = { 1852, -162, -1122, -183,  249, -154 };
 
@@ -58,11 +59,11 @@ int materialImbalence(const int pieceCount[][PIECES]) {
 
 namespace Material{
 
-Entry * probe(const BitBoards& boards, Table& entries)
+Entry * probe(const BitBoards& boards)
 {
 	U64 key = boards.material_key();
 
-	Entry* e = entries[key];
+	Entry* e = boards.this_thread()->materialTable[key];
 
 	//if we get a Material hash table hit,
 	//ie the two Material keys match

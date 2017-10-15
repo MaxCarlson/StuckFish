@@ -4,8 +4,8 @@
 //#include "defines.h"
 #include "MovePicker.h"
 #include "ai_logic.h"
-//#include "Pawns.h"
-//#include "material.h"
+#include "Pawns.h"
+#include "material.h"
 
 #include <thread>
 #include <atomic>
@@ -61,8 +61,8 @@ public:
 	void start_searching();
 	void wait_for_search_stop();
 
-	//Pawns::Table pawnsTable;
-	//Material::Table materialTable;
+	Pawns::Table       pawnsTable;
+	Material::Table materialTable;
 
 	std::atomic<U64> nodes;
 

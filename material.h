@@ -28,6 +28,6 @@ public:
 
 typedef HashTable<Entry, 8192> Table; //2000 bug testing?
 
-Entry* probe(const BitBoards & boards, Table& entries); //add endgame bases
+Entry* probe(const BitBoards & boards); //add endgame bases
 
 }// namespace Material

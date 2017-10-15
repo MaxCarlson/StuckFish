@@ -46,7 +46,7 @@ void UCI::uciLoop()
 
 	newGame(newBoard, states);
 	Search::initSearch();
-	Threads.numberOfThreads(2);
+	//Threads.numberOfThreads(2);
 
 	std::cout << "Type 'help' for list of engine options." << std::endl;
 

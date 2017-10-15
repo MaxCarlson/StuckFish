@@ -2,6 +2,7 @@
 #include "bitboards.h"
 #include "externs.h"
 #include "psqTables.h"
+#include "Thread.h"
 
 //for flipping squares if black, place this somewhere else as an extern
 static const int bSQ[64] = {
@@ -116,7 +117,7 @@ const Scores PawnsFileSpan = S(0, 6);
 const Scores UnsupportedPawnPenalty = S(10, 5);
 
 //global pawn hash table
-Pawns::Table pawnsTable;
+//Pawns::Table pawnsTable;
 
 namespace Pawns {
 
@@ -278,11 +279,12 @@ Scores evalPawns(const BitBoards & boards, PawnsEntry *e) {
 
 
 
-PawnsEntry * Pawns::probe(const BitBoards & boards, Table & entries)
+PawnsEntry * Pawns::probe(const BitBoards & boards)
 {
 	U64 key = boards.pawn_key();
 
-	PawnsEntry* entry = entries[key];
+	// Probe this threads pawn table with zobrist pawn key
+	PawnsEntry * entry = boards.this_thread()->pawnsTable[key];
 
 	if (entry->Key == key) {
 		return entry;

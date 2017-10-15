@@ -44,8 +44,8 @@ inline U64 attacks_bb(int Pt, int sq, U64 occ)
 }
 
 //two hash tables for respective names
-extern Pawns::Table pawnsTable;
-extern Material::Table MaterialTable;
+//extern Pawns::Table pawnsTable;
+//extern Material::Table MaterialTable;
 
 //half turns
 extern int turns;

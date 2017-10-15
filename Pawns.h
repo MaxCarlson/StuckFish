@@ -43,5 +43,5 @@ namespace Pawns {
 
 	typedef HashTable<PawnsEntry, 16384> Table;
 
-	PawnsEntry* probe(const BitBoards& boards, Table& entries);
+	PawnsEntry* probe(const BitBoards& boards);
 }

@@ -617,13 +617,14 @@ int Evaluate::evaluate(const BitBoards & boards)
 	//probe the material hash table for an end game scenario,
 	//a factor to scale to evaluation score by, and/or
 	//any other bonuses or penalties from material config
-	ev.me = Material::probe(boards, MaterialTable);
+
+	ev.me = Material::probe(boards);
 
 	score += applyWeights(ev.me->material_value(), Weights[Imbalence]);
 
 	//probe the pawn hash table for a hit,
 	//if we don't get a hit do full pawn eval and return
-	ev.pe = Pawns::probe(boards, pawnsTable); 
+	ev.pe = Pawns::probe(boards);
 
 	//Weights are used to modify the scoring of a section of the 
 	//evaluation, without modifying the values inside the subsection
