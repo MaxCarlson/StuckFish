@@ -12,6 +12,13 @@ Thread::Thread() : stdThread(&Thread::idle_loop, this)
 	clear();
 }
 
+Thread::~Thread()
+{
+	exit = true;
+	start_searching();
+	stdThread.join();
+}
+
 void ThreadPool::initialize()
 {
 	push_back(new MainThread());
@@ -35,7 +42,7 @@ void Thread::start_searching()
 
 	searching = true;
 	// Unlock this thread
-	cv.notify_one();
+	cv.notify_one(); // Wake up thread in idle loop!
 }
 
 void Thread::wait_for_search_stop()
@@ -53,7 +60,7 @@ void Thread::idle_loop()
 		std::unique_lock<Mutex> lock(mutex);
 		searching = false;
 		cv.notify_one();
-		cv.wait(lock, [&] {return searching; });
+		cv.wait(lock, [&] { return searching; });
 
 		if (exit)
 			return;
@@ -74,7 +81,7 @@ void ThreadPool::numberOfThreads(size_t n)
 		delete back(), pop_back();
 }
 
-Move ThreadPool::searchStart(BitBoards & board, StateListPtr& states, const Search::SearchControls & sc)
+void ThreadPool::searchStart(BitBoards & board, StateListPtr& states, const Search::SearchControls & sc)
 {
 	main()->wait_for_search_stop();
 
@@ -111,7 +118,5 @@ Move ThreadPool::searchStart(BitBoards & board, StateListPtr& states, const Sear
 
 	setStates->back() = st;
 
-	//main()->start_searching(); // Re enable this to continue debugging multi threading!!!
-
-	return main()->search();
+	main()->start_searching(); // Re enable this to continue debugging multi threading!!!
 }

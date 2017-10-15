@@ -10,6 +10,11 @@ class BitBoards;
 class StateInfo;
 
 
+// Moved to namespace so we can use it easily in Ai_Logic
+namespace Uci {
+	std::string moveToStr(const Move & m);
+}
+
 class UCI
 {
 public:
@@ -36,7 +41,7 @@ public:
 	// Prints a list of commands for user
 	void helpUCI();
 
-	std::string moveToStr(const Move & m);
+	//std::string moveToStr(const Move & m);
 
 	Move strToMove(BitBoards& newBoard, std::string & input);
 

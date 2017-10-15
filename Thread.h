@@ -51,8 +51,9 @@ class Thread
 
 public:
 	explicit Thread();
+	virtual ~Thread();
 
-	virtual Move search();
+	virtual void search();
 
 	void clear();
 
@@ -81,7 +82,7 @@ struct MainThread : public Thread
 {
 	using Thread::Thread;
 
-	Move search() override;
+	void search() override;
 	void check_time();
 
 	int previousScore;
@@ -93,7 +94,7 @@ struct ThreadPool : public std::vector<Thread*>
 	void initialize();
 	void numberOfThreads(size_t);
 
-	Move searchStart(BitBoards & board, StateListPtr& states, const Search::SearchControls & sc);
+	void searchStart(BitBoards & board, StateListPtr& states, const Search::SearchControls & sc);
 
 	MainThread * main() const { return static_cast<MainThread*>(front()); }
 

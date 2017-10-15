@@ -12,19 +12,8 @@
 #include "movegen.h"
 
 
-//master search obj
-//Ai_Logic searchM;
-
 //is it whites turn?
-bool isWhite = true;
-
-//UCI inputs for go
-//long wtime; //time left on whites clock
-//long btime; //black clock
-//int winc;
-//int binc;
-//int movestogo;
-//int fixedDepthSearch = 0;
+bool isWhite = true; // get rid of this and replace with int color
 
 
 UCI::UCI()
@@ -57,6 +46,9 @@ void UCI::uciLoop()
 
 	newGame(newBoard, states);
 	Search::initSearch();
+	Threads.numberOfThreads(2);
+
+	std::cout << "Type 'help' for list of engine options." << std::endl;
 
 	while (std::getline(std::cin, line))
 	{
@@ -86,10 +78,10 @@ void UCI::uciLoop()
 			newGame(newBoard, states);
 			Search::clear();
 		}
-		else if (token == "test") { //used to enable quick testing
+		else if (token == "test") { // Used to enable quick testing
 			test(newBoard, states);
 		}
-		else if (token == "thread") {
+		else if (token == "threads") { // Debug set threads
 			is >> token;
 			Threads.numberOfThreads(stoi(token));
 		}
@@ -230,40 +222,45 @@ void UCI::go(BitBoards & newBoard, std::istringstream & input, StateListPtr& sta
 		else if (token == "infinite")  scs.infinite = 1;  // Not supported
 	}
 
-	Move m = Threads.searchStart(newBoard, states, scs);
+	Threads.searchStart(newBoard, states, scs);
 
-	std::cout << "bestmove " << moveToStr(m) << std::endl; //send move to std output for UCI GUI to pickup
+	// Moved print move into search.
+	//std::cout << "bestmove " << Uci::moveToStr(m) << std::endl;
 
 	isWhite = !isWhite; //switch color after move 					
 	turns += 1;    //// IS this and ^^ redundant? state isn't saved unless run through update pos from beginning anyways, TEST
 }
 
-std::string UCI::moveToStr(const Move& m) 
-{
-	std::string flipsL[8] = { "a", "b", "c", "d", "e", "f", "g", "h" };
-	int flipsN[8]         = {  8,   7,   6,   5,   4,   3,   2,   1  };
+namespace Uci {
 
-	if (m == MOVE_NONE)
-		return "(none)";
+	std::string moveToStr(const Move& m)
+	{
+		std::string flipsL[8] = { "a", "b", "c", "d", "e", "f", "g", "h" };
+		int flipsN[8] = { 8,   7,   6,   5,   4,   3,   2,   1 };
 
-	if (m == MOVE_NULL)
-		return "0000";
+		if (m == MOVE_NONE)
+			return "(none)";
 
-	int x  = file_of(from_sq(m));
-	int y  = rank_of(from_sq(m)) ^ 7; // Note: Move scheme was changed and too lazy to change array
-	int x1 = file_of(to_sq(  m));
-	int y1 = rank_of(to_sq(  m)) ^ 7;
+		if (m == MOVE_NULL)
+			return "0000";
 
-	std::string promL;
-	if (move_type(m) == PROMOTION)
-		promL = " pnbrqk"[promotion_type(m)];
+		int x = file_of(from_sq(m));
+		int y = rank_of(from_sq(m)) ^ 7; // Note: Move scheme was changed and too lazy to change array
+		int x1 = file_of(to_sq(m));
+		int y1 = rank_of(to_sq(m)) ^ 7;
+
+		std::string promL;
+		if (move_type(m) == PROMOTION)
+			promL = " pnbrqk"[promotion_type(m)];
 
 
-	std::stringstream ss;
-	ss << flipsL[x] << flipsN[y] << flipsL[x1] << flipsN[y1] << promL;
+		std::stringstream ss;
+		ss << flipsL[x] << flipsN[y] << flipsL[x1] << flipsN[y1] << promL;
 
-	return ss.str();
+		return ss.str();
+	}
 }
+
 
 Move UCI::strToMove(BitBoards& newBoard, std::string& input)
 {
@@ -277,7 +274,7 @@ Move UCI::strToMove(BitBoards& newBoard, std::string& input)
 	// If move is in the list of legal moves, then it's valid.
 	// Return it.
 	for (const auto& m : MoveList<LEGAL>(newBoard))
-		if (input == moveToStr(m))
+		if (input == Uci::moveToStr(m))
 			return m;
 
 
@@ -402,13 +399,14 @@ void UCI::helpUCI()
 	std::cout << "ucinewgame...............Resets current position to a clean slate. Clears TTable as well" << std::endl;
 	std::cout << "draw.....................Draws ASCI representation of the current board"<< std::endl;
 	std::cout << "perft x..................Perft  results for current position at depth x" << std::endl;
-	std::cout << "divide y.................Runs a similar function to perft, except that move counts for all root moves are printed instead of just a total count." << std::endl;
+	std::cout << "divide y.................Like perft, but move counts for all root moves are printed instead of just a total count." << std::endl;
 	std::cout << "position fen <FEN>.......Sets position to input fen string"<< std::endl;
 	std::cout << "position startpos........Sets position to start position"<< std::endl;
 	std::cout << "position x moves x.......Sets position fen or startpos and makes input moves "<< std::endl;
 	std::cout << "go wtime x  btime y......Starts search with white remaining time x and black remaining time y"<< std::endl;
 	std::cout << "go depth x...............Starts search and will search to x depth"<< std::endl;
 	std::cout << "test.....................Runs through a test suite of positions at a fixed depth, designed for benchmarking search"<< std::endl;
+	std::cout << "threads x................Used for debugging, sets program to use x number of threads." << std::endl;
 	std::cout << "quit.....................Quits engine"<< std::endl;
 }
 

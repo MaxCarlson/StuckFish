@@ -13,6 +13,7 @@
 #include "TranspositionT.h"
 #include "movegen.h"
 #include "Thread.h"
+#include "UCI.h"
 
 
 //#include <advisor-annotate.h> // INTEL ADVISOR FOR THREAD ANNOTATION
@@ -113,7 +114,7 @@ void Search::clear()
 	Threads.main()->previousScore = INF;
 }
 
-Move MainThread::search() 
+void MainThread::search() 
 {
 	const int color = board.stm();
 
@@ -126,15 +127,21 @@ Move MainThread::search()
 	//timeM.calcMoveTime(color, SearchControl); 
 	timeM.initTime(color, turns, SearchControl);
 
+	// Init search for other threads 
+	// that aren't this. They'll start from Thread:search()
+	// after waking up the thread from idle loop.
 	for (Thread * th : Threads)
 	{
 		if (th != this)
 			th->start_searching();
 	}
 
+	// Start mainThread search
 	Thread::search();
 
-	//Move m = Thread::search();
+	while (!Threads.stop) {}
+
+	Threads.stop = true;
 
 	for (Thread* th : Threads)
 		if (th != this)
@@ -142,18 +149,26 @@ Move MainThread::search()
 
 	Move m = rootMoves[0].pv[0];
 
-	previousScore = rootMoves[0].score;
+	std::string bestMove = Uci::moveToStr(m);
 
-	return m;
+	board.drawBBA();
+
+	// Print the best move for UCI
+	std::cout << "bestmove " << bestMove << std::endl;
+
+	previousScore = rootMoves[0].score;
 }
 
-Move Thread::search() 
+void Thread::search() 
 {
 	//reset ply
 	int ply   = 0;
 	int color = board.stm();
 
 	MainThread * mainThread = (this == Threads.main() ? Threads.main() : nullptr);
+
+	if (mainThread)
+		mainThread->bestMoveChanges = 0;
 
 	//create array of stack objects starting at +2 so we can look two plys back
 	//in order to see if a node has improved, as well as prior stats
@@ -167,7 +182,6 @@ Move Thread::search()
 	Move bestMove;
 	int bestScore, alpha = -INF, beta = INF;
 
-	int multiPV = rootMoves.size();
 
 	//iterative deepening loop starts at depth 1, iterates up till max depth or time cutoff
 	while (  rootDepth < MAX_PLY 
@@ -189,22 +203,20 @@ Move Thread::search()
 		// Start search from root
 		bestScore = searchRoot(board, rootDepth, alpha, beta, ss);
 
-		if (Threads.stop)
-			break;
-
 		// Sort so we know what the PV of this iteration was
 		std::stable_sort(rootMoves.begin(), rootMoves.end()); 
 
-
+		
 		// need stop if mate in X code here
 
 		//if the search is not cutoff
 		if (!Threads.stop) {
 
-			bestMove = rootMoves[0].pv[0]; 
+			bestMove = rootMoves[0].pv[0];
 
 			//print data on search 
-			print(bestScore, rootDepth);
+			if (mainThread)
+				print(bestScore, rootDepth);
 
 
 			if (SearchControl.use_time() && mainThread)
@@ -222,16 +234,18 @@ Move Thread::search()
 				//double tDiff = timeM.maximum() - timeM.optimum();
 			}
 		}
+		else
+			break;
 		//increment depth 
 		rootDepth++;
 	}
 
+	if (mainThread && SearchControl.depth)
+		Threads.stop = true;
+
 	StateInfo st;
 	//make final move on bitboards + draw board
 	board.makeMove(bestMove, st, color);
-	board.drawBBA();
-
-	return bestMove;
 }
 
 int Search::searchRoot(BitBoards& board, int depth, int alpha, int beta, searchStack *ss)
