@@ -46,7 +46,7 @@ void UCI::uciLoop()
 
 	newGame(newBoard, states);
 	Search::initSearch();
-	Threads.numberOfThreads(2);
+	//Threads.numberOfThreads(2);
 
 	std::cout << "Type 'help' for list of engine options." << std::endl;
 
@@ -199,7 +199,7 @@ void UCI::setOption(std::istringstream & input)
 	if (token == "name") {
 		while (input >> token) {
 			if (token == "Hash") {
-				input >> token;
+				input >> token; input >> token;
 				TT.resize(stoi(token));
 				break;
 			}
@@ -208,7 +208,8 @@ void UCI::setOption(std::istringstream & input)
 				break;
 			}
 			else if (token == "Threads") {
-				input >> token; Threads.numberOfThreads(stoi(token));
+				input >> token; input >> token;
+				Threads.numberOfThreads(stoi(token));
 				break;
 			}
 		}
