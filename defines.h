@@ -2,20 +2,10 @@
 
 #include <intrin.h>
 #include <vector>
-
-
 #include <iostream>
 #include <chrono>
 
-typedef std::chrono::milliseconds::rep TimePoint; // A value in milliseconds
-
-// Clock function, taken from StockFish.
-inline TimePoint now() {
-	return std::chrono::duration_cast<std::chrono::milliseconds>
-		(std::chrono::steady_clock::now().time_since_epoch()).count();
-}
-
-#define NDEBUG
+#define NDEBUG //comment out to use asserts
 
 #ifdef NDEBUG
 #define assert(EXPRESSION) ((void)0)
@@ -27,7 +17,7 @@ inline TimePoint now() {
 
 #define ENGINE_NAME "StuckFish 0.1"
 
-#define CACHE_LINE_SIZE 64 //taken from stockfish
+#define CACHE_LINE_SIZE 64 
 #if defined(_MSC_VER) || defined(__INTEL_COMPILER)
 #  define CACHE_LINE_ALIGNMENT __declspec(align(CACHE_LINE_SIZE))
 #else
@@ -43,23 +33,32 @@ inline TimePoint now() {
 #endif
 
 /*
-void prefetch(char* addr) {
+inline void prefetch(void* addr) {
 
 #  if defined(__INTEL_COMPILER)
 	// This hack prevents prefetches from being optimized away by
 	// Intel compiler. Both MSVC and gcc seem not be affected by this.
-	__asm__(""); //this isn't recognized??
+	//__asm__("");
 #  endif
 
 #  if defined(__INTEL_COMPILER) || defined(_MSC_VER)
-	_mm_prefetch(addr, _MM_HINT_T0);
+	_mm_prefetch((char*)addr, _MM_HINT_T0);
 #  else
 	__builtin_prefetch(addr);
 #  endif
 }
 */
 
-// Move represented in 16 bits, idea taken from Stockfish
+
+typedef std::chrono::milliseconds::rep TimePoint; // A value in milliseconds
+
+// Clock function, taken from StockFish.
+inline TimePoint now() {
+	return std::chrono::duration_cast<std::chrono::milliseconds>
+		(std::chrono::steady_clock::now().time_since_epoch()).count();
+}
+
+// Move represented in 16 bits, idea from Stockfish
 // 1-6 from square
 // 6-12 desitination square
 // 13-14 move flag, 1 Castle, 2 EP, 3 Promotion
@@ -78,8 +77,7 @@ struct SMove {
 	void operator=(Move m) { move = m; }
 };
 
-// Removes error from std::algorithm about std::less no overload found.
-// Is also usefull in move picking.
+// Used in MovePicker sorting
 inline bool operator<(const SMove& f, const SMove& s) {
 	return f.score < s.score;
 }
@@ -91,26 +89,27 @@ enum MoveType {
 	PROMOTION = 3 << 12
 };
 
-
-
 inline Move create_move(int from, int to) {
 	return Move(from | (to << 6));
 }
 
+// Presever only the lower 0 - 5 bits
 inline int from_sq(Move m) {
 	return (m & 0x3f);
 }
 
+// Preserve bits 6 - 12
 inline int to_sq(Move m) {
 	return (m >> 6) & 0x3f;
 }
 
+// Preserver bits 0 - 12, used for indexing butterfly boards
 inline int from_to(Move m) {
 	return m & 0xFFF;
 }
 
 // Returns 0 if the move is normal, 
-// and enum values above it is an EP, Castle, or promotion
+// and enum values above. EP, Castle, or promotion
 inline MoveType move_type(Move m) {
 	return MoveType(m & (3 << 12));
 }
@@ -318,7 +317,7 @@ typedef unsigned long long U64;
 typedef long long S64;
 
 
-//used for TTables that aren't our main TT
+// Used for Pawn and Material hash tables
 template<class Entry, int Size>
 struct HashTable {
 	HashTable() : table(Size, Entry()) {}
@@ -383,7 +382,7 @@ enum Directions {
 	E  =   1 
 };
 
-//shifts a bitboard in any of the enum directions above. Must use enum values in template
+// Shifts a bitboard in any of the enum directions above. Must use enum values in template
 template<int sh> //does not hold west and east shifts, make another that does?
 inline U64 shift_bb(U64 b) { 
 	return  sh == N ? b >> 8 : sh == S ? b << 8
@@ -392,37 +391,37 @@ inline U64 shift_bb(U64 b) {
 		: 0LL;
 }
 
-//return least significant bit location
+// Return least significant bit location
 inline int lsb(unsigned long long b) {
 	unsigned long idx;
 	_BitScanForward64(&idx, b);
 	return (int)idx;
 }
-//most significant bit location
+// Most significant bit location
 inline int msb(unsigned long long b) {
 	unsigned long idx;
 	_BitScanReverse64(&idx, b);
 	return (int)idx;
 }
 
-//finds and pops the least significant bit from the board, pass it a refrence
+// Finds and pops the least significant bit from the board
 inline int pop_lsb(unsigned long long* b) {
 	const int s = lsb(*b);
 	*b &= *b - 1;
 	return s;
 }
 
-//counts number of non zero bits in a bitboard
+// Counts number of non zero bits in a bitboard
 inline int bit_count(unsigned long long b) {
 	return _mm_popcnt_u64(b);
 }
 
-//is there more than one bit set on the board?
+// Is there more than one bit set on the board?
 inline bool more_than_one(unsigned long long b) {
 	return b & (b - 1);
 }
 
-//returns file of square
+// Returns file of square
 inline int file_of(int sq) {
 	return sq & 7;
 }
@@ -433,7 +432,7 @@ inline int rank_of(int sq) {
 	return (sq >> 3) ^ 7;
 }
 
-//distance from one file/rank to another
+// Distance from one file/rank to another
 inline int file_distance(int s1, int s2) {
 	return abs(file_of(s1) - file_of(s2));
 }
@@ -442,31 +441,31 @@ inline int rank_distance(int s1, int s2) {
 	return abs(rank_of(s1) - rank_of(s2));
 }
 
-//returns a relative rank from an input rank
+// Returns a relative rank from an input rank
 inline int relative_rank(int color, int rank) { 
 	return (rank ^ (color * 7));
 }
-//returns a relative rank from a square location input
+// Returns a relative rank from a square location input
 inline int relative_rankSq(int color, int square) {
 	return relative_rank(color, rank_of(square));
 }
 
-//returns same square if color == white,
-//if black it returns the relative square number.
-//e.g: relative_square(BLACK, H1(63)) == H8(7)
+// Returns same square if color == white,
+// if black it returns the relative square number.
+// e.g: relative_square(BLACK, H1(63)) == H8(7)
 inline int relative_square(int color, int square) {
 	return (square ^ (color * 56));
 }
 
-//return what a square + pawn_push,
-//would equal the correct square to move for a pawn
-//of that color. e.g: sq 48 + pawn_push(WHITE) = sq 40;
+// Return what a square + pawn_push,
+// would equal the correct square to move for a pawn
+// of that color. e.g: sq 48 + pawn_push(WHITE) = sq 40;
 inline int pawn_push(int color) {
 	return color == WHITE ? -8 : 8;
 }
 
-//returns the most advanced piece on the board,
-//relative to side to move
+// Returns the most advanced piece on the board,
+// relative to side to move
 inline int frontmost_sq(int color, U64 b) 
 {
 	return color == WHITE ? lsb(b) : msb(b);

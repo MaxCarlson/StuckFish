@@ -2,16 +2,22 @@
 
 #include "movegen.h"
 
+
+
 ThreadPool Threads;
 
 
-Thread::Thread() : stdThread(&Thread::idle_loop, this)
+// Create the thread, set our interal ID,
+// and put it in idle loop
+Thread::Thread(size_t n) : threadID(n), stdThread(&Thread::idle_loop, this)
 {
 	wait_for_search_stop();
 	// Set heuristics to desired values
 	clear();
 }
 
+// Wake up thread from idle loop
+// immediate return and .join()
 Thread::~Thread()
 {
 	exit = true;
@@ -21,9 +27,11 @@ Thread::~Thread()
 
 void ThreadPool::initialize()
 {
-	push_back(new MainThread());
+	push_back(new MainThread(0));
 }
  
+// Zero all values for heuristics, 
+// except for continuation historys which we set to - 1
 void Thread::clear()
 {
 	counterMoves.fill(MOVE_NONE);
@@ -41,7 +49,7 @@ void Thread::start_searching()
 	std::lock_guard<Mutex> lock(mutex);
 
 	searching = true;
-	// Unlock this thread
+
 	cv.notify_one(); // Wake up thread in idle loop!
 }
 
@@ -49,7 +57,7 @@ void Thread::wait_for_search_stop()
 {
 	std::unique_lock<Mutex> lock(mutex);
 
-	// Lock this thread untill
+	// Lock this thread until searching
 	cv.wait(lock, [&] { return !searching; });
 }
 
@@ -60,6 +68,8 @@ void Thread::idle_loop()
 		std::unique_lock<Mutex> lock(mutex);
 		searching = false;
 		cv.notify_one();
+
+		// Threads wait here until notified to start searching!
 		cv.wait(lock, [&] { return searching; });
 
 		if (exit)
@@ -74,10 +84,11 @@ void Thread::idle_loop()
 // Set the requested number of threads
 void ThreadPool::numberOfThreads(size_t n)
 {
+	// Not <= since we already have our mainThread.
 	while (size() < n)
-		push_back(new Thread());
+		push_back(new Thread(size()));
 
-	while (size() > n)
+	while (size() > n && n > 0)
 		delete back(), pop_back();
 }
 
@@ -97,8 +108,9 @@ void ThreadPool::searchStart(BitBoards & board, StateListPtr& states, const Sear
 	// SearchCondition internal to Search::
 	Search::SearchControl = sc;
 
+
 	// Ownership transfer,
-	// New position needs to be set before
+	// New position state needs to be set before
 	// we can call search again
 	if (states.get())
 		setStates = std::move(states);
@@ -118,5 +130,9 @@ void ThreadPool::searchStart(BitBoards & board, StateListPtr& states, const Sear
 
 	setStates->back() = st;
 
-	main()->start_searching(); // Re enable this to continue debugging multi threading!!!
+
+	// Notify main thread to start it's search rotuine.
+	// MainThread will then notify other threads to start searching
+	// if we have any
+	main()->start_searching(); 
 }

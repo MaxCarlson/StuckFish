@@ -31,7 +31,7 @@ int TimeManager::findMoveTime(long ourTime, int moveNumber, TimeType t)
 
 	double k = 1 + 20 * moveNumber / (500.0 + moveNumber); ///// Play with these numbers through play testing. 
 
-	double ratio = (t == Optimum ? 0.017 : 0.07) * (k + 0 / ourTime);
+	double ratio = (t == Optimum ? 0.017 : 0.07) * (k + 0 / ourTime); // Current best ration for Maximum is 0.07 Current Test value is 0.060
 
 	int time = int(std::min(1.0, ratio) * ourTime);
 

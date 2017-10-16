@@ -41,7 +41,7 @@ public:
 	// Prints a list of commands for user
 	void helpUCI();
 
-	//std::string moveToStr(const Move & m);
+	//std::string moveToStr(const Move & m) const;
 
 	Move strToMove(BitBoards& newBoard, std::string & input);
 

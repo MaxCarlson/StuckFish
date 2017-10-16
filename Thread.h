@@ -35,12 +35,8 @@ private:
 
 typedef std::condition_variable_any ConditionVariable;
 
-
-
-
-// At the moment this class is only a place holder for things
-// I want to be accessable to threads, as well as individual per
-// each search thread. Multi-threading is not implemented.
+// Holds all things that need to be 
+// sepperated for multi-threading. 
 class Thread
 {
 	Mutex mutex;
@@ -50,7 +46,7 @@ class Thread
 	std::thread stdThread;
 
 public:
-	explicit Thread();
+	explicit Thread(size_t n);
 	virtual ~Thread();
 
 	virtual void search();
@@ -60,6 +56,8 @@ public:
 	void idle_loop();
 	void start_searching();
 	void wait_for_search_stop();
+
+	int threadID; 
 
 	Pawns::Table       pawnsTable;
 	Material::Table materialTable;
@@ -71,9 +69,9 @@ public:
 	ButterflyHistory     mainHistory;
 	ContinuationHistory contiHistory;
 
-	Search::RootMoves rootMoves;
-
 	int rootDepth;
+	int completedDepth;
+	Search::RootMoves rootMoves;
 };
 
 
@@ -86,9 +84,12 @@ struct MainThread : public Thread
 	void check_time();
 
 	int previousScore;
-	double bestMoveChanges; //Not in use yet
+	double bestMoveChanges; 
 };
 
+// Holds all the threads we've created
+// including the MainThread. Is used for all access to threads
+// in search.
 struct ThreadPool : public std::vector<Thread*>
 {
 	void initialize();
@@ -96,7 +97,7 @@ struct ThreadPool : public std::vector<Thread*>
 
 	void searchStart(BitBoards & board, StateListPtr& states, const Search::SearchControls & sc);
 
-	MainThread * main() const { return static_cast<MainThread*>(front()); }
+	MainThread * main()  const { return static_cast<MainThread*>(front() ); }
 
 	U64 nodes_searched() const { return accumulateMember( &Thread::nodes ); }
 
@@ -104,7 +105,7 @@ struct ThreadPool : public std::vector<Thread*>
 	std::atomic_bool stop;
 
 private:
-	// Will be used later to detach the main thread's stateListPtr
+	// Used to detach the main thread's stateListPtr
 	// when transfering state list ptr's to other threads
 	StateListPtr setStates;
 

@@ -31,6 +31,11 @@ namespace Search {
 	SearchControls SearchControl;
 }
 
+// Used for varying search depth between threads
+const int thSkipSize0[] = { 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 3 };
+const int thSkipSize1[] = { 0, 1, 0, 1, 2, 3, 0, 1, 2, 3, 4, 5 };
+
+
 using namespace Search;
 
 const int Tempo = 10;
@@ -127,9 +132,8 @@ void MainThread::search()
 	//timeM.calcMoveTime(color, SearchControl); 
 	timeM.initTime(color, turns, SearchControl);
 
-	// Init search for other threads 
+	// Wake up other threads
 	// that aren't this. They'll start from Thread:search()
-	// after waking up the thread from idle loop.
 	for (Thread * th : Threads)
 	{
 		if (th != this)
@@ -139,6 +143,7 @@ void MainThread::search()
 	// Start mainThread search
 	Thread::search();
 
+	// Sit and wait for stop
 	while (!Threads.stop) {}
 
 	Threads.stop = true;
@@ -147,7 +152,27 @@ void MainThread::search()
 		if (th != this)
 			th->wait_for_search_stop();
 
-	Move m = rootMoves[0].pv[0];
+
+	Thread *bestThread = this;
+		
+	// Find the best scoring thread if it is not thisThread.
+	// Use better thread if the score is better and depth is >=
+	// Or if we found a mate/ a mate that's faster. 
+
+	/* //This causes a massive ELO loss with two threads at the moment, find out why.
+	for (Thread * th : Threads) {
+
+		int scoreDiff = th->rootMoves[0].score - bestThread->rootMoves[0].score;
+		int depthDiff = th->completedDepth     - bestThread->completedDepth;
+
+		if (scoreDiff > 0
+			&& (depthDiff >= 0 || th->rootMoves[0].score >= VALUE_MATE_IN_MAX_PLY))
+			bestThread = th;
+	}
+	*/
+		
+
+	Move m = bestThread->rootMoves[0].pv[0];
 
 	std::string bestMove = Uci::moveToStr(m);
 
@@ -156,7 +181,7 @@ void MainThread::search()
 	// Print the best move for UCI
 	std::cout << "bestmove " << bestMove << std::endl;
 
-	previousScore = rootMoves[0].score;
+	previousScore = bestThread->rootMoves[0].score;
 }
 
 void Thread::search() 
@@ -188,6 +213,15 @@ void Thread::search()
 		&& ! Threads.stop
 		&& !(SearchControl.depth && mainThread && rootDepth > SearchControl.depth)) 
 	{
+		// If not main thread..
+		if (threadID)
+		{
+			int s = (threadID - 1) % 12;
+			if ((rootDepth + turns + thSkipSize1[s] / thSkipSize0[s]) % 2){
+				++rootDepth;
+				continue;
+			}
+		}
 
 		// Save previous ID scores to rootMoves previous
 		for (RootMove& rm : rootMoves)
@@ -207,28 +241,29 @@ void Thread::search()
 		std::stable_sort(rootMoves.begin(), rootMoves.end()); 
 
 		
-		// need stop if mate in X code here
+		// Need stop if mate in X code here
 
 		//if the search is not cutoff
 		if (!Threads.stop) {
 
 			bestMove = rootMoves[0].pv[0];
 
+			completedDepth = rootDepth;
+
 			//print data on search 
-			if (mainThread)
+			if (mainThread)					 //threadID == X for testing jump amounts with thread ID's
 				print(bestScore, rootDepth);
 
 
 			if (SearchControl.use_time() && mainThread)
 			{
-
 				int p0 = bestScore - mainThread->previousScore;
 
 				double unstablePv = 1 + mainThread->bestMoveChanges;
 
 				int improvingFactor = std::max(229, std::min(715, 357 + 119 * -6 * p0)); // Need to play with these numbers or completely redo this!!
 
-				if (timeM.elapsed() > timeM.optimum() * unstablePv * improvingFactor / 628)
+				if (timeM.elapsed() > timeM.optimum() * unstablePv * improvingFactor / 628) // Does timeM maximum allocate too much time? Play testing seems to indicate so. Lower ratio?
 					Threads.stop = true;
 
 				//double tDiff = timeM.maximum() - timeM.optimum();
@@ -288,8 +323,8 @@ int Search::searchRoot(BitBoards& board, int depth, int alpha, int beta, searchS
 
     while((newMove = mp.nextMove()) != MOVE_NONE){
 	//for (RootMove& rm : thisThread->rootMoves){     // Will have to test and see if drawing from the root moves is faster or not!!
-		//newMove = rm.pv[0];
-
+		//newMove = rm.pv[0];						  // They are scored and sorted perfectly with the results from previous searches. Although they do not get the benifi
+													  // of MovePicker if we do this.
 		if (!board.isLegal(newMove, ci.pinned)) {
 			continue;
 		}

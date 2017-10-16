@@ -46,7 +46,7 @@ void UCI::uciLoop()
 
 	newGame(newBoard, states);
 	Search::initSearch();
-	//Threads.numberOfThreads(2);
+	Threads.numberOfThreads(2);
 
 	std::cout << "Type 'help' for list of engine options." << std::endl;
 
@@ -103,7 +103,7 @@ void UCI::uciLoop()
 			helpUCI();
 		}
 		else if (token == "printOptions") {
-			//printOptions();
+			printOptions();
 		}
 		else if (token == "go") go(newBoard, is, states);
 
@@ -168,6 +168,8 @@ void UCI::updatePosition(BitBoards& newBoard, std::istringstream& input, StateLi
 
 void UCI::newGame(BitBoards& newBoard, StateListPtr& states)
 {
+	states = StateListPtr(new std::deque<StateInfo>(1));
+
 	newBoard.constructBoards(NULL, Threads.main(), &states->back());
 
 	//create zobrist hash for startpos that is used to check TT entrys and repetitions 
@@ -180,8 +182,10 @@ void UCI::newGame(BitBoards& newBoard, StateListPtr& states)
 
 void UCI::printOptions()
 {
-	//tell GUI we can change that transposition table size //NOT WOKRING, probably not correct
-	std::cout << "option name Hash" << std::endl;
+	// Print the options avaibible to us. 
+	std::cout << "option name Hash type spin default 1024 min 1 max 1048576" << std::endl;
+	std::cout << "option name Threads type spin default 1 min 1 max 128" << std::endl;
+	std::cout << "option name Clear Hash type button" << std::endl;
 
 	//other options ....
 }
@@ -194,8 +198,18 @@ void UCI::setOption(std::istringstream & input)
 
 	if (token == "name") {
 		while (input >> token) {
-			if (token == "hashsize") {
+			if (token == "Hash") {
 				input >> token;
+				TT.resize(stoi(token));
+				break;
+			}
+			else if (token == "Clear") {
+				TT.clearTable();
+				break;
+			}
+			else if (token == "Threads") {
+				input >> token; Threads.numberOfThreads(stoi(token));
+				break;
 			}
 		}
 	}
@@ -231,6 +245,7 @@ void UCI::go(BitBoards & newBoard, std::istringstream & input, StateListPtr& sta
 	turns += 1;    //// IS this and ^^ redundant? state isn't saved unless run through update pos from beginning anyways, TEST
 }
 
+// Move all of UCI to namespace eventually, no reason to have it as a class.
 namespace Uci {
 
 	std::string moveToStr(const Move& m)
@@ -398,7 +413,7 @@ void UCI::helpUCI()
 	std::cout << std::endl << ENGINE_NAME << " by Max Carlson" << std::endl;
 	std::cout << "ucinewgame...............Resets current position to a clean slate. Clears TTable as well" << std::endl;
 	std::cout << "draw.....................Draws ASCI representation of the current board"<< std::endl;
-	std::cout << "perft x..................Perft  results for current position at depth x" << std::endl;
+	std::cout << "perft x..................Perft results for current position at depth x" << std::endl;
 	std::cout << "divide y.................Like perft, but move counts for all root moves are printed instead of just a total count." << std::endl;
 	std::cout << "position fen <FEN>.......Sets position to input fen string"<< std::endl;
 	std::cout << "position startpos........Sets position to start position"<< std::endl;
@@ -406,7 +421,7 @@ void UCI::helpUCI()
 	std::cout << "go wtime x  btime y......Starts search with white remaining time x and black remaining time y"<< std::endl;
 	std::cout << "go depth x...............Starts search and will search to x depth"<< std::endl;
 	std::cout << "test.....................Runs through a test suite of positions at a fixed depth, designed for benchmarking search"<< std::endl;
-	std::cout << "threads x................Used for debugging, sets program to use x number of threads." << std::endl;
+	std::cout << "threads x................Sets program to use x number of threads." << std::endl;
 	std::cout << "quit.....................Quits engine"<< std::endl;
 }
 
