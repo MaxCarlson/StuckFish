@@ -190,6 +190,8 @@ void UCI::printOptions()
 	//other options ....
 }
 
+// If UCI wants to use any of the above options
+// They're set through this function. 
 void UCI::setOption(std::istringstream & input)
 {
 	std::string token;

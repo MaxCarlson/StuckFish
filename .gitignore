@@ -59,8 +59,18 @@ Temporary Items
 *.vspx
 *.tmp.merged.etl
 *.tlog
+*.etl
+*.log
+
 
 #object files
 *.obj
 
+
+#misc
+*.pdb
+*.html
+*.xml
+*.lastcodeanalysissucceeded
+*.ilk
 
