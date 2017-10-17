@@ -18,7 +18,7 @@ bool isWhite = true; // get rid of this and replace with int color
 
 UCI::UCI()
 {
-	TT.resize(1024); //change later to be an input option for TT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	TT.resize(1024); // This should eventually be removed. Just here for ease of use testing. 
 }
 
 void UCI::uciLoop()

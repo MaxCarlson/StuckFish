@@ -20,8 +20,6 @@
 
 #define DO_NULL    true //allow null moves or not
 #define NO_NULL    false
-#define IS_PV      1 //is this search in a principal variation
-#define NO_PV      0
 #define ASP        50  //aspiration windows size
 
 //master time manager
@@ -55,6 +53,7 @@ void update_pv(Move *pv, Move m, Move *childPv) {
 	*pv = MOVE_NONE;
 }
 
+// Simple wrapper for reductions array, provides access without worry about bounds.
 template <bool isPV> int reduction(bool improving, int depth, int moveCount) {
 	return reductions[isPV][improving][std::min(depth, 63)][std::min(moveCount, 63)];
 }
@@ -71,6 +70,9 @@ int DrawValue[COLOR];
 template<NodeType NT>
 int alphaBeta(BitBoards& board, int depth, int alpha, int beta, Search::searchStack *ss, bool allowNull);
 
+template<NodeType NT>
+int quiescent(BitBoards& board, int alpha, int beta, Search::searchStack *ss);
+
 // Used for applying bonuses and penalties to
 // Quiet moves, continuation historys, counter moves, etc. 
 inline int stat_bonus(int depth) // This needs to be played with value wise against a different version, right now it hasn't been tested at all
@@ -80,7 +82,7 @@ inline int stat_bonus(int depth) // This needs to be played with value wise agai
 
 // Defined here for easy access to play testing values!
 const int razor_margin[] = { 0, 275, 320, 257 };
-int futile_margin(int depth) { return 85 * depth; }
+int futile_margin(int depth) { return 85 * depth; } //best margin 85 so far! //test value 73
 
 
 
@@ -323,7 +325,7 @@ int Search::searchRoot(BitBoards& board, int depth, int alpha, int beta, searchS
 
     while((newMove = mp.nextMove()) != MOVE_NONE){
 	//for (RootMove& rm : thisThread->rootMoves){     // Will have to test and see if drawing from the root moves is faster or not!!
-		//newMove = rm.pv[0];						  // They are scored and sorted perfectly with the results from previous searches. Although they do not get the benifi
+		//newMove = rm.pv[0];						  // They are scored and sorted perfectly with the results from previous searches. Although they do not get the benifit
 													  // of MovePicker if we do this.
 		if (!board.isLegal(newMove, ci.pinned)) {
 			continue;
@@ -544,12 +546,12 @@ int alphaBeta(BitBoards& board, int depth, int alpha, int beta, Search::searchSt
 		&& !board.pawnOn7th(color)) {
 
 		if (depth <= 1 && ss->staticEval + 300 * 3 * 60 <= alpha) {
-			return quiescent(board, alpha, beta, ss, NO_PV);
+			return quiescent<NonPv>(board, alpha, beta, ss);
 		}
 
 		int ralpha = alpha - 300 * (depth - 1) * 60;
 
-		int val = quiescent(board, ralpha, ralpha + 1, ss, NO_PV);
+		int val = quiescent<NonPv>(board, ralpha, ralpha + 1, ss);
 
 		if (val <= alpha)
 			return val;
@@ -662,10 +664,10 @@ int alphaBeta(BitBoards& board, int depth, int alpha, int beta, Search::searchSt
 		if (board.non_pawn_material(board.stm())
 			&& bestScore > VALUE_MATED_IN_MAX_PLY) {
 
-			if (    !captureOrPromotion
-				&&  !givesCheck
-				&& (!board.isMadePawnPush(newMove, color) 
-				||   board.non_pawn_material() >= 2100))
+			if (!captureOrPromotion
+				&& !givesCheck
+				&& (!board.isMadePawnPush(newMove, color)
+					|| board.non_pawn_material() >= 2100))
 			{
 				int lmrDepth = std::max(newDepth - reduction<NT>(improving, depth, legalMoves), 0);
 
@@ -676,16 +678,20 @@ int alphaBeta(BitBoards& board, int depth, int alpha, int beta, Search::searchSt
 					board.unmakeMove(newMove, color);
 					continue;
 				}
-								
-				//if(lmrDepth < 7
-				//&& !FlagInCheck
-				//&& ss->staticEval + 128 + 100 * lmrDepth <= alpha)
-				//continue;
-
+				/*
+				if (lmrDepth < 7
+					&& !FlagInCheck
+					&& ss->staticEval + 128 + 100 * lmrDepth <= alpha) {
+					board.unmakeMove(newMove, color);
+					continue;
+				}
 				
-				//if(lmrDepth < 8
-				//&& !board.seeGe(newMove, (-17 * lmrDepth * lmrDepth))) // Play test the negative value
-				//continue;		
+				if (lmrDepth < 8 // Won't work as is as move has already been made!!!
+					&& !board.seeGe(newMove, (-17 * lmrDepth * lmrDepth))) {// Play test the negative value
+					board.unmakeMove(newMove, color);
+					continue;
+				}
+				*/
 			}
 		}
 //*/
@@ -717,8 +723,7 @@ int alphaBeta(BitBoards& board, int depth, int alpha, int beta, Search::searchSt
 				
 				// If the SEE of our move was negative,
 				// 
-				if (depthR
-					&& move_type(newMove) == NORMAL
+				if ( move_type(newMove) == NORMAL //depthR &&
 					&& !board.seeGe(create_move(to_sq(newMove), from_sq(newMove))))
 					depthR -= 2;
 
@@ -750,7 +755,7 @@ int alphaBeta(BitBoards& board, int depth, int alpha, int beta, Search::searchSt
 			(ss + 1)->pv = nullptr;
 
 		if (doFullDepthSearch)
-			score = newDepth < 1 ? -quiescent(board, -(alpha + 1), -alpha, ss + 1, NO_PV)
+			score = newDepth < 1 ? -quiescent<NonPv>(board, -(alpha + 1), -alpha, ss + 1)
 						         : -alphaBeta<NonPv>(board, newDepth, -(alpha + 1), -alpha, ss + 1, DO_NULL);
 
 		if (isPV && (legalMoves == 1 || (score > alpha && score < beta)))
@@ -758,7 +763,7 @@ int alphaBeta(BitBoards& board, int depth, int alpha, int beta, Search::searchSt
 			(ss + 1)->pv = pv;
 			(ss + 1)->pv[0] = MOVE_NONE;
 
-			score = newDepth < 1 ? -quiescent(board, -beta, -alpha, ss + 1, IS_PV)
+			score = newDepth < 1 ? -quiescent<PV>(board, -beta, -alpha, ss + 1)
 				                 : -alphaBeta<PV>(board, newDepth, -beta, -alpha, ss + 1, DO_NULL);
 		}
 
@@ -830,10 +835,13 @@ int alphaBeta(BitBoards& board, int depth, int alpha, int beta, Search::searchSt
 	return alpha;
 }
 
-int Search::quiescent(BitBoards& board, int alpha, int beta, searchStack *ss, int isPV)
+template<NodeType NT>
+int quiescent(BitBoards& board, int alpha, int beta, Search::searchStack *ss)
 {
 	//node count, sepperate q count needed?
 	const int color = board.stm();
+	const bool isPV = NT == PV;
+
 	const HashEntry *ttentry;
 	int ttValue;
 	int oldAlpha, bestScore, score;
@@ -904,14 +912,16 @@ int Search::quiescent(BitBoards& board, int alpha, int beta, searchStack *ss, in
 
 		board.makeMove(newMove, st, color);
 
-		score = -quiescent(board, -beta, -alpha, ss, isPV);
+		score = -quiescent<NT>(board, -beta, -alpha, ss);
 
 		board.unmakeMove(newMove, color);
 
-		if (score > alpha) {
+		if (score > alpha) 
+		{
 			bestMove = newMove;
 
-			if (score >= beta) {
+			if (score >= beta) 
+			{
 				hashFlag = TT_BETA;
 				alpha = beta;
 				break;
