@@ -199,7 +199,7 @@ Scores evaluatePieces(const BitBoards & boards, EvalInfo & ev, U64 * mobilityAre
 	const int nextPiece = (color == WHITE ? pT : pT + 1);
 
 	int square;
-
+//#pragma omp parallel for
 	while (( square = *piece++ ) != SQ_NONE) {
 
 		//adjust square table lookup for black if need be

@@ -254,7 +254,7 @@ void Thread::search()
 
 			//print data on search 
 			if (mainThread)					 //threadID == X for testing jump amounts with thread ID's
-				print(bestScore, rootDepth);
+				print(bestScore, rootDepth, board);
 
 
 			if (SearchControl.use_time() && mainThread)
@@ -723,7 +723,8 @@ int alphaBeta(BitBoards& board, int depth, int alpha, int beta, Search::searchSt
 				
 				// If the SEE of our move was negative,
 				// 
-				if ( move_type(newMove) == NORMAL //depthR &&
+				if (depthR &&
+					move_type(newMove) == NORMAL //
 					&& !board.seeGe(create_move(to_sq(newMove), from_sq(newMove))))
 					depthR -= 2;
 
@@ -733,6 +734,8 @@ int alphaBeta(BitBoards& board, int depth, int alpha, int beta, Search::searchSt
 					+ (*contiHist[3])[movedPiece][to_sq(newMove)]
 					- 4000;
 
+				// Increase/Decrease reduction if we have a better/worse
+				// Stat score compared to our opponents last ply stat score 
 				if (ss->statScore >= 0 && (ss - 1)->statScore < 0)
 					depthR -= 1;
 
@@ -856,7 +859,7 @@ int quiescent(BitBoards& board, int alpha, int beta, Search::searchStack *ss)
 
 	ttentry = TT.probe(board.TTKey());
 	ttMove  = ttentry ? ttentry->move() : MOVE_NONE; //is there a move stored in transposition table?
-	ttValue = ttentry ? valueFromTT(ttentry->eval(), ss->ply) : INVALID; //if there is a TT entry, grab its value
+	ttValue = ttentry ? valueFromTT(ttentry->eval(), ss->ply) : 0; //if there is a TT entry, grab its value
 
 	if (ttentry
 		&& ttentry->depth() >= DEPTH_QS
@@ -875,7 +878,9 @@ int quiescent(BitBoards& board, int alpha, int beta, Search::searchStack *ss)
 
 	if (standingPat >= beta) {
 
-		if (!ttentry) TT.save(MOVE_NONE, board.TTKey(), DEPTH_QS, valueToTT(standingPat, ss->ply), TT_BETA); //save to TT if there's no entry 
+		if (!ttentry) 
+			TT.save(MOVE_NONE, board.TTKey(), DEPTH_QS, valueToTT(standingPat, ss->ply), TT_BETA); //save to TT if there's no entry 
+
 		return beta;
 	}
 
@@ -939,8 +944,6 @@ int quiescent(BitBoards& board, int alpha, int beta, Search::searchStack *ss)
 
 void Search::updateStats(const BitBoards & board, Move move, searchStack * ss, int depth, Move * quiets, int qCount, int bonus)
 {	
-	static const int limit = SORT_KILL;
-	
 	//update Killers for ply
 	//make sure killer is different
 	if (move != ss->killers[0]) {
@@ -967,51 +970,48 @@ void Search::updateStats(const BitBoards & board, Move move, searchStack * ss, i
 		thisThread->counterMoves[board.pieceOnSq(prevSq)][prevSq] = move;
 	}
 
+	// Penalize the remaing quiet moves that weren't the best move
 	for(int i = 0; i < qCount; ++i){
 		thisThread->mainHistory.update(color, quiets[i], -val);
 		updateContinuationHistories(ss, board.pieceOnSq(from_sq(quiets[i])), to_sq(move), -val);
 	}
 }
-///*
+
 void Search::updateContinuationHistories(searchStack * ss, int piece, int to, int bonus)
 {
 	for (int i : {1, 2, 4})
 		if (is_ok((ss - i)->currentMove))
 			(ss - i)->contiHistory->update(piece, to, bonus);
 }
-//*/
+
 inline int valueToTT(int val, int ply) 
 {
 	//for adjusting value from "plys to mate from root", to "ply to mate from current ply". - taken from stockfish
 	//if value is is a mate value or a mated value, adjust those values to the current ply then return
 	//else return the value
-	return val >= VALUE_MATE_IN_MAX_PLY ? val + ply
-		: val <= VALUE_MATED_IN_MAX_PLY ? val - ply : val;
+	return val >= VALUE_MATE_IN_MAX_PLY  ? val + ply
+		 : val <= VALUE_MATED_IN_MAX_PLY ? val - ply : val;
 }
 
 inline int valueFromTT(int val, int ply) 
 {
 	//does the opposite of valueToTT, adjusts mate score from TTable to the appropriate score and the current ply
 	return  val == 0 ? 0
-		: val >= VALUE_MATE_IN_MAX_PLY  ? val - ply
-		: val <= VALUE_MATED_IN_MAX_PLY ? val + ply : val;
+		  : val >= VALUE_MATE_IN_MAX_PLY  ? val - ply
+		  : val <= VALUE_MATED_IN_MAX_PLY ? val + ply : val;
 }
 
 void MainThread::check_time()
 {
-	//test for a condition that does less checks
-	//way too many atm
-	//if (SearchControl.use_time() && !timeOver && (Threads.nodes_searched() & 4095)) {
-	//	timeOver = timeM.timeStopSearch();
-	//}
-
 	if (SearchControl.use_time() && timeM.elapsed() > timeM.maximum())
 		Threads.stop = true;
 }
 
-void Search::print(int bestScore, int depth)
+void Search::print(int bestScore, int depth, const BitBoards &board)
 {
 	std::stringstream ss;
+
+	const RootMoves & rootMoves = board.this_thread()->rootMoves;
 	
 	int nodes = Threads.nodes_searched();
 
@@ -1021,6 +1021,11 @@ void Search::print(int bestScore, int depth)
 		ss << "cp " << bestScore;
 	else
 		ss << "mate " << (bestScore > 0 ? VALUE_MATE - bestScore + 1 : -VALUE_MATE - bestScore) / 2;
+
+	ss << " pv";
+
+	for (Move m : rootMoves[0].pv)
+		ss << " " << Uci::moveToStr(m);
 
 	std::cout << ss.str() << std::endl;
 }

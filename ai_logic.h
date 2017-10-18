@@ -85,7 +85,7 @@ namespace Search {
 
 	void updateStats(const BitBoards & board, Move move, searchStack * ss, int depth, Move * quiets, int qCount, int bonus);
 
-	void print(int bestScore, int depth);
+	void print(int bestScore, int depth, const BitBoards &board);
 
 	template<bool Root>
 	U64 perft(BitBoards & board, int depth);
