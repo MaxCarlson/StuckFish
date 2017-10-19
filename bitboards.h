@@ -430,12 +430,12 @@ inline bool BitBoards::pawnOn7th(int color)
 	return (byColorPiecesBB[color][PAWN] & (color ? 0xFF000000000000L : 0xFF00L));
 }
 
-//returns true if side color has any pieces aside from pawn/s or king
+// Returns the amount of material a side has, exlcuding king and pawns
 inline int BitBoards::non_pawn_material(int color) const
 {
 	return bInfo.nonPawnMaterial[color];
 }
-
+// Returns npm for both sides
 inline int BitBoards::non_pawn_material() const
 {
 	return bInfo.nonPawnMaterial[WHITE] + bInfo.nonPawnMaterial[BLACK];
@@ -445,10 +445,12 @@ inline U64 BitBoards::square_bb(int sq) const
 {
 	return squareBB[sq];
 }
+
 inline bool BitBoards::can_enpassant() const
 {
 	return (st->epSquare > 0 && st->epSquare < 64);
 }
+
 inline int BitBoards::ep_square() const
 {
 	return st->epSquare;

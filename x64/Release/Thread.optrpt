@@ -1,0 +1,3395 @@
+
+Begin optimization report for: Thread::~Thread(Thread *, unsigned int)
+
+    Report from: Interprocedural optimizations [ipo]
+
+<compiler generated>:INLINE REPORT START: (Thread::~Thread(Thread *, unsigned int))
+<compiler generated>:(1)-> Thread::~Thread(Thread *)
+INLINE REPORT END
+
+    Report from: Code generation optimizations [cg]
+
+<compiler generated>:remark #34051: REGISTER ALLOCATION : [??_GThread@@UEAAPEAXI@Z] (null):0
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    5[ rax rdx rcx r12-r13]
+        
+    Routine temporaries
+        Total         :      26
+            Global    :      20
+            Local     :       6
+        Regenerable   :       1
+        Spilled       :       2
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: Thread::~Thread(Thread *)
+
+    Report from: Interprocedural optimizations [ipo]
+
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(22,1):INLINE REPORT START: (Thread::~Thread(Thread *))
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(24,2):(1)-> INLINE: Thread::start_searching(Thread *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(49,25):(2)-> INLINE: std::lock_guard<Mutex>::lock_guard(std::lock_guard<Mutex> *, Mutex &)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\mutex(218,3):(3)-> INLINE: Mutex::lock(Mutex *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(53,2):(2)-> INLINE: std::lock_guard<Mutex>::~lock_guard(std::lock_guard<Mutex> *)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\mutex(228,3):(3)-> INLINE: Mutex::unlock(Mutex *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(53,2):(2)-> INLINE: std::condition_variable_any::notify_one(std::condition_variable_any *)
+       {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(25,2):(1)-> INLINE: std::thread::join(std::thread *)
+     {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(26,1):(1)-> INLINE: std::thread::~thread(std::thread *)
+     {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(26,1):(1)-> INLINE: HashTable<Pawns::PawnsEntry, 16384>::~HashTable(HashTable<Pawns::PawnsEntry, 16384> *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(322,8):(2)-> INLINE: std::vector<Pawns::PawnsEntry, std::allocator<Pawns::PawnsEntry>>::~vector(std::vector<Pawns::PawnsEntry, std::allocator<Pawns::PawnsEntry>> *)
+       {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(26,1):(1)-> INLINE: HashTable<Material::Entry, 8192>::~HashTable(HashTable<Material::Entry, 8192> *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(322,8):(2)-> INLINE: std::vector<Material::Entry, std::allocator<Material::Entry>>::~vector(std::vector<Material::Entry, std::allocator<Material::Entry>> *)
+       {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(26,1):(1)-> INLINE: std::vector<Search::RootMove, std::allocator<Search::RootMove>>::~vector(std::vector<Search::RootMove, std::allocator<Search::RootMove>> *)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vector(976,3):(2)-> INLINE: std::vector<Search::RootMove, std::allocator<Search::RootMove>>::_Tidy(std::vector<Search::RootMove, std::allocator<Search::RootMove>> *)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vector(1640,4):(3)-> INLINE: std::vector<Search::RootMove, std::allocator<Search::RootMove>>::_Destroy(std::vector<Search::RootMove, std::allocator<Search::RootMove>> *, std::vector<Search::RootMove, std::allocator<Search::RootMove>>::pointer, std::vector<Search::RootMove, std::allocator<Search::RootMove>>::pointer)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vector(1581,3):(4)-> INLINE: std::_Destroy_range<std::_Vec_base_types<Search::RootMove, std::allocator<Search::RootMove>>::_Alloc, std::vector<Search::RootMove, std::allocator<Search::RootMove>>::pointer>(std::vector<Search::RootMove, std::allocator<Search::RootMove>>::pointer, std::vector<Search::RootMove, std::allocator<Search::RootMove>>::pointer, std::_Wrap_alloc<std::_Vec_base_types<Search::RootMove, std::allocator<Search::RootMove>>::_Alloc> &)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xmemory0(1118,2):(5)-> INLINE: std::_Destroy_range1<std::_Vec_base_types<Search::RootMove, std::allocator<Search::RootMove>>::_Alloc, std::vector<Search::RootMove, std::allocator<Search::RootMove>>::pointer>(std::vector<Search::RootMove, std::allocator<Search::RootMove>>::pointer, std::vector<Search::RootMove, std::allocator<Search::RootMove>>::pointer, std::_Wrap_alloc<std::_Vec_base_types<Search::RootMove, std::allocator<Search::RootMove>>::_Alloc> &, std::false_type)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xmemory0(1101,3):(6)-> INLINE: std::_Wrap_alloc<std::_Vec_base_types<Search::RootMove, std::allocator<Search::RootMove>>::_Alloc>::destroy<std::_Simple_types<std::_Wrap_alloc<std::_Vec_base_types<Search::RootMove, std::allocator<Search::RootMove>>::_Alloc>::value_type>::value_type>(std::_Wrap_alloc<std::_Vec_base_types<Search::RootMove, std::allocator<Search::RootMove>>::_Alloc> *, std::_Simple_types<std::_Wrap_alloc<std::_Vec_base_types<Search::RootMove, std::allocator<Search::RootMove>>::_Alloc>::value_type>::value_type *)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xmemory0(1003,3):(7)-> INLINE: std::allocator_traits<std::_Vec_base_types<Search::RootMove, std::allocator<Search::RootMove>>::_Alloc>::destroy<std::_Simple_types<std::_Wrap_alloc<std::_Vec_base_types<Search::RootMove, std::allocator<Search::RootMove>>::_Alloc>::value_type>::value_type>(std::allocator_traits<std::_Vec_base_types<Search::RootMove, std::allocator<Search::RootMove>>::_Alloc>::_Alloc &, std::_Simple_types<std::_Wrap_alloc<std::_Vec_base_types<Search::RootMove, std::allocator<Search::RootMove>>::_Alloc>::value_type>::value_type *)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xmemory0(864,3):(8)-> INLINE: std::allocator<Search::RootMove>::destroy<std::_Simple_types<std::_Wrap_alloc<std::_Vec_base_types<Search::RootMove, std::allocator<Search::RootMove>>::_Alloc>::value_type>::value_type>(std::allocator<Search::RootMove> *, std::_Simple_types<std::_Wrap_alloc<std::_Vec_base_types<Search::RootMove, std::allocator<Search::RootMove>>::_Alloc>::value_type>::value_type *)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xmemory0(744,3):(9)-> INLINE: Search::RootMove::~RootMove(Search::RootMove *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\ai_logic.h(59,9):(10)-> INLINE: std::vector<Move, std::allocator<Move>>::~vector(std::vector<Move, std::allocator<Move>> *)
+                       {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(26,1):(1)-> Mutex::~Mutex(Mutex *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(26,1):(1)-> INLINE: std::condition_variable_any::~condition_variable_any(std::condition_variable_any *)
+     {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(26,1):(1)-> std::thread::~thread(std::thread *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(26,1):(1)-> HashTable<Pawns::PawnsEntry, 16384>::~HashTable(HashTable<Pawns::PawnsEntry, 16384> *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(26,1):(1)-> HashTable<Material::Entry, 8192>::~HashTable(HashTable<Material::Entry, 8192> *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(26,1):(1)-> std::vector<Search::RootMove, std::allocator<Search::RootMove>>::~vector(std::vector<Search::RootMove, std::allocator<Search::RootMove>> *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(26,1):(1)-> std::condition_variable_any::~condition_variable_any(std::condition_variable_any *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(26,1):(1)-> INLINE: Mutex::~Mutex(Mutex *)
+INLINE REPORT END
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\thread(194,2):remark #34000: call to memcpy implemented inline with loads and stores with proven source (alignment, offset): (1, 0), and destination (alignment, offset): (16, 0)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(22,1):remark #34051: REGISTER ALLOCATION : [??1Thread@@UEAA@XZ] C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp:22
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :   11[ rax rdx rcx r8-r10 r12-r15 zmm0]
+        
+    Routine temporaries
+        Total         :     262
+            Global    :     165
+            Local     :      97
+        Regenerable   :      18
+        Spilled       :       4
+        
+    Routine stack
+        Variables     :      24 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       1 [1.00e+000 ~ 0.7%]
+        Spills        :      32 bytes*
+            Reads     :       4 [2.43e+000 ~ 1.8%]
+            Writes    :       4 [2.43e+000 ~ 1.8%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::vector<Search::RootMove, std::allocator<Search::RootMove>>::~vector(std::vector<Search::RootMove, std::allocator<Search::RootMove>> *)
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vector(975,3):remark #34051: REGISTER ALLOCATION : [??1?$vector@URootMove@Search@@V?$allocator@URootMove@Search@@@std@@@std@@QEAA@XZ] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vector:975
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :   10[ rax rdx rcx rbp r8-r10 r13-r15]
+        
+    Routine temporaries
+        Total         :      42
+            Global    :      29
+            Local     :      13
+        Regenerable   :       4
+        Spilled       :       4
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :      24 bytes*
+            Reads     :       3 [6.49e-001 ~ 1.1%]
+            Writes    :       3 [6.49e-001 ~ 1.1%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: HashTable<Material::Entry, 8192>::~HashTable(HashTable<Material::Entry, 8192> *)
+
+    Report from: Interprocedural optimizations [ipo]
+
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(322,8):INLINE REPORT START: (HashTable<Material::Entry, 8192>::~HashTable(HashTable<Material::Entry, 8192> *))
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(322,8):(1)-> INLINE: std::vector<Material::Entry, std::allocator<Material::Entry>>::~vector(std::vector<Material::Entry, std::allocator<Material::Entry>> *)
+     {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+INLINE REPORT END
+
+    Report from: Code generation optimizations [cg]
+
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(322,8):remark #34051: REGISTER ALLOCATION : [??1?$HashTable@VEntry@Material@@$0CAAA@@@QEAA@XZ] C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h:322
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    6[ rax rdx rcx r8-r9 r15]
+        
+    Routine temporaries
+        Total         :      38
+            Global    :      23
+            Local     :      15
+        Regenerable   :       4
+        Spilled       :       1
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: HashTable<Pawns::PawnsEntry, 16384>::~HashTable(HashTable<Pawns::PawnsEntry, 16384> *)
+
+    Report from: Interprocedural optimizations [ipo]
+
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(322,8):INLINE REPORT START: (HashTable<Pawns::PawnsEntry, 16384>::~HashTable(HashTable<Pawns::PawnsEntry, 16384> *))
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(322,8):(1)-> INLINE: std::vector<Pawns::PawnsEntry, std::allocator<Pawns::PawnsEntry>>::~vector(std::vector<Pawns::PawnsEntry, std::allocator<Pawns::PawnsEntry>> *)
+     {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+INLINE REPORT END
+
+    Report from: Code generation optimizations [cg]
+
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(322,8):remark #34051: REGISTER ALLOCATION : [??1?$HashTable@UPawnsEntry@Pawns@@$0EAAA@@@QEAA@XZ] C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h:322
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    5[ rax rdx rcx rbp r8]
+        
+    Routine temporaries
+        Total         :      30
+            Global    :      23
+            Local     :       7
+        Regenerable   :       2
+        Spilled       :       1
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::thread::~thread(std::thread *)
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\thread(55,3):remark #34051: REGISTER ALLOCATION : [??1thread@std@@QEAA@XZ] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\thread:55
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    1[ rcx]
+        
+    Routine temporaries
+        Total         :      20
+            Global    :      18
+            Local     :       2
+        Regenerable   :       0
+        Spilled       :       0
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::condition_variable_any::~condition_variable_any(std::condition_variable_any *)
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\condition_variable(31,3):remark #34051: REGISTER ALLOCATION : [??1condition_variable_any@std@@QEAA@XZ] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\condition_variable:31
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    4[ rax rdx rcx r13]
+        
+    Routine temporaries
+        Total         :      37
+            Global    :      24
+            Local     :      13
+        Regenerable   :       0
+        Spilled       :       1
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: Mutex::~Mutex(Mutex *)
+
+    Report from: Interprocedural optimizations [ipo]
+
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.h(28,16):INLINE REPORT START: (Mutex::~Mutex(Mutex *))
+INLINE REPORT END
+
+    Report from: Code generation optimizations [cg]
+
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.h(28,16):remark #34051: REGISTER ALLOCATION : [??1Mutex@@QEAA@XZ] C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.h:28
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    2[ rax rcx]
+        
+    Routine temporaries
+        Total         :      23
+            Global    :       0
+            Local     :      23
+        Regenerable   :       0
+        Spilled       :       0
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: __$U0
+
+    Report from: Interprocedural optimizations [ipo]
+
+<compiler generated>:INLINE REPORT START: (__$U0)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\system_error(698,40):(1)-> DELETED: std::_Immortalizer<std::_Generic_error_category>::~_Immortalizer(std::_Immortalizer<std::_Generic_error_category> *)
+INLINE REPORT END
+
+    Report from: Code generation optimizations [cg]
+
+<compiler generated>:remark #34051: REGISTER ALLOCATION : [__$U0] (null):0
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    0[ reg_null]
+        
+    Routine temporaries
+        Total         :      18
+            Global    :       0
+            Local     :      18
+        Regenerable   :       0
+        Spilled       :       0
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: MainThread::~MainThread(MainThread *, unsigned int)
+
+    Report from: Interprocedural optimizations [ipo]
+
+<compiler generated>:INLINE REPORT START: (MainThread::~MainThread(MainThread *, unsigned int))
+<compiler generated>:(1)-> INLINE: MainThread::~MainThread(MainThread *)
+<compiler generated>:(2)-> Thread::~Thread(Thread *)
+INLINE REPORT END
+
+    Report from: Code generation optimizations [cg]
+
+<compiler generated>:remark #34051: REGISTER ALLOCATION : [??_GMainThread@@UEAAPEAXI@Z] (null):0
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    5[ rax rdx rcx r12-r13]
+        
+    Routine temporaries
+        Total         :      26
+            Global    :      20
+            Local     :       6
+        Regenerable   :       1
+        Spilled       :       2
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::exception::~exception(std::exception *, unsigned int)
+
+    Report from: Code generation optimizations [cg]
+
+<compiler generated>:remark #34051: REGISTER ALLOCATION : [??_Gexception@std@@UEAAPEAXI@Z] (null):0
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    6[ rax rdx rcx rsi rdi r8]
+        
+    Routine temporaries
+        Total         :      28
+            Global    :      20
+            Local     :       8
+        Regenerable   :       2
+        Spilled       :       2
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::_Ref_count_base::~_Ref_count_base(std::_Ref_count_base *, unsigned int)
+
+    Report from: Code generation optimizations [cg]
+
+<compiler generated>:remark #34051: REGISTER ALLOCATION : [??_G_Ref_count_base@std@@UEAAPEAXI@Z] (null):0
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    5[ rax rdx rcx rsi r8]
+        
+    Routine temporaries
+        Total         :      26
+            Global    :      19
+            Local     :       7
+        Regenerable   :       2
+        Spilled       :       1
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: Thread::clear(Thread *)
+
+    Report from: Interprocedural optimizations [ipo]
+
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(36,1):INLINE REPORT START: (Thread::clear(Thread *))
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(37,2):(1)-> INLINE: StatBoards<7, 64, Move>::fill(StatBoards<7, 64, Move> *, const Move &)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.h(23,8):(2)-> INLINE: std::array<Move, 64Ui64>::operator[](std::array<Move, 64Ui64> *, std::array<Move, 64Ui64>::size_type)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.h(23,8):(2)-> INLINE: std::array<std::array<Move, 64Ui64>, 7Ui64>::operator[](std::array<std::array<Move, 64Ui64>, 7Ui64> *, std::array<std::array<Move, 64Ui64>, 7Ui64>::size_type)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.h(24,3):(2)-> INLINE: std::fill<Move *, Move>(Move *, Move *, const Move &)
+       {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(38,2):(1)-> INLINE: StatBoards<2, 4096, int16_t>::fill(StatBoards<2, 4096, int16_t> *, const int16_t &)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.h(23,8):(2)-> INLINE: std::array<int16_t, 4096Ui64>::operator[](std::array<int16_t, 4096Ui64> *, std::array<int16_t, 4096Ui64>::size_type)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.h(23,8):(2)-> INLINE: std::array<std::array<int16_t, 4096Ui64>, 2Ui64>::operator[](std::array<std::array<int16_t, 4096Ui64>, 2Ui64> *, std::array<std::array<int16_t, 4096Ui64>, 2Ui64>::size_type)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.h(24,3):(2)-> INLINE: std::fill<int16_t *, int16_t>(int16_t *, int16_t *, const int16_t &)
+       {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(40,2):(1)-> INLINE: std::array<std::array<PieceToHistory, 64Ui64>, 7Ui64>::end(std::array<std::array<PieceToHistory, 64Ui64>, 7Ui64> *, std::array<std::array<PieceToHistory, 64Ui64>, 7Ui64>::iterator *)
+     {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(40,2):(1)-> INLINE: std::_Array_const_iterator<std::array<PieceToHistory, 64Ui64>, 7Ui64>::operator!=(const std::_Array_const_iterator<std::array<PieceToHistory, 64Ui64>, 7Ui64> *, const std::_Array_const_iterator<std::array<PieceToHistory, 64Ui64>, 7Ui64>::_Myiter &) const
+     {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(40,2):(1)-> INLINE: std::_Array_const_iterator<std::array<PieceToHistory, 64Ui64>, 7Ui64>::operator!=(const std::_Array_const_iterator<std::array<PieceToHistory, 64Ui64>, 7Ui64> *, const std::_Array_const_iterator<std::array<PieceToHistory, 64Ui64>, 7Ui64>::_Myiter &) const
+     {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(40,2):(1)-> INLINE: std::array<std::array<PieceToHistory, 64Ui64>, 7Ui64>::begin(std::array<std::array<PieceToHistory, 64Ui64>, 7Ui64> *, std::array<std::array<PieceToHistory, 64Ui64>, 7Ui64>::iterator *)
+     {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(40,13):(1)-> INLINE: std::_Array_iterator<std::array<PieceToHistory, 64Ui64>, 7Ui64>::operator*(const std::_Array_iterator<std::array<PieceToHistory, 64Ui64>, 7Ui64> *) const
+     {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(40,18):(1)-> INLINE: std::_Array_iterator<std::array<PieceToHistory, 64Ui64>, 7Ui64>::operator++(std::_Array_iterator<std::array<PieceToHistory, 64Ui64>, 7Ui64> *)
+     {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(41,3):(1)-> INLINE: std::array<PieceToHistory, 64Ui64>::end(std::array<PieceToHistory, 64Ui64> *, std::array<PieceToHistory, 64Ui64>::iterator *)
+     {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(41,3):(1)-> INLINE: std::array<PieceToHistory, 64Ui64>::begin(std::array<PieceToHistory, 64Ui64> *, std::array<PieceToHistory, 64Ui64>::iterator *)
+     {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(41,3):(1)-> INLINE: std::_Array_const_iterator<PieceToHistory, 64Ui64>::operator!=(const std::_Array_const_iterator<PieceToHistory, 64Ui64> *, const std::_Array_const_iterator<PieceToHistory, 64Ui64>::_Myiter &) const
+     {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(41,3):(1)-> INLINE: std::_Array_const_iterator<PieceToHistory, 64Ui64>::operator!=(const std::_Array_const_iterator<PieceToHistory, 64Ui64> *, const std::_Array_const_iterator<PieceToHistory, 64Ui64>::_Myiter &) const
+     {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(41,14):(1)-> INLINE: std::_Array_iterator<PieceToHistory, 64Ui64>::operator*(const std::_Array_iterator<PieceToHistory, 64Ui64> *) const
+     {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(41,18):(1)-> INLINE: std::_Array_iterator<PieceToHistory, 64Ui64>::operator++(std::_Array_iterator<PieceToHistory, 64Ui64> *)
+     {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(42,4):(1)-> INLINE: StatBoards<7, 64, int16_t>::fill(StatBoards<7, 64, int16_t> *, const int16_t &)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.h(23,8):(2)-> INLINE: std::array<int16_t, 64Ui64>::operator[](std::array<int16_t, 64Ui64> *, std::array<int16_t, 64Ui64>::size_type)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.h(23,8):(2)-> INLINE: std::array<std::array<int16_t, 64Ui64>, 7Ui64>::operator[](std::array<std::array<int16_t, 64Ui64>, 7Ui64> *, std::array<std::array<int16_t, 64Ui64>, 7Ui64>::size_type)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.h(24,3):(2)-> INLINE: std::fill<int16_t *, int16_t>(int16_t *, int16_t *, const int16_t &)
+       {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(44,2):(1)-> INLINE: std::array<PieceToHistory, 64Ui64>::operator[](std::array<PieceToHistory, 64Ui64> *, std::array<PieceToHistory, 64Ui64>::size_type)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(44,2):(1)-> INLINE: StatBoards<7, 64, int16_t>::fill(StatBoards<7, 64, int16_t> *, const int16_t &)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.h(23,8):(2)-> INLINE: std::array<int16_t, 64Ui64>::operator[](std::array<int16_t, 64Ui64> *, std::array<int16_t, 64Ui64>::size_type)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.h(23,8):(2)-> INLINE: std::array<std::array<int16_t, 64Ui64>, 7Ui64>::operator[](std::array<std::array<int16_t, 64Ui64>, 7Ui64> *, std::array<std::array<int16_t, 64Ui64>, 7Ui64>::size_type)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.h(24,3):(2)-> INLINE: std::fill<int16_t *, int16_t>(int16_t *, int16_t *, const int16_t &)
+       {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(44,2):(1)-> INLINE: std::array<std::array<PieceToHistory, 64Ui64>, 7Ui64>::operator[](std::array<std::array<PieceToHistory, 64Ui64>, 7Ui64> *, std::array<std::array<PieceToHistory, 64Ui64>, 7Ui64>::size_type)
+INLINE REPORT END
+
+    Report from: Loop nest, Vector & Auto-parallelization optimizations [loop, vec, par]
+
+
+LOOP BEGIN at C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xutility(2765,2) inlined into C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(37,2)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xutility(2765,2):remark #25408: memset generated
+LOOP END
+
+LOOP BEGIN at C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xutility(2765,2) inlined into C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(38,2)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xutility(2765,2):remark #25408: memset generated
+LOOP END
+
+LOOP BEGIN at C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(40,2)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(40,2):remark #25460: No loop optimizations reported
+
+LOOP BEGIN at C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(41,3)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.h(23,8):remark #25084: Preprocess Loopnests: Moving Out Store 
+
+LOOP BEGIN at C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xutility(2765,2) inlined into C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(42,4)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xutility(2765,2):remark #25408: memset generated
+LOOP END
+LOOP END
+LOOP END
+
+LOOP BEGIN at C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xutility(2765,2) inlined into C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(44,2)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xutility(2765,2):remark #25408: memset generated
+LOOP END
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xutility(2766,3):remark #34026: call to memset implemented as a call to optimized library version
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xutility(2766,3):remark #34026: call to memset implemented as a call to optimized library version
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xutility(2766,3):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (1, 0)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xutility(2766,3):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (1, 0)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(36,1):remark #34051: REGISTER ALLOCATION : [?clear@Thread@@QEAAXXZ] C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp:36
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :   10[ rax rdx rcx rbp r8-r11 r15 zmm0]
+        
+    Routine temporaries
+        Total         :      59
+            Global    :      34
+            Local     :      25
+        Regenerable   :      11
+        Spilled       :       2
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: Thread::idle_loop(Thread *)
+
+    Report from: Interprocedural optimizations [ipo]
+
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(65,1):INLINE REPORT START: (Thread::idle_loop(Thread *))
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(68,27):(1)-> INLINE: std::unique_lock<Mutex>::unique_lock(std::unique_lock<Mutex> *, Mutex &)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\mutex(273,3):(2)-> INLINE: Mutex::lock(Mutex *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(70,3):(1)-> INLINE: std::condition_variable_any::notify_one(std::condition_variable_any *)
+     {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(73,3):(1)-> INLINE: std::condition_variable_any::wait<std::unique_lock<Mutex>, lambda [] type at line 270641, col. 17>(std::condition_variable_any *, std::unique_lock<Mutex> &, lambda [] type at line 270641, col. 17)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\condition_variable(67,3):(2)-> INLINE: lambda [] type at line 270641, col. 17::operator()(const lambda [] type at line 270641, col. 17 *)->bool
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\condition_variable(67,3):(2)-> INLINE: lambda [] type at line 270641, col. 17::operator()(const lambda [] type at line 270641, col. 17 *)->bool
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\condition_variable(68,4):(2)-> INLINE: std::condition_variable_any::wait<std::unique_lock<Mutex>>(std::condition_variable_any *, std::unique_lock<Mutex> &)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\condition_variable(60,3):(3)-> INLINE: std::unique_lock<Mutex>::lock(std::unique_lock<Mutex> *)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\mutex(348,3):(4)-> INLINE: Mutex::lock(Mutex *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(76,4):(1)-> INLINE: std::unique_lock<Mutex>::~unique_lock(std::unique_lock<Mutex> *)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\mutex(338,4):(2)-> INLINE: Mutex::unlock(Mutex *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(78,3):(1)-> std::unique_lock<Mutex>::unlock(std::unique_lock<Mutex> *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(80,3):(1)-> INDIRECT- (VIRTUAL):  Thread::search(Thread *) 
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(81,2):(1)-> INLINE: std::unique_lock<Mutex>::~unique_lock(std::unique_lock<Mutex> *)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\mutex(338,4):(2)-> INLINE: Mutex::unlock(Mutex *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(82,1):(1)-> std::unique_lock<Mutex>::~unique_lock(std::unique_lock<Mutex> *)
+INLINE REPORT END
+
+    Report from: Code generation optimizations [cg]
+
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(65,1):remark #34051: REGISTER ALLOCATION : [?idle_loop@Thread@@QEAAXXZ] C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp:65
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    9[ rax rdx rcx rsi rdi r12-r15]
+        
+    Routine temporaries
+        Total         :     140
+            Global    :      82
+            Local     :      58
+        Regenerable   :      10
+        Spilled       :       6
+        
+    Routine stack
+        Variables     :      40 bytes*
+            Reads     :       9 [1.23e+002 ~ 9.3%]
+            Writes    :       9 [1.25e+002 ~ 9.4%]
+        Spills        :      48 bytes*
+            Reads     :       6 [6.00e+000 ~ 0.5%]
+            Writes    :       6 [6.00e+000 ~ 0.5%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::unique_lock<Mutex>::_Validate(const std::unique_lock<Mutex> *) const
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vcruntime_exception.h(53,5):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (16, 8)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vcruntime_exception.h(54,40):remark #34000: call to memcpy implemented inline with loads and stores with proven source (alignment, offset): (16, 0), and destination (alignment, offset): (16, 0)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\system_error(521,2):remark #34000: call to memcpy implemented inline with loads and stores with proven source (alignment, offset): (16, 0), and destination (alignment, offset): (16, 8)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vcruntime_exception.h(53,5):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (16, 8)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vcruntime_exception.h(54,40):remark #34000: call to memcpy implemented inline with loads and stores with proven source (alignment, offset): (16, 0), and destination (alignment, offset): (16, 0)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\system_error(521,2):remark #34000: call to memcpy implemented inline with loads and stores with proven source (alignment, offset): (16, 0), and destination (alignment, offset): (16, 8)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\mutex(431,3):remark #34051: REGISTER ALLOCATION : [?_Validate@?$unique_lock@UMutex@@@std@@AEBAXXZ] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\mutex:431
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    8[ rax rdx rcx r8-r9 r14-r15 zmm0]
+        
+    Routine temporaries
+        Total         :     404
+            Global    :     249
+            Local     :     155
+        Regenerable   :     106
+        Spilled       :       2
+        
+    Routine stack
+        Variables     :     432 bytes*
+            Reads     :      27 [1.29e+000 ~ 2.6%]
+            Writes    :      64 [3.66e+000 ~ 7.5%]
+        Spills        :      16 bytes*
+            Reads     :       2 [2.00e+000 ~ 4.1%]
+            Writes    :       2 [2.00e+000 ~ 4.1%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::shared_ptr<std::mutex>::~shared_ptr(std::shared_ptr<std::mutex> *)
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\memory(566,3):remark #34051: REGISTER ALLOCATION : [??1?$shared_ptr@Vmutex@std@@@std@@QEAA@XZ] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\memory:566
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    4[ rax rdx rcx r13]
+        
+    Routine temporaries
+        Total         :      35
+            Global    :      23
+            Local     :      12
+        Regenerable   :       0
+        Spilled       :       1
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::unique_lock<Mutex>::unlock(std::unique_lock<Mutex> *)
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\mutex(388,4):remark #34000: call to memcpy implemented inline with loads and stores with proven source (alignment, offset): (16, 0), and destination (alignment, offset): (16, 0)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\system_error(536,2):remark #34000: call to memcpy implemented inline with loads and stores with proven source (alignment, offset): (16, 0), and destination (alignment, offset): (16, 0)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\system_error(521,2):remark #34000: call to memcpy implemented inline with loads and stores with proven source (alignment, offset): (16, 0), and destination (alignment, offset): (16, 0)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\iosfwd(553,3):remark #34008: call to memmove not inlined based on compiler heuristics
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vcruntime_exception.h(53,5):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (1, 0)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vcruntime_exception.h(54,40):remark #34000: call to memcpy implemented inline with loads and stores with proven source (alignment, offset): (16, 0), and destination (alignment, offset): (16, 0)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\system_error(521,2):remark #34000: call to memcpy implemented inline with loads and stores with proven source (alignment, offset): (16, 0), and destination (alignment, offset): (1, 0)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\iosfwd(530,3):remark #34026: call to memcpy implemented as a call to optimized library version
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\mutex(386,3):remark #34051: REGISTER ALLOCATION : [?unlock@?$unique_lock@UMutex@@@std@@QEAAXXZ] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\mutex:386
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :   11[ rax rdx rcx rbx rdi r8-r9 r12-r13 zmm0-zmm1]
+        
+    Routine temporaries
+        Total         :     258
+            Global    :     142
+            Local     :     116
+        Regenerable   :      49
+        Spilled       :       4
+        
+    Routine stack
+        Variables     :     280 bytes*
+            Reads     :      30 [1.95e+000 ~ 2.6%]
+            Writes    :      34 [3.66e+000 ~ 4.9%]
+        Spills        :      32 bytes*
+            Reads     :       4 [4.00e+000 ~ 5.3%]
+            Writes    :       4 [4.00e+000 ~ 5.3%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::unique_lock<Mutex>::~unique_lock(std::unique_lock<Mutex> *)
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\mutex(336,3):remark #34051: REGISTER ALLOCATION : [??1?$unique_lock@UMutex@@@std@@QEAA@XZ] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\mutex:336
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    2[ rax rcx]
+        
+    Routine temporaries
+        Total         :      24
+            Global    :      19
+            Local     :       5
+        Regenerable   :       0
+        Spilled       :       0
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: Thread::start_searching(Thread *)
+
+    Report from: Interprocedural optimizations [ipo]
+
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(48,1):INLINE REPORT START: (Thread::start_searching(Thread *))
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(49,25):(1)-> INLINE: std::lock_guard<Mutex>::lock_guard(std::lock_guard<Mutex> *, Mutex &)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\mutex(218,3):(2)-> INLINE: Mutex::lock(Mutex *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(53,2):(1)-> INLINE: std::condition_variable_any::notify_one(std::condition_variable_any *)
+     {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(53,2):(1)-> INLINE: std::lock_guard<Mutex>::~lock_guard(std::lock_guard<Mutex> *)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\mutex(228,3):(2)-> INLINE: Mutex::unlock(Mutex *)
+INLINE REPORT END
+
+    Report from: Code generation optimizations [cg]
+
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(48,1):remark #34051: REGISTER ALLOCATION : [?start_searching@Thread@@QEAAXXZ] C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp:48
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    4[ rax rcx rbp r15]
+        
+    Routine temporaries
+        Total         :      40
+            Global    :      26
+            Local     :      14
+        Regenerable   :       0
+        Spilled       :       2
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: ThreadPool::numberOfThreads(ThreadPool *, size_t)
+
+    Report from: Interprocedural optimizations [ipo]
+
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(86,1):INLINE REPORT START: (ThreadPool::numberOfThreads(ThreadPool *, size_t))
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(88,2):(1)-> INLINE: std::vector<Thread *, std::allocator<Thread *>>::size(const std::vector<Thread *, std::allocator<Thread *>> *) const
+     {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(88,2):(1)-> INLINE: std::vector<Thread *, std::allocator<Thread *>>::size(const std::vector<Thread *, std::allocator<Thread *>> *) const
+     {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(89,3):(1)-> std::vector<Thread *, std::allocator<Thread *>>::push_back(std::vector<Thread *, std::allocator<Thread *>> *, std::vector<Thread *, std::allocator<Thread *>>::value_type &&)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(89,3):(1)-> INLINE: std::vector<Thread *, std::allocator<Thread *>>::size(const std::vector<Thread *, std::allocator<Thread *>> *) const
+     {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(89,3):(1)-> Thread::Thread(Thread *, size_t)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(91,2):(1)-> INLINE: std::vector<Thread *, std::allocator<Thread *>>::size(const std::vector<Thread *, std::allocator<Thread *>> *) const
+     {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(91,2):(1)-> INLINE: std::vector<Thread *, std::allocator<Thread *>>::size(const std::vector<Thread *, std::allocator<Thread *>> *) const
+     {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(92,3):(1)-> INLINE: std::vector<Thread *, std::allocator<Thread *>>::back(std::vector<Thread *, std::allocator<Thread *>> *)
+     {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(92,3):(1)-> INLINE: std::vector<Thread *, std::allocator<Thread *>>::pop_back(std::vector<Thread *, std::allocator<Thread *>> *)
+     {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(92,3):(1)-> INDIRECT- (VIRTUAL):  Thread::~Thread(Thread *, unsigned int) 
+INLINE REPORT END
+
+    Report from: Code generation optimizations [cg]
+
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(86,1):remark #34051: REGISTER ALLOCATION : [?numberOfThreads@ThreadPool@@QEAAX_K@Z] C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp:86
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    6[ rax rdx rcx rsi rdi r12]
+        
+    Routine temporaries
+        Total         :      67
+            Global    :      44
+            Local     :      23
+        Regenerable   :       5
+        Spilled       :       3
+        
+    Routine stack
+        Variables     :      28 bytes*
+            Reads     :       2 [0.00e+000 ~ 0.0%]
+            Writes    :       6 [2.50e+001 ~ 11.8%]
+        Spills        :      24 bytes*
+            Reads     :       3 [3.00e+000 ~ 1.4%]
+            Writes    :       3 [3.00e+000 ~ 1.4%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::vector<Thread *, std::allocator<Thread *>>::push_back(std::vector<Thread *, std::allocator<Thread *>> *, std::vector<Thread *, std::allocator<Thread *>>::value_type &&)
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xutility(2306,2):remark #34008: call to memmove not inlined based on compiler heuristics
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xutility(2306,2):remark #34008: call to memmove not inlined based on compiler heuristics
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vector(896,3):remark #34051: REGISTER ALLOCATION : [?push_back@?$vector@PEAVThread@@V?$allocator@PEAVThread@@@std@@@std@@QEAAX$$QEAPEAVThread@@@Z] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vector:896
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :   10[ rax rdx rcx rsi rdi r8 r12-r15]
+        
+    Routine temporaries
+        Total         :     115
+            Global    :      59
+            Local     :      56
+        Regenerable   :       5
+        Spilled       :       6
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::allocator<Thread *>::deallocate(std::allocator<Thread *> *, std::allocator<Thread *>::pointer, std::allocator<Thread *>::size_type)
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xmemory0(719,3):remark #34051: REGISTER ALLOCATION : [?deallocate@?$allocator@PEAVThread@@@std@@QEAAXPEAPEAVThread@@_K@Z] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xmemory0:719
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    4[ rax rdx rcx r8]
+        
+    Routine temporaries
+        Total         :      28
+            Global    :      22
+            Local     :       6
+        Regenerable   :       1
+        Spilled       :       0
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::_Vector_alloc<std::_Vec_base_types<Thread *, std::allocator<Thread *>>>::_Getal(std::_Vector_alloc<std::_Vec_base_types<Thread *, std::allocator<Thread *>>> *)
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vector(622,3):remark #34051: REGISTER ALLOCATION : [?_Getal@?$_Vector_alloc@U?$_Vec_base_types@PEAVThread@@V?$allocator@PEAVThread@@@std@@@std@@@std@@QEAAAEAU?$_Wrap_alloc@V?$allocator@PEAVThread@@@std@@@2@XZ] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vector:622
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    2[ rax rcx]
+        
+    Routine temporaries
+        Total         :      21
+            Global    :       0
+            Local     :      21
+        Regenerable   :       0
+        Spilled       :       0
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: Thread::Thread(Thread *, size_t)
+
+    Report from: Interprocedural optimizations [ipo]
+
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(13,1):INLINE REPORT START: (Thread::Thread(Thread *, size_t))
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(12,9):(1)-> INLINE: Mutex::Mutex(Mutex *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(12,9):(1)-> std::vector<Search::RootMove, std::allocator<Search::RootMove>>::vector(std::vector<Search::RootMove, std::allocator<Search::RootMove>> *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(12,9):(1)-> INLINE: std::thread::thread<void (*)(), Thread *, void>(std::thread *, void (*&&)(), Thread *&&)
+     {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(12,9):(1)-> INLINE: HashTable<Pawns::PawnsEntry, 16384>::HashTable(HashTable<Pawns::PawnsEntry, 16384> *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(323,2):(2)-> INLINE: Pawns::PawnsEntry::PawnsEntry(Pawns::PawnsEntry *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Pawns.h(11,9):(3)-> INLINE: Scores::Scores(Scores *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Pawns.h(11,9):(3)-> INLINE: Scores::??_HScores@@QEAAPEAU0@H@Z(Scores *, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Pawns.h(11,9):(4)-> INLINE: Scores::Scores(Scores *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(323,2):(2)-> INLINE: std::vector<Pawns::PawnsEntry, std::allocator<Pawns::PawnsEntry>>::vector(std::vector<Pawns::PawnsEntry, std::allocator<Pawns::PawnsEntry>> *, std::vector<Pawns::PawnsEntry, std::allocator<Pawns::PawnsEntry>>::size_type, const std::vector<Pawns::PawnsEntry, std::allocator<Pawns::PawnsEntry>>::value_type &)
+       {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(12,9):(1)-> INLINE: std::condition_variable_any::condition_variable_any(std::condition_variable_any *)
+     {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(12,9):(1)-> INLINE: HashTable<Material::Entry, 8192>::HashTable(HashTable<Material::Entry, 8192> *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(323,2):(2)-> INLINE: Material::Entry::Entry(Material::Entry *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\material.h(9,7):(3)-> INLINE: Scores::Scores(Scores *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(323,2):(2)-> INLINE: std::vector<Material::Entry, std::allocator<Material::Entry>>::vector(std::vector<Material::Entry, std::allocator<Material::Entry>> *, std::vector<Material::Entry, std::allocator<Material::Entry>>::size_type, const std::vector<Material::Entry, std::allocator<Material::Entry>>::value_type &)
+       {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(14,2):(1)-> INLINE: Thread::wait_for_search_stop(Thread *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(58,26):(2)-> INLINE: std::unique_lock<Mutex>::unique_lock(std::unique_lock<Mutex> *, Mutex &)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\mutex(273,3):(3)-> INLINE: Mutex::lock(Mutex *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(61,2):(2)-> INLINE: std::unique_lock<Mutex>::~unique_lock(std::unique_lock<Mutex> *)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\mutex(338,4):(3)-> INLINE: Mutex::unlock(Mutex *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(61,2):(2)-> INLINE: std::condition_variable_any::wait<std::unique_lock<Mutex>, lambda [] type at line 270629, col. 16>(std::condition_variable_any *, std::unique_lock<Mutex> &, lambda [] type at line 270629, col. 16)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\condition_variable(67,3):(3)-> INLINE: lambda [] type at line 270629, col. 16::operator()(const lambda [] type at line 270629, col. 16 *)->bool
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\condition_variable(67,3):(3)-> INLINE: lambda [] type at line 270629, col. 16::operator()(const lambda [] type at line 270629, col. 16 *)->bool
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\condition_variable(68,4):(3)-> INLINE: std::condition_variable_any::wait<std::unique_lock<Mutex>>(std::condition_variable_any *, std::unique_lock<Mutex> &)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\condition_variable(60,3):(4)-> INLINE: std::unique_lock<Mutex>::lock(std::unique_lock<Mutex> *)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\mutex(348,3):(5)-> INLINE: Mutex::lock(Mutex *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(62,1):(2)-> std::unique_lock<Mutex>::~unique_lock(std::unique_lock<Mutex> *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(16,2):(1)-> INLINE: Thread::clear(Thread *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(37,2):(2)-> INLINE: StatBoards<7, 64, Move>::fill(StatBoards<7, 64, Move> *, const Move &)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.h(23,8):(3)-> INLINE: std::array<Move, 64Ui64>::operator[](std::array<Move, 64Ui64> *, std::array<Move, 64Ui64>::size_type)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.h(23,8):(3)-> INLINE: std::array<std::array<Move, 64Ui64>, 7Ui64>::operator[](std::array<std::array<Move, 64Ui64>, 7Ui64> *, std::array<std::array<Move, 64Ui64>, 7Ui64>::size_type)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.h(24,3):(3)-> INLINE: std::fill<Move *, Move>(Move *, Move *, const Move &)
+         {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(38,2):(2)-> INLINE: StatBoards<2, 4096, int16_t>::fill(StatBoards<2, 4096, int16_t> *, const int16_t &)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.h(23,8):(3)-> INLINE: std::array<int16_t, 4096Ui64>::operator[](std::array<int16_t, 4096Ui64> *, std::array<int16_t, 4096Ui64>::size_type)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.h(23,8):(3)-> INLINE: std::array<std::array<int16_t, 4096Ui64>, 2Ui64>::operator[](std::array<std::array<int16_t, 4096Ui64>, 2Ui64> *, std::array<std::array<int16_t, 4096Ui64>, 2Ui64>::size_type)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.h(24,3):(3)-> INLINE: std::fill<int16_t *, int16_t>(int16_t *, int16_t *, const int16_t &)
+         {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(40,2):(2)-> INLINE: std::array<std::array<PieceToHistory, 64Ui64>, 7Ui64>::begin(std::array<std::array<PieceToHistory, 64Ui64>, 7Ui64> *, std::array<std::array<PieceToHistory, 64Ui64>, 7Ui64>::iterator *)
+       {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(40,2):(2)-> INLINE: std::array<std::array<PieceToHistory, 64Ui64>, 7Ui64>::end(std::array<std::array<PieceToHistory, 64Ui64>, 7Ui64> *, std::array<std::array<PieceToHistory, 64Ui64>, 7Ui64>::iterator *)
+       {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(40,2):(2)-> INLINE: std::_Array_const_iterator<std::array<PieceToHistory, 64Ui64>, 7Ui64>::operator!=(const std::_Array_const_iterator<std::array<PieceToHistory, 64Ui64>, 7Ui64> *, const std::_Array_const_iterator<std::array<PieceToHistory, 64Ui64>, 7Ui64>::_Myiter &) const
+       {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(40,2):(2)-> INLINE: std::_Array_const_iterator<std::array<PieceToHistory, 64Ui64>, 7Ui64>::operator!=(const std::_Array_const_iterator<std::array<PieceToHistory, 64Ui64>, 7Ui64> *, const std::_Array_const_iterator<std::array<PieceToHistory, 64Ui64>, 7Ui64>::_Myiter &) const
+       {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(40,13):(2)-> INLINE: std::_Array_iterator<std::array<PieceToHistory, 64Ui64>, 7Ui64>::operator*(const std::_Array_iterator<std::array<PieceToHistory, 64Ui64>, 7Ui64> *) const
+       {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(40,18):(2)-> INLINE: std::_Array_iterator<std::array<PieceToHistory, 64Ui64>, 7Ui64>::operator++(std::_Array_iterator<std::array<PieceToHistory, 64Ui64>, 7Ui64> *)
+       {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(41,3):(2)-> INLINE: std::_Array_const_iterator<PieceToHistory, 64Ui64>::operator!=(const std::_Array_const_iterator<PieceToHistory, 64Ui64> *, const std::_Array_const_iterator<PieceToHistory, 64Ui64>::_Myiter &) const
+       {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(41,3):(2)-> INLINE: std::_Array_const_iterator<PieceToHistory, 64Ui64>::operator!=(const std::_Array_const_iterator<PieceToHistory, 64Ui64> *, const std::_Array_const_iterator<PieceToHistory, 64Ui64>::_Myiter &) const
+       {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(41,3):(2)-> INLINE: std::array<PieceToHistory, 64Ui64>::end(std::array<PieceToHistory, 64Ui64> *, std::array<PieceToHistory, 64Ui64>::iterator *)
+       {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(41,3):(2)-> INLINE: std::array<PieceToHistory, 64Ui64>::begin(std::array<PieceToHistory, 64Ui64> *, std::array<PieceToHistory, 64Ui64>::iterator *)
+       {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(41,14):(2)-> INLINE: std::_Array_iterator<PieceToHistory, 64Ui64>::operator*(const std::_Array_iterator<PieceToHistory, 64Ui64> *) const
+       {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(41,18):(2)-> INLINE: std::_Array_iterator<PieceToHistory, 64Ui64>::operator++(std::_Array_iterator<PieceToHistory, 64Ui64> *)
+       {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(42,4):(2)-> INLINE: StatBoards<7, 64, int16_t>::fill(StatBoards<7, 64, int16_t> *, const int16_t &)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.h(23,8):(3)-> INLINE: std::array<int16_t, 64Ui64>::operator[](std::array<int16_t, 64Ui64> *, std::array<int16_t, 64Ui64>::size_type)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.h(23,8):(3)-> INLINE: std::array<std::array<int16_t, 64Ui64>, 7Ui64>::operator[](std::array<std::array<int16_t, 64Ui64>, 7Ui64> *, std::array<std::array<int16_t, 64Ui64>, 7Ui64>::size_type)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.h(24,3):(3)-> INLINE: std::fill<int16_t *, int16_t>(int16_t *, int16_t *, const int16_t &)
+         {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(44,2):(2)-> INLINE: std::array<std::array<PieceToHistory, 64Ui64>, 7Ui64>::operator[](std::array<std::array<PieceToHistory, 64Ui64>, 7Ui64> *, std::array<std::array<PieceToHistory, 64Ui64>, 7Ui64>::size_type)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(44,2):(2)-> INLINE: StatBoards<7, 64, int16_t>::fill(StatBoards<7, 64, int16_t> *, const int16_t &)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.h(23,8):(3)-> INLINE: std::array<int16_t, 64Ui64>::operator[](std::array<int16_t, 64Ui64> *, std::array<int16_t, 64Ui64>::size_type)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.h(23,8):(3)-> INLINE: std::array<std::array<int16_t, 64Ui64>, 7Ui64>::operator[](std::array<std::array<int16_t, 64Ui64>, 7Ui64> *, std::array<std::array<int16_t, 64Ui64>, 7Ui64>::size_type)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.h(24,3):(3)-> INLINE: std::fill<int16_t *, int16_t>(int16_t *, int16_t *, const int16_t &)
+         {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(44,2):(2)-> INLINE: std::array<PieceToHistory, 64Ui64>::operator[](std::array<PieceToHistory, 64Ui64> *, std::array<PieceToHistory, 64Ui64>::size_type)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(17,1):(1)-> std::vector<Search::RootMove, std::allocator<Search::RootMove>>::~vector(std::vector<Search::RootMove, std::allocator<Search::RootMove>> *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(17,1):(1)-> std::thread::~thread(std::thread *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(17,1):(1)-> HashTable<Material::Entry, 8192>::~HashTable(HashTable<Material::Entry, 8192> *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(17,1):(1)-> std::condition_variable_any::~condition_variable_any(std::condition_variable_any *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(17,1):(1)-> Mutex::~Mutex(Mutex *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(17,1):(1)-> HashTable<Pawns::PawnsEntry, 16384>::~HashTable(HashTable<Pawns::PawnsEntry, 16384> *)
+INLINE REPORT END
+
+    Report from: Loop nest, Vector & Auto-parallelization optimizations [loop, vec, par]
+
+
+LOOP BEGIN at C:\Users\C-60\Desktop\cppPrograms\StuckFish\Pawns.h(11,9) inlined into C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(12,9)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Pawns.h(11,9):remark #25436: completely unrolled by 2  
+LOOP END
+
+LOOP BEGIN at C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xmemory(420,2) inlined into C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(12,9)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xmemory(420,2):remark #25438: unrolled without remainder by 2  
+LOOP END
+
+LOOP BEGIN at C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xmemory(420,2) inlined into C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(12,9)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xmemory(420,2):remark #25438: unrolled without remainder by 2  
+LOOP END
+
+LOOP BEGIN at C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xutility(2765,2) inlined into C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(16,2)
+Peeled loop for vectorization
+LOOP END
+
+LOOP BEGIN at C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xutility(2765,2) inlined into C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(16,2)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xutility(2765,2):remark #15300: LOOP WAS VECTORIZED
+LOOP END
+
+LOOP BEGIN at C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xutility(2765,2) inlined into C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(16,2)
+Remainder loop for vectorization
+LOOP END
+
+LOOP BEGIN at C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xutility(2765,2) inlined into C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(16,2)
+Peeled loop for vectorization
+LOOP END
+
+LOOP BEGIN at C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xutility(2765,2) inlined into C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(16,2)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xutility(2765,2):remark #15300: LOOP WAS VECTORIZED
+LOOP END
+
+LOOP BEGIN at C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xutility(2765,2) inlined into C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(16,2)
+Remainder loop for vectorization
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xutility(2765,2):remark #15301: REMAINDER LOOP WAS VECTORIZED
+LOOP END
+
+LOOP BEGIN at C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xutility(2765,2) inlined into C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(16,2)
+Remainder loop for vectorization
+LOOP END
+
+LOOP BEGIN at C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(40,2) inlined into C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(16,2)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(40,2):remark #25460: No loop optimizations reported
+
+LOOP BEGIN at C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(41,3) inlined into C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(16,2)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(41,3):remark #25460: No loop optimizations reported
+
+LOOP BEGIN at C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xutility(2765,2) inlined into C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(16,2)
+Peeled loop for vectorization
+LOOP END
+
+LOOP BEGIN at C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xutility(2765,2) inlined into C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(16,2)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xutility(2765,2):remark #15300: LOOP WAS VECTORIZED
+LOOP END
+
+LOOP BEGIN at C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xutility(2765,2) inlined into C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(16,2)
+Remainder loop for vectorization
+LOOP END
+LOOP END
+LOOP END
+
+LOOP BEGIN at C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xutility(2765,2) inlined into C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(16,2)
+Peeled loop for vectorization
+LOOP END
+
+LOOP BEGIN at C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xutility(2765,2) inlined into C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(16,2)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xutility(2765,2):remark #15300: LOOP WAS VECTORIZED
+LOOP END
+
+LOOP BEGIN at C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xutility(2765,2) inlined into C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(16,2)
+Remainder loop for vectorization
+LOOP END
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\memory(973,18):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (16, 0)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(323,2):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (16, 0)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xmemory0(737,3):remark #34000: call to memcpy implemented inline with loads and stores with proven source (alignment, offset): (16, 0), and destination (alignment, offset): (32, 0)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xmemory0(737,3):remark #34000: call to memcpy implemented inline with loads and stores with proven source (alignment, offset): (16, 0), and destination (alignment, offset): (32, 0)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(323,2):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (16, 0)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xmemory0(737,3):remark #34000: call to memcpy implemented inline with loads and stores with proven source (alignment, offset): (16, 0), and destination (alignment, offset): (16, 0)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xmemory0(737,3):remark #34000: call to memcpy implemented inline with loads and stores with proven source (alignment, offset): (16, 0), and destination (alignment, offset): (16, 8)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(13,1):remark #34051: REGISTER ALLOCATION : [??0Thread@@QEAA@_K@Z] C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp:13
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :   18[ rax rdx rcx rbx rsi rdi r8-r10 r12-r15 zmm0-zmm3 zmm13]
+        
+    Routine temporaries
+        Total         :     682
+            Global    :     439
+            Local     :     243
+        Regenerable   :      51
+        Spilled       :       8
+        
+    Routine stack
+        Variables     :     360 bytes*
+            Reads     :      47 [5.50e+001 ~ 1.6%]
+            Writes    :      52 [6.63e+001 ~ 1.9%]
+        Spills        :      72 bytes*
+            Reads     :       8 [8.00e+000 ~ 0.2%]
+            Writes    :       8 [8.00e+000 ~ 0.2%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::vector<Pawns::PawnsEntry, std::allocator<Pawns::PawnsEntry>>::_Tidy(std::vector<Pawns::PawnsEntry, std::allocator<Pawns::PawnsEntry>> *)
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vector(1636,3):remark #34051: REGISTER ALLOCATION : [?_Tidy@?$vector@UPawnsEntry@Pawns@@V?$allocator@UPawnsEntry@Pawns@@@std@@@std@@IEAAXXZ] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vector:1636
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    5[ rax rdx rcx rbp r8]
+        
+    Routine temporaries
+        Total         :      30
+            Global    :      23
+            Local     :       7
+        Regenerable   :       2
+        Spilled       :       1
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::vector<Material::Entry, std::allocator<Material::Entry>>::_Tidy(std::vector<Material::Entry, std::allocator<Material::Entry>> *)
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vector(1636,3):remark #34051: REGISTER ALLOCATION : [?_Tidy@?$vector@VEntry@Material@@V?$allocator@VEntry@Material@@@std@@@std@@IEAAXXZ] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vector:1636
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    6[ rax rdx rcx r8-r9 r15]
+        
+    Routine temporaries
+        Total         :      38
+            Global    :      23
+            Local     :      15
+        Regenerable   :       4
+        Spilled       :       1
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::vector<Search::RootMove, std::allocator<Search::RootMove>>::vector(std::vector<Search::RootMove, std::allocator<Search::RootMove>> *)
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vector(707,3):remark #34051: REGISTER ALLOCATION : [??0?$vector@URootMove@Search@@V?$allocator@URootMove@Search@@@std@@@std@@QEAA@XZ] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vector:707
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    3[ rax rdx rcx]
+        
+    Routine temporaries
+        Total         :      22
+            Global    :       0
+            Local     :      22
+        Regenerable   :       1
+        Spilled       :       0
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::exception::exception(std::exception *, const std::exception &)
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vcruntime_exception.h(66,5):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (1, 0)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vcruntime_exception.h(66,5):remark #34051: REGISTER ALLOCATION : [??0exception@std@@QEAA@AEBV01@@Z] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vcruntime_exception.h:66
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    6[ rax rdx rcx rbp r8 zmm0]
+        
+    Routine temporaries
+        Total         :      29
+            Global    :      21
+            Local     :       8
+        Regenerable   :       2
+        Spilled       :       1
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::exception::what(const std::exception *) const
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vcruntime_exception.h(88,5):remark #34051: REGISTER ALLOCATION : [?what@exception@std@@UEBAPEBDXZ] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vcruntime_exception.h:88
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    3[ rax rdx rcx]
+        
+    Routine temporaries
+        Total         :      24
+            Global    :       0
+            Local     :      24
+        Regenerable   :       1
+        Spilled       :       0
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::basic_string<char, std::char_traits<char>, std::allocator<char>>::_Assign_rv(std::basic_string<char, std::char_traits<char>, std::allocator<char>> *, std::basic_string<char, std::char_traits<char>, std::allocator<char>>::_Myt &&)
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\iosfwd(553,3):remark #34008: call to memmove not inlined based on compiler heuristics
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xstring(961,3):remark #34051: REGISTER ALLOCATION : [?_Assign_rv@?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@QEAAX$$QEAV12@@Z] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xstring:961
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    6[ rax rdx rcx rbp rsi r8]
+        
+    Routine temporaries
+        Total         :      29
+            Global    :      22
+            Local     :       7
+        Regenerable   :       0
+        Spilled       :       2
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::basic_string<char, std::char_traits<char>, std::allocator<char>>::~basic_string(std::basic_string<char, std::char_traits<char>, std::allocator<char>> *)
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xstring(1016,3):remark #34051: REGISTER ALLOCATION : [??1?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@QEAA@XZ] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xstring:1016
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    4[ rax rdx rcx rdi]
+        
+    Routine temporaries
+        Total         :      26
+            Global    :      23
+            Local     :       3
+        Regenerable   :       0
+        Spilled       :       1
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::basic_string<char, std::char_traits<char>, std::allocator<char>>::append(std::basic_string<char, std::char_traits<char>, std::allocator<char>> *, const std::basic_string<char, std::char_traits<char>, std::allocator<char>>::_Myt &, std::basic_string<char, std::char_traits<char>, std::allocator<char>>::size_type, std::basic_string<char, std::char_traits<char>, std::allocator<char>>::size_type)
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\iosfwd(530,3):remark #34026: call to memcpy implemented as a call to optimized library version
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\iosfwd(530,3):remark #34026: call to memcpy implemented as a call to optimized library version
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xstring(1070,3):remark #34051: REGISTER ALLOCATION : [?append@?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@QEAAAEAV12@AEBV12@_K1@Z] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xstring:1070
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    8[ rax rdx rcx rsi r8-r10 r14]
+        
+    Routine temporaries
+        Total         :     146
+            Global    :      91
+            Local     :      55
+        Regenerable   :      13
+        Spilled       :       2
+        
+    Routine stack
+        Variables     :      64 bytes*
+            Reads     :      13 [1.67e-002 ~ 0.0%]
+            Writes    :      13 [2.06e+000 ~ 2.9%]
+        Spills        :      16 bytes*
+            Reads     :       2 [9.95e-001 ~ 1.4%]
+            Writes    :       2 [1.00e+000 ~ 1.4%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::basic_string<char, std::char_traits<char>, std::allocator<char>>::append(std::basic_string<char, std::char_traits<char>, std::allocator<char>> *, const char *, std::basic_string<char, std::char_traits<char>, std::allocator<char>>::size_type)
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\iosfwd(530,3):remark #34026: call to memcpy implemented as a call to optimized library version
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\iosfwd(530,3):remark #34026: call to memcpy implemented as a call to optimized library version
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\iosfwd(530,3):remark #34026: call to memcpy implemented as a call to optimized library version
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\iosfwd(530,3):remark #34026: call to memcpy implemented as a call to optimized library version
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xstring(1087,3):remark #34051: REGISTER ALLOCATION : [?append@?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@QEAAAEAV12@PEBD_K@Z] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xstring:1087
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    8[ rax rdx rcx rbx r8-r10 r13]
+        
+    Routine temporaries
+        Total         :     264
+            Global    :     162
+            Local     :     102
+        Regenerable   :      24
+        Spilled       :       3
+        
+    Routine stack
+        Variables     :     152 bytes*
+            Reads     :      31 [1.96e-002 ~ 0.0%]
+            Writes    :      30 [3.18e+000 ~ 4.4%]
+        Spills        :      24 bytes*
+            Reads     :       4 [9.96e-001 ~ 1.4%]
+            Writes    :       3 [1.00e+000 ~ 1.4%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::basic_string<char, std::char_traits<char>, std::allocator<char>>::_Tidy(std::basic_string<char, std::char_traits<char>, std::allocator<char>> *, bool, std::basic_string<char, std::char_traits<char>, std::allocator<char>>::size_type)
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\iosfwd(530,3):remark #34026: call to memcpy implemented as a call to optimized library version
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xstring(2248,3):remark #34051: REGISTER ALLOCATION : [?_Tidy@?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@QEAAX_N_K@Z] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xstring:2248
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    7[ rax rdx rcx rdi r8 r12-r13]
+        
+    Routine temporaries
+        Total         :      33
+            Global    :      24
+            Local     :       9
+        Regenerable   :       0
+        Spilled       :       3
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::_Wrap_alloc<std::_String_base_types<char, std::allocator<char>>::_Alloc>::allocate(std::_Wrap_alloc<std::_String_base_types<char, std::allocator<char>>::_Alloc> *, std::_Wrap_alloc<std::_String_base_types<char, std::allocator<char>>::_Alloc>::size_type)
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xmemory0(975,3):remark #34051: REGISTER ALLOCATION : [?allocate@?$_Wrap_alloc@V?$allocator@D@std@@@std@@QEAAPEAD_K@Z] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xmemory0:975
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    3[ rax rdx rcx]
+        
+    Routine temporaries
+        Total         :      30
+            Global    :      24
+            Local     :       6
+        Regenerable   :       0
+        Spilled       :       0
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::_String_alloc<std::_String_base_types<char, std::allocator<char>>>::_Getal(std::_String_alloc<std::_String_base_types<char, std::allocator<char>>> *)
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xstring(691,3):remark #34051: REGISTER ALLOCATION : [?_Getal@?$_String_alloc@U?$_String_base_types@DV?$allocator@D@std@@@std@@@std@@QEAAAEAU?$_Wrap_alloc@V?$allocator@D@std@@@2@XZ] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xstring:691
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    2[ rax rcx]
+        
+    Routine temporaries
+        Total         :      21
+            Global    :       0
+            Local     :      21
+        Regenerable   :       0
+        Spilled       :       0
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::basic_string<char, std::char_traits<char>, std::allocator<char>>::assign(std::basic_string<char, std::char_traits<char>, std::allocator<char>> *, const char *, std::basic_string<char, std::char_traits<char>, std::allocator<char>>::size_type)
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\iosfwd(530,3):remark #34026: call to memcpy implemented as a call to optimized library version
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\iosfwd(530,3):remark #34026: call to memcpy implemented as a call to optimized library version
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xstring(1165,3):remark #34051: REGISTER ALLOCATION : [?assign@?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@QEAAAEAV12@PEBD_K@Z] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xstring:1165
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    9[ rax rdx rcx rbx r8-r10 r12 r14]
+        
+    Routine temporaries
+        Total         :     147
+            Global    :      90
+            Local     :      57
+        Regenerable   :       9
+        Spilled       :       3
+        
+    Routine stack
+        Variables     :      56 bytes*
+            Reads     :      12 [2.06e-001 ~ 0.3%]
+            Writes    :      12 [2.15e+000 ~ 3.0%]
+        Spills        :      24 bytes*
+            Reads     :       3 [1.44e+000 ~ 2.0%]
+            Writes    :       3 [2.00e+000 ~ 2.8%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::basic_string<char, std::char_traits<char>, std::allocator<char>>::assign(std::basic_string<char, std::char_traits<char>, std::allocator<char>> *, const std::basic_string<char, std::char_traits<char>, std::allocator<char>>::_Myt &, std::basic_string<char, std::char_traits<char>, std::allocator<char>>::size_type, std::basic_string<char, std::char_traits<char>, std::allocator<char>>::size_type)
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\iosfwd(530,3):remark #34026: call to memcpy implemented as a call to optimized library version
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\iosfwd(530,3):remark #34026: call to memcpy implemented as a call to optimized library version
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\iosfwd(553,3):remark #34008: call to memmove not inlined based on compiler heuristics
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xstring(1149,3):remark #34051: REGISTER ALLOCATION : [?assign@?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@QEAAAEAV12@AEBV12@_K1@Z] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xstring:1149
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    9[ rax rdx rcx rbx r8-r10 r13-r14]
+        
+    Routine temporaries
+        Total         :     153
+            Global    :      96
+            Local     :      57
+        Regenerable   :      13
+        Spilled       :       3
+        
+    Routine stack
+        Variables     :      56 bytes*
+            Reads     :      12 [2.51e-001 ~ 0.3%]
+            Writes    :      12 [2.10e+000 ~ 2.7%]
+        Spills        :      24 bytes*
+            Reads     :       3 [2.00e+000 ~ 2.6%]
+            Writes    :       3 [2.00e+000 ~ 2.6%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::basic_string<char, std::char_traits<char>, std::allocator<char>>::_Copy(std::basic_string<char, std::char_traits<char>, std::allocator<char>> *, std::basic_string<char, std::char_traits<char>, std::allocator<char>>::size_type, std::basic_string<char, std::char_traits<char>, std::allocator<char>>::size_type)
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\iosfwd(530,3):remark #34026: call to memcpy implemented as a call to optimized library version
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xstring(2182,3):remark #34051: REGISTER ALLOCATION : [?_Copy@?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@QEAAX_K0@Z] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xstring:2182
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    9[ rax rdx rcx rbx rsi r8-r10 r12]
+        
+    Routine temporaries
+        Total         :     120
+            Global    :      78
+            Local     :      42
+        Regenerable   :       7
+        Spilled       :       4
+        
+    Routine stack
+        Variables     :      24 bytes*
+            Reads     :       3 [1.72e+000 ~ 2.3%]
+            Writes    :       8 [3.00e+000 ~ 4.1%]
+        Spills        :      32 bytes*
+            Reads     :       4 [3.00e+000 ~ 4.1%]
+            Writes    :       4 [3.00e+000 ~ 4.1%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::_Ref_count_base::_Get_deleter(const std::_Ref_count_base *, const type_info &) const
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\memory(134,3):remark #34051: REGISTER ALLOCATION : [?_Get_deleter@_Ref_count_base@std@@UEBAPEAXAEBVtype_info@@@Z] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\memory:134
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    3[ rax rdx rcx]
+        
+    Routine temporaries
+        Total         :      21
+            Global    :       0
+            Local     :      21
+        Regenerable   :       1
+        Spilled       :       0
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::_Pad::_Call_func(void *)
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\thr/xthread(208,3):remark #34051: REGISTER ALLOCATION : [?_Call_func@_Pad@std@@CAIPEAX@Z] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\thr/xthread:208
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    2[ rax rcx]
+        
+    Routine temporaries
+        Total         :      23
+            Global    :      18
+            Local     :       5
+        Regenerable   :       1
+        Spilled       :       0
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::vector<Move, std::allocator<Move>>::vector(std::vector<Move, std::allocator<Move>> *, const std::vector<Move, std::allocator<Move>>::_Myt &)
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xutility(2306,2):remark #34008: call to memmove not inlined based on compiler heuristics
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vector(748,3):remark #34051: REGISTER ALLOCATION : [??0?$vector@W4Move@@V?$allocator@W4Move@@@std@@@std@@QEAA@AEBV01@@Z] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vector:748
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    9[ rax rdx rcx rdi r8-r9 r12-r14]
+        
+    Routine temporaries
+        Total         :      47
+            Global    :      28
+            Local     :      19
+        Regenerable   :       4
+        Spilled       :       4
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::vector<Move, std::allocator<Move>>::_Tidy(std::vector<Move, std::allocator<Move>> *)
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vector(1636,3):remark #34051: REGISTER ALLOCATION : [?_Tidy@?$vector@W4Move@@V?$allocator@W4Move@@@std@@@std@@IEAAXXZ] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vector:1636
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    5[ rax rdx rcx rbp r8]
+        
+    Routine temporaries
+        Total         :      30
+            Global    :      23
+            Local     :       7
+        Regenerable   :       2
+        Spilled       :       1
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::vector<Move, std::allocator<Move>>::vector(std::vector<Move, std::allocator<Move>> *, std::vector<Move, std::allocator<Move>>::_Myt &&)
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vector(841,3):remark #34051: REGISTER ALLOCATION : [??0?$vector@W4Move@@V?$allocator@W4Move@@@std@@@std@@QEAA@$$QEAV01@@Z] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vector:841
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    7[ rax rdx rcx r8-r11]
+        
+    Routine temporaries
+        Total         :      27
+            Global    :       0
+            Local     :      27
+        Regenerable   :       1
+        Spilled       :       0
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::_Ref_count_obj<std::mutex>::_Destroy(std::_Ref_count_obj<std::mutex> *)
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\memory(912,3):remark #34051: REGISTER ALLOCATION : [?_Destroy@?$_Ref_count_obj@Vmutex@std@@@std@@EEAAXXZ] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\memory:912
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    2[ rax rcx]
+        
+    Routine temporaries
+        Total         :      24
+            Global    :       0
+            Local     :      24
+        Regenerable   :       0
+        Spilled       :       0
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::_Ref_count_obj<std::mutex>::_Delete_this(std::_Ref_count_obj<std::mutex> *)
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\memory(917,3):remark #34051: REGISTER ALLOCATION : [?_Delete_this@?$_Ref_count_obj@Vmutex@std@@@std@@EEAAXXZ] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\memory:917
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    3[ rax rdx rcx]
+        
+    Routine temporaries
+        Total         :      23
+            Global    :      19
+            Local     :       4
+        Regenerable   :       1
+        Spilled       :       0
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::_Ref_count_obj<std::mutex>::~_Ref_count_obj(std::_Ref_count_obj<std::mutex> *, unsigned int)
+
+    Report from: Code generation optimizations [cg]
+
+<compiler generated>:remark #34051: REGISTER ALLOCATION : [??_G?$_Ref_count_obj@Vmutex@std@@@std@@UEAAPEAXI@Z] (null):0
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    5[ rax rdx rcx rsi r8]
+        
+    Routine temporaries
+        Total         :      26
+            Global    :      19
+            Local     :       7
+        Regenerable   :       2
+        Spilled       :       1
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::_Destroy_range<std::_Vec_base_types<Search::RootMove, std::allocator<Search::RootMove>>::_Alloc, std::vector<Search::RootMove, std::allocator<Search::RootMove>>::pointer>(std::vector<Search::RootMove, std::allocator<Search::RootMove>>::pointer, std::vector<Search::RootMove, std::allocator<Search::RootMove>>::pointer, std::_Wrap_alloc<std::_Vec_base_types<Search::RootMove, std::allocator<Search::RootMove>>::_Alloc> &)
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xmemory0(1114,2):remark #34051: REGISTER ALLOCATION : [??$_Destroy_range@V?$allocator@URootMove@Search@@@std@@PEAURootMove@Search@@@std@@YAXPEAURootMove@Search@@0AEAU?$_Wrap_alloc@V?$allocator@URootMove@Search@@@std@@@0@@Z] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xmemory0:1114
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    9[ rax rdx rcx rbx rsi rdi r8-r10]
+        
+    Routine temporaries
+        Total         :      34
+            Global    :      25
+            Local     :       9
+        Regenerable   :       2
+        Spilled       :       3
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :      24 bytes*
+            Reads     :       3 [2.33e+000 ~ 2.4%]
+            Writes    :       3 [2.33e+000 ~ 2.4%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::deque<StateInfo, std::allocator<StateInfo>>::~deque(std::deque<StateInfo, std::allocator<StateInfo>> *, unsigned int)
+
+    Report from: Code generation optimizations [cg]
+
+<compiler generated>:remark #34051: REGISTER ALLOCATION : [??_G?$deque@UStateInfo@@V?$allocator@UStateInfo@@@std@@@std@@QEAAPEAXI@Z] (null):0
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    8[ rax rdx rcx rbx r8-r9 r14-r15]
+        
+    Routine temporaries
+        Total         :      41
+            Global    :      29
+            Local     :      12
+        Regenerable   :       3
+        Spilled       :       3
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       8 bytes*
+            Reads     :       1 [3.21e-001 ~ 0.4%]
+            Writes    :       1 [3.21e-001 ~ 0.4%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::_Deque_alloc<std::_Deque_base_types<StateInfo, std::allocator<StateInfo>>>::~_Deque_alloc(std::_Deque_alloc<std::_Deque_base_types<StateInfo, std::allocator<StateInfo>>> *)
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\deque(822,3):remark #34051: REGISTER ALLOCATION : [??1?$_Deque_alloc@U?$_Deque_base_types@UStateInfo@@V?$allocator@UStateInfo@@@std@@@std@@@std@@QEAA@XZ] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\deque:822
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    2[ rcx r14]
+        
+    Routine temporaries
+        Total         :      22
+            Global    :      19
+            Local     :       3
+        Regenerable   :       0
+        Spilled       :       1
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: __sti__?Threads@@3UThreadPool@@A()
+
+    Report from: Interprocedural optimizations [ipo]
+
+<compiler generated>:INLINE REPORT START: (__sti__?Threads@@3UThreadPool@@A())
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(7,12):(1)-> INLINE: ThreadPool::ThreadPool(ThreadPool *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.h(93,8):(2)-> INLINE: std::unique_ptr<std::deque<StateInfo, std::allocator<StateInfo>>, std::default_delete<std::deque<StateInfo, std::allocator<StateInfo>>>>::unique_ptr(std::unique_ptr<std::deque<StateInfo, std::allocator<StateInfo>>, std::default_delete<std::deque<StateInfo, std::allocator<StateInfo>>>> *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.h(93,8):(2)-> std::vector<Thread *, std::allocator<Thread *>>::vector(std::vector<Thread *, std::allocator<Thread *>> *)
+INLINE REPORT END
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\memory(1289,12):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (16, 0)
+<compiler generated>:remark #34051: REGISTER ALLOCATION : [__sti__?Threads@@3UThreadPool@@A] (null):0
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    1[ rcx]
+        
+    Routine temporaries
+        Total         :      22
+            Global    :      18
+            Local     :       4
+        Regenerable   :       4
+        Spilled       :       0
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::vector<Thread *, std::allocator<Thread *>>::vector(std::vector<Thread *, std::allocator<Thread *>> *)
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vector(707,3):remark #34051: REGISTER ALLOCATION : [??0?$vector@PEAVThread@@V?$allocator@PEAVThread@@@std@@@std@@QEAA@XZ] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vector:707
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    3[ rax rdx rcx]
+        
+    Routine temporaries
+        Total         :      22
+            Global    :       0
+            Local     :      22
+        Regenerable   :       1
+        Spilled       :       0
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: __$U3
+
+    Report from: Interprocedural optimizations [ipo]
+
+<compiler generated>:INLINE REPORT START: (__$U3)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(7,12):(1)-> INLINE: ThreadPool::~ThreadPool(ThreadPool *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.h(93,8):(2)-> INLINE: std::vector<Thread *, std::allocator<Thread *>>::~vector(std::vector<Thread *, std::allocator<Thread *>> *)
+       {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.h(93,8):(2)-> INLINE: std::unique_ptr<std::deque<StateInfo, std::allocator<StateInfo>>, std::default_delete<std::deque<StateInfo, std::allocator<StateInfo>>>>::~unique_ptr(std::unique_ptr<std::deque<StateInfo, std::allocator<StateInfo>>, std::default_delete<std::deque<StateInfo, std::allocator<StateInfo>>>> *)
+       {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+INLINE REPORT END
+
+    Report from: Code generation optimizations [cg]
+
+<compiler generated>:remark #34051: REGISTER ALLOCATION : [__$U3] (null):0
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    4[ rax rdx rcx r8]
+        
+    Routine temporaries
+        Total         :      31
+            Global    :      23
+            Local     :       8
+        Regenerable   :       3
+        Spilled       :       0
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::_Auto_cnd::~_Auto_cnd(std::_Auto_cnd *)
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\thr/xthread(123,3):remark #34051: REGISTER ALLOCATION : [??1_Auto_cnd@std@@QEAA@XZ] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\thr/xthread:123
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    2[ rax rcx]
+        
+    Routine temporaries
+        Total         :      24
+            Global    :      19
+            Local     :       5
+        Regenerable   :       0
+        Spilled       :       0
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::_Auto_mtx::~_Auto_mtx(std::_Auto_mtx *)
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\thr/xthread(147,3):remark #34051: REGISTER ALLOCATION : [??1_Auto_mtx@std@@QEAA@XZ] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\thr/xthread:147
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    2[ rax rcx]
+        
+    Routine temporaries
+        Total         :      24
+            Global    :      19
+            Local     :       5
+        Regenerable   :       0
+        Spilled       :       0
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::vector<Move, std::allocator<Move>>::operator=(std::vector<Move, std::allocator<Move>> *, const std::vector<Move, std::allocator<Move>>::_Myt &)
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xutility(2306,2):remark #34008: call to memmove not inlined based on compiler heuristics
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xutility(2306,2):remark #34008: call to memmove not inlined based on compiler heuristics
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xutility(2306,2):remark #34008: call to memmove not inlined based on compiler heuristics
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xutility(2306,2):remark #34008: call to memmove not inlined based on compiler heuristics
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vector(980,3):remark #34051: REGISTER ALLOCATION : [??4?$vector@W4Move@@V?$allocator@W4Move@@@std@@@std@@QEAAAEAV01@AEBV01@@Z] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vector:980
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :   10[ rax rdx rcx rbp rsi rdi r8-r10 r14]
+        
+    Routine temporaries
+        Total         :      84
+            Global    :      41
+            Local     :      43
+        Regenerable   :       5
+        Spilled       :       4
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::allocator<Search::RootMove>::deallocate(std::allocator<Search::RootMove> *, std::allocator<Search::RootMove>::pointer, std::allocator<Search::RootMove>::size_type)
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xmemory0(719,3):remark #34051: REGISTER ALLOCATION : [?deallocate@?$allocator@URootMove@Search@@@std@@QEAAXPEAURootMove@Search@@_K@Z] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xmemory0:719
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    4[ rax rdx rcx r8]
+        
+    Routine temporaries
+        Total         :      28
+            Global    :      22
+            Local     :       6
+        Regenerable   :       1
+        Spilled       :       0
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::_Vector_alloc<std::_Vec_base_types<Search::RootMove, std::allocator<Search::RootMove>>>::_Getal(std::_Vector_alloc<std::_Vec_base_types<Search::RootMove, std::allocator<Search::RootMove>>> *)
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vector(622,3):remark #34051: REGISTER ALLOCATION : [?_Getal@?$_Vector_alloc@U?$_Vec_base_types@URootMove@Search@@V?$allocator@URootMove@Search@@@std@@@std@@@std@@QEAAAEAU?$_Wrap_alloc@V?$allocator@URootMove@Search@@@std@@@2@XZ] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vector:622
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    2[ rax rcx]
+        
+    Routine temporaries
+        Total         :      21
+            Global    :       0
+            Local     :      21
+        Regenerable   :       0
+        Spilled       :       0
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::vector<Search::RootMove, std::allocator<Search::RootMove>>::operator=(std::vector<Search::RootMove, std::allocator<Search::RootMove>> *, const std::vector<Search::RootMove, std::allocator<Search::RootMove>>::_Myt &)
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vector(980,3):remark #34051: REGISTER ALLOCATION : [??4?$vector@URootMove@Search@@V?$allocator@URootMove@Search@@@std@@@std@@QEAAAEAV01@AEBV01@@Z] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vector:980
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :   13[ rax rdx rcx rbx rsi rdi r8-r14]
+        
+    Routine temporaries
+        Total         :     264
+            Global    :     161
+            Local     :     103
+        Regenerable   :      20
+        Spilled       :      43
+        
+    Routine stack
+        Variables     :      56 bytes*
+            Reads     :      10 [1.69e-001 ~ 0.2%]
+            Writes    :      11 [1.25e+000 ~ 1.5%]
+        Spills        :     184 bytes*
+            Reads     :      15 [2.64e+000 ~ 3.1%]
+            Writes    :      32 [2.64e+000 ~ 3.1%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::vector<Search::RootMove, std::allocator<Search::RootMove>>::_Tidy(std::vector<Search::RootMove, std::allocator<Search::RootMove>> *)
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vector(1636,3):remark #34051: REGISTER ALLOCATION : [?_Tidy@?$vector@URootMove@Search@@V?$allocator@URootMove@Search@@@std@@@std@@IEAAXXZ] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vector:1636
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :   10[ rax rdx rcx rbp r8-r10 r13-r15]
+        
+    Routine temporaries
+        Total         :      42
+            Global    :      29
+            Local     :      13
+        Regenerable   :       4
+        Spilled       :       4
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :      24 bytes*
+            Reads     :       3 [6.49e-001 ~ 1.1%]
+            Writes    :       3 [6.49e-001 ~ 1.1%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::vector<Search::RootMove, std::allocator<Search::RootMove>>::emplace_back<const SMove &>(std::vector<Search::RootMove, std::allocator<Search::RootMove>> *, const SMove &)
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vector(925,3):remark #34051: REGISTER ALLOCATION : [??$emplace_back@AEBUSMove@@@?$vector@URootMove@Search@@V?$allocator@URootMove@Search@@@std@@@std@@QEAAXAEBUSMove@@@Z] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vector:925
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :   13[ rax rdx rcx rbx rsi rdi r8-r10 r12-r15]
+        
+    Routine temporaries
+        Total         :     110
+            Global    :      70
+            Local     :      40
+        Regenerable   :       6
+        Spilled       :       9
+        
+    Routine stack
+        Variables     :       8 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       1 [1.00e+000 ~ 1.4%]
+        Spills        :      72 bytes*
+            Reads     :      10 [6.00e+000 ~ 8.1%]
+            Writes    :      10 [6.00e+000 ~ 8.1%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::_LaunchPad<std::enable_if<1, std::unique_ptr<std::tuple<std::decay_t<void (*)()>, std::decay_t<Thread *>>, std::default_delete<std::tuple<std::decay_t<void (*)()>, std::decay_t<Thread *>>>>>::type>::~_LaunchPad(std::_LaunchPad<std::enable_if<1, std::unique_ptr<std::tuple<std::decay_t<void (*)()>, std::decay_t<Thread *>>, std::default_delete<std::tuple<std::decay_t<void (*)()>, std::decay_t<Thread *>>>>>::type> *)
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\thr/xthread(220,8):remark #34051: REGISTER ALLOCATION : [??1?$_LaunchPad@V?$unique_ptr@V?$tuple@P8Thread@@EAAXXZPEAV1@@std@@U?$default_delete@V?$tuple@P8Thread@@EAAXXZPEAV1@@std@@@2@@std@@@std@@QEAA@XZ] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\thr/xthread:220
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    5[ rax rdx rcx rdi r8]
+        
+    Routine temporaries
+        Total         :      79
+            Global    :      58
+            Local     :      21
+        Regenerable   :       7
+        Spilled       :       1
+        
+    Routine stack
+        Variables     :      40 bytes*
+            Reads     :       4 [2.44e+000 ~ 5.0%]
+            Writes    :       5 [5.00e+000 ~ 10.3%]
+        Spills        :       8 bytes*
+            Reads     :       1 [1.00e+000 ~ 2.1%]
+            Writes    :       1 [1.00e+000 ~ 2.1%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::_LaunchPad<std::enable_if<1, std::unique_ptr<std::tuple<std::decay_t<void (*)()>, std::decay_t<Thread *>>, std::default_delete<std::tuple<std::decay_t<void (*)()>, std::decay_t<Thread *>>>>>::type>::_Go(std::_LaunchPad<std::enable_if<1, std::unique_ptr<std::tuple<std::decay_t<void (*)()>, std::decay_t<Thread *>>, std::default_delete<std::tuple<std::decay_t<void (*)()>, std::decay_t<Thread *>>>>>::type> *)
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\thr/xthread(231,3):remark #34051: REGISTER ALLOCATION : [?_Go@?$_LaunchPad@V?$unique_ptr@V?$tuple@P8Thread@@EAAXXZPEAV1@@std@@U?$default_delete@V?$tuple@P8Thread@@EAAXXZPEAV1@@std@@@2@@std@@@std@@UEAAXXZ] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\thr/xthread:231
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    4[ rax rdx rcx rdi]
+        
+    Routine temporaries
+        Total         :      64
+            Global    :      44
+            Local     :      20
+        Regenerable   :       3
+        Spilled       :       1
+        
+    Routine stack
+        Variables     :      16 bytes*
+            Reads     :       2 [2.00e+000 ~ 3.9%]
+            Writes    :       2 [2.00e+000 ~ 3.9%]
+        Spills        :       8 bytes*
+            Reads     :       1 [1.00e+000 ~ 2.0%]
+            Writes    :       1 [1.00e+000 ~ 2.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::unique_ptr<std::tuple<std::decay_t<void (*)()>, std::decay_t<Thread *>>, std::default_delete<std::tuple<std::decay_t<void (*)()>, std::decay_t<Thread *>>>>::~unique_ptr(std::unique_ptr<std::tuple<std::decay_t<void (*)()>, std::decay_t<Thread *>>, std::default_delete<std::tuple<std::decay_t<void (*)()>, std::decay_t<Thread *>>>> *)
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\memory(1395,3):remark #34051: REGISTER ALLOCATION : [??1?$unique_ptr@V?$tuple@P8Thread@@EAAXXZPEAV1@@std@@U?$default_delete@V?$tuple@P8Thread@@EAAXXZPEAV1@@std@@@2@@std@@QEAA@XZ] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\memory:1395
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    2[ rdx rcx]
+        
+    Routine temporaries
+        Total         :      23
+            Global    :      19
+            Local     :       4
+        Regenerable   :       1
+        Spilled       :       0
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::_Generic_error_category::message(const std::_Generic_error_category *, std::string *, int) const
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\iosfwd(530,3):remark #34026: call to memcpy implemented as a call to optimized library version
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\iosfwd(530,3):remark #34026: call to memcpy implemented as a call to optimized library version
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\system_error(605,3):remark #34051: REGISTER ALLOCATION : [?message@_Generic_error_category@std@@UEBA?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@2@H@Z] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\system_error:605
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    9[ rax rdx rcx r8-r13]
+        
+    Routine temporaries
+        Total         :     166
+            Global    :     107
+            Local     :      59
+        Regenerable   :       9
+        Spilled       :       2
+        
+    Routine stack
+        Variables     :      80 bytes*
+            Reads     :      17 [3.29e-001 ~ 0.4%]
+            Writes    :      15 [5.15e+000 ~ 6.6%]
+        Spills        :      16 bytes*
+            Reads     :       2 [1.00e+000 ~ 1.3%]
+            Writes    :       2 [1.00e+000 ~ 1.3%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::_Generic_error_category::name(const std::_Generic_error_category *) const
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\system_error(600,3):remark #34051: REGISTER ALLOCATION : [?name@_Generic_error_category@std@@UEBAPEBDXZ] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\system_error:600
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    2[ rax rcx]
+        
+    Routine temporaries
+        Total         :      21
+            Global    :       0
+            Local     :      21
+        Regenerable   :       2
+        Spilled       :       0
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::system_error::~system_error(std::system_error *)
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\system_error(529,7):remark #34051: REGISTER ALLOCATION : [??1system_error@std@@UEAA@XZ] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\system_error:529
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    3[ rax rdx rcx]
+        
+    Routine temporaries
+        Total         :      25
+            Global    :       0
+            Local     :      25
+        Regenerable   :       1
+        Spilled       :       0
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::system_error::system_error(std::system_error *, const std::system_error &)
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vcruntime_exception.h(66,5):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (1, 0)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\system_error(508,7):remark #34000: call to memcpy implemented inline with loads and stores with proven source (alignment, offset): (1, 0), and destination (alignment, offset): (1, 0)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\system_error(529,7):remark #34051: REGISTER ALLOCATION : [??0system_error@std@@QEAA@AEBV01@@Z] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\system_error:529
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    7[ rax rdx rcx rbx rbp r8 zmm0]
+        
+    Routine temporaries
+        Total         :      32
+            Global    :      21
+            Local     :      11
+        Regenerable   :       4
+        Spilled       :       2
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::_System_error::_System_error(std::_System_error *, const std::_System_error &)
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vcruntime_exception.h(66,5):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (1, 0)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\system_error(508,7):remark #34000: call to memcpy implemented inline with loads and stores with proven source (alignment, offset): (1, 0), and destination (alignment, offset): (1, 0)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\system_error(508,7):remark #34051: REGISTER ALLOCATION : [??0_System_error@std@@QEAA@AEBV01@@Z] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\system_error:508
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    7[ rax rdx rcx rbx rdi r8 zmm0]
+        
+    Routine temporaries
+        Total         :      31
+            Global    :      21
+            Local     :      10
+        Regenerable   :       3
+        Spilled       :       2
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::error_category::equivalent(const std::error_category *, const std::error_code &, int) const
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\system_error(462,2):remark #34051: REGISTER ALLOCATION : [?equivalent@error_category@std@@UEBA_NAEBVerror_code@2@H@Z] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\system_error:462
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    5[ rax rdx rcx r8-r9]
+        
+    Routine temporaries
+        Total         :      30
+            Global    :      21
+            Local     :       9
+        Regenerable   :       2
+        Spilled       :       0
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::error_category::equivalent(const std::error_category *, int, const std::error_condition &) const
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\system_error(455,2):remark #34051: REGISTER ALLOCATION : [?equivalent@error_category@std@@UEBA_NHAEBVerror_condition@2@@Z] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\system_error:455
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    5[ rax rdx rcx r8 r12]
+        
+    Routine temporaries
+        Total         :      37
+            Global    :      20
+            Local     :      17
+        Regenerable   :       4
+        Spilled       :       1
+        
+    Routine stack
+        Variables     :      16 bytes*
+            Reads     :       2 [1.05e+000 ~ 2.7%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::error_category::default_error_condition(const std::error_category *, std::error_condition *, int) const
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\system_error(448,2):remark #34051: REGISTER ALLOCATION : [?default_error_condition@error_category@std@@UEBA?AVerror_condition@2@H@Z] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\system_error:448
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    4[ rax rdx rcx r8]
+        
+    Routine temporaries
+        Total         :      25
+            Global    :       0
+            Local     :      25
+        Regenerable   :       0
+        Spilled       :       0
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::runtime_error::runtime_error(std::runtime_error *, const std::runtime_error &)
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vcruntime_exception.h(66,5):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (1, 0)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\stdexcept(155,7):remark #34051: REGISTER ALLOCATION : [??0runtime_error@std@@QEAA@AEBV01@@Z] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\stdexcept:155
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    6[ rax rdx rcx rbx r8 zmm0]
+        
+    Routine temporaries
+        Total         :      30
+            Global    :      21
+            Local     :       9
+        Regenerable   :       3
+        Spilled       :       1
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: ThreadPool::searchStart(ThreadPool *, BitBoards &, StateListPtr &, const Search::SearchControls &)
+
+    Report from: Interprocedural optimizations [ipo]
+
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(96,1):INLINE REPORT START: (ThreadPool::searchStart(ThreadPool *, BitBoards &, StateListPtr &, const Search::SearchControls &))
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(97,2):(1)-> INLINE: Thread::wait_for_search_stop(Thread *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(58,26):(2)-> INLINE: std::unique_lock<Mutex>::unique_lock(std::unique_lock<Mutex> *, Mutex &)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\mutex(273,3):(3)-> INLINE: Mutex::lock(Mutex *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(61,2):(2)-> INLINE: std::unique_lock<Mutex>::~unique_lock(std::unique_lock<Mutex> *)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\mutex(338,4):(3)-> INLINE: Mutex::unlock(Mutex *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(61,2):(2)-> INLINE: std::condition_variable_any::wait<std::unique_lock<Mutex>, lambda [] type at line 270629, col. 16>(std::condition_variable_any *, std::unique_lock<Mutex> &, lambda [] type at line 270629, col. 16)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\condition_variable(67,3):(3)-> INLINE: lambda [] type at line 270629, col. 16::operator()(const lambda [] type at line 270629, col. 16 *)->bool
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\condition_variable(67,3):(3)-> INLINE: lambda [] type at line 270629, col. 16::operator()(const lambda [] type at line 270629, col. 16 *)->bool
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\condition_variable(68,4):(3)-> INLINE: std::condition_variable_any::wait<std::unique_lock<Mutex>>(std::condition_variable_any *, std::unique_lock<Mutex> &)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\condition_variable(60,3):(4)-> INLINE: std::unique_lock<Mutex>::lock(std::unique_lock<Mutex> *)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\mutex(348,3):(5)-> INLINE: Mutex::lock(Mutex *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(62,1):(2)-> std::unique_lock<Mutex>::~unique_lock(std::unique_lock<Mutex> *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(97,2):(1)-> INLINE: ThreadPool::main(const ThreadPool *) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.h(100,31):(2)-> INLINE: std::vector<Thread *, std::allocator<Thread *>>::front(const std::vector<Thread *, std::allocator<Thread *>> *) const
+       {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(100,2):(1)-> INLINE: std::atomic<bool>::operator=(std::atomic<bool> *, bool)
+     {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(102,20):(1)-> std::vector<Search::RootMove, std::allocator<Search::RootMove>>::vector(std::vector<Search::RootMove, std::allocator<Search::RootMove>> *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(104,2):(1)-> INLINE: MoveList<4>::begin(const MoveList<4> *) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(104,2):(1)-> INLINE: MoveList<4>::end(const MoveList<4> *) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(104,2):(1)-> INLINE: MoveList<4>::MoveList(MoveList<4> *, const BitBoards &)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(105,3):(1)-> std::vector<Search::RootMove, std::allocator<Search::RootMove>>::emplace_back<const SMove &>(std::vector<Search::RootMove, std::allocator<Search::RootMove>> *, const SMove &)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(115,2):(1)-> INLINE: std::unique_ptr<std::deque<StateInfo, std::allocator<StateInfo>>, std::default_delete<std::deque<StateInfo, std::allocator<StateInfo>>>>::get(const std::unique_ptr<std::deque<StateInfo, std::allocator<StateInfo>>, std::default_delete<std::deque<StateInfo, std::allocator<StateInfo>>>> *) const
+     {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(116,3):(1)-> INLINE: std::unique_ptr<std::deque<StateInfo, std::allocator<StateInfo>>, std::default_delete<std::deque<StateInfo, std::allocator<StateInfo>>>>::operator=(std::unique_ptr<std::deque<StateInfo, std::allocator<StateInfo>>, std::default_delete<std::deque<StateInfo, std::allocator<StateInfo>>>> *, std::unique_ptr<std::deque<StateInfo, std::allocator<StateInfo>>, std::default_delete<std::deque<StateInfo, std::allocator<StateInfo>>>>::_Myt &&)
+     {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(116,3):(1)-> INLINE: std::move<StateListPtr &>(StateListPtr &)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(118,15):(1)-> INLINE: std::unique_ptr<std::deque<StateInfo, std::allocator<StateInfo>>, std::default_delete<std::deque<StateInfo, std::allocator<StateInfo>>>>::operator->(const std::unique_ptr<std::deque<StateInfo, std::allocator<StateInfo>>, std::default_delete<std::deque<StateInfo, std::allocator<StateInfo>>>> *) const
+     {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(118,15):(1)-> INLINE: std::deque<StateInfo, std::allocator<StateInfo>>::back(std::deque<StateInfo, std::allocator<StateInfo>> *)
+     {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(122,2):(1)-> INLINE: std::_Vector_const_iterator<std::_Vector_val<std::_Vector_alloc<std::_Vec_base_types<Thread *, std::allocator<Thread *>>>::_Val_types>>::operator!=(const std::_Vector_const_iterator<std::_Vector_val<std::_Vector_alloc<std::_Vec_base_types<Thread *, std::allocator<Thread *>>>::_Val_types>> *, const std::_Vector_const_iterator<std::_Vector_val<std::_Vector_alloc<std::_Vec_base_types<Thread *, std::allocator<Thread *>>>::_Val_types>>::_Myiter &) const
+     {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(122,2):(1)-> INLINE: std::vector<Thread *, std::allocator<Thread *>>::begin(std::vector<Thread *, std::allocator<Thread *>> *, std::vector<Thread *, std::allocator<Thread *>>::iterator *)
+     {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(122,2):(1)-> INLINE: std::_Vector_const_iterator<std::_Vector_val<std::_Vector_alloc<std::_Vec_base_types<Thread *, std::allocator<Thread *>>>::_Val_types>>::operator!=(const std::_Vector_const_iterator<std::_Vector_val<std::_Vector_alloc<std::_Vec_base_types<Thread *, std::allocator<Thread *>>>::_Val_types>> *, const std::_Vector_const_iterator<std::_Vector_val<std::_Vector_alloc<std::_Vec_base_types<Thread *, std::allocator<Thread *>>>::_Val_types>>::_Myiter &) const
+     {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(122,2):(1)-> INLINE: std::vector<Thread *, std::allocator<Thread *>>::end(std::vector<Thread *, std::allocator<Thread *>> *, std::vector<Thread *, std::allocator<Thread *>>::iterator *)
+     {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(122,16):(1)-> INLINE: std::_Vector_iterator<std::_Vector_val<std::_Vector_alloc<std::_Vec_base_types<Thread *, std::allocator<Thread *>>>::_Val_types>>::operator*(const std::_Vector_iterator<std::_Vector_val<std::_Vector_alloc<std::_Vec_base_types<Thread *, std::allocator<Thread *>>>::_Val_types>> *) const
+     {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(122,21):(1)-> INLINE: std::_Vector_iterator<std::_Vector_val<std::_Vector_alloc<std::_Vec_base_types<Thread *, std::allocator<Thread *>>>::_Val_types>>::operator++(std::_Vector_iterator<std::_Vector_val<std::_Vector_alloc<std::_Vec_base_types<Thread *, std::allocator<Thread *>>>::_Val_types>> *)
+     {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(124,3):(1)-> INLINE: std::atomic<unsigned __int64>::operator=(std::atomic<unsigned __int64> *, unsigned __int64)
+     {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(126,3):(1)-> std::vector<Search::RootMove, std::allocator<Search::RootMove>>::operator=(std::vector<Search::RootMove, std::allocator<Search::RootMove>> *, const std::vector<Search::RootMove, std::allocator<Search::RootMove>>::_Myt &)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(128,3):(1)-> INLINE: std::unique_ptr<std::deque<StateInfo, std::allocator<StateInfo>>, std::default_delete<std::deque<StateInfo, std::allocator<StateInfo>>>>::operator->(const std::unique_ptr<std::deque<StateInfo, std::allocator<StateInfo>>, std::default_delete<std::deque<StateInfo, std::allocator<StateInfo>>>> *) const
+     {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(128,3):(1)-> INLINE: std::deque<StateInfo, std::allocator<StateInfo>>::back(std::deque<StateInfo, std::allocator<StateInfo>> *)
+     {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(131,2):(1)-> INLINE: std::deque<StateInfo, std::allocator<StateInfo>>::back(std::deque<StateInfo, std::allocator<StateInfo>> *)
+     {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(131,2):(1)-> INLINE: std::unique_ptr<std::deque<StateInfo, std::allocator<StateInfo>>, std::default_delete<std::deque<StateInfo, std::allocator<StateInfo>>>>::operator->(const std::unique_ptr<std::deque<StateInfo, std::allocator<StateInfo>>, std::default_delete<std::deque<StateInfo, std::allocator<StateInfo>>>> *) const
+     {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(137,2):(1)-> INLINE: ThreadPool::main(const ThreadPool *) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.h(100,31):(2)-> INLINE: std::vector<Thread *, std::allocator<Thread *>>::front(const std::vector<Thread *, std::allocator<Thread *>> *) const
+       {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(137,2):(1)-> INLINE: Thread::start_searching(Thread *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(49,25):(2)-> INLINE: std::lock_guard<Mutex>::lock_guard(std::lock_guard<Mutex> *, Mutex &)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\mutex(218,3):(3)-> INLINE: Mutex::lock(Mutex *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(53,2):(2)-> INLINE: std::lock_guard<Mutex>::~lock_guard(std::lock_guard<Mutex> *)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\mutex(228,3):(3)-> INLINE: Mutex::unlock(Mutex *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(53,2):(2)-> INLINE: std::condition_variable_any::notify_one(std::condition_variable_any *)
+       {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(137,2):(1)-> INLINE: std::vector<Search::RootMove, std::allocator<Search::RootMove>>::~vector(std::vector<Search::RootMove, std::allocator<Search::RootMove>> *)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vector(976,3):(2)-> INLINE: std::vector<Search::RootMove, std::allocator<Search::RootMove>>::_Tidy(std::vector<Search::RootMove, std::allocator<Search::RootMove>> *)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vector(1640,4):(3)-> INLINE: std::vector<Search::RootMove, std::allocator<Search::RootMove>>::_Destroy(std::vector<Search::RootMove, std::allocator<Search::RootMove>> *, std::vector<Search::RootMove, std::allocator<Search::RootMove>>::pointer, std::vector<Search::RootMove, std::allocator<Search::RootMove>>::pointer)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vector(1581,3):(4)-> INLINE: std::_Destroy_range<std::_Vec_base_types<Search::RootMove, std::allocator<Search::RootMove>>::_Alloc, std::vector<Search::RootMove, std::allocator<Search::RootMove>>::pointer>(std::vector<Search::RootMove, std::allocator<Search::RootMove>>::pointer, std::vector<Search::RootMove, std::allocator<Search::RootMove>>::pointer, std::_Wrap_alloc<std::_Vec_base_types<Search::RootMove, std::allocator<Search::RootMove>>::_Alloc> &)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xmemory0(1118,2):(5)-> INLINE: std::_Destroy_range1<std::_Vec_base_types<Search::RootMove, std::allocator<Search::RootMove>>::_Alloc, std::vector<Search::RootMove, std::allocator<Search::RootMove>>::pointer>(std::vector<Search::RootMove, std::allocator<Search::RootMove>>::pointer, std::vector<Search::RootMove, std::allocator<Search::RootMove>>::pointer, std::_Wrap_alloc<std::_Vec_base_types<Search::RootMove, std::allocator<Search::RootMove>>::_Alloc> &, std::false_type)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xmemory0(1101,3):(6)-> INLINE: std::_Wrap_alloc<std::_Vec_base_types<Search::RootMove, std::allocator<Search::RootMove>>::_Alloc>::destroy<std::_Simple_types<std::_Wrap_alloc<std::_Vec_base_types<Search::RootMove, std::allocator<Search::RootMove>>::_Alloc>::value_type>::value_type>(std::_Wrap_alloc<std::_Vec_base_types<Search::RootMove, std::allocator<Search::RootMove>>::_Alloc> *, std::_Simple_types<std::_Wrap_alloc<std::_Vec_base_types<Search::RootMove, std::allocator<Search::RootMove>>::_Alloc>::value_type>::value_type *)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xmemory0(1003,3):(7)-> INLINE: std::allocator_traits<std::_Vec_base_types<Search::RootMove, std::allocator<Search::RootMove>>::_Alloc>::destroy<std::_Simple_types<std::_Wrap_alloc<std::_Vec_base_types<Search::RootMove, std::allocator<Search::RootMove>>::_Alloc>::value_type>::value_type>(std::allocator_traits<std::_Vec_base_types<Search::RootMove, std::allocator<Search::RootMove>>::_Alloc>::_Alloc &, std::_Simple_types<std::_Wrap_alloc<std::_Vec_base_types<Search::RootMove, std::allocator<Search::RootMove>>::_Alloc>::value_type>::value_type *)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xmemory0(864,3):(8)-> INLINE: std::allocator<Search::RootMove>::destroy<std::_Simple_types<std::_Wrap_alloc<std::_Vec_base_types<Search::RootMove, std::allocator<Search::RootMove>>::_Alloc>::value_type>::value_type>(std::allocator<Search::RootMove> *, std::_Simple_types<std::_Wrap_alloc<std::_Vec_base_types<Search::RootMove, std::allocator<Search::RootMove>>::_Alloc>::value_type>::value_type *)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xmemory0(744,3):(9)-> INLINE: Search::RootMove::~RootMove(Search::RootMove *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\ai_logic.h(59,9):(10)-> INLINE: std::vector<Move, std::allocator<Move>>::~vector(std::vector<Move, std::allocator<Move>> *)
+                       {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(138,1):(1)-> std::vector<Search::RootMove, std::allocator<Search::RootMove>>::~vector(std::vector<Search::RootMove, std::allocator<Search::RootMove>> *)
+INLINE REPORT END
+
+    Report from: Code generation optimizations [cg]
+
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(109,2):remark #34000: call to memcpy implemented inline with loads and stores with proven source (alignment, offset): (1, 0), and destination (alignment, offset): (8, 0)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(118,15):remark #34000: call to memcpy implemented inline with loads and stores with proven source (alignment, offset): (1, 0), and destination (alignment, offset): (16, 0)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(125,3):remark #34026: call to memcpy implemented as a call to optimized library version
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(131,2):remark #34000: call to memcpy implemented inline with loads and stores with proven source (alignment, offset): (16, 0), and destination (alignment, offset): (1, 0)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(96,1):remark #34051: REGISTER ALLOCATION : [?searchStart@ThreadPool@@QEAAXAEAVBitBoards@@AEAV?$unique_ptr@V?$deque@UStateInfo@@V?$allocator@UStateInfo@@@std@@@std@@U?$default_delete@V?$deque@UStateInfo@@V?$allocator@UStateInfo@@@std@@@std@@@2@@std@@AEBUSearchControls@Search@@@Z] C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp:96
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :   17[ rax rdx rcx rbx rsi rdi r8-r10 r12-r15 zmm0-zmm3]
+        
+    Routine temporaries
+        Total         :     291
+            Global    :     154
+            Local     :     137
+        Regenerable   :      27
+        Spilled       :       9
+        
+    Routine stack
+        Variables     :    2200 bytes*
+            Reads     :      16 [3.13e+001 ~ 4.3%]
+            Writes    :      20 [4.69e+001 ~ 6.5%]
+        Spills        :      72 bytes*
+            Reads     :      10 [8.65e+000 ~ 1.2%]
+            Writes    :      10 [8.65e+000 ~ 1.2%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: ThreadPool::initialize(ThreadPool *)
+
+    Report from: Interprocedural optimizations [ipo]
+
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(29,1):INLINE REPORT START: (ThreadPool::initialize(ThreadPool *))
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(30,2):(1)-> std::vector<Thread *, std::allocator<Thread *>>::push_back(std::vector<Thread *, std::allocator<Thread *>> *, std::vector<Thread *, std::allocator<Thread *>>::value_type &&)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(30,2):(1)-> INLINE: MainThread::MainThread(MainThread *, size_t)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.h(81,2):(2)-> Thread::Thread(Thread *, size_t)
+INLINE REPORT END
+
+    Report from: Code generation optimizations [cg]
+
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(29,1):remark #34051: REGISTER ALLOCATION : [?initialize@ThreadPool@@QEAAXXZ] C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp:29
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    5[ rax rdx rcx rbx rsi]
+        
+    Routine temporaries
+        Total         :      52
+            Global    :      39
+            Local     :      13
+        Regenerable   :       6
+        Spilled       :       2
+        
+    Routine stack
+        Variables     :      28 bytes*
+            Reads     :       2 [0.00e+000 ~ 0.0%]
+            Writes    :       6 [5.99e+000 ~ 12.2%]
+        Spills        :      16 bytes*
+            Reads     :       2 [2.00e+000 ~ 4.1%]
+            Writes    :       2 [2.00e+000 ~ 4.1%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: Thread::wait_for_search_stop(Thread *)
+
+    Report from: Interprocedural optimizations [ipo]
+
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(57,1):INLINE REPORT START: (Thread::wait_for_search_stop(Thread *))
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(58,26):(1)-> INLINE: std::unique_lock<Mutex>::unique_lock(std::unique_lock<Mutex> *, Mutex &)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\mutex(273,3):(2)-> INLINE: Mutex::lock(Mutex *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(61,2):(1)-> INLINE: std::unique_lock<Mutex>::~unique_lock(std::unique_lock<Mutex> *)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\mutex(338,4):(2)-> INLINE: Mutex::unlock(Mutex *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(61,2):(1)-> INLINE: std::condition_variable_any::wait<std::unique_lock<Mutex>, lambda [] type at line 270629, col. 16>(std::condition_variable_any *, std::unique_lock<Mutex> &, lambda [] type at line 270629, col. 16)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\condition_variable(67,3):(2)-> INLINE: lambda [] type at line 270629, col. 16::operator()(const lambda [] type at line 270629, col. 16 *)->bool
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\condition_variable(67,3):(2)-> INLINE: lambda [] type at line 270629, col. 16::operator()(const lambda [] type at line 270629, col. 16 *)->bool
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\condition_variable(68,4):(2)-> INLINE: std::condition_variable_any::wait<std::unique_lock<Mutex>>(std::condition_variable_any *, std::unique_lock<Mutex> &)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\condition_variable(60,3):(3)-> INLINE: std::unique_lock<Mutex>::lock(std::unique_lock<Mutex> *)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\mutex(348,3):(4)-> INLINE: Mutex::lock(Mutex *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(62,1):(1)-> std::unique_lock<Mutex>::~unique_lock(std::unique_lock<Mutex> *)
+INLINE REPORT END
+
+    Report from: Code generation optimizations [cg]
+
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp(57,1):remark #34051: REGISTER ALLOCATION : [?wait_for_search_stop@Thread@@QEAAXXZ] C:\Users\C-60\Desktop\cppPrograms\StuckFish\Thread.cpp:57
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    8[ rax rdx rcx rbx rsi rdi r12 r15]
+        
+    Routine temporaries
+        Total         :     120
+            Global    :      75
+            Local     :      45
+        Regenerable   :       8
+        Spilled       :       5
+        
+    Routine stack
+        Variables     :      40 bytes*
+            Reads     :       7 [2.45e+001 ~ 8.8%]
+            Writes    :       9 [2.57e+001 ~ 9.3%]
+        Spills        :      40 bytes*
+            Reads     :       5 [5.00e+000 ~ 1.8%]
+            Writes    :       5 [5.00e+000 ~ 1.8%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::_Generic_error_category::~_Generic_error_category(std::_Generic_error_category *, unsigned int)
+
+    Report from: Code generation optimizations [cg]
+
+<compiler generated>:remark #34051: REGISTER ALLOCATION : [??_G_Generic_error_category@std@@UEAAPEAXI@Z] (null):0
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    5[ rax rdx rcx rsi r8]
+        
+    Routine temporaries
+        Total         :      26
+            Global    :      19
+            Local     :       7
+        Regenerable   :       2
+        Spilled       :       1
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::system_error::~system_error(std::system_error *, unsigned int)
+
+    Report from: Code generation optimizations [cg]
+
+<compiler generated>:remark #34051: REGISTER ALLOCATION : [??_Gsystem_error@std@@UEAAPEAXI@Z] (null):0
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    6[ rax rdx rcx rsi rdi r8]
+        
+    Routine temporaries
+        Total         :      28
+            Global    :      20
+            Local     :       8
+        Regenerable   :       2
+        Spilled       :       2
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::_System_error::~_System_error(std::_System_error *, unsigned int)
+
+    Report from: Code generation optimizations [cg]
+
+<compiler generated>:remark #34051: REGISTER ALLOCATION : [??_G_System_error@std@@UEAAPEAXI@Z] (null):0
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    6[ rax rdx rcx rsi rdi r8]
+        
+    Routine temporaries
+        Total         :      28
+            Global    :      20
+            Local     :       8
+        Regenerable   :       2
+        Spilled       :       2
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::error_category::~error_category(std::error_category *, unsigned int)
+
+    Report from: Code generation optimizations [cg]
+
+<compiler generated>:remark #34051: REGISTER ALLOCATION : [??_Gerror_category@std@@UEAAPEAXI@Z] (null):0
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    5[ rax rdx rcx rsi r8]
+        
+    Routine temporaries
+        Total         :      26
+            Global    :      19
+            Local     :       7
+        Regenerable   :       2
+        Spilled       :       1
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::runtime_error::~runtime_error(std::runtime_error *, unsigned int)
+
+    Report from: Code generation optimizations [cg]
+
+<compiler generated>:remark #34051: REGISTER ALLOCATION : [??_Gruntime_error@std@@UEAAPEAXI@Z] (null):0
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    6[ rax rdx rcx rsi rdi r8]
+        
+    Routine temporaries
+        Total         :      28
+            Global    :      20
+            Local     :       8
+        Regenerable   :       2
+        Spilled       :       2
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================

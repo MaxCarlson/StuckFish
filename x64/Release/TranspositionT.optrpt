@@ -1,0 +1,2469 @@
+
+Begin optimization report for: __$U1
+
+    Report from: Interprocedural optimizations [ipo]
+
+<compiler generated>:INLINE REPORT START: (__$U1)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\system_error(698,40):(1)-> DELETED: std::_Immortalizer<std::_Iostream_error_category>::~_Immortalizer(std::_Immortalizer<std::_Iostream_error_category> *)
+INLINE REPORT END
+
+    Report from: Code generation optimizations [cg]
+
+<compiler generated>:remark #34051: REGISTER ALLOCATION : [__$U1] (null):0
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    0[ reg_null]
+        
+    Routine temporaries
+        Total         :      18
+            Global    :       0
+            Local     :      18
+        Regenerable   :       0
+        Spilled       :       0
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::exception::~exception(std::exception *, unsigned int)
+
+    Report from: Code generation optimizations [cg]
+
+<compiler generated>:remark #34051: REGISTER ALLOCATION : [??_Gexception@std@@UEAAPEAXI@Z] (null):0
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    6[ rax rdx rcx rsi rdi r8]
+        
+    Routine temporaries
+        Total         :      28
+            Global    :      20
+            Local     :       8
+        Regenerable   :       2
+        Spilled       :       2
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::bad_cast::~bad_cast(std::bad_cast *, unsigned int)
+
+    Report from: Code generation optimizations [cg]
+
+<compiler generated>:remark #34051: REGISTER ALLOCATION : [??_Gbad_cast@std@@UEAAPEAXI@Z] (null):0
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    6[ rax rdx rcx rsi rdi r8]
+        
+    Routine temporaries
+        Total         :      28
+            Global    :      20
+            Local     :       8
+        Regenerable   :       2
+        Spilled       :       2
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::ctype<char>::~ctype(std::ctype<char> *, unsigned int)
+
+    Report from: Code generation optimizations [cg]
+
+<compiler generated>:remark #34051: REGISTER ALLOCATION : [??_G?$ctype@D@std@@MEAAPEAXI@Z] (null):0
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    6[ rax rdx rcx rsi rdi r8]
+        
+    Routine temporaries
+        Total         :      35
+            Global    :      20
+            Local     :      15
+        Regenerable   :       2
+        Spilled       :       2
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::numpunct<char>::~numpunct(std::numpunct<char> *, unsigned int)
+
+    Report from: Code generation optimizations [cg]
+
+<compiler generated>:remark #34051: REGISTER ALLOCATION : [??_G?$numpunct@D@std@@MEAAPEAXI@Z] (null):0
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    6[ rax rdx rcx rsi rdi r8]
+        
+    Routine temporaries
+        Total         :      33
+            Global    :      20
+            Local     :      13
+        Regenerable   :       2
+        Spilled       :       2
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::num_put<char, std::ostreambuf_iterator<char, std::char_traits<char>>>::~num_put(std::num_put<char, std::ostreambuf_iterator<char, std::char_traits<char>>> *, unsigned int)
+
+    Report from: Code generation optimizations [cg]
+
+<compiler generated>:remark #34051: REGISTER ALLOCATION : [??_G?$num_put@DV?$ostreambuf_iterator@DU?$char_traits@D@std@@@std@@@std@@MEAAPEAXI@Z] (null):0
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    5[ rax rdx rcx rsi r8]
+        
+    Routine temporaries
+        Total         :      26
+            Global    :      19
+            Local     :       7
+        Regenerable   :       1
+        Spilled       :       1
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: TranspositionT::probe(const TranspositionT *, U64) const
+
+    Report from: Interprocedural optimizations [ipo]
+
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\TranspositionT.cpp(39,1):INLINE REPORT START: (TranspositionT::probe(const TranspositionT *, U64) const)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\TranspositionT.cpp(41,17):(1)-> INLINE: TranspositionT::first_entry(const TranspositionT *, U64) const
+INLINE REPORT END
+
+    Report from: Code generation optimizations [cg]
+
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\TranspositionT.cpp(39,1):remark #34051: REGISTER ALLOCATION : [?probe@TranspositionT@@QEBAPEBUHashEntry@@_K@Z] C:\Users\C-60\Desktop\cppPrograms\StuckFish\TranspositionT.cpp:39
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    4[ rax rdx rcx r8]
+        
+    Routine temporaries
+        Total         :      30
+            Global    :      21
+            Local     :       9
+        Regenerable   :       1
+        Spilled       :       0
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: TranspositionT::save(TranspositionT *, Move, U64, U8, S16, U8)
+
+    Report from: Interprocedural optimizations [ipo]
+
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\TranspositionT.cpp(56,1):INLINE REPORT START: (TranspositionT::save(TranspositionT *, Move, U64, U8, S16, U8))
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\TranspositionT.cpp(59,2):(1)-> INLINE: TranspositionT::first_entry(const TranspositionT *, U64) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\TranspositionT.cpp(65,12):(1)-> INLINE: HashEntry::move(const HashEntry *) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\TranspositionT.cpp(75,2):(1)-> INLINE: HashEntry::save(HashEntry *, U64, int, int, Move, int)
+INLINE REPORT END
+
+    Report from: Code generation optimizations [cg]
+
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\TranspositionT.cpp(56,1):remark #34051: REGISTER ALLOCATION : [?save@TranspositionT@@QEAAXW4Move@@_KEFE@Z] C:\Users\C-60\Desktop\cppPrograms\StuckFish\TranspositionT.cpp:56
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    8[ rax rdx rcx rbp r8-r11]
+        
+    Routine temporaries
+        Total         :      38
+            Global    :      26
+            Local     :      12
+        Regenerable   :       2
+        Spilled       :       1
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: TranspositionT::resize(TranspositionT *, size_t)
+
+    Report from: Interprocedural optimizations [ipo]
+
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\TranspositionT.cpp(10,1):INLINE REPORT START: (TranspositionT::resize(TranspositionT *, size_t))
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\TranspositionT.cpp(12,25):(1)-> INLINE: msb(unsigned __int64)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\TranspositionT.cpp(25,3):(1)-> std::operator<<<std::char_traits<char>>(std::basic_ostream<char, std::char_traits<char>> &, const char *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\TranspositionT.cpp(25,3):(1)-> std::basic_ostream<char, std::char_traits<char>>::operator<<(std::basic_ostream<char, std::char_traits<char>> *, unsigned __int64)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\TranspositionT.cpp(25,3):(1)-> std::operator<<<std::char_traits<char>>(std::basic_ostream<char, std::char_traits<char>> &, const char *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\TranspositionT.cpp(25,3):(1)-> std::basic_ostream<char, std::char_traits<char>>::operator<<(std::basic_ostream<char, std::char_traits<char>> *, std::basic_ostream<char, std::char_traits<char>>::_Myt &(__cdecl *)(std::basic_ostream<char, std::char_traits<char>>::_Myt &))
+INLINE REPORT END
+
+    Report from: Code generation optimizations [cg]
+
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\TranspositionT.cpp(10,1):remark #34051: REGISTER ALLOCATION : [?resize@TranspositionT@@QEAAX_K@Z] C:\Users\C-60\Desktop\cppPrograms\StuckFish\TranspositionT.cpp:10
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    6[ rax rdx rcx r13-r15]
+        
+    Routine temporaries
+        Total         :      58
+            Global    :      29
+            Local     :      29
+        Regenerable   :       9
+        Spilled       :       3
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::basic_ostream<char, std::char_traits<char>>::sentry::sentry(std::basic_ostream<char, std::char_traits<char>>::sentry *, std::basic_ostream<char, std::char_traits<char>>::_Myt &)
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\ostream(123,4):remark #34051: REGISTER ALLOCATION : [??0sentry@?$basic_ostream@DU?$char_traits@D@std@@@std@@QEAA@AEAV12@@Z] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\ostream:123
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    5[ rax rdx rcx r8 r15]
+        
+    Routine temporaries
+        Total         :      63
+            Global    :      41
+            Local     :      22
+        Regenerable   :       2
+        Spilled       :       1
+        
+    Routine stack
+        Variables     :       8 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       1 [1.00e+000 ~ 1.8%]
+        Spills        :       8 bytes*
+            Reads     :       1 [1.00e+000 ~ 1.8%]
+            Writes    :       1 [1.00e+000 ~ 1.8%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::basic_ostream<char, std::char_traits<char>>::sentry::operator bool(const std::basic_ostream<char, std::char_traits<char>>::sentry *) const
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\ostream(141,4):remark #34051: REGISTER ALLOCATION : [??Bsentry@?$basic_ostream@DU?$char_traits@D@std@@@std@@QEBA_NXZ] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\ostream:141
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    2[ rax rcx]
+        
+    Routine temporaries
+        Total         :      22
+            Global    :       0
+            Local     :      22
+        Regenerable   :       0
+        Spilled       :       0
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::basic_ostream<char, std::char_traits<char>>::sentry::~sentry(std::basic_ostream<char, std::char_traits<char>>::sentry *)
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vcruntime_exception.h(53,5):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (16, 8)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vcruntime_exception.h(54,40):remark #34000: call to memcpy implemented inline with loads and stores with proven source (alignment, offset): (16, 0), and destination (alignment, offset): (16, 0)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\system_error(521,2):remark #34000: call to memcpy implemented inline with loads and stores with proven source (alignment, offset): (16, 0), and destination (alignment, offset): (16, 8)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vcruntime_exception.h(53,5):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (16, 8)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vcruntime_exception.h(54,40):remark #34000: call to memcpy implemented inline with loads and stores with proven source (alignment, offset): (16, 0), and destination (alignment, offset): (16, 0)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\system_error(521,2):remark #34000: call to memcpy implemented inline with loads and stores with proven source (alignment, offset): (16, 0), and destination (alignment, offset): (16, 8)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vcruntime_exception.h(53,5):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (16, 8)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vcruntime_exception.h(54,40):remark #34000: call to memcpy implemented inline with loads and stores with proven source (alignment, offset): (16, 0), and destination (alignment, offset): (16, 0)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\system_error(521,2):remark #34000: call to memcpy implemented inline with loads and stores with proven source (alignment, offset): (16, 0), and destination (alignment, offset): (16, 8)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\ostream(130,4):remark #34051: REGISTER ALLOCATION : [??1sentry@?$basic_ostream@DU?$char_traits@D@std@@@std@@QEAA@XZ] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\ostream:130
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    8[ rax rdx rcx rsi r8-r9 r13 zmm0]
+        
+    Routine temporaries
+        Total         :     628
+            Global    :     370
+            Local     :     258
+        Regenerable   :     178
+        Spilled       :       2
+        
+    Routine stack
+        Variables     :     640 bytes*
+            Reads     :      30 [1.00e+000 ~ 1.7%]
+            Writes    :      77 [2.00e+000 ~ 3.5%]
+        Spills        :      16 bytes*
+            Reads     :       2 [2.00e+000 ~ 3.5%]
+            Writes    :       2 [2.00e+000 ~ 3.5%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::basic_ostream<char, std::char_traits<char>>::_Sentry_base::~_Sentry_base(std::basic_ostream<char, std::char_traits<char>>::_Sentry_base *)
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\ostream(106,4):remark #34051: REGISTER ALLOCATION : [??1_Sentry_base@?$basic_ostream@DU?$char_traits@D@std@@@std@@QEAA@XZ] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\ostream:106
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    3[ rax rdx rcx]
+        
+    Routine temporaries
+        Total         :      29
+            Global    :      21
+            Local     :       8
+        Regenerable   :       0
+        Spilled       :       0
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::use_facet<std::basic_ostream<char, std::char_traits<char>>::_Nput>(const std::locale &)
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vcruntime_exception.h(53,5):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (16, 8)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vcruntime_exception.h(54,40):remark #34000: call to memcpy implemented inline with loads and stores with proven source (alignment, offset): (16, 0), and destination (alignment, offset): (16, 0)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xlocale(553,2):remark #34051: REGISTER ALLOCATION : [??$use_facet@V?$num_put@DV?$ostreambuf_iterator@DU?$char_traits@D@std@@@std@@@std@@@std@@YAAEBV?$num_put@DV?$ostreambuf_iterator@DU?$char_traits@D@std@@@std@@@0@AEBVlocale@0@@Z] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xlocale:553
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :   12[ rax rdx rcx rbx rsi rdi r8 r12-r15 zmm0]
+        
+    Routine temporaries
+        Total         :     673
+            Global    :     520
+            Local     :     153
+        Regenerable   :      35
+        Spilled       :      24
+        
+    Routine stack
+        Variables     :     200 bytes*
+            Reads     :      32 [1.90e-003 ~ 0.0%]
+            Writes    :      33 [1.01e+000 ~ 1.6%]
+        Spills        :     192 bytes*
+            Reads     :      24 [4.00e+000 ~ 6.3%]
+            Writes    :      24 [4.00e+000 ~ 6.3%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::locale::~locale(std::locale *)
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xlocale(430,3):remark #34051: REGISTER ALLOCATION : [??1locale@std@@QEAA@XZ] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xlocale:430
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    4[ rax rdx rcx r8]
+        
+    Routine temporaries
+        Total         :      28
+            Global    :      21
+            Local     :       7
+        Regenerable   :       1
+        Spilled       :       0
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::ostreambuf_iterator<char, std::char_traits<char>>::ostreambuf_iterator(std::ostreambuf_iterator<char, std::char_traits<char>> *, std::ostreambuf_iterator<char, std::char_traits<char>>::streambuf_type *)
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\streambuf(628,3):remark #34051: REGISTER ALLOCATION : [??0?$ostreambuf_iterator@DU?$char_traits@D@std@@@std@@QEAA@PEAV?$basic_streambuf@DU?$char_traits@D@std@@@1@@Z] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\streambuf:628
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    3[ rax rdx rcx]
+        
+    Routine temporaries
+        Total         :      23
+            Global    :       0
+            Local     :      23
+        Regenerable   :       0
+        Spilled       :       0
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::operator<<<std::char_traits<char>>(std::basic_ostream<char, std::char_traits<char>> &, const char *)
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xiosbase(235,12):remark #34000: call to memcpy implemented inline with loads and stores with proven source (alignment, offset): (16, 0), and destination (alignment, offset): (16, 0)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\system_error(546,2):remark #34000: call to memcpy implemented inline with loads and stores with proven source (alignment, offset): (16, 0), and destination (alignment, offset): (16, 0)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\system_error(521,2):remark #34000: call to memcpy implemented inline with loads and stores with proven source (alignment, offset): (16, 0), and destination (alignment, offset): (16, 0)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vcruntime_exception.h(53,5):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (16, 8)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vcruntime_exception.h(54,40):remark #34000: call to memcpy implemented inline with loads and stores with proven source (alignment, offset): (16, 0), and destination (alignment, offset): (16, 0)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\system_error(521,2):remark #34000: call to memcpy implemented inline with loads and stores with proven source (alignment, offset): (16, 0), and destination (alignment, offset): (16, 8)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xiosbase(235,12):remark #34000: call to memcpy implemented inline with loads and stores with proven source (alignment, offset): (16, 0), and destination (alignment, offset): (16, 0)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\system_error(546,2):remark #34000: call to memcpy implemented inline with loads and stores with proven source (alignment, offset): (16, 0), and destination (alignment, offset): (16, 0)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\system_error(521,2):remark #34000: call to memcpy implemented inline with loads and stores with proven source (alignment, offset): (16, 0), and destination (alignment, offset): (16, 0)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vcruntime_exception.h(53,5):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (16, 8)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vcruntime_exception.h(54,40):remark #34000: call to memcpy implemented inline with loads and stores with proven source (alignment, offset): (16, 0), and destination (alignment, offset): (16, 0)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\system_error(521,2):remark #34000: call to memcpy implemented inline with loads and stores with proven source (alignment, offset): (16, 0), and destination (alignment, offset): (16, 8)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xiosbase(235,12):remark #34000: call to memcpy implemented inline with loads and stores with proven source (alignment, offset): (16, 0), and destination (alignment, offset): (16, 0)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\system_error(546,2):remark #34000: call to memcpy implemented inline with loads and stores with proven source (alignment, offset): (16, 0), and destination (alignment, offset): (16, 0)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\system_error(521,2):remark #34000: call to memcpy implemented inline with loads and stores with proven source (alignment, offset): (16, 0), and destination (alignment, offset): (16, 0)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vcruntime_exception.h(53,5):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (16, 8)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vcruntime_exception.h(54,40):remark #34000: call to memcpy implemented inline with loads and stores with proven source (alignment, offset): (16, 0), and destination (alignment, offset): (16, 0)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\system_error(521,2):remark #34000: call to memcpy implemented inline with loads and stores with proven source (alignment, offset): (16, 0), and destination (alignment, offset): (16, 8)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\ostream(780,2):remark #34051: REGISTER ALLOCATION : [??$?6U?$char_traits@D@std@@@std@@YAAEAV?$basic_ostream@DU?$char_traits@D@std@@@0@AEAV10@PEBD@Z] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\ostream:780
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :   14[ rax rdx rcx rbx rsi rdi r8-r11 r13 r15 zmm0-zmm1]
+        
+    Routine temporaries
+        Total         :     787
+            Global    :     427
+            Local     :     360
+        Regenerable   :     183
+        Spilled       :       5
+        
+    Routine stack
+        Variables     :     812 bytes*
+            Reads     :      65 [3.91e+000 ~ 2.3%]
+            Writes    :      94 [9.08e+000 ~ 5.3%]
+        Spills        :      40 bytes*
+            Reads     :       5 [5.00e+000 ~ 2.9%]
+            Writes    :       5 [5.00e+000 ~ 2.9%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: TranspositionT::clearTable(TranspositionT *)
+
+    Report from: Interprocedural optimizations [ipo]
+
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\TranspositionT.cpp(34,1):INLINE REPORT START: (TranspositionT::clearTable(TranspositionT *))
+INLINE REPORT END
+
+    Report from: Code generation optimizations [cg]
+
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\TranspositionT.cpp(35,2):remark #34026: call to memset implemented as a call to optimized library version
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\TranspositionT.cpp(34,1):remark #34051: REGISTER ALLOCATION : [?clearTable@TranspositionT@@QEAAXXZ] C:\Users\C-60\Desktop\cppPrograms\StuckFish\TranspositionT.cpp:34
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    3[ rdx rcx r8]
+        
+    Routine temporaries
+        Total         :      26
+            Global    :      18
+            Local     :       8
+        Regenerable   :       1
+        Spilled       :       0
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::exception::exception(std::exception *, const std::exception &)
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vcruntime_exception.h(66,5):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (1, 0)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vcruntime_exception.h(66,5):remark #34051: REGISTER ALLOCATION : [??0exception@std@@QEAA@AEBV01@@Z] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vcruntime_exception.h:66
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    6[ rax rdx rcx rbp r8 zmm0]
+        
+    Routine temporaries
+        Total         :      29
+            Global    :      21
+            Local     :       8
+        Regenerable   :       2
+        Spilled       :       1
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::exception::what(const std::exception *) const
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vcruntime_exception.h(88,5):remark #34051: REGISTER ALLOCATION : [?what@exception@std@@UEBAPEBDXZ] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vcruntime_exception.h:88
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    3[ rax rdx rcx]
+        
+    Routine temporaries
+        Total         :      24
+            Global    :       0
+            Local     :      24
+        Regenerable   :       1
+        Spilled       :       0
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::basic_string<char, std::char_traits<char>, std::allocator<char>>::_Assign_rv(std::basic_string<char, std::char_traits<char>, std::allocator<char>> *, std::basic_string<char, std::char_traits<char>, std::allocator<char>>::_Myt &&)
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\iosfwd(553,3):remark #34008: call to memmove not inlined based on compiler heuristics
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xstring(961,3):remark #34051: REGISTER ALLOCATION : [?_Assign_rv@?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@QEAAX$$QEAV12@@Z] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xstring:961
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    6[ rax rdx rcx rbp rsi r8]
+        
+    Routine temporaries
+        Total         :      29
+            Global    :      22
+            Local     :       7
+        Regenerable   :       0
+        Spilled       :       2
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::basic_string<char, std::char_traits<char>, std::allocator<char>>::append(std::basic_string<char, std::char_traits<char>, std::allocator<char>> *, const std::basic_string<char, std::char_traits<char>, std::allocator<char>>::_Myt &, std::basic_string<char, std::char_traits<char>, std::allocator<char>>::size_type, std::basic_string<char, std::char_traits<char>, std::allocator<char>>::size_type)
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\iosfwd(530,3):remark #34026: call to memcpy implemented as a call to optimized library version
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\iosfwd(530,3):remark #34026: call to memcpy implemented as a call to optimized library version
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xstring(1070,3):remark #34051: REGISTER ALLOCATION : [?append@?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@QEAAAEAV12@AEBV12@_K1@Z] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xstring:1070
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    8[ rax rdx rcx rsi r8-r10 r14]
+        
+    Routine temporaries
+        Total         :     146
+            Global    :      91
+            Local     :      55
+        Regenerable   :      13
+        Spilled       :       2
+        
+    Routine stack
+        Variables     :      64 bytes*
+            Reads     :      13 [1.67e-002 ~ 0.0%]
+            Writes    :      13 [2.06e+000 ~ 2.9%]
+        Spills        :      16 bytes*
+            Reads     :       2 [9.95e-001 ~ 1.4%]
+            Writes    :       2 [1.00e+000 ~ 1.4%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::basic_string<char, std::char_traits<char>, std::allocator<char>>::append(std::basic_string<char, std::char_traits<char>, std::allocator<char>> *, const char *, std::basic_string<char, std::char_traits<char>, std::allocator<char>>::size_type)
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\iosfwd(530,3):remark #34026: call to memcpy implemented as a call to optimized library version
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\iosfwd(530,3):remark #34026: call to memcpy implemented as a call to optimized library version
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\iosfwd(530,3):remark #34026: call to memcpy implemented as a call to optimized library version
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\iosfwd(530,3):remark #34026: call to memcpy implemented as a call to optimized library version
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xstring(1087,3):remark #34051: REGISTER ALLOCATION : [?append@?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@QEAAAEAV12@PEBD_K@Z] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xstring:1087
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    8[ rax rdx rcx rbx r8-r10 r13]
+        
+    Routine temporaries
+        Total         :     264
+            Global    :     162
+            Local     :     102
+        Regenerable   :      24
+        Spilled       :       3
+        
+    Routine stack
+        Variables     :     152 bytes*
+            Reads     :      31 [1.96e-002 ~ 0.0%]
+            Writes    :      30 [3.18e+000 ~ 4.4%]
+        Spills        :      24 bytes*
+            Reads     :       4 [9.96e-001 ~ 1.4%]
+            Writes    :       3 [1.00e+000 ~ 1.4%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::basic_string<char, std::char_traits<char>, std::allocator<char>>::assign(std::basic_string<char, std::char_traits<char>, std::allocator<char>> *, const char *, std::basic_string<char, std::char_traits<char>, std::allocator<char>>::size_type)
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\iosfwd(530,3):remark #34026: call to memcpy implemented as a call to optimized library version
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\iosfwd(530,3):remark #34026: call to memcpy implemented as a call to optimized library version
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xstring(1165,3):remark #34051: REGISTER ALLOCATION : [?assign@?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@QEAAAEAV12@PEBD_K@Z] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xstring:1165
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    9[ rax rdx rcx rbx r8-r10 r12 r14]
+        
+    Routine temporaries
+        Total         :     147
+            Global    :      90
+            Local     :      57
+        Regenerable   :       9
+        Spilled       :       3
+        
+    Routine stack
+        Variables     :      56 bytes*
+            Reads     :      12 [2.06e-001 ~ 0.3%]
+            Writes    :      12 [2.15e+000 ~ 3.0%]
+        Spills        :      24 bytes*
+            Reads     :       3 [1.44e+000 ~ 2.0%]
+            Writes    :       3 [2.00e+000 ~ 2.8%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::bad_cast::bad_cast(std::bad_cast *, const std::bad_cast &)
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vcruntime_exception.h(66,5):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (1, 0)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vcruntime_typeinfo.h(118,7):remark #34051: REGISTER ALLOCATION : [??0bad_cast@std@@QEAA@AEBV01@@Z] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vcruntime_typeinfo.h:118
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    6[ rax rdx rcx rbx r8 zmm0]
+        
+    Routine temporaries
+        Total         :      30
+            Global    :      21
+            Local     :       9
+        Regenerable   :       3
+        Spilled       :       1
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::bad_cast::~bad_cast(std::bad_cast *)
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vcruntime_typeinfo.h(118,7):remark #34051: REGISTER ALLOCATION : [??1bad_cast@std@@UEAA@XZ] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vcruntime_typeinfo.h:118
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    3[ rax rdx rcx]
+        
+    Routine temporaries
+        Total         :      25
+            Global    :       0
+            Local     :      25
+        Regenerable   :       1
+        Spilled       :       0
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::numpunct<char>::do_decimal_point(const std::numpunct<char> *) const
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xlocnum(231,3):remark #34051: REGISTER ALLOCATION : [?do_decimal_point@?$numpunct@D@std@@MEBADXZ] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xlocnum:231
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    2[ rax rcx]
+        
+    Routine temporaries
+        Total         :      22
+            Global    :       0
+            Local     :      22
+        Regenerable   :       0
+        Spilled       :       0
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::numpunct<char>::do_thousands_sep(const std::numpunct<char> *) const
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xlocnum(236,3):remark #34051: REGISTER ALLOCATION : [?do_thousands_sep@?$numpunct@D@std@@MEBADXZ] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xlocnum:236
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    2[ rax rcx]
+        
+    Routine temporaries
+        Total         :      22
+            Global    :       0
+            Local     :      22
+        Regenerable   :       0
+        Spilled       :       0
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::numpunct<char>::do_grouping(const std::numpunct<char> *, std::string *) const
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\iosfwd(530,3):remark #34026: call to memcpy implemented as a call to optimized library version
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\iosfwd(530,3):remark #34026: call to memcpy implemented as a call to optimized library version
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xlocnum(241,3):remark #34051: REGISTER ALLOCATION : [?do_grouping@?$numpunct@D@std@@MEBA?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@2@XZ] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xlocnum:241
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    8[ rax rdx rcx r8-r11 r13]
+        
+    Routine temporaries
+        Total         :     162
+            Global    :     106
+            Local     :      56
+        Regenerable   :       9
+        Spilled       :       2
+        
+    Routine stack
+        Variables     :      80 bytes*
+            Reads     :      17 [3.29e-001 ~ 0.4%]
+            Writes    :      15 [5.15e+000 ~ 6.8%]
+        Spills        :      16 bytes*
+            Reads     :       2 [1.00e+000 ~ 1.3%]
+            Writes    :       2 [1.00e+000 ~ 1.3%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::numpunct<char>::do_falsename(const std::numpunct<char> *, std::numpunct<char>::string_type *) const
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\iosfwd(530,3):remark #34026: call to memcpy implemented as a call to optimized library version
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\iosfwd(530,3):remark #34026: call to memcpy implemented as a call to optimized library version
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xlocnum(246,3):remark #34051: REGISTER ALLOCATION : [?do_falsename@?$numpunct@D@std@@MEBA?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@2@XZ] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xlocnum:246
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    8[ rax rdx rcx r8-r11 r13]
+        
+    Routine temporaries
+        Total         :     162
+            Global    :     106
+            Local     :      56
+        Regenerable   :       9
+        Spilled       :       2
+        
+    Routine stack
+        Variables     :      80 bytes*
+            Reads     :      17 [3.29e-001 ~ 0.4%]
+            Writes    :      15 [5.15e+000 ~ 6.8%]
+        Spills        :      16 bytes*
+            Reads     :       2 [1.00e+000 ~ 1.3%]
+            Writes    :       2 [1.00e+000 ~ 1.3%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::numpunct<char>::do_truename(const std::numpunct<char> *, std::numpunct<char>::string_type *) const
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\iosfwd(530,3):remark #34026: call to memcpy implemented as a call to optimized library version
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\iosfwd(530,3):remark #34026: call to memcpy implemented as a call to optimized library version
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xlocnum(251,3):remark #34051: REGISTER ALLOCATION : [?do_truename@?$numpunct@D@std@@MEBA?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@2@XZ] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xlocnum:251
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    8[ rax rdx rcx r8-r11 r13]
+        
+    Routine temporaries
+        Total         :     162
+            Global    :     106
+            Local     :      56
+        Regenerable   :       9
+        Spilled       :       2
+        
+    Routine stack
+        Variables     :      80 bytes*
+            Reads     :      17 [3.29e-001 ~ 0.4%]
+            Writes    :      15 [5.15e+000 ~ 6.8%]
+        Spills        :      16 bytes*
+            Reads     :       2 [1.00e+000 ~ 1.3%]
+            Writes    :       2 [1.00e+000 ~ 1.3%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::numpunct<char>::_Tidy(std::numpunct<char> *)
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xlocnum(257,3):remark #34051: REGISTER ALLOCATION : [?_Tidy@?$numpunct@D@std@@AEAAXXZ] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xlocnum:257
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    3[ rax rcx r13]
+        
+    Routine temporaries
+        Total         :      28
+            Global    :      19
+            Local     :       9
+        Regenerable   :       0
+        Spilled       :       1
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::basic_string<char, std::char_traits<char>, std::allocator<char>>::assign(std::basic_string<char, std::char_traits<char>, std::allocator<char>> *, const std::basic_string<char, std::char_traits<char>, std::allocator<char>>::_Myt &, std::basic_string<char, std::char_traits<char>, std::allocator<char>>::size_type, std::basic_string<char, std::char_traits<char>, std::allocator<char>>::size_type)
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\iosfwd(530,3):remark #34026: call to memcpy implemented as a call to optimized library version
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\iosfwd(530,3):remark #34026: call to memcpy implemented as a call to optimized library version
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\iosfwd(553,3):remark #34008: call to memmove not inlined based on compiler heuristics
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xstring(1149,3):remark #34051: REGISTER ALLOCATION : [?assign@?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@QEAAAEAV12@AEBV12@_K1@Z] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xstring:1149
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    9[ rax rdx rcx rbx r8-r10 r13-r14]
+        
+    Routine temporaries
+        Total         :     153
+            Global    :      96
+            Local     :      57
+        Regenerable   :      13
+        Spilled       :       3
+        
+    Routine stack
+        Variables     :      56 bytes*
+            Reads     :      12 [2.51e-001 ~ 0.3%]
+            Writes    :      12 [2.10e+000 ~ 2.7%]
+        Spills        :      24 bytes*
+            Reads     :       3 [2.00e+000 ~ 2.6%]
+            Writes    :       3 [2.00e+000 ~ 2.6%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::basic_string<char, std::char_traits<char>, std::allocator<char>>::_Tidy(std::basic_string<char, std::char_traits<char>, std::allocator<char>> *, bool, std::basic_string<char, std::char_traits<char>, std::allocator<char>>::size_type)
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\iosfwd(530,3):remark #34026: call to memcpy implemented as a call to optimized library version
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xstring(2248,3):remark #34051: REGISTER ALLOCATION : [?_Tidy@?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@QEAAX_N_K@Z] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xstring:2248
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    7[ rax rdx rcx rdi r8 r12-r13]
+        
+    Routine temporaries
+        Total         :      33
+            Global    :      24
+            Local     :       9
+        Regenerable   :       0
+        Spilled       :       3
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::_Wrap_alloc<std::_String_base_types<char, std::allocator<char>>::_Alloc>::allocate(std::_Wrap_alloc<std::_String_base_types<char, std::allocator<char>>::_Alloc> *, std::_Wrap_alloc<std::_String_base_types<char, std::allocator<char>>::_Alloc>::size_type)
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xmemory0(975,3):remark #34051: REGISTER ALLOCATION : [?allocate@?$_Wrap_alloc@V?$allocator@D@std@@@std@@QEAAPEAD_K@Z] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xmemory0:975
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    3[ rax rdx rcx]
+        
+    Routine temporaries
+        Total         :      30
+            Global    :      24
+            Local     :       6
+        Regenerable   :       0
+        Spilled       :       0
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::_String_alloc<std::_String_base_types<char, std::allocator<char>>>::_Getal(std::_String_alloc<std::_String_base_types<char, std::allocator<char>>> *)
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xstring(691,3):remark #34051: REGISTER ALLOCATION : [?_Getal@?$_String_alloc@U?$_String_base_types@DV?$allocator@D@std@@@std@@@std@@QEAAAEAU?$_Wrap_alloc@V?$allocator@D@std@@@2@XZ] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xstring:691
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    2[ rax rcx]
+        
+    Routine temporaries
+        Total         :      21
+            Global    :       0
+            Local     :      21
+        Regenerable   :       0
+        Spilled       :       0
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: sprintf_s(char *, size_t, const char *, ...)
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.15063.0\ucrt\stdio.h(1839,9):remark #34051: REGISTER ALLOCATION : [sprintf_s] C:\Program Files (x86)\Windows Kits\10\Include\10.0.15063.0\ucrt\stdio.h:1839
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    9[ rax rdx rcx rdi r8-r12]
+        
+    Routine temporaries
+        Total         :      42
+            Global    :      23
+            Local     :      19
+        Regenerable   :       2
+        Spilled       :       2
+        
+    Routine stack
+        Variables     :       8 bytes*
+            Reads     :       1 [1.00e+000 ~ 2.0%]
+            Writes    :       2 [2.00e+000 ~ 3.9%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: __local_stdio_printf_options()
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.15063.0\ucrt\corecrt_stdio_config.h(85,5):remark #34051: REGISTER ALLOCATION : [__local_stdio_printf_options] C:\Program Files (x86)\Windows Kits\10\Include\10.0.15063.0\ucrt\corecrt_stdio_config.h:85
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    1[ rax]
+        
+    Routine temporaries
+        Total         :      20
+            Global    :       0
+            Local     :      20
+        Regenerable   :       2
+        Spilled       :       0
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::basic_string<char, std::char_traits<char>, std::allocator<char>>::~basic_string(std::basic_string<char, std::char_traits<char>, std::allocator<char>> *)
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xstring(1016,3):remark #34051: REGISTER ALLOCATION : [??1?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@QEAA@XZ] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xstring:1016
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    4[ rax rdx rcx rdi]
+        
+    Routine temporaries
+        Total         :      26
+            Global    :      23
+            Local     :       3
+        Regenerable   :       0
+        Spilled       :       1
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::basic_string<char, std::char_traits<char>, std::allocator<char>>::_Copy(std::basic_string<char, std::char_traits<char>, std::allocator<char>> *, std::basic_string<char, std::char_traits<char>, std::allocator<char>>::size_type, std::basic_string<char, std::char_traits<char>, std::allocator<char>>::size_type)
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\iosfwd(530,3):remark #34026: call to memcpy implemented as a call to optimized library version
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xstring(2182,3):remark #34051: REGISTER ALLOCATION : [?_Copy@?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@QEAAX_K0@Z] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xstring:2182
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    9[ rax rdx rcx rbx rsi r8-r10 r12]
+        
+    Routine temporaries
+        Total         :     120
+            Global    :      78
+            Local     :      42
+        Regenerable   :       7
+        Spilled       :       4
+        
+    Routine stack
+        Variables     :      24 bytes*
+            Reads     :       3 [1.72e+000 ~ 2.3%]
+            Writes    :       8 [3.00e+000 ~ 4.1%]
+        Spills        :      32 bytes*
+            Reads     :       4 [3.00e+000 ~ 4.1%]
+            Writes    :       4 [3.00e+000 ~ 4.1%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::endl<char, std::char_traits<char>>(std::basic_ostream<char, std::char_traits<char>> &)
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xlocale(2497,3):remark #34000: call to memcpy implemented inline with loads and stores with proven source (alignment, offset): (16, 0), and destination (alignment, offset): (1, 0)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vcruntime_exception.h(53,5):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (16, 8)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vcruntime_exception.h(54,40):remark #34000: call to memcpy implemented inline with loads and stores with proven source (alignment, offset): (16, 0), and destination (alignment, offset): (16, 0)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\ostream(991,2):remark #34051: REGISTER ALLOCATION : [??$endl@DU?$char_traits@D@std@@@std@@YAAEAV?$basic_ostream@DU?$char_traits@D@std@@@0@AEAV10@@Z] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\ostream:991
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :   13[ rax rdx rcx rbx rsi rdi r8 r12-r15 zmm0-zmm1]
+        
+    Routine temporaries
+        Total         :     723
+            Global    :     544
+            Local     :     179
+        Regenerable   :      41
+        Spilled       :      25
+        
+    Routine stack
+        Variables     :     248 bytes*
+            Reads     :      37 [2.02e+000 ~ 2.2%]
+            Writes    :      34 [2.07e+000 ~ 2.2%]
+        Spills        :     200 bytes*
+            Reads     :      25 [5.00e+000 ~ 5.4%]
+            Writes    :      25 [5.00e+000 ~ 5.4%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::char_traits<char>::eq_int_type(const std::char_traits<char>::int_type &, const std::char_traits<char>::int_type &)
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\iosfwd(594,3):remark #34051: REGISTER ALLOCATION : [?eq_int_type@?$char_traits@D@std@@SA_NAEBH0@Z] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\iosfwd:594
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    5[ rax rdx rcx r8-r9]
+        
+    Routine temporaries
+        Total         :      27
+            Global    :       0
+            Local     :      27
+        Regenerable   :       2
+        Spilled       :       0
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: __sti__?TT@@3VTranspositionT@@A()
+
+    Report from: Interprocedural optimizations [ipo]
+
+<compiler generated>:INLINE REPORT START: (__sti__?TT@@3VTranspositionT@@A())
+INLINE REPORT END
+
+    Report from: Code generation optimizations [cg]
+
+<compiler generated>:remark #34051: REGISTER ALLOCATION : [__sti__?TT@@3VTranspositionT@@A] (null):0
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    1[ rcx]
+        
+    Routine temporaries
+        Total         :      20
+            Global    :      18
+            Local     :       2
+        Regenerable   :       2
+        Spilled       :       0
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: __$U3
+
+    Report from: Interprocedural optimizations [ipo]
+
+<compiler generated>:INLINE REPORT START: (__$U3)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\TranspositionT.cpp(6,16):(1)-> INLINE: TranspositionT::~TranspositionT(TranspositionT *)
+INLINE REPORT END
+
+    Report from: Code generation optimizations [cg]
+
+<compiler generated>:remark #34051: REGISTER ALLOCATION : [__$U3] (null):0
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    1[ rcx]
+        
+    Routine temporaries
+        Total         :      20
+            Global    :      18
+            Local     :       2
+        Regenerable   :       0
+        Spilled       :       0
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::make_error_code(std::error_code *, std::_Io_errc)
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\system_error(479,2):remark #34051: REGISTER ALLOCATION : [?make_error_code@std@@YA?AVerror_code@1@W4io_errc@1@@Z] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\system_error:479
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    9[ rax rdx rcx rbp r8-r11 r15]
+        
+    Routine temporaries
+        Total         :      35
+            Global    :      21
+            Local     :      14
+        Regenerable   :       8
+        Spilled       :       2
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::ostreambuf_iterator<char, std::char_traits<char>>::failed(const std::ostreambuf_iterator<char, std::char_traits<char>> *) const
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\streambuf(661,3):remark #34051: REGISTER ALLOCATION : [?failed@?$ostreambuf_iterator@DU?$char_traits@D@std@@@std@@QEBA_NXZ] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\streambuf:661
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    2[ rax rcx]
+        
+    Routine temporaries
+        Total         :      22
+            Global    :       0
+            Local     :      22
+        Regenerable   :       0
+        Spilled       :       0
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::ios_base::failure::~failure(std::ios_base::failure *)
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xiosbase(224,8):remark #34051: REGISTER ALLOCATION : [??1failure@ios_base@std@@UEAA@XZ] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xiosbase:224
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    3[ rax rdx rcx]
+        
+    Routine temporaries
+        Total         :      25
+            Global    :       0
+            Local     :      25
+        Regenerable   :       1
+        Spilled       :       0
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::ios_base::failure::failure(std::ios_base::failure *, const std::ios_base::failure &)
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vcruntime_exception.h(66,5):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (1, 0)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\system_error(508,7):remark #34000: call to memcpy implemented inline with loads and stores with proven source (alignment, offset): (1, 0), and destination (alignment, offset): (1, 0)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xiosbase(224,8):remark #34051: REGISTER ALLOCATION : [??0failure@ios_base@std@@QEAA@AEBV012@@Z] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xiosbase:224
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    7[ rax rdx rcx rbx rbp r8 zmm0]
+        
+    Routine temporaries
+        Total         :      32
+            Global    :      21
+            Local     :      11
+        Regenerable   :       4
+        Spilled       :       2
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::ios_base::failure::failure(std::ios_base::failure *, const char *, const std::error_code &)
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xiosbase(235,12):remark #34000: call to memcpy implemented inline with loads and stores with proven source (alignment, offset): (1, 0), and destination (alignment, offset): (16, 0)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\system_error(546,2):remark #34000: call to memcpy implemented inline with loads and stores with proven source (alignment, offset): (16, 0), and destination (alignment, offset): (16, 0)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\system_error(521,2):remark #34000: call to memcpy implemented inline with loads and stores with proven source (alignment, offset): (16, 0), and destination (alignment, offset): (16, 0)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\iosfwd(553,3):remark #34008: call to memmove not inlined based on compiler heuristics
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vcruntime_exception.h(53,5):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (1, 0)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vcruntime_exception.h(54,40):remark #34000: call to memcpy implemented inline with loads and stores with proven source (alignment, offset): (16, 0), and destination (alignment, offset): (16, 0)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\system_error(521,2):remark #34000: call to memcpy implemented inline with loads and stores with proven source (alignment, offset): (16, 0), and destination (alignment, offset): (1, 0)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\iosfwd(530,3):remark #34026: call to memcpy implemented as a call to optimized library version
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\iosfwd(530,3):remark #34026: call to memcpy implemented as a call to optimized library version
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\iosfwd(530,3):remark #34026: call to memcpy implemented as a call to optimized library version
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xiosbase(238,4):remark #34051: REGISTER ALLOCATION : [??0failure@ios_base@std@@QEAA@PEBDAEBVerror_code@2@@Z] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xiosbase:238
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :   12[ rax rdx rcx r8-r15 zmm0]
+        
+    Routine temporaries
+        Total         :     350
+            Global    :     203
+            Local     :     147
+        Regenerable   :      42
+        Spilled       :       5
+        
+    Routine stack
+        Variables     :     296 bytes*
+            Reads     :      53 [1.82e+001 ~ 9.4%]
+            Writes    :      44 [3.25e+001 ~ 16.7%]
+        Spills        :      40 bytes*
+            Reads     :       5 [4.00e+000 ~ 2.1%]
+            Writes    :       5 [4.00e+000 ~ 2.1%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::_Iostream_error_category::message(const std::_Iostream_error_category *, std::string *, int) const
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\iosfwd(530,3):remark #34026: call to memcpy implemented as a call to optimized library version
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\iosfwd(530,3):remark #34026: call to memcpy implemented as a call to optimized library version
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\iosfwd(530,3):remark #34026: call to memcpy implemented as a call to optimized library version
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\iosfwd(530,3):remark #34026: call to memcpy implemented as a call to optimized library version
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\system_error(626,3):remark #34051: REGISTER ALLOCATION : [?message@_Iostream_error_category@std@@UEBA?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@2@H@Z] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\system_error:626
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    9[ rax rdx rcx rbx r8-r11 r14]
+        
+    Routine temporaries
+        Total         :     281
+            Global    :     184
+            Local     :      97
+        Regenerable   :      18
+        Spilled       :       3
+        
+    Routine stack
+        Variables     :     152 bytes*
+            Reads     :      34 [3.29e-001 ~ 0.4%]
+            Writes    :      27 [5.14e+000 ~ 6.6%]
+        Spills        :      24 bytes*
+            Reads     :       4 [1.00e+000 ~ 1.3%]
+            Writes    :       3 [1.00e+000 ~ 1.3%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::_Iostream_error_category::name(const std::_Iostream_error_category *) const
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\system_error(621,3):remark #34051: REGISTER ALLOCATION : [?name@_Iostream_error_category@std@@UEBAPEBDXZ] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\system_error:621
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    2[ rax rcx]
+        
+    Routine temporaries
+        Total         :      21
+            Global    :       0
+            Local     :      21
+        Regenerable   :       2
+        Spilled       :       0
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::_Generic_error_category::message(const std::_Generic_error_category *, std::string *, int) const
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\iosfwd(530,3):remark #34026: call to memcpy implemented as a call to optimized library version
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\iosfwd(530,3):remark #34026: call to memcpy implemented as a call to optimized library version
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\system_error(605,3):remark #34051: REGISTER ALLOCATION : [?message@_Generic_error_category@std@@UEBA?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@2@H@Z] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\system_error:605
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    9[ rax rdx rcx r8-r13]
+        
+    Routine temporaries
+        Total         :     166
+            Global    :     107
+            Local     :      59
+        Regenerable   :       9
+        Spilled       :       2
+        
+    Routine stack
+        Variables     :      80 bytes*
+            Reads     :      17 [3.29e-001 ~ 0.4%]
+            Writes    :      15 [5.15e+000 ~ 6.6%]
+        Spills        :      16 bytes*
+            Reads     :       2 [1.00e+000 ~ 1.3%]
+            Writes    :       2 [1.00e+000 ~ 1.3%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::_Generic_error_category::name(const std::_Generic_error_category *) const
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\system_error(600,3):remark #34051: REGISTER ALLOCATION : [?name@_Generic_error_category@std@@UEBAPEBDXZ] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\system_error:600
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    2[ rax rcx]
+        
+    Routine temporaries
+        Total         :      21
+            Global    :       0
+            Local     :      21
+        Regenerable   :       2
+        Spilled       :       0
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::system_error::system_error(std::system_error *, const std::system_error &)
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vcruntime_exception.h(66,5):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (1, 0)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\system_error(508,7):remark #34000: call to memcpy implemented inline with loads and stores with proven source (alignment, offset): (1, 0), and destination (alignment, offset): (1, 0)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\system_error(529,7):remark #34051: REGISTER ALLOCATION : [??0system_error@std@@QEAA@AEBV01@@Z] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\system_error:529
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    7[ rax rdx rcx rbx rbp r8 zmm0]
+        
+    Routine temporaries
+        Total         :      32
+            Global    :      21
+            Local     :      11
+        Regenerable   :       4
+        Spilled       :       2
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::_System_error::_System_error(std::_System_error *, const std::_System_error &)
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vcruntime_exception.h(66,5):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (1, 0)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\system_error(508,7):remark #34000: call to memcpy implemented inline with loads and stores with proven source (alignment, offset): (1, 0), and destination (alignment, offset): (1, 0)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\system_error(508,7):remark #34051: REGISTER ALLOCATION : [??0_System_error@std@@QEAA@AEBV01@@Z] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\system_error:508
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    7[ rax rdx rcx rbx rdi r8 zmm0]
+        
+    Routine temporaries
+        Total         :      31
+            Global    :      21
+            Local     :      10
+        Regenerable   :       3
+        Spilled       :       2
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::error_category::equivalent(const std::error_category *, const std::error_code &, int) const
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\system_error(462,2):remark #34051: REGISTER ALLOCATION : [?equivalent@error_category@std@@UEBA_NAEBVerror_code@2@H@Z] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\system_error:462
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    5[ rax rdx rcx r8-r9]
+        
+    Routine temporaries
+        Total         :      30
+            Global    :      21
+            Local     :       9
+        Regenerable   :       2
+        Spilled       :       0
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::error_category::equivalent(const std::error_category *, int, const std::error_condition &) const
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\system_error(455,2):remark #34051: REGISTER ALLOCATION : [?equivalent@error_category@std@@UEBA_NHAEBVerror_condition@2@@Z] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\system_error:455
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    5[ rax rdx rcx r8 r12]
+        
+    Routine temporaries
+        Total         :      37
+            Global    :      20
+            Local     :      17
+        Regenerable   :       4
+        Spilled       :       1
+        
+    Routine stack
+        Variables     :      16 bytes*
+            Reads     :       2 [1.05e+000 ~ 2.7%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::error_category::default_error_condition(const std::error_category *, std::error_condition *, int) const
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\system_error(448,2):remark #34051: REGISTER ALLOCATION : [?default_error_condition@error_category@std@@UEBA?AVerror_condition@2@H@Z] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\system_error:448
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    4[ rax rdx rcx r8]
+        
+    Routine temporaries
+        Total         :      25
+            Global    :       0
+            Local     :      25
+        Regenerable   :       0
+        Spilled       :       0
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::runtime_error::~runtime_error(std::runtime_error *)
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\stdexcept(155,7):remark #34051: REGISTER ALLOCATION : [??1runtime_error@std@@UEAA@XZ] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\stdexcept:155
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    3[ rax rdx rcx]
+        
+    Routine temporaries
+        Total         :      25
+            Global    :       0
+            Local     :      25
+        Regenerable   :       1
+        Spilled       :       0
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::runtime_error::runtime_error(std::runtime_error *, const std::runtime_error &)
+
+    Report from: Code generation optimizations [cg]
+
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vcruntime_exception.h(66,5):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (1, 0)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\stdexcept(155,7):remark #34051: REGISTER ALLOCATION : [??0runtime_error@std@@QEAA@AEBV01@@Z] C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\stdexcept:155
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    6[ rax rdx rcx rbx r8 zmm0]
+        
+    Routine temporaries
+        Total         :      30
+            Global    :      21
+            Local     :       9
+        Regenerable   :       3
+        Spilled       :       1
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::ios_base::failure::~failure(std::ios_base::failure *, unsigned int)
+
+    Report from: Code generation optimizations [cg]
+
+<compiler generated>:remark #34051: REGISTER ALLOCATION : [??_Gfailure@ios_base@std@@UEAAPEAXI@Z] (null):0
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    6[ rax rdx rcx rsi rdi r8]
+        
+    Routine temporaries
+        Total         :      28
+            Global    :      20
+            Local     :       8
+        Regenerable   :       2
+        Spilled       :       2
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::_Iostream_error_category::~_Iostream_error_category(std::_Iostream_error_category *, unsigned int)
+
+    Report from: Code generation optimizations [cg]
+
+<compiler generated>:remark #34051: REGISTER ALLOCATION : [??_G_Iostream_error_category@std@@UEAAPEAXI@Z] (null):0
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    5[ rax rdx rcx rsi r8]
+        
+    Routine temporaries
+        Total         :      26
+            Global    :      19
+            Local     :       7
+        Regenerable   :       2
+        Spilled       :       1
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::_Generic_error_category::~_Generic_error_category(std::_Generic_error_category *, unsigned int)
+
+    Report from: Code generation optimizations [cg]
+
+<compiler generated>:remark #34051: REGISTER ALLOCATION : [??_G_Generic_error_category@std@@UEAAPEAXI@Z] (null):0
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    5[ rax rdx rcx rsi r8]
+        
+    Routine temporaries
+        Total         :      26
+            Global    :      19
+            Local     :       7
+        Regenerable   :       2
+        Spilled       :       1
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::system_error::~system_error(std::system_error *, unsigned int)
+
+    Report from: Code generation optimizations [cg]
+
+<compiler generated>:remark #34051: REGISTER ALLOCATION : [??_Gsystem_error@std@@UEAAPEAXI@Z] (null):0
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    6[ rax rdx rcx rsi rdi r8]
+        
+    Routine temporaries
+        Total         :      28
+            Global    :      20
+            Local     :       8
+        Regenerable   :       2
+        Spilled       :       2
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::_System_error::~_System_error(std::_System_error *, unsigned int)
+
+    Report from: Code generation optimizations [cg]
+
+<compiler generated>:remark #34051: REGISTER ALLOCATION : [??_G_System_error@std@@UEAAPEAXI@Z] (null):0
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    6[ rax rdx rcx rsi rdi r8]
+        
+    Routine temporaries
+        Total         :      28
+            Global    :      20
+            Local     :       8
+        Regenerable   :       2
+        Spilled       :       2
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::error_category::~error_category(std::error_category *, unsigned int)
+
+    Report from: Code generation optimizations [cg]
+
+<compiler generated>:remark #34051: REGISTER ALLOCATION : [??_Gerror_category@std@@UEAAPEAXI@Z] (null):0
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    5[ rax rdx rcx rsi r8]
+        
+    Routine temporaries
+        Total         :      26
+            Global    :      19
+            Local     :       7
+        Regenerable   :       2
+        Spilled       :       1
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: std::runtime_error::~runtime_error(std::runtime_error *, unsigned int)
+
+    Report from: Code generation optimizations [cg]
+
+<compiler generated>:remark #34051: REGISTER ALLOCATION : [??_Gruntime_error@std@@UEAAPEAXI@Z] (null):0
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    6[ rax rdx rcx rsi rdi r8]
+        
+    Routine temporaries
+        Total         :      28
+            Global    :      20
+            Local     :       8
+        Regenerable   :       2
+        Spilled       :       2
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================

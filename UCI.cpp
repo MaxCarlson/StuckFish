@@ -282,8 +282,6 @@ namespace Uci {
 
 Move UCI::strToMove(BitBoards& newBoard, std::string& input)
 {
-	Move m;
-
 	// In case promotion piece character is sent
 	// as upper case. 
 	if (input.length() == 5)

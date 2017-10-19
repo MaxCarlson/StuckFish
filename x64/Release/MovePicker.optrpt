@@ -1,0 +1,484 @@
+
+Begin optimization report for: insertion_sort(SMove *, SMove *)
+
+    Report from: Interprocedural optimizations [ipo]
+
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(15,1):INLINE REPORT START: (insertion_sort(SMove *, SMove *))
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(21,3):(1)-> INLINE: operator<(const SMove &, const SMove &)
+INLINE REPORT END
+
+    Report from: Code generation optimizations [cg]
+
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(15,1):remark #34051: REGISTER ALLOCATION : [?insertion_sort@@YAXPEAUSMove@@0@Z] C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp:15
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    8[ rax rdx rcx rbp r8-r11]
+        
+    Routine temporaries
+        Total         :      29
+            Global    :      25
+            Local     :       4
+        Regenerable   :       0
+        Spilled       :       1
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       8 bytes*
+            Reads     :       1 [9.00e-001 ~ 0.4%]
+            Writes    :       1 [9.00e-001 ~ 0.4%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: partial_insertion_sort(SMove *, SMove *, int)
+
+    Report from: Interprocedural optimizations [ipo]
+
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(29,66):INLINE REPORT START: (partial_insertion_sort(SMove *, SMove *, int))
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(36,4):(1)-> INLINE: operator<(const SMove &, const SMove &)
+INLINE REPORT END
+
+    Report from: Code generation optimizations [cg]
+
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(29,66):remark #34051: REGISTER ALLOCATION : [?partial_insertion_sort@@YAXPEAUSMove@@0H@Z] C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp:29
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :   10[ rax rdx rcx rbp r8-r11 r14-r15]
+        
+    Routine temporaries
+        Total         :      34
+            Global    :      27
+            Local     :       7
+        Regenerable   :       0
+        Spilled       :       3
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :      24 bytes*
+            Reads     :       3 [2.70e+000 ~ 1.6%]
+            Writes    :       3 [2.70e+000 ~ 1.6%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: MovePicker::MovePicker(MovePicker *, const BitBoards &, Move, int, const ButterflyHistory *, const PieceToHistory **, Move, Move *)
+
+    Report from: Interprocedural optimizations [ipo]
+
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(58,1):INLINE REPORT START: (MovePicker::MovePicker(MovePicker *, const BitBoards &, Move, int, const ButterflyHistory *, const PieceToHistory **, Move, Move *))
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(59,2):(1)-> INLINE: BitBoards::checkers(const BitBoards *) const
+INLINE REPORT END
+
+    Report from: Code generation optimizations [cg]
+
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(56,13):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (1, 0)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(58,1):remark #34051: REGISTER ALLOCATION : [??0MovePicker@@QEAA@AEBVBitBoards@@W4Move@@HPEBUButterflyHistory@@PEAPEBUPieceToHistory@@1PEAW42@@Z] C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp:58
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :   10[ rax rdx rcx r8-r11 r14-r15 zmm0]
+        
+    Routine temporaries
+        Total         :      49
+            Global    :      27
+            Local     :      22
+        Regenerable   :       4
+        Spilled       :       2
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: MovePicker::MovePicker(MovePicker *, const BitBoards &, Move, const ButterflyHistory *)
+
+    Report from: Interprocedural optimizations [ipo]
+
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(70,1):INLINE REPORT START: (MovePicker::MovePicker(MovePicker *, const BitBoards &, Move, const ButterflyHistory *))
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(73,2):(1)-> INLINE: BitBoards::capture_or_promotion(const BitBoards *, Move) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\bitboards.h(287,2):(2)-> INLINE: move_type(Move)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\bitboards.h(287,2):(2)-> INLINE: to_sq(Move)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\bitboards.h(287,2):(2)-> INLINE: BitBoards::empty(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\bitboards.h(287,2):(2)-> INLINE: move_type(Move)
+INLINE REPORT END
+
+    Report from: Code generation optimizations [cg]
+
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(70,1):remark #34051: REGISTER ALLOCATION : [??0MovePicker@@QEAA@AEBVBitBoards@@W4Move@@PEBUButterflyHistory@@@Z] C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp:70
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    8[ rax rdx rcx r8-r9 r13-r15]
+        
+    Routine temporaries
+        Total         :      43
+            Global    :      28
+            Local     :      15
+        Regenerable   :       2
+        Spilled       :       3
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: MovePicker::nextMove(MovePicker *)
+
+    Report from: Interprocedural optimizations [ipo]
+
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(147,1):INLINE REPORT START: (MovePicker::nextMove(MovePicker *))
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(160,3):(1)-> INLINE: MovePicker::score<1>(MovePicker *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(90,3):(2)-> INLINE: BitBoards::pieceOnSq(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(90,3):(2)-> INLINE: from_sq(Move)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(90,3):(2)-> INLINE: BitBoards::pieceOnSq(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(90,3):(2)-> INLINE: to_sq(Move)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(94,3):(2)-> INLINE: move_type(Move)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(97,8):(2)-> INLINE: move_type(Move)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(98,4):(2)-> INLINE: promotion_type(Move)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(167,4):(1)-> INLINE: pick(SMove *, SMove *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(51,2):(2)-> INLINE: std::swap<SMove, void>(SMove &, SMove &)
+       {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(51,2):(2)-> INLINE: std::max_element<SMove *>(SMove *, SMove *)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\algorithm(3493,2):(3)-> INLINE: std::max_element<SMove *, std::less<void>>(SMove *, SMove *, std::less<void>)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\algorithm(3485,2):(4)-> INLINE: std::_Max_element_unchecked<SMove *, std::less<void>>(SMove *, SMove *, std::less<void> &)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\algorithm(3475,4):(5)-> INLINE: std::less<void>::operator()<SMove &, SMove &>(const std::less<void> *, SMove &, SMove &) const->bool
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xstddef(323,3):(6)-> INLINE: operator<(const SMove &, const SMove &)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(170,5):(1)-> INLINE: BitBoards::stm(const BitBoards *) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(182,3):(1)-> INLINE: BitBoards::capture(const BitBoards *, Move) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\bitboards.h(282,2):(2)-> INLINE: BitBoards::empty(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\bitboards.h(282,2):(2)-> INLINE: move_type(Move)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\bitboards.h(282,2):(2)-> INLINE: to_sq(Move)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(196,3):(1)-> INLINE: BitBoards::capture(const BitBoards *, Move) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\bitboards.h(282,2):(2)-> INLINE: BitBoards::empty(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\bitboards.h(282,2):(2)-> INLINE: move_type(Move)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\bitboards.h(282,2):(2)-> INLINE: to_sq(Move)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(207,3):(1)-> INLINE: BitBoards::capture(const BitBoards *, Move) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\bitboards.h(282,2):(2)-> INLINE: BitBoards::empty(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\bitboards.h(282,2):(2)-> INLINE: move_type(Move)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\bitboards.h(282,2):(2)-> INLINE: to_sq(Move)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(219,3):(1)-> INLINE: MovePicker::score<3>(MovePicker *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(113,3):(2)-> INLINE: std::array<int16_t, 64Ui64>::operator[](const std::array<int16_t, 64Ui64> *, std::array<int16_t, 64Ui64>::size_type) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(113,3):(2)-> INLINE: to_sq(Move)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(113,3):(2)-> INLINE: std::array<std::array<int16_t, 64Ui64>, 7Ui64>::operator[](const std::array<std::array<int16_t, 64Ui64>, 7Ui64> *, std::array<std::array<int16_t, 64Ui64>, 7Ui64>::size_type) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(113,3):(2)-> INLINE: BitBoards::pieceOnSq(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(113,3):(2)-> INLINE: from_sq(Move)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(113,3):(2)-> INLINE: std::array<int16_t, 64Ui64>::operator[](const std::array<int16_t, 64Ui64> *, std::array<int16_t, 64Ui64>::size_type) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(113,3):(2)-> INLINE: to_sq(Move)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(113,3):(2)-> INLINE: std::array<std::array<int16_t, 64Ui64>, 7Ui64>::operator[](const std::array<std::array<int16_t, 64Ui64>, 7Ui64> *, std::array<std::array<int16_t, 64Ui64>, 7Ui64>::size_type) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(113,3):(2)-> INLINE: BitBoards::pieceOnSq(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(113,3):(2)-> INLINE: from_sq(Move)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(113,3):(2)-> INLINE: std::array<int16_t, 64Ui64>::operator[](const std::array<int16_t, 64Ui64> *, std::array<int16_t, 64Ui64>::size_type) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(113,3):(2)-> INLINE: to_sq(Move)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(113,3):(2)-> INLINE: std::array<std::array<int16_t, 64Ui64>, 7Ui64>::operator[](const std::array<std::array<int16_t, 64Ui64>, 7Ui64> *, std::array<std::array<int16_t, 64Ui64>, 7Ui64>::size_type) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(113,3):(2)-> INLINE: BitBoards::pieceOnSq(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(113,3):(2)-> INLINE: from_sq(Move)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(113,3):(2)-> INLINE: std::array<int16_t, 4096Ui64>::operator[](const std::array<int16_t, 4096Ui64> *, std::array<int16_t, 4096Ui64>::size_type) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(113,3):(2)-> INLINE: from_to(Move)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(113,3):(2)-> INLINE: std::array<std::array<int16_t, 4096Ui64>, 2Ui64>::operator[](const std::array<std::array<int16_t, 4096Ui64>, 2Ui64> *, std::array<std::array<int16_t, 4096Ui64>, 2Ui64>::size_type) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(113,3):(2)-> INLINE: BitBoards::stm(const BitBoards *) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(221,3):(1)-> INLINE: partial_insertion_sort(SMove *, SMove *, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(36,4):(2)-> INLINE: operator<(const SMove &, const SMove &)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(252,3):(1)-> INLINE: MovePicker::score<1>(MovePicker *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(90,3):(2)-> INLINE: BitBoards::pieceOnSq(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(90,3):(2)-> INLINE: from_sq(Move)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(90,3):(2)-> INLINE: BitBoards::pieceOnSq(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(90,3):(2)-> INLINE: to_sq(Move)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(94,3):(2)-> INLINE: move_type(Move)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(97,8):(2)-> INLINE: move_type(Move)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(98,4):(2)-> INLINE: promotion_type(Move)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(261,4):(1)-> INLINE: pick(SMove *, SMove *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(51,2):(2)-> INLINE: std::swap<SMove, void>(SMove &, SMove &)
+       {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(51,2):(2)-> INLINE: std::max_element<SMove *>(SMove *, SMove *)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\algorithm(3493,2):(3)-> INLINE: std::max_element<SMove *, std::less<void>>(SMove *, SMove *, std::less<void>)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\algorithm(3485,2):(4)-> INLINE: std::_Max_element_unchecked<SMove *, std::less<void>>(SMove *, SMove *, std::less<void> &)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\algorithm(3475,4):(5)-> INLINE: std::less<void>::operator()<SMove &, SMove &>(const std::less<void> *, SMove &, SMove &) const->bool
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xstddef(323,3):(6)-> INLINE: operator<(const SMove &, const SMove &)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(271,3):(1)-> INLINE: MovePicker::score<2>(MovePicker *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(125,12):(2)-> INLINE: BitBoards::stm(const BitBoards *) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(133,8):(2)-> INLINE: BitBoards::capture(const BitBoards *, Move) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\bitboards.h(282,2):(3)-> INLINE: BitBoards::empty(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\bitboards.h(282,2):(3)-> INLINE: to_sq(Move)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\bitboards.h(282,2):(3)-> INLINE: move_type(Move)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(134,4):(2)-> INLINE: BitBoards::pieceOnSq(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(134,4):(2)-> INLINE: from_sq(Move)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(134,4):(2)-> INLINE: to_sq(Move)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(134,4):(2)-> INLINE: BitBoards::pieceOnSq(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(138,4):(2)-> INLINE: from_to(Move)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(138,4):(2)-> INLINE: std::array<int16_t, 4096Ui64>::operator[](const std::array<int16_t, 4096Ui64> *, std::array<int16_t, 4096Ui64>::size_type) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(138,4):(2)-> INLINE: std::array<std::array<int16_t, 4096Ui64>, 2Ui64>::operator[](const std::array<std::array<int16_t, 4096Ui64>, 2Ui64> *, std::array<std::array<int16_t, 4096Ui64>, 2Ui64>::size_type) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(138,4):(2)-> INLINE: BitBoards::stm(const BitBoards *) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(279,4):(1)-> INLINE: pick(SMove *, SMove *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(51,2):(2)-> INLINE: std::swap<SMove, void>(SMove &, SMove &)
+       {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(51,2):(2)-> INLINE: std::max_element<SMove *>(SMove *, SMove *)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\algorithm(3493,2):(3)-> INLINE: std::max_element<SMove *, std::less<void>>(SMove *, SMove *, std::less<void>)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\algorithm(3485,2):(4)-> INLINE: std::_Max_element_unchecked<SMove *, std::less<void>>(SMove *, SMove *, std::less<void> &)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\algorithm(3475,4):(5)-> INLINE: std::less<void>::operator()<SMove &, SMove &>(const std::less<void> *, SMove &, SMove &) const->bool
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xstddef(323,3):(6)-> INLINE: operator<(const SMove &, const SMove &)
+INLINE REPORT END
+
+    Report from: Loop nest, Vector & Auto-parallelization optimizations [loop, vec, par]
+
+
+LOOP BEGIN at C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\algorithm(3474,3) inlined into C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(279,4)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\algorithm(3474,3):remark #25439: unrolled with remainder by 2  
+LOOP END
+
+LOOP BEGIN at C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\algorithm(3474,3) inlined into C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(279,4)
+Remainder
+LOOP END
+
+LOOP BEGIN at C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\algorithm(3474,3) inlined into C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(261,4)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\algorithm(3474,3):remark #25439: unrolled with remainder by 2  
+LOOP END
+
+LOOP BEGIN at C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\algorithm(3474,3) inlined into C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(261,4)
+Remainder
+LOOP END
+
+LOOP BEGIN at C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\algorithm(3474,3) inlined into C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(167,4)
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\algorithm(3474,3):remark #25439: unrolled with remainder by 2  
+LOOP END
+
+LOOP BEGIN at C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\algorithm(3474,3) inlined into C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(167,4)
+Remainder
+LOOP END
+
+    Report from: Code generation optimizations [cg]
+
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(147,1):remark #34051: REGISTER ALLOCATION : [?nextMove@MovePicker@@QEAA?AW4Move@@XZ] C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp:147
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :   11[ rax rdx rcx rbp r8-r11 r13-r15]
+        
+    Routine temporaries
+        Total         :     317
+            Global    :      99
+            Local     :     218
+        Regenerable   :      17
+        Spilled       :       4
+        
+    Routine stack
+        Variables     :       8 bytes*
+            Reads     :       6 [3.54e-001 ~ 0.2%]
+            Writes    :      11 [2.33e+000 ~ 1.1%]
+        Spills        :      16 bytes*
+            Reads     :       4 [5.06e-001 ~ 0.2%]
+            Writes    :       4 [5.06e-001 ~ 0.2%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: MovePicker::score<1>(MovePicker *)
+
+    Report from: Interprocedural optimizations [ipo]
+
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(85,1):INLINE REPORT START: (MovePicker::score<1>(MovePicker *))
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(90,3):(1)-> INLINE: BitBoards::pieceOnSq(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(90,3):(1)-> INLINE: from_sq(Move)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(90,3):(1)-> INLINE: BitBoards::pieceOnSq(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(90,3):(1)-> INLINE: to_sq(Move)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(94,3):(1)-> INLINE: move_type(Move)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(97,8):(1)-> INLINE: move_type(Move)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(98,4):(1)-> INLINE: promotion_type(Move)
+INLINE REPORT END
+
+    Report from: Code generation optimizations [cg]
+
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(85,1):remark #34051: REGISTER ALLOCATION : [??$score@$00@MovePicker@@AEAAXXZ] C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp:85
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    7[ rax rdx rcx r8-r11]
+        
+    Routine temporaries
+        Total         :      40
+            Global    :      24
+            Local     :      16
+        Regenerable   :       1
+        Spilled       :       0
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: MovePicker::score<3>(MovePicker *)
+
+    Report from: Interprocedural optimizations [ipo]
+
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(106,1):INLINE REPORT START: (MovePicker::score<3>(MovePicker *))
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(113,3):(1)-> INLINE: BitBoards::stm(const BitBoards *) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(113,3):(1)-> INLINE: std::array<std::array<int16_t, 4096Ui64>, 2Ui64>::operator[](const std::array<std::array<int16_t, 4096Ui64>, 2Ui64> *, std::array<std::array<int16_t, 4096Ui64>, 2Ui64>::size_type) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(113,3):(1)-> INLINE: from_to(Move)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(113,3):(1)-> INLINE: std::array<int16_t, 4096Ui64>::operator[](const std::array<int16_t, 4096Ui64> *, std::array<int16_t, 4096Ui64>::size_type) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(113,3):(1)-> INLINE: from_sq(Move)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(113,3):(1)-> INLINE: BitBoards::pieceOnSq(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(113,3):(1)-> INLINE: std::array<std::array<int16_t, 64Ui64>, 7Ui64>::operator[](const std::array<std::array<int16_t, 64Ui64>, 7Ui64> *, std::array<std::array<int16_t, 64Ui64>, 7Ui64>::size_type) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(113,3):(1)-> INLINE: to_sq(Move)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(113,3):(1)-> INLINE: std::array<int16_t, 64Ui64>::operator[](const std::array<int16_t, 64Ui64> *, std::array<int16_t, 64Ui64>::size_type) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(113,3):(1)-> INLINE: from_sq(Move)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(113,3):(1)-> INLINE: BitBoards::pieceOnSq(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(113,3):(1)-> INLINE: std::array<std::array<int16_t, 64Ui64>, 7Ui64>::operator[](const std::array<std::array<int16_t, 64Ui64>, 7Ui64> *, std::array<std::array<int16_t, 64Ui64>, 7Ui64>::size_type) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(113,3):(1)-> INLINE: to_sq(Move)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(113,3):(1)-> INLINE: std::array<int16_t, 64Ui64>::operator[](const std::array<int16_t, 64Ui64> *, std::array<int16_t, 64Ui64>::size_type) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(113,3):(1)-> INLINE: from_sq(Move)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(113,3):(1)-> INLINE: BitBoards::pieceOnSq(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(113,3):(1)-> INLINE: std::array<std::array<int16_t, 64Ui64>, 7Ui64>::operator[](const std::array<std::array<int16_t, 64Ui64>, 7Ui64> *, std::array<std::array<int16_t, 64Ui64>, 7Ui64>::size_type) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(113,3):(1)-> INLINE: to_sq(Move)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(113,3):(1)-> INLINE: std::array<int16_t, 64Ui64>::operator[](const std::array<int16_t, 64Ui64> *, std::array<int16_t, 64Ui64>::size_type) const
+INLINE REPORT END
+
+    Report from: Code generation optimizations [cg]
+
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(106,1):remark #34051: REGISTER ALLOCATION : [??$score@$02@MovePicker@@AEAAXXZ] C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp:106
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    9[ rax rdx rcx rbx rsi r8-r11]
+        
+    Routine temporaries
+        Total         :      49
+            Global    :      20
+            Local     :      29
+        Regenerable   :       0
+        Spilled       :       2
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :      16 bytes*
+            Reads     :       2 [1.97e+000 ~ 0.9%]
+            Writes    :       2 [1.97e+000 ~ 0.9%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: MovePicker::score<2>(MovePicker *)
+
+    Report from: Interprocedural optimizations [ipo]
+
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(122,1):INLINE REPORT START: (MovePicker::score<2>(MovePicker *))
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(125,12):(1)-> INLINE: BitBoards::stm(const BitBoards *) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(133,8):(1)-> INLINE: BitBoards::capture(const BitBoards *, Move) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\bitboards.h(282,2):(2)-> INLINE: BitBoards::empty(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\bitboards.h(282,2):(2)-> INLINE: move_type(Move)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\bitboards.h(282,2):(2)-> INLINE: to_sq(Move)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(134,4):(1)-> INLINE: BitBoards::pieceOnSq(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(134,4):(1)-> INLINE: from_sq(Move)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(134,4):(1)-> INLINE: to_sq(Move)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(134,4):(1)-> INLINE: BitBoards::pieceOnSq(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(138,4):(1)-> INLINE: from_to(Move)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(138,4):(1)-> INLINE: std::array<int16_t, 4096Ui64>::operator[](const std::array<int16_t, 4096Ui64> *, std::array<int16_t, 4096Ui64>::size_type) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(138,4):(1)-> INLINE: std::array<std::array<int16_t, 4096Ui64>, 2Ui64>::operator[](const std::array<std::array<int16_t, 4096Ui64>, 2Ui64> *, std::array<std::array<int16_t, 4096Ui64>, 2Ui64>::size_type) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(138,4):(1)-> INLINE: BitBoards::stm(const BitBoards *) const
+INLINE REPORT END
+
+    Report from: Code generation optimizations [cg]
+
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp(122,1):remark #34051: REGISTER ALLOCATION : [??$score@$01@MovePicker@@AEAAXXZ] C:\Users\C-60\Desktop\cppPrograms\StuckFish\MovePicker.cpp:122
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :   11[ rax rdx rcx rbx rsi rdi r8-r12]
+        
+    Routine temporaries
+        Total         :      55
+            Global    :      30
+            Local     :      25
+        Regenerable   :       6
+        Spilled       :       4
+        
+    Routine stack
+        Variables     :       4 bytes*
+            Reads     :       1 [4.60e+000 ~ 2.7%]
+            Writes    :       1 [5.47e+000 ~ 3.2%]
+        Spills        :      32 bytes*
+            Reads     :       4 [3.94e+000 ~ 2.3%]
+            Writes    :       4 [3.94e+000 ~ 2.3%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================

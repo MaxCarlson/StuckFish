@@ -1,0 +1,1888 @@
+Intel(R) Advisor can now assist with vectorization and show optimization
+  report messages with your source code.
+See "https://software.intel.com/en-us/intel-advisor-xe" for details.
+
+
+Begin optimization report for: evaluatePieces<6, 0>(Scores *, const BitBoards &, EvalInfo &, U64 *)
+
+    Report from: Interprocedural optimizations [ipo]
+
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(295,74):INLINE REPORT START: (evaluatePieces<6, 0>(Scores *, const BitBoards &, EvalInfo &, U64 *))
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(295,76):(1)-> INLINE: make_scores(Scores *, int, int)
+INLINE REPORT END
+
+    Report from: Code generation optimizations [cg]
+
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (1, 0)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(295,74):remark #34051: REGISTER ALLOCATION : [??$evaluatePieces@$05$0A@@@YA?AUScores@@AEBVBitBoards@@AEAUEvalInfo@@PEA_K@Z] C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp:295
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    5[ rax rdx rcx r8-r9]
+        
+    Routine temporaries
+        Total         :      25
+            Global    :      19
+            Local     :       6
+        Regenerable   :       1
+        Spilled       :       0
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: applyWeights(Scores *, Scores, const Weight &)
+
+    Report from: Interprocedural optimizations [ipo]
+
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(596,49):INLINE REPORT START: (applyWeights(Scores *, Scores, const Weight &))
+INLINE REPORT END
+
+    Report from: Code generation optimizations [cg]
+
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(596,49):remark #34051: REGISTER ALLOCATION : [?applyWeights@@YA?AUScores@@U1@AEBUWeight@@@Z] C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp:596
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    7[ rax rdx rcx r8-r11]
+        
+    Routine temporaries
+        Total         :      37
+            Global    :       0
+            Local     :      37
+        Regenerable   :       0
+        Spilled       :       0
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: Evaluate::evaluate(Evaluate *, const BitBoards &)
+
+    Report from: Interprocedural optimizations [ipo]
+
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(603,1):INLINE REPORT START: (Evaluate::evaluate(Evaluate *, const BitBoards &))
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(604,18):(1)-> INLINE: BitBoards::stm(const BitBoards *) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(606,11):(1)-> INLINE: EvalInfo::EvalInfo(EvalInfo *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(119,8):(2)-> INLINE: Scores::??_HScores@@QEAAPEAU0@H@Z(Scores *, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(119,8):(3)-> INLINE: Scores::Scores(Scores *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(119,8):(2)-> INLINE: Scores::??_HScores@@QEAAPEAU0@H@Z(Scores *, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(119,8):(3)-> INLINE: Scores::Scores(Scores *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(611,2):(1)-> INLINE: Evaluate::generateKingZones(Evaluate *, const BitBoards &, EvalInfo &)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(168,3):(2)-> INLINE: BitBoards::psuedoAttacks(const BitBoards *, int, int, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(614,2):(1)-> INLINE: BitBoards::pinned_pieces(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(615,2):(1)-> INLINE: BitBoards::pinned_pieces(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(623,2):(1)-> INLINE: applyWeights(Scores *, Scores, const Weight &)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(623,2):(1)-> INLINE: operator+=(Scores &, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(623,2):(1)-> INLINE: Material::Entry::material_value(Material::Entry *, Scores *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\material.h(13,28):(2)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(631,2):(1)-> INLINE: applyWeights(Scores *, Scores, const Weight &)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(631,2):(1)-> INLINE: operator+=(Scores &, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(638,2):(1)-> INLINE: operator+=(Scores &, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(639,2):(1)-> INLINE: operator+=(Scores &, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(645,2):(1)-> INLINE: BitBoards::pieces(const BitBoards *, int, int, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(646,2):(1)-> INLINE: BitBoards::pieces(const BitBoards *, int, int, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(650,2):(1)-> INLINE: evaluatePieces<2, 0>(Scores *, const BitBoards &, EvalInfo &, U64 *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(209,3):(2)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(209,3):(2)-> INLINE: operator+=(Scores &, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(220,3):(2)-> INLINE: BitBoards::square_bb(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(221,4):(2)-> INLINE: BitBoards::king_square(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(235,18):(2)-> INLINE: bit_count(unsigned __int64)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(248,16):(2)-> INLINE: bit_count(unsigned __int64)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(250,3):(2)-> INLINE: operator+=(Scores &, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(255,4):(2)-> INLINE: operator-=(Scores &, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(264,4):(2)-> INLINE: BitBoards::piecesByType(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(264,4):(2)-> INLINE: pawn_push(int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(264,4):(2)-> INLINE: relative_rankSq(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(450,2):(3)-> INLINE: rank_of(int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(450,2):(3)-> INLINE: relative_rank(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(266,5):(2)-> INLINE: operator+=(Scores &, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(275,5):(2)-> INLINE: operator+=(Scores &, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(275,5):(2)-> INLINE: Pawns::PawnsEntry::semi_open_file(const Pawns::PawnsEntry *, int, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(275,5):(2)-> INLINE: file_of(int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(280,4):(2)-> INLINE: relative_rankSq(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(450,2):(3)-> INLINE: rank_of(int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(450,2):(3)-> INLINE: relative_rank(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(281,15):(2)-> INLINE: BitBoards::psuedoAttacks(const BitBoards *, int, int, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(281,15):(2)-> INLINE: BitBoards::pieces(const BitBoards *, int, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(283,16):(2)-> INLINE: operator*(Scores *, Scores, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(283,16):(2)-> INLINE: bit_count(unsigned __int64)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(283,16):(2)-> INLINE: operator+=(Scores &, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(291,2):(2)-> INLINE: evaluatePieces<2, 1>(Scores *, const BitBoards &, EvalInfo &, U64 *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(209,3):(3)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(209,3):(3)-> INLINE: operator+=(Scores &, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(220,3):(3)-> INLINE: BitBoards::square_bb(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(221,4):(3)-> INLINE: BitBoards::king_square(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(235,18):(3)-> INLINE: bit_count(unsigned __int64)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(248,16):(3)-> INLINE: bit_count(unsigned __int64)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(250,3):(3)-> INLINE: operator+=(Scores &, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(255,4):(3)-> INLINE: operator-=(Scores &, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(264,4):(3)-> INLINE: BitBoards::piecesByType(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(264,4):(3)-> INLINE: pawn_push(int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(264,4):(3)-> INLINE: relative_rankSq(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(450,2):(4)-> INLINE: rank_of(int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(450,2):(4)-> INLINE: relative_rank(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(266,5):(3)-> INLINE: operator+=(Scores &, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(275,5):(3)-> INLINE: operator+=(Scores &, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(275,5):(3)-> INLINE: Pawns::PawnsEntry::semi_open_file(const Pawns::PawnsEntry *, int, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(275,5):(3)-> INLINE: file_of(int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(280,4):(3)-> INLINE: relative_rankSq(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(450,2):(4)-> INLINE: rank_of(int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(450,2):(4)-> INLINE: relative_rank(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(281,15):(3)-> INLINE: BitBoards::psuedoAttacks(const BitBoards *, int, int, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(281,15):(3)-> INLINE: BitBoards::pieces(const BitBoards *, int, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(283,16):(3)-> INLINE: operator*(Scores *, Scores, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(283,16):(3)-> INLINE: bit_count(unsigned __int64)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(283,16):(3)-> INLINE: operator+=(Scores &, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(291,2):(3)-> INLINE: evaluatePieces<3, 0>(Scores *, const BitBoards &, EvalInfo &, U64 *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(209,3):(4)-> INLINE: operator+=(Scores &, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(209,3):(4)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(213,10):(4)-> INLINE: SliderAttacks::BishopAttacks(const SliderAttacks *, U64, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\slider_attacks.h(32,5):(5)-> INLINE: SliderAttacks::AttackTableIndex(const SliderAttacks *, U64, const Magic &) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\slider_attacks.h(32,5):(5)-> INLINE: std::vector<U64, std::allocator<U64>>::operator[](const std::vector<U64, std::allocator<U64>> *, std::vector<U64, std::allocator<U64>>::size_type) const
+             {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(213,10):(4)-> INLINE: BitBoards::pieces(const BitBoards *, int, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(220,3):(4)-> INLINE: BitBoards::square_bb(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(221,4):(4)-> INLINE: BitBoards::king_square(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(235,18):(4)-> INLINE: bit_count(unsigned __int64)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(248,16):(4)-> INLINE: bit_count(unsigned __int64)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(250,3):(4)-> INLINE: operator+=(Scores &, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(255,4):(4)-> INLINE: operator-=(Scores &, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(262,22):(4)-> INLINE: operator*(Scores *, Scores, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(262,22):(4)-> INLINE: operator-=(Scores &, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(262,22):(4)-> INLINE: Pawns::PawnsEntry::pawns_on_same_color_squares(const Pawns::PawnsEntry *, int, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(264,4):(4)-> INLINE: BitBoards::piecesByType(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(264,4):(4)-> INLINE: relative_rankSq(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(450,2):(5)-> INLINE: rank_of(int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(450,2):(5)-> INLINE: relative_rank(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(264,4):(4)-> INLINE: pawn_push(int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(266,5):(4)-> INLINE: operator+=(Scores &, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(275,5):(4)-> INLINE: operator+=(Scores &, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(275,5):(4)-> INLINE: Pawns::PawnsEntry::semi_open_file(const Pawns::PawnsEntry *, int, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(275,5):(4)-> INLINE: file_of(int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(280,4):(4)-> INLINE: relative_rankSq(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(450,2):(5)-> INLINE: rank_of(int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(450,2):(5)-> INLINE: relative_rank(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(281,15):(4)-> INLINE: BitBoards::psuedoAttacks(const BitBoards *, int, int, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(281,15):(4)-> INLINE: BitBoards::pieces(const BitBoards *, int, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(283,16):(4)-> INLINE: operator+=(Scores &, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(283,16):(4)-> INLINE: bit_count(unsigned __int64)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(283,16):(4)-> INLINE: operator*(Scores *, Scores, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(291,2):(4)-> evaluatePieces<3, 1>(Scores *, const BitBoards &, EvalInfo &, U64 *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(291,2):(4)-> INLINE: operator-(Scores *, Scores, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(291,2):(3)-> INLINE: operator-(Scores *, Scores, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(291,2):(2)-> INLINE: operator-(Scores *, Scores, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(650,2):(1)-> INLINE: operator+=(Scores &, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(654,2):(1)-> INLINE: evalThreats<1>(Scores *, const BitBoards &, EvalInfo &)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(418,2):(2)-> INLINE: BitBoards::pieces(const BitBoards *, int, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(418,2):(2)-> INLINE: BitBoards::pieces(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(425,9):(2)-> INLINE: BitBoards::pieceOnSq(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(425,9):(2)-> INLINE: lsb(unsigned __int64)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(427,3):(2)-> INLINE: operator+=(Scores &, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(430,2):(2)-> INLINE: BitBoards::pieces(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(441,10):(2)-> INLINE: BitBoards::pieceOnSq(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(441,10):(2)-> INLINE: lsb(unsigned __int64)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(443,4):(2)-> INLINE: operator+=(Scores &, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(450,10):(2)-> INLINE: lsb(unsigned __int64)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(450,10):(2)-> INLINE: BitBoards::pieceOnSq(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(452,4):(2)-> INLINE: operator+=(Scores &, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(459,12):(2)-> INLINE: bit_count(unsigned __int64)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(461,4):(2)-> INLINE: operator+=(Scores &, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(461,4):(2)-> INLINE: operator*(Scores *, Scores, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(465,3):(2)-> INLINE: BitBoards::pieces(const BitBoards *, int, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(471,4):(2)-> INLINE: operator+=(Scores &, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(471,4):(2)-> INLINE: more_than_one(unsigned __int64)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(654,2):(1)-> INLINE: operator-(Scores *, Scores, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(654,2):(1)-> INLINE: operator+=(Scores &, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(654,2):(1)-> INLINE: evalThreats<0>(Scores *, const BitBoards &, EvalInfo &)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(418,2):(2)-> INLINE: BitBoards::pieces(const BitBoards *, int, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(418,2):(2)-> INLINE: BitBoards::pieces(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(425,9):(2)-> INLINE: BitBoards::pieceOnSq(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(425,9):(2)-> INLINE: lsb(unsigned __int64)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(427,3):(2)-> INLINE: operator+=(Scores &, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(430,2):(2)-> INLINE: BitBoards::pieces(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(441,10):(2)-> INLINE: BitBoards::pieceOnSq(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(441,10):(2)-> INLINE: lsb(unsigned __int64)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(443,4):(2)-> INLINE: operator+=(Scores &, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(450,10):(2)-> INLINE: lsb(unsigned __int64)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(450,10):(2)-> INLINE: BitBoards::pieceOnSq(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(452,4):(2)-> INLINE: operator+=(Scores &, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(459,12):(2)-> INLINE: bit_count(unsigned __int64)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(461,4):(2)-> INLINE: operator+=(Scores &, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(461,4):(2)-> INLINE: operator*(Scores *, Scores, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(465,3):(2)-> INLINE: BitBoards::pieces(const BitBoards *, int, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(471,4):(2)-> INLINE: operator+=(Scores &, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(471,4):(2)-> INLINE: more_than_one(unsigned __int64)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(657,2):(1)-> INLINE: operator+(Scores *, Scores, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(657,2):(1)-> INLINE: operator+(Scores *, Scores, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(657,2):(1)-> INLINE: operator-(Scores *, Scores, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(657,2):(1)-> INLINE: operator+=(Scores &, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(660,2):(1)-> INLINE: evaluatePassedPawns<1>(Scores *, const BitBoards &, const EvalInfo &)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(496,10):(2)-> INLINE: pop_lsb(unsigned __int64 *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(409,14):(3)-> INLINE: lsb(unsigned __int64)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(498,9):(2)-> INLINE: relative_rankSq(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(450,2):(3)-> INLINE: rank_of(int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(450,2):(3)-> INLINE: relative_rank(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(507,16):(2)-> INLINE: pawn_push(int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(510,4):(2)-> INLINE: BitBoards::king_square(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(510,4):(2)-> INLINE: square_distance(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(510,4):(2)-> INLINE: BitBoards::king_square(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(510,4):(2)-> INLINE: square_distance(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(514,4):(2)-> INLINE: relative_rankSq(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(450,2):(3)-> INLINE: rank_of(int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(450,2):(3)-> INLINE: relative_rank(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(515,5):(2)-> INLINE: square_distance(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(515,5):(2)-> INLINE: BitBoards::king_square(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(515,5):(2)-> INLINE: pawn_push(int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(519,4):(2)-> INLINE: BitBoards::empty(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(527,12):(2)-> INLINE: SliderAttacks::RookAttacks(const SliderAttacks *, U64, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\slider_attacks.h(27,5):(3)-> INLINE: SliderAttacks::AttackTableIndex(const SliderAttacks *, U64, const Magic &) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\slider_attacks.h(27,5):(3)-> INLINE: std::vector<U64, std::allocator<U64>>::operator[](const std::vector<U64, std::allocator<U64>> *, std::vector<U64, std::allocator<U64>>::size_type) const
+         {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(527,12):(2)-> INLINE: BitBoards::piecesByType(const BitBoards *, int, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(529,5):(2)-> INLINE: BitBoards::pieces(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(533,5):(2)-> INLINE: BitBoards::pieces(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(534,6):(2)-> INLINE: BitBoards::pieces(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(555,9):(2)-> INLINE: BitBoards::pieces(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(562,3):(2)-> INLINE: BitBoards::count<1>(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(562,3):(2)-> INLINE: BitBoards::count<1>(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(566,3):(2)-> INLINE: operator+=(Scores &, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(566,3):(2)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(569,2):(2)-> INLINE: applyWeights(Scores *, Scores, const Weight &)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(660,2):(1)-> INLINE: operator-(Scores *, Scores, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(660,2):(1)-> INLINE: operator+=(Scores &, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(660,2):(1)-> INLINE: evaluatePassedPawns<0>(Scores *, const BitBoards &, const EvalInfo &)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(496,10):(2)-> INLINE: pop_lsb(unsigned __int64 *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(409,14):(3)-> INLINE: lsb(unsigned __int64)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(498,9):(2)-> INLINE: relative_rankSq(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(450,2):(3)-> INLINE: rank_of(int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(450,2):(3)-> INLINE: relative_rank(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(507,16):(2)-> INLINE: pawn_push(int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(510,4):(2)-> INLINE: BitBoards::king_square(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(510,4):(2)-> INLINE: square_distance(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(510,4):(2)-> INLINE: BitBoards::king_square(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(510,4):(2)-> INLINE: square_distance(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(514,4):(2)-> INLINE: relative_rankSq(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(450,2):(3)-> INLINE: rank_of(int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(450,2):(3)-> INLINE: relative_rank(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(515,5):(2)-> INLINE: square_distance(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(515,5):(2)-> INLINE: BitBoards::king_square(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(515,5):(2)-> INLINE: pawn_push(int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(519,4):(2)-> INLINE: BitBoards::empty(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(527,12):(2)-> INLINE: SliderAttacks::RookAttacks(const SliderAttacks *, U64, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\slider_attacks.h(27,5):(3)-> INLINE: SliderAttacks::AttackTableIndex(const SliderAttacks *, U64, const Magic &) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\slider_attacks.h(27,5):(3)-> INLINE: std::vector<U64, std::allocator<U64>>::operator[](const std::vector<U64, std::allocator<U64>> *, std::vector<U64, std::allocator<U64>>::size_type) const
+         {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(527,12):(2)-> INLINE: BitBoards::piecesByType(const BitBoards *, int, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(529,5):(2)-> INLINE: BitBoards::pieces(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(533,5):(2)-> INLINE: BitBoards::pieces(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(534,6):(2)-> INLINE: BitBoards::pieces(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(555,9):(2)-> INLINE: BitBoards::pieces(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(562,3):(2)-> INLINE: BitBoards::count<1>(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(562,3):(2)-> INLINE: BitBoards::count<1>(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(566,3):(2)-> INLINE: operator+=(Scores &, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(566,3):(2)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(569,2):(2)-> INLINE: applyWeights(Scores *, Scores, const Weight &)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(665,12):(1)-> INLINE: centerControl<0>(const BitBoards &, const EvalInfo &)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(304,11):(2)-> INLINE: BitBoards::pieces(const BitBoards *, int, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(311,13):(2)-> INLINE: BitBoards::pieces(const BitBoards *, int, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(318,2):(2)-> INLINE: bit_count(unsigned __int64)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(665,12):(1)-> INLINE: centerControl<1>(const BitBoards &, const EvalInfo &)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(304,11):(2)-> INLINE: BitBoards::pieces(const BitBoards *, int, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(311,13):(2)-> INLINE: BitBoards::pieces(const BitBoards *, int, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(318,2):(2)-> INLINE: bit_count(unsigned __int64)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(667,3):(1)-> INLINE: operator+=(Scores &, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(667,3):(1)-> INLINE: applyWeights(Scores *, Scores, const Weight &)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(667,3):(1)-> INLINE: operator*(Scores *, Scores, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(672,2):(1)-> Evaluate::blockedPieces(Evaluate *, int, const BitBoards &, EvalInfo &)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(673,2):(1)-> Evaluate::blockedPieces(Evaluate *, int, const BitBoards &, EvalInfo &)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(676,2):(1)-> INLINE: Evaluate::bKingShield(Evaluate *, const BitBoards &)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(676,2):(1)-> INLINE: Evaluate::wKingShield(Evaluate *, const BitBoards &)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(681,2):(1)-> INLINE: evaluateKing<0>(const BitBoards &, EvalInfo &, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(329,19):(2)-> INLINE: BitBoards::king_square(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(342,3):(2)-> INLINE: bit_count(unsigned __int64)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(342,3):(2)-> INLINE: std::min<int>(const int &, const int &)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(348,10):(2)-> INLINE: BitBoards::pieces(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(355,12):(2)-> INLINE: bit_count(unsigned __int64)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(359,3):(2)-> INLINE: BitBoards::pieces(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(362,3):(2)-> INLINE: BitBoards::psuedoAttacks(const BitBoards *, int, int, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(369,12):(2)-> INLINE: bit_count(unsigned __int64)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(373,3):(2)-> INLINE: BitBoards::pieces(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(376,10):(2)-> INLINE: SliderAttacks::RookAttacks(const SliderAttacks *, U64, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\slider_attacks.h(27,5):(3)-> INLINE: SliderAttacks::AttackTableIndex(const SliderAttacks *, U64, const Magic &) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\slider_attacks.h(27,5):(3)-> INLINE: std::vector<U64, std::allocator<U64>>::operator[](const std::vector<U64, std::allocator<U64>> *, std::vector<U64, std::allocator<U64>>::size_type) const
+         {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(377,10):(2)-> INLINE: SliderAttacks::BishopAttacks(const SliderAttacks *, U64, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\slider_attacks.h(32,5):(3)-> INLINE: SliderAttacks::AttackTableIndex(const SliderAttacks *, U64, const Magic &) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\slider_attacks.h(32,5):(3)-> INLINE: std::vector<U64, std::allocator<U64>>::operator[](const std::vector<U64, std::allocator<U64>> *, std::vector<U64, std::allocator<U64>>::size_type) const
+         {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(382,11):(2)-> INLINE: bit_count(unsigned __int64)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(386,10):(2)-> INLINE: bit_count(unsigned __int64)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(391,10):(2)-> INLINE: bit_count(unsigned __int64)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(394,3):(2)-> INLINE: BitBoards::psuedoAttacks(const BitBoards *, int, int, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(396,10):(2)-> INLINE: bit_count(unsigned __int64)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(398,3):(2)-> INLINE: std::min<int>(const int &, const int &)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(681,2):(1)-> INLINE: evaluateKing<1>(const BitBoards &, EvalInfo &, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(329,19):(2)-> INLINE: BitBoards::king_square(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(342,3):(2)-> INLINE: bit_count(unsigned __int64)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(342,3):(2)-> INLINE: std::min<int>(const int &, const int &)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(348,10):(2)-> INLINE: BitBoards::pieces(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(355,12):(2)-> INLINE: bit_count(unsigned __int64)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(359,3):(2)-> INLINE: BitBoards::pieces(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(362,3):(2)-> INLINE: BitBoards::psuedoAttacks(const BitBoards *, int, int, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(369,12):(2)-> INLINE: bit_count(unsigned __int64)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(373,3):(2)-> INLINE: BitBoards::pieces(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(376,10):(2)-> INLINE: SliderAttacks::RookAttacks(const SliderAttacks *, U64, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\slider_attacks.h(27,5):(3)-> INLINE: SliderAttacks::AttackTableIndex(const SliderAttacks *, U64, const Magic &) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\slider_attacks.h(27,5):(3)-> INLINE: std::vector<U64, std::allocator<U64>>::operator[](const std::vector<U64, std::allocator<U64>> *, std::vector<U64, std::allocator<U64>>::size_type) const
+         {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(377,10):(2)-> INLINE: SliderAttacks::BishopAttacks(const SliderAttacks *, U64, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\slider_attacks.h(32,5):(3)-> INLINE: SliderAttacks::AttackTableIndex(const SliderAttacks *, U64, const Magic &) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\slider_attacks.h(32,5):(3)-> INLINE: std::vector<U64, std::allocator<U64>>::operator[](const std::vector<U64, std::allocator<U64>> *, std::vector<U64, std::allocator<U64>>::size_type) const
+         {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(382,11):(2)-> INLINE: bit_count(unsigned __int64)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(386,10):(2)-> INLINE: bit_count(unsigned __int64)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(391,10):(2)-> INLINE: bit_count(unsigned __int64)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(394,3):(2)-> INLINE: BitBoards::psuedoAttacks(const BitBoards *, int, int, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(396,10):(2)-> INLINE: bit_count(unsigned __int64)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(398,3):(2)-> INLINE: std::min<int>(const int &, const int &)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(683,2):(1)-> INLINE: operator+=(Scores &, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(683,2):(1)-> INLINE: applyWeights(Scores *, Scores, const Weight &)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(686,2):(1)-> INLINE: applyWeights(Scores *, Scores, const Weight &)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(686,2):(1)-> INLINE: operator+=(Scores &, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(686,2):(1)-> INLINE: operator-(Scores *, Scores, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(689,2):(1)-> INLINE: BitBoards::non_pawn_material(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(689,2):(1)-> INLINE: BitBoards::non_pawn_material(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(691,3):(1)-> INLINE: unstoppablePawns<0>(Scores *, const EvalInfo &)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(575,9):(2)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(575,9):(2)-> INLINE: operator*(Scores *, Scores, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(575,9):(2)-> INLINE: relative_rank(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(575,9):(2)-> INLINE: frontmost_sq(int, U64)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(471,2):(3)-> INLINE: lsb(unsigned __int64)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(471,2):(3)-> INLINE: msb(unsigned __int64)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(691,3):(1)-> INLINE: unstoppablePawns<1>(Scores *, const EvalInfo &)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(575,9):(2)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(575,9):(2)-> INLINE: operator*(Scores *, Scores, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(575,9):(2)-> INLINE: relative_rank(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(575,9):(2)-> INLINE: frontmost_sq(int, U64)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(471,2):(3)-> INLINE: lsb(unsigned __int64)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(471,2):(3)-> INLINE: msb(unsigned __int64)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(691,3):(1)-> INLINE: operator-(Scores *, Scores, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(691,3):(1)-> INLINE: operator+=(Scores &, Scores)
+INLINE REPORT END
+
+    Report from: Loop nest, Vector & Auto-parallelization optimizations [loop, vec, par]
+
+
+LOOP BEGIN at C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(119,8) inlined into C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(606,11)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(119,8):remark #25436: completely unrolled by 2  
+LOOP END
+
+LOOP BEGIN at C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(119,8) inlined into C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(606,11)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(119,8):remark #25436: completely unrolled by 2  
+LOOP END
+
+LOOP BEGIN at C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(152,2) inlined into C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(611,2)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(152,2):remark #25258: Invariant Condition eliminated(Loop at level 1 peeled) at line 161 
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(152,2):remark #25260: Invariant Condition eliminated(Proven False) at line 161
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(152,2):remark #25261: Invariant Condition eliminated(Proven True) at line 174
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(152,2):remark #25261: Invariant Condition eliminated(Proven True) at line 185
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(152,2):remark #25436: completely unrolled by 1  
+LOOP END
+
+    Report from: Code generation optimizations [cg]
+
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(119,8):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (16, 0)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(119,8):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (16, 0)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(119,8):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (16, 8)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(119,8):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (16, 0)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(119,8):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (16, 8)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(119,8):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (16, 8)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(119,8):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (16, 8)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(119,8):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (16, 0)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(607,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (16, 0)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (16, 0)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(193,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (16, 0)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (16, 0)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(193,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (16, 0)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (16, 0)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(193,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (16, 0)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (16, 0)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(413,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (16, 0)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(471,4):remark #34000: call to memcpy implemented inline with loads and stores with proven source (alignment, offset): (16, 0), and destination (alignment, offset): (16, 0)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(471,4):remark #34000: call to memcpy implemented inline with loads and stores with proven source (alignment, offset): (16, 0), and destination (alignment, offset): (16, 0)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(413,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (16, 0)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(471,4):remark #34000: call to memcpy implemented inline with loads and stores with proven source (alignment, offset): (16, 0), and destination (alignment, offset): (16, 0)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(471,4):remark #34000: call to memcpy implemented inline with loads and stores with proven source (alignment, offset): (16, 0), and destination (alignment, offset): (16, 0)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(484,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (16, 0)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (16, 0)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(484,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (16, 0)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (16, 0)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(680,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (16, 0)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (16, 0)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (16, 0)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(603,1):remark #34051: REGISTER ALLOCATION : [?evaluate@Evaluate@@QEAAHAEBVBitBoards@@@Z] C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp:603
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :   16[ rax rdx rcx rbx rbp rsi rdi r8-r15 zmm0]
+        
+    Routine temporaries
+        Total         :     931
+            Global    :     222
+            Local     :     709
+        Regenerable   :      35
+        Spilled       :      13
+        
+    Routine stack
+        Variables     :     416 bytes*
+            Reads     :     201 [3.13e+002 ~ 16.2%]
+            Writes    :     182 [3.23e+002 ~ 16.7%]
+        Spills        :      40 bytes*
+            Reads     :       9 [4.53e+000 ~ 0.2%]
+            Writes    :       7 [4.26e+000 ~ 0.2%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: Evaluate::blockedPieces(Evaluate *, int, const BitBoards &, EvalInfo &)
+
+    Report from: Interprocedural optimizations [ipo]
+
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(799,1):INLINE REPORT START: (Evaluate::blockedPieces(Evaluate *, int, const BitBoards &, EvalInfo &))
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(814,2):(1)-> INLINE: relative_square(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(814,2):(1)-> INLINE: Evaluate::isPiece(Evaluate *, const U64 &, const BitBoards &, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(895,2):(2)-> INLINE: BitBoards::square_bb(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(814,2):(1)-> INLINE: relative_square(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(814,2):(1)-> INLINE: Evaluate::isPiece(Evaluate *, const U64 &, const BitBoards &, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(895,2):(2)-> INLINE: BitBoards::square_bb(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(814,2):(1)-> INLINE: relative_square(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(819,2):(1)-> INLINE: relative_square(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(819,2):(1)-> INLINE: relative_square(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(819,2):(1)-> INLINE: Evaluate::isPiece(Evaluate *, const U64 &, const BitBoards &, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(895,2):(2)-> INLINE: BitBoards::square_bb(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(819,2):(1)-> INLINE: relative_square(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(819,2):(1)-> INLINE: Evaluate::isPiece(Evaluate *, const U64 &, const BitBoards &, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(895,2):(2)-> INLINE: BitBoards::square_bb(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(825,2):(1)-> INLINE: Evaluate::isPiece(Evaluate *, const U64 &, const BitBoards &, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(895,2):(2)-> INLINE: BitBoards::square_bb(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(825,2):(1)-> INLINE: relative_square(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(825,2):(1)-> INLINE: relative_square(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(825,2):(1)-> INLINE: relative_square(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(825,2):(1)-> INLINE: Evaluate::isPiece(Evaluate *, const U64 &, const BitBoards &, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(895,2):(2)-> INLINE: BitBoards::square_bb(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(825,2):(1)-> INLINE: Evaluate::isPiece(Evaluate *, const U64 &, const BitBoards &, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(895,2):(2)-> INLINE: BitBoards::square_bb(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(831,2):(1)-> INLINE: relative_square(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(831,2):(1)-> INLINE: Evaluate::isPiece(Evaluate *, const U64 &, const BitBoards &, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(895,2):(2)-> INLINE: BitBoards::square_bb(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(831,2):(1)-> INLINE: relative_square(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(831,2):(1)-> INLINE: relative_square(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(831,2):(1)-> INLINE: Evaluate::isPiece(Evaluate *, const U64 &, const BitBoards &, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(895,2):(2)-> INLINE: BitBoards::square_bb(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(831,2):(1)-> INLINE: Evaluate::isPiece(Evaluate *, const U64 &, const BitBoards &, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(895,2):(2)-> INLINE: BitBoards::square_bb(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(836,2):(1)-> INLINE: relative_square(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(836,2):(1)-> INLINE: Evaluate::isPiece(Evaluate *, const U64 &, const BitBoards &, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(895,2):(2)-> INLINE: BitBoards::square_bb(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(836,2):(1)-> INLINE: relative_square(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(836,2):(1)-> INLINE: Evaluate::isPiece(Evaluate *, const U64 &, const BitBoards &, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(895,2):(2)-> INLINE: BitBoards::square_bb(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(836,2):(1)-> INLINE: Evaluate::isPiece(Evaluate *, const U64 &, const BitBoards &, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(895,2):(2)-> INLINE: BitBoards::square_bb(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(836,2):(1)-> INLINE: relative_square(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(841,2):(1)-> INLINE: relative_square(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(841,2):(1)-> INLINE: relative_square(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(841,2):(1)-> INLINE: Evaluate::isPiece(Evaluate *, const U64 &, const BitBoards &, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(895,2):(2)-> INLINE: BitBoards::square_bb(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(841,2):(1)-> INLINE: Evaluate::isPiece(Evaluate *, const U64 &, const BitBoards &, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(895,2):(2)-> INLINE: BitBoards::square_bb(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(841,2):(1)-> INLINE: relative_square(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(841,2):(1)-> INLINE: Evaluate::isPiece(Evaluate *, const U64 &, const BitBoards &, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(895,2):(2)-> INLINE: BitBoards::square_bb(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(847,2):(1)-> INLINE: Evaluate::isPiece(Evaluate *, const U64 &, const BitBoards &, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(895,2):(2)-> INLINE: BitBoards::square_bb(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(847,2):(1)-> INLINE: relative_square(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(847,2):(1)-> INLINE: relative_square(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(847,2):(1)-> INLINE: relative_square(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(847,2):(1)-> INLINE: Evaluate::isPiece(Evaluate *, const U64 &, const BitBoards &, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(895,2):(2)-> INLINE: BitBoards::square_bb(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(847,2):(1)-> INLINE: relative_square(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(847,2):(1)-> INLINE: Evaluate::isPiece(Evaluate *, const U64 &, const BitBoards &, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(895,2):(2)-> INLINE: BitBoards::square_bb(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(847,2):(1)-> INLINE: Evaluate::isPiece(Evaluate *, const U64 &, const BitBoards &, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(895,2):(2)-> INLINE: BitBoards::square_bb(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(854,2):(1)-> INLINE: relative_square(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(854,2):(1)-> INLINE: Evaluate::isPiece(Evaluate *, const U64 &, const BitBoards &, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(895,2):(2)-> INLINE: BitBoards::square_bb(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(854,2):(1)-> INLINE: relative_square(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(854,2):(1)-> INLINE: Evaluate::isPiece(Evaluate *, const U64 &, const BitBoards &, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(895,2):(2)-> INLINE: BitBoards::square_bb(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(858,2):(1)-> INLINE: relative_square(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(858,2):(1)-> INLINE: relative_square(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(858,2):(1)-> INLINE: Evaluate::isPiece(Evaluate *, const U64 &, const BitBoards &, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(895,2):(2)-> INLINE: BitBoards::square_bb(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(858,2):(1)-> INLINE: Evaluate::isPiece(Evaluate *, const U64 &, const BitBoards &, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(895,2):(2)-> INLINE: BitBoards::square_bb(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(862,2):(1)-> INLINE: Evaluate::isPiece(Evaluate *, const U64 &, const BitBoards &, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(895,2):(2)-> INLINE: BitBoards::square_bb(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(862,2):(1)-> INLINE: relative_square(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(862,2):(1)-> INLINE: relative_square(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(862,2):(1)-> INLINE: Evaluate::isPiece(Evaluate *, const U64 &, const BitBoards &, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(895,2):(2)-> INLINE: BitBoards::square_bb(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(866,2):(1)-> INLINE: Evaluate::isPiece(Evaluate *, const U64 &, const BitBoards &, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(895,2):(2)-> INLINE: BitBoards::square_bb(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(866,2):(1)-> INLINE: relative_square(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(866,2):(1)-> INLINE: relative_square(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(866,2):(1)-> INLINE: Evaluate::isPiece(Evaluate *, const U64 &, const BitBoards &, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(895,2):(2)-> INLINE: BitBoards::square_bb(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(870,2):(1)-> INLINE: relative_square(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(870,2):(1)-> INLINE: relative_square(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(870,2):(1)-> INLINE: Evaluate::isPiece(Evaluate *, const U64 &, const BitBoards &, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(895,2):(2)-> INLINE: BitBoards::square_bb(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(870,2):(1)-> INLINE: Evaluate::isPiece(Evaluate *, const U64 &, const BitBoards &, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(895,2):(2)-> INLINE: BitBoards::square_bb(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(874,2):(1)-> INLINE: Evaluate::isPiece(Evaluate *, const U64 &, const BitBoards &, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(895,2):(2)-> INLINE: BitBoards::square_bb(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(874,2):(1)-> INLINE: relative_square(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(874,2):(1)-> INLINE: relative_square(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(874,2):(1)-> INLINE: Evaluate::isPiece(Evaluate *, const U64 &, const BitBoards &, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(895,2):(2)-> INLINE: BitBoards::square_bb(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(884,2):(1)-> INLINE: Evaluate::isPiece(Evaluate *, const U64 &, const BitBoards &, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(895,2):(2)-> INLINE: BitBoards::square_bb(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(884,2):(1)-> INLINE: relative_square(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(884,2):(1)-> INLINE: relative_square(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(884,2):(1)-> INLINE: Evaluate::isPiece(Evaluate *, const U64 &, const BitBoards &, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(895,2):(2)-> INLINE: BitBoards::square_bb(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(884,2):(1)-> INLINE: relative_square(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(884,2):(1)-> INLINE: Evaluate::isPiece(Evaluate *, const U64 &, const BitBoards &, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(895,2):(2)-> INLINE: BitBoards::square_bb(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(884,2):(1)-> INLINE: relative_square(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(884,2):(1)-> INLINE: Evaluate::isPiece(Evaluate *, const U64 &, const BitBoards &, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(895,2):(2)-> INLINE: BitBoards::square_bb(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(888,2):(1)-> INLINE: relative_square(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(888,2):(1)-> INLINE: relative_square(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(888,2):(1)-> INLINE: Evaluate::isPiece(Evaluate *, const U64 &, const BitBoards &, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(895,2):(2)-> INLINE: BitBoards::square_bb(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(888,2):(1)-> INLINE: relative_square(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(888,2):(1)-> INLINE: Evaluate::isPiece(Evaluate *, const U64 &, const BitBoards &, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(895,2):(2)-> INLINE: BitBoards::square_bb(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(888,2):(1)-> INLINE: relative_square(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(888,2):(1)-> INLINE: Evaluate::isPiece(Evaluate *, const U64 &, const BitBoards &, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(895,2):(2)-> INLINE: BitBoards::square_bb(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(888,2):(1)-> INLINE: Evaluate::isPiece(Evaluate *, const U64 &, const BitBoards &, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(895,2):(2)-> INLINE: BitBoards::square_bb(const BitBoards *, int) const
+INLINE REPORT END
+
+    Report from: Code generation optimizations [cg]
+
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(799,1):remark #34051: REGISTER ALLOCATION : [?blockedPieces@Evaluate@@AEAAXHAEBVBitBoards@@AEAUEvalInfo@@@Z] C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp:799
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :   15[ rax rdx rcx rbx rbp rsi rdi r8-r15]
+        
+    Routine temporaries
+        Total         :     117
+            Global    :      35
+            Local     :      82
+        Regenerable   :       2
+        Spilled       :       8
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: evaluatePieces<3, 1>(Scores *, const BitBoards &, EvalInfo &, U64 *)
+
+    Report from: Interprocedural optimizations [ipo]
+
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(191,84):INLINE REPORT START: (evaluatePieces<3, 1>(Scores *, const BitBoards &, EvalInfo &, U64 *))
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(209,3):(1)-> INLINE: operator+=(Scores &, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(209,3):(1)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(213,10):(1)-> INLINE: BitBoards::pieces(const BitBoards *, int, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(213,10):(1)-> INLINE: SliderAttacks::BishopAttacks(const SliderAttacks *, U64, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\slider_attacks.h(32,5):(2)-> INLINE: std::vector<U64, std::allocator<U64>>::operator[](const std::vector<U64, std::allocator<U64>> *, std::vector<U64, std::allocator<U64>>::size_type) const
+       {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\slider_attacks.h(32,5):(2)-> INLINE: SliderAttacks::AttackTableIndex(const SliderAttacks *, U64, const Magic &) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(220,3):(1)-> INLINE: BitBoards::square_bb(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(221,4):(1)-> INLINE: BitBoards::king_square(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(235,18):(1)-> INLINE: bit_count(unsigned __int64)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(248,16):(1)-> INLINE: bit_count(unsigned __int64)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(250,3):(1)-> INLINE: operator+=(Scores &, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(255,4):(1)-> INLINE: operator-=(Scores &, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(262,22):(1)-> INLINE: operator*(Scores *, Scores, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(262,22):(1)-> INLINE: operator-=(Scores &, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(262,22):(1)-> INLINE: Pawns::PawnsEntry::pawns_on_same_color_squares(const Pawns::PawnsEntry *, int, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(264,4):(1)-> INLINE: BitBoards::piecesByType(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(264,4):(1)-> INLINE: pawn_push(int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(264,4):(1)-> INLINE: relative_rankSq(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(450,2):(2)-> INLINE: relative_rank(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(450,2):(2)-> INLINE: rank_of(int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(266,5):(1)-> INLINE: operator+=(Scores &, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(275,5):(1)-> INLINE: file_of(int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(275,5):(1)-> INLINE: Pawns::PawnsEntry::semi_open_file(const Pawns::PawnsEntry *, int, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(275,5):(1)-> INLINE: operator+=(Scores &, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(280,4):(1)-> INLINE: relative_rankSq(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(450,2):(2)-> INLINE: relative_rank(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(450,2):(2)-> INLINE: rank_of(int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(281,15):(1)-> INLINE: BitBoards::psuedoAttacks(const BitBoards *, int, int, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(281,15):(1)-> INLINE: BitBoards::pieces(const BitBoards *, int, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(283,16):(1)-> INLINE: operator*(Scores *, Scores, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(283,16):(1)-> INLINE: bit_count(unsigned __int64)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(283,16):(1)-> INLINE: operator+=(Scores &, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(291,2):(1)-> INLINE: evaluatePieces<4, 0>(Scores *, const BitBoards &, EvalInfo &, U64 *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(209,3):(2)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(209,3):(2)-> INLINE: operator+=(Scores &, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(213,10):(2)-> INLINE: BitBoards::pieces(const BitBoards *, int, int, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(213,10):(2)-> INLINE: SliderAttacks::RookAttacks(const SliderAttacks *, U64, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\slider_attacks.h(27,5):(3)-> INLINE: SliderAttacks::AttackTableIndex(const SliderAttacks *, U64, const Magic &) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\slider_attacks.h(27,5):(3)-> INLINE: std::vector<U64, std::allocator<U64>>::operator[](const std::vector<U64, std::allocator<U64>> *, std::vector<U64, std::allocator<U64>>::size_type) const
+         {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(220,3):(2)-> INLINE: BitBoards::square_bb(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(221,4):(2)-> INLINE: BitBoards::king_square(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(235,18):(2)-> INLINE: bit_count(unsigned __int64)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(248,16):(2)-> INLINE: bit_count(unsigned __int64)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(250,3):(2)-> INLINE: operator+=(Scores &, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(255,4):(2)-> INLINE: operator-=(Scores &, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(264,4):(2)-> INLINE: pawn_push(int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(264,4):(2)-> INLINE: BitBoards::piecesByType(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(264,4):(2)-> INLINE: relative_rankSq(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(450,2):(3)-> INLINE: rank_of(int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(450,2):(3)-> INLINE: relative_rank(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(266,5):(2)-> INLINE: operator+=(Scores &, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(274,4):(2)-> INLINE: file_of(int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(274,4):(2)-> INLINE: Pawns::PawnsEntry::semi_open_file(const Pawns::PawnsEntry *, int, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(275,5):(2)-> INLINE: file_of(int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(275,5):(2)-> INLINE: Pawns::PawnsEntry::semi_open_file(const Pawns::PawnsEntry *, int, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(275,5):(2)-> INLINE: operator+=(Scores &, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(280,4):(2)-> INLINE: relative_rankSq(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(450,2):(3)-> INLINE: rank_of(int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(450,2):(3)-> INLINE: relative_rank(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(281,15):(2)-> INLINE: BitBoards::pieces(const BitBoards *, int, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(281,15):(2)-> INLINE: BitBoards::psuedoAttacks(const BitBoards *, int, int, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(283,16):(2)-> INLINE: operator+=(Scores &, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(283,16):(2)-> INLINE: bit_count(unsigned __int64)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(283,16):(2)-> INLINE: operator*(Scores *, Scores, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(291,2):(2)-> INLINE: evaluatePieces<4, 1>(Scores *, const BitBoards &, EvalInfo &, U64 *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(209,3):(3)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(209,3):(3)-> INLINE: operator+=(Scores &, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(213,10):(3)-> INLINE: BitBoards::pieces(const BitBoards *, int, int, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(213,10):(3)-> INLINE: SliderAttacks::RookAttacks(const SliderAttacks *, U64, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\slider_attacks.h(27,5):(4)-> INLINE: SliderAttacks::AttackTableIndex(const SliderAttacks *, U64, const Magic &) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\slider_attacks.h(27,5):(4)-> INLINE: std::vector<U64, std::allocator<U64>>::operator[](const std::vector<U64, std::allocator<U64>> *, std::vector<U64, std::allocator<U64>>::size_type) const
+           {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(220,3):(3)-> INLINE: BitBoards::square_bb(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(221,4):(3)-> INLINE: BitBoards::king_square(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(235,18):(3)-> INLINE: bit_count(unsigned __int64)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(248,16):(3)-> INLINE: bit_count(unsigned __int64)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(250,3):(3)-> INLINE: operator+=(Scores &, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(255,4):(3)-> INLINE: operator-=(Scores &, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(264,4):(3)-> INLINE: pawn_push(int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(264,4):(3)-> INLINE: BitBoards::piecesByType(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(264,4):(3)-> INLINE: relative_rankSq(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(450,2):(4)-> INLINE: rank_of(int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(450,2):(4)-> INLINE: relative_rank(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(266,5):(3)-> INLINE: operator+=(Scores &, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(274,4):(3)-> INLINE: file_of(int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(274,4):(3)-> INLINE: Pawns::PawnsEntry::semi_open_file(const Pawns::PawnsEntry *, int, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(275,5):(3)-> INLINE: file_of(int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(275,5):(3)-> INLINE: Pawns::PawnsEntry::semi_open_file(const Pawns::PawnsEntry *, int, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(275,5):(3)-> INLINE: operator+=(Scores &, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(280,4):(3)-> INLINE: relative_rankSq(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(450,2):(4)-> INLINE: rank_of(int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(450,2):(4)-> INLINE: relative_rank(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(281,15):(3)-> INLINE: BitBoards::pieces(const BitBoards *, int, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(281,15):(3)-> INLINE: BitBoards::psuedoAttacks(const BitBoards *, int, int, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(283,16):(3)-> INLINE: operator+=(Scores &, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(283,16):(3)-> INLINE: bit_count(unsigned __int64)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(283,16):(3)-> INLINE: operator*(Scores *, Scores, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(291,2):(3)-> INLINE: evaluatePieces<5, 0>(Scores *, const BitBoards &, EvalInfo &, U64 *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(209,3):(4)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(209,3):(4)-> INLINE: operator+=(Scores &, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(213,10):(4)-> INLINE: SliderAttacks::QueenAttacks(const SliderAttacks *, U64, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\slider_attacks.h(36,5):(5)-> INLINE: SliderAttacks::RookAttacks(const SliderAttacks *, U64, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\slider_attacks.h(27,5):(6)-> INLINE: SliderAttacks::AttackTableIndex(const SliderAttacks *, U64, const Magic &) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\slider_attacks.h(27,5):(6)-> INLINE: std::vector<U64, std::allocator<U64>>::operator[](const std::vector<U64, std::allocator<U64>> *, std::vector<U64, std::allocator<U64>>::size_type) const
+               {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\slider_attacks.h(36,5):(5)-> INLINE: SliderAttacks::BishopAttacks(const SliderAttacks *, U64, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\slider_attacks.h(32,5):(6)-> INLINE: SliderAttacks::AttackTableIndex(const SliderAttacks *, U64, const Magic &) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\slider_attacks.h(32,5):(6)-> INLINE: std::vector<U64, std::allocator<U64>>::operator[](const std::vector<U64, std::allocator<U64>> *, std::vector<U64, std::allocator<U64>>::size_type) const
+               {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(220,3):(4)-> INLINE: BitBoards::square_bb(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(221,4):(4)-> INLINE: BitBoards::king_square(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(235,18):(4)-> INLINE: bit_count(unsigned __int64)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(248,16):(4)-> INLINE: bit_count(unsigned __int64)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(250,3):(4)-> INLINE: operator+=(Scores &, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(255,4):(4)-> INLINE: operator-=(Scores &, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(264,4):(4)-> INLINE: pawn_push(int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(264,4):(4)-> INLINE: BitBoards::piecesByType(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(264,4):(4)-> INLINE: relative_rankSq(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(450,2):(5)-> INLINE: rank_of(int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(450,2):(5)-> INLINE: relative_rank(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(266,5):(4)-> INLINE: operator+=(Scores &, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(275,5):(4)-> INLINE: file_of(int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(275,5):(4)-> INLINE: operator+=(Scores &, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(275,5):(4)-> INLINE: Pawns::PawnsEntry::semi_open_file(const Pawns::PawnsEntry *, int, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(280,4):(4)-> INLINE: relative_rankSq(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(450,2):(5)-> INLINE: rank_of(int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(450,2):(5)-> INLINE: relative_rank(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(281,15):(4)-> INLINE: BitBoards::psuedoAttacks(const BitBoards *, int, int, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(281,15):(4)-> INLINE: BitBoards::pieces(const BitBoards *, int, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(283,16):(4)-> INLINE: bit_count(unsigned __int64)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(283,16):(4)-> INLINE: operator*(Scores *, Scores, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(283,16):(4)-> INLINE: operator+=(Scores &, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(291,2):(4)-> INLINE: evaluatePieces<5, 1>(Scores *, const BitBoards &, EvalInfo &, U64 *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(209,3):(5)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(209,3):(5)-> INLINE: operator+=(Scores &, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(213,10):(5)-> INLINE: SliderAttacks::QueenAttacks(const SliderAttacks *, U64, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\slider_attacks.h(36,5):(6)-> INLINE: SliderAttacks::RookAttacks(const SliderAttacks *, U64, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\slider_attacks.h(27,5):(7)-> INLINE: SliderAttacks::AttackTableIndex(const SliderAttacks *, U64, const Magic &) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\slider_attacks.h(27,5):(7)-> INLINE: std::vector<U64, std::allocator<U64>>::operator[](const std::vector<U64, std::allocator<U64>> *, std::vector<U64, std::allocator<U64>>::size_type) const
+                 {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\slider_attacks.h(36,5):(6)-> INLINE: SliderAttacks::BishopAttacks(const SliderAttacks *, U64, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\slider_attacks.h(32,5):(7)-> INLINE: SliderAttacks::AttackTableIndex(const SliderAttacks *, U64, const Magic &) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\slider_attacks.h(32,5):(7)-> INLINE: std::vector<U64, std::allocator<U64>>::operator[](const std::vector<U64, std::allocator<U64>> *, std::vector<U64, std::allocator<U64>>::size_type) const
+                 {{ Inlining of routines from system headers is omitted. Use -Qopt-report:3 to view full report. }}
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(220,3):(5)-> INLINE: BitBoards::square_bb(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(221,4):(5)-> INLINE: BitBoards::king_square(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(235,18):(5)-> INLINE: bit_count(unsigned __int64)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(248,16):(5)-> INLINE: bit_count(unsigned __int64)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(250,3):(5)-> INLINE: operator+=(Scores &, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(255,4):(5)-> INLINE: operator-=(Scores &, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(264,4):(5)-> INLINE: pawn_push(int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(264,4):(5)-> INLINE: BitBoards::piecesByType(const BitBoards *, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(264,4):(5)-> INLINE: relative_rankSq(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(450,2):(6)-> INLINE: rank_of(int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(450,2):(6)-> INLINE: relative_rank(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(266,5):(5)-> INLINE: operator+=(Scores &, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(275,5):(5)-> INLINE: file_of(int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(275,5):(5)-> INLINE: operator+=(Scores &, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(275,5):(5)-> INLINE: Pawns::PawnsEntry::semi_open_file(const Pawns::PawnsEntry *, int, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(280,4):(5)-> INLINE: relative_rankSq(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(450,2):(6)-> INLINE: rank_of(int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(450,2):(6)-> INLINE: relative_rank(int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(281,15):(5)-> INLINE: BitBoards::psuedoAttacks(const BitBoards *, int, int, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(281,15):(5)-> INLINE: BitBoards::pieces(const BitBoards *, int, int) const
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(283,16):(5)-> INLINE: bit_count(unsigned __int64)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(283,16):(5)-> INLINE: operator*(Scores *, Scores, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(283,16):(5)-> INLINE: operator+=(Scores &, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(291,2):(5)-> INLINE: evaluatePieces<6, 0>(Scores *, const BitBoards &, EvalInfo &, U64 *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(295,76):(6)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(291,2):(5)-> INLINE: operator-(Scores *, Scores, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(291,2):(4)-> INLINE: operator-(Scores *, Scores, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(291,2):(3)-> INLINE: operator-(Scores *, Scores, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(291,2):(2)-> INLINE: operator-(Scores *, Scores, Scores)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(291,2):(1)-> INLINE: operator-(Scores *, Scores, Scores)
+INLINE REPORT END
+
+    Report from: Code generation optimizations [cg]
+
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(193,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (16, 0)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (16, 0)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(193,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (16, 0)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (16, 0)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(275,5):remark #34000: call to memcpy implemented inline with loads and stores with proven source (alignment, offset): (16, 0), and destination (alignment, offset): (16, 0)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(275,5):remark #34000: call to memcpy implemented inline with loads and stores with proven source (alignment, offset): (16, 0), and destination (alignment, offset): (16, 0)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(193,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (16, 0)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (16, 0)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(275,5):remark #34000: call to memcpy implemented inline with loads and stores with proven source (alignment, offset): (16, 0), and destination (alignment, offset): (16, 0)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(275,5):remark #34000: call to memcpy implemented inline with loads and stores with proven source (alignment, offset): (16, 0), and destination (alignment, offset): (16, 0)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(193,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (16, 0)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (16, 0)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(193,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (16, 0)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (16, 0)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (16, 0)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(191,84):remark #34051: REGISTER ALLOCATION : [??$evaluatePieces@$02$00@@YA?AUScores@@AEBVBitBoards@@AEAUEvalInfo@@PEA_K@Z] C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp:191
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :   15[ rax rdx rcx rbx rbp rsi rdi r8-r15]
+        
+    Routine temporaries
+        Total         :     307
+            Global    :      69
+            Local     :     238
+        Regenerable   :       4
+        Spilled       :       8
+        
+    Routine stack
+        Variables     :     104 bytes*
+            Reads     :      34 [4.11e+001 ~ 2.2%]
+            Writes    :      49 [1.18e+002 ~ 6.4%]
+        Spills        :      16 bytes*
+            Reads     :       2 [1.96e+000 ~ 0.1%]
+            Writes    :       2 [1.96e+000 ~ 0.1%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: Evaluate::generateKingZones(Evaluate *, const BitBoards &, EvalInfo &)
+
+    Report from: Interprocedural optimizations [ipo]
+
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(149,1):INLINE REPORT START: (Evaluate::generateKingZones(Evaluate *, const BitBoards &, EvalInfo &))
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(168,3):(1)-> INLINE: BitBoards::psuedoAttacks(const BitBoards *, int, int, int) const
+INLINE REPORT END
+
+    Report from: Loop nest, Vector & Auto-parallelization optimizations [loop, vec, par]
+
+
+LOOP BEGIN at C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(152,2)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(152,2):remark #25258: Invariant Condition eliminated(Loop at level 1 peeled) at line 161 
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(152,2):remark #25260: Invariant Condition eliminated(Proven False) at line 161
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(152,2):remark #25261: Invariant Condition eliminated(Proven True) at line 174
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(152,2):remark #25261: Invariant Condition eliminated(Proven True) at line 185
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(152,2):remark #25436: completely unrolled by 1  
+LOOP END
+
+    Report from: Code generation optimizations [cg]
+
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(149,1):remark #34051: REGISTER ALLOCATION : [?generateKingZones@Evaluate@@AEAAXAEBVBitBoards@@AEAUEvalInfo@@@Z] C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp:149
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    8[ rax rdx rcx r8-r11 r14]
+        
+    Routine temporaries
+        Total         :      61
+            Global    :      29
+            Local     :      32
+        Regenerable   :       3
+        Spilled       :       1
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: Evaluate::wKingShield(Evaluate *, const BitBoards &)
+
+    Report from: Interprocedural optimizations [ipo]
+
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(733,1):INLINE REPORT START: (Evaluate::wKingShield(Evaluate *, const BitBoards &))
+INLINE REPORT END
+
+    Report from: Code generation optimizations [cg]
+
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(733,1):remark #34051: REGISTER ALLOCATION : [?wKingShield@Evaluate@@AEAAHAEBVBitBoards@@@Z] C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp:733
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    4[ rax rdx rcx r8]
+        
+    Routine temporaries
+        Total         :      36
+            Global    :      26
+            Local     :      10
+        Regenerable   :       3
+        Spilled       :       0
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: Evaluate::bKingShield(Evaluate *, const BitBoards &)
+
+    Report from: Interprocedural optimizations [ipo]
+
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(766,1):INLINE REPORT START: (Evaluate::bKingShield(Evaluate *, const BitBoards &))
+INLINE REPORT END
+
+    Report from: Code generation optimizations [cg]
+
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(766,1):remark #34051: REGISTER ALLOCATION : [?bKingShield@Evaluate@@AEAAHAEBVBitBoards@@@Z] C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp:766
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    4[ rax rdx rcx r8]
+        
+    Routine temporaries
+        Total         :      36
+            Global    :      26
+            Local     :      10
+        Regenerable   :       3
+        Spilled       :       0
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: Evaluate::isPiece(Evaluate *, const U64 &, const BitBoards &, int)
+
+    Report from: Interprocedural optimizations [ipo]
+
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(894,1):INLINE REPORT START: (Evaluate::isPiece(Evaluate *, const U64 &, const BitBoards &, int))
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(895,2):(1)-> INLINE: BitBoards::square_bb(const BitBoards *, int) const
+INLINE REPORT END
+
+    Report from: Code generation optimizations [cg]
+
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(894,1):remark #34051: REGISTER ALLOCATION : [?isPiece@Evaluate@@AEAA_NAEB_KAEBVBitBoards@@H@Z] C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp:894
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    6[ rax rdx rcx r8-r10]
+        
+    Routine temporaries
+        Total         :      31
+            Global    :       0
+            Local     :      31
+        Regenerable   :       2
+        Spilled       :       0
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: __sti__?KingSide@@3_KA()
+
+    Report from: Interprocedural optimizations [ipo]
+
+<compiler generated>:INLINE REPORT START: (__sti__?KingSide@@3_KA())
+INLINE REPORT END
+
+    Report from: Code generation optimizations [cg]
+
+<compiler generated>:remark #34051: REGISTER ALLOCATION : [__sti__?KingSide@@3_KA] (null):0
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    1[ rax]
+        
+    Routine temporaries
+        Total         :      19
+            Global    :       0
+            Local     :      19
+        Regenerable   :       1
+        Spilled       :       0
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: __sti__?QueenSide@@3_KA()
+
+    Report from: Interprocedural optimizations [ipo]
+
+<compiler generated>:INLINE REPORT START: (__sti__?QueenSide@@3_KA())
+INLINE REPORT END
+
+    Report from: Code generation optimizations [cg]
+
+<compiler generated>:remark #34051: REGISTER ALLOCATION : [__sti__?QueenSide@@3_KA] (null):0
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    1[ rax]
+        
+    Routine temporaries
+        Total         :      19
+            Global    :       0
+            Local     :      19
+        Regenerable   :       1
+        Spilled       :       0
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: __sti__?center@@3PA_KA()
+
+    Report from: Interprocedural optimizations [ipo]
+
+<compiler generated>:INLINE REPORT START: (__sti__?center@@3PA_KA())
+INLINE REPORT END
+
+    Report from: Code generation optimizations [cg]
+
+<compiler generated>:remark #34051: REGISTER ALLOCATION : [__sti__?center@@3PA_KA] (null):0
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    3[ rax rdx rcx]
+        
+    Routine temporaries
+        Total         :      26
+            Global    :       0
+            Local     :      26
+        Regenerable   :       3
+        Spilled       :       0
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: __sti__?pawnThreat@@4QBUScores@@B()
+
+    Report from: Interprocedural optimizations [ipo]
+
+<compiler generated>:INLINE REPORT START: (__sti__?pawnThreat@@4QBUScores@@B())
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(51,14):(1)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(51,14):(1)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(51,14):(1)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(51,14):(1)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(51,14):(1)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(51,14):(1)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(51,14):(1)-> INLINE: Scores::??_HScores@@QEAAPEAU0@H@Z(Scores *, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(51,14):(2)-> INLINE: Scores::Scores(Scores *)
+INLINE REPORT END
+
+    Report from: Code generation optimizations [cg]
+
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (16, 0)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (16, 8)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (16, 0)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (16, 8)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (16, 0)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (16, 8)
+<compiler generated>:remark #34051: REGISTER ALLOCATION : [__sti__?pawnThreat@@4QBUScores@@B] (null):0
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    1[ rax]
+        
+    Routine temporaries
+        Total         :      19
+            Global    :      19
+            Local     :       0
+        Regenerable   :       1
+        Spilled       :       0
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: __sti__?threats@@4QAY06$$CBUScores@@A()
+
+    Report from: Interprocedural optimizations [ipo]
+
+<compiler generated>:INLINE REPORT START: (__sti__?threats@@4QAY06$$CBUScores@@A())
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(55,14):(1)-> INLINE: Scores::??_HScores@@QEAAPEAU0@H@Z(Scores *, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(55,14):(2)-> INLINE: Scores::Scores(Scores *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(55,14):(1)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(55,14):(1)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(55,14):(1)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(55,14):(1)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(55,14):(1)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(55,14):(1)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(55,14):(1)-> INLINE: Scores::??_HScores@@QEAAPEAU0@H@Z(Scores *, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(55,14):(2)-> INLINE: Scores::Scores(Scores *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(55,14):(1)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(55,14):(1)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(55,14):(1)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(55,14):(1)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(55,14):(1)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(55,14):(1)-> INLINE: make_scores(Scores *, int, int)
+INLINE REPORT END
+
+    Report from: Code generation optimizations [cg]
+
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (32, 0)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (32, 8)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (32, 16)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (32, 24)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (32, 0)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (32, 8)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (32, 24)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (32, 0)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (32, 8)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (32, 16)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (32, 24)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (32, 0)
+<compiler generated>:remark #34051: REGISTER ALLOCATION : [__sti__?threats@@4QAY06$$CBUScores@@A] (null):0
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    1[ rax]
+        
+    Routine temporaries
+        Total         :      19
+            Global    :      19
+            Local     :       0
+        Regenerable   :       1
+        Spilled       :       0
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: __sti__?Hanging@@4UScores@@B()
+
+    Report from: Interprocedural optimizations [ipo]
+
+<compiler generated>:INLINE REPORT START: (__sti__?Hanging@@4UScores@@B())
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(61,14):(1)-> INLINE: make_scores(Scores *, int, int)
+INLINE REPORT END
+
+    Report from: Code generation optimizations [cg]
+
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (16, 0)
+<compiler generated>:remark #34051: REGISTER ALLOCATION : [__sti__?Hanging@@4UScores@@B] (null):0
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    0[ reg_null]
+        
+    Routine temporaries
+        Total         :      18
+            Global    :      18
+            Local     :       0
+        Regenerable   :       0
+        Spilled       :       0
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: __sti__?KingOnPawn@@4UScores@@B()
+
+    Report from: Interprocedural optimizations [ipo]
+
+<compiler generated>:INLINE REPORT START: (__sti__?KingOnPawn@@4UScores@@B())
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(62,14):(1)-> INLINE: make_scores(Scores *, int, int)
+INLINE REPORT END
+
+    Report from: Code generation optimizations [cg]
+
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (16, 0)
+<compiler generated>:remark #34051: REGISTER ALLOCATION : [__sti__?KingOnPawn@@4UScores@@B] (null):0
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    0[ reg_null]
+        
+    Routine temporaries
+        Total         :      18
+            Global    :      18
+            Local     :       0
+        Regenerable   :       0
+        Spilled       :       0
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: __sti__?KingOnMPawn@@4UScores@@B()
+
+    Report from: Interprocedural optimizations [ipo]
+
+<compiler generated>:INLINE REPORT START: (__sti__?KingOnMPawn@@4UScores@@B())
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(63,14):(1)-> INLINE: make_scores(Scores *, int, int)
+INLINE REPORT END
+
+    Report from: Code generation optimizations [cg]
+
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (16, 0)
+<compiler generated>:remark #34051: REGISTER ALLOCATION : [__sti__?KingOnMPawn@@4UScores@@B] (null):0
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    0[ reg_null]
+        
+    Routine temporaries
+        Total         :      18
+            Global    :      18
+            Local     :       0
+        Regenerable   :       0
+        Spilled       :       0
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: __sti__?RookOnPawn@@4UScores@@B()
+
+    Report from: Interprocedural optimizations [ipo]
+
+<compiler generated>:INLINE REPORT START: (__sti__?RookOnPawn@@4UScores@@B())
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(64,14):(1)-> INLINE: make_scores(Scores *, int, int)
+INLINE REPORT END
+
+    Report from: Code generation optimizations [cg]
+
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (16, 0)
+<compiler generated>:remark #34051: REGISTER ALLOCATION : [__sti__?RookOnPawn@@4UScores@@B] (null):0
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    0[ reg_null]
+        
+    Routine temporaries
+        Total         :      18
+            Global    :      18
+            Local     :       0
+        Regenerable   :       0
+        Spilled       :       0
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: __sti__?RookHalfOpen@@4UScores@@B()
+
+    Report from: Interprocedural optimizations [ipo]
+
+<compiler generated>:INLINE REPORT START: (__sti__?RookHalfOpen@@4UScores@@B())
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(65,14):(1)-> INLINE: make_scores(Scores *, int, int)
+INLINE REPORT END
+
+    Report from: Code generation optimizations [cg]
+
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (16, 0)
+<compiler generated>:remark #34051: REGISTER ALLOCATION : [__sti__?RookHalfOpen@@4UScores@@B] (null):0
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    0[ reg_null]
+        
+    Routine temporaries
+        Total         :      18
+            Global    :      18
+            Local     :       0
+        Regenerable   :       0
+        Spilled       :       0
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: __sti__?RookOpen@@4UScores@@B()
+
+    Report from: Interprocedural optimizations [ipo]
+
+<compiler generated>:INLINE REPORT START: (__sti__?RookOpen@@4UScores@@B())
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(66,14):(1)-> INLINE: make_scores(Scores *, int, int)
+INLINE REPORT END
+
+    Report from: Code generation optimizations [cg]
+
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (16, 0)
+<compiler generated>:remark #34051: REGISTER ALLOCATION : [__sti__?RookOpen@@4UScores@@B] (null):0
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    0[ reg_null]
+        
+    Routine temporaries
+        Total         :      18
+            Global    :      18
+            Local     :       0
+        Regenerable   :       0
+        Spilled       :       0
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: __sti__?MinorBehindPawn@@4UScores@@B()
+
+    Report from: Interprocedural optimizations [ipo]
+
+<compiler generated>:INLINE REPORT START: (__sti__?MinorBehindPawn@@4UScores@@B())
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(68,14):(1)-> INLINE: make_scores(Scores *, int, int)
+INLINE REPORT END
+
+    Report from: Code generation optimizations [cg]
+
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (16, 0)
+<compiler generated>:remark #34051: REGISTER ALLOCATION : [__sti__?MinorBehindPawn@@4UScores@@B] (null):0
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    0[ reg_null]
+        
+    Routine temporaries
+        Total         :      18
+            Global    :      18
+            Local     :       0
+        Regenerable   :       0
+        Spilled       :       0
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: __sti__?BishopPawns@@4UScores@@B()
+
+    Report from: Interprocedural optimizations [ipo]
+
+<compiler generated>:INLINE REPORT START: (__sti__?BishopPawns@@4UScores@@B())
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(69,14):(1)-> INLINE: make_scores(Scores *, int, int)
+INLINE REPORT END
+
+    Report from: Code generation optimizations [cg]
+
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (16, 0)
+<compiler generated>:remark #34051: REGISTER ALLOCATION : [__sti__?BishopPawns@@4UScores@@B] (null):0
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    0[ reg_null]
+        
+    Routine temporaries
+        Total         :      18
+            Global    :      18
+            Local     :       0
+        Regenerable   :       0
+        Spilled       :       0
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: __sti__?mobilityBonus@@4QAY0BO@$$CBUScores@@A()
+
+    Report from: Interprocedural optimizations [ipo]
+
+<compiler generated>:INLINE REPORT START: (__sti__?mobilityBonus@@4QAY0BO@$$CBUScores@@A())
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):(1)-> INLINE: Scores::??_HScores@@QEAAPEAU0@H@Z(Scores *, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):(2)-> INLINE: Scores::Scores(Scores *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):(1)-> INLINE: Scores::??_HScores@@QEAAPEAU0@H@Z(Scores *, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):(2)-> INLINE: Scores::Scores(Scores *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):(1)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):(1)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):(1)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):(1)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):(1)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):(1)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):(1)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):(1)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):(1)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):(1)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):(1)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):(1)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):(1)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):(1)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):(1)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):(1)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):(1)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):(1)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):(1)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):(1)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):(1)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):(1)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):(1)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):(1)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):(1)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):(1)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):(1)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):(1)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):(1)-> INLINE: Scores::??_HScores@@QEAAPEAU0@H@Z(Scores *, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):(2)-> INLINE: Scores::Scores(Scores *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):(1)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):(1)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):(1)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):(1)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):(1)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):(1)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):(1)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):(1)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):(1)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):(1)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):(1)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):(1)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):(1)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):(1)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):(1)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):(1)-> INLINE: Scores::??_HScores@@QEAAPEAU0@H@Z(Scores *, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):(2)-> INLINE: Scores::Scores(Scores *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):(1)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):(1)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):(1)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):(1)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):(1)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):(1)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):(1)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):(1)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):(1)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):(1)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):(1)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):(1)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):(1)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):(1)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):(1)-> INLINE: Scores::??_HScores@@QEAAPEAU0@H@Z(Scores *, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):(2)-> INLINE: Scores::Scores(Scores *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):(1)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):(1)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):(1)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):(1)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):(1)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):(1)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):(1)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):(1)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):(1)-> INLINE: make_scores(Scores *, int, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):(1)-> INLINE: Scores::??_HScores@@QEAAPEAU0@H@Z(Scores *, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):(2)-> INLINE: Scores::Scores(Scores *)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):(1)-> INLINE: Scores::??_HScores@@QEAAPEAU0@H@Z(Scores *, int)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):(2)-> INLINE: Scores::Scores(Scores *)
+INLINE REPORT END
+
+    Report from: Loop nest, Vector & Auto-parallelization optimizations [loop, vec, par]
+
+
+LOOP BEGIN at C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):remark #25438: unrolled without remainder by 2  
+LOOP END
+
+LOOP BEGIN at C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):remark #25438: unrolled without remainder by 2  
+LOOP END
+
+LOOP BEGIN at C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):remark #25439: unrolled with remainder by 2  
+LOOP END
+
+LOOP BEGIN at C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14)
+Remainder
+LOOP END
+
+LOOP BEGIN at C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):remark #25436: completely unrolled by 16  
+LOOP END
+
+LOOP BEGIN at C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):remark #25436: completely unrolled by 15  
+LOOP END
+
+LOOP BEGIN at C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):remark #25436: completely unrolled by 2  
+LOOP END
+
+LOOP BEGIN at C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(103,14):remark #25438: unrolled without remainder by 2  
+LOOP END
+
+    Report from: Code generation optimizations [cg]
+
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (32, 0)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (32, 8)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (32, 16)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (32, 24)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (32, 0)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (32, 8)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (32, 16)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (32, 24)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (32, 0)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (32, 16)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (32, 24)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (32, 0)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (32, 8)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (32, 16)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (32, 24)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (32, 0)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (32, 8)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (32, 16)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (32, 24)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (32, 0)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (32, 8)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (32, 16)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (32, 24)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (32, 0)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (32, 8)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (32, 16)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (32, 24)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (32, 0)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (32, 8)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (32, 16)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (32, 24)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (32, 0)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (32, 8)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (32, 16)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (32, 24)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (32, 0)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (32, 8)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (32, 16)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (32, 16)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (32, 24)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (32, 0)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (32, 8)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (32, 16)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (32, 24)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (32, 0)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (32, 8)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (32, 16)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (32, 24)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (32, 0)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (32, 8)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (32, 16)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (32, 24)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (32, 0)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (32, 8)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (32, 16)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (32, 24)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (32, 0)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (32, 8)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (32, 16)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (32, 24)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (32, 0)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (32, 8)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (32, 16)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (32, 24)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (32, 0)
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (32, 8)
+<compiler generated>:remark #34051: REGISTER ALLOCATION : [__sti__?mobilityBonus@@4QAY0BO@$$CBUScores@@A] (null):0
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    3[ rax rdx rcx]
+        
+    Routine temporaries
+        Total         :      31
+            Global    :      28
+            Local     :       3
+        Regenerable   :       5
+        Spilled       :       0
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: __sti__?Unstoppable@@4UScores@@B()
+
+    Report from: Interprocedural optimizations [ipo]
+
+<compiler generated>:INLINE REPORT START: (__sti__?Unstoppable@@4UScores@@B())
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\Evaluate.cpp(67,14):(1)-> INLINE: make_scores(Scores *, int, int)
+INLINE REPORT END
+
+    Report from: Code generation optimizations [cg]
+
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\defines.h(141,9):remark #34000: call to memset implemented inline with stores with proven (alignment, offset): (16, 0)
+<compiler generated>:remark #34051: REGISTER ALLOCATION : [__sti__?Unstoppable@@4UScores@@B] (null):0
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :   18[ rbx rbp rsi rdi r12-r15 xmm6-xmm15]
+        Assigned     :    0[ reg_null]
+        
+    Routine temporaries
+        Total         :      18
+            Global    :      18
+            Local     :       0
+        Regenerable   :       0
+        Spilled       :       0
+        
+    Routine stack
+        Variables     :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+        Spills        :       0 bytes*
+            Reads     :       0 [0.00e+000 ~ 0.0%]
+            Writes    :       0 [0.00e+000 ~ 0.0%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================

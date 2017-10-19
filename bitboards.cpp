@@ -1063,7 +1063,7 @@ int BitBoards::min_attacker(int color, int to, const U64 & stmAttackers, U64 & o
 }
 
 template<> FORCE_INLINE // If we've checked all the pieces, return KING and stop SEE search
-int BitBoards::min_attacker<KING>(int color, int to, const U64 & stmAttackers, U64 & occupied, U64 & attackers) const{
+int BitBoards::min_attacker<KING>(int , int , const U64 & , U64 & , U64 & ) const{
 	return KING;
 }
 

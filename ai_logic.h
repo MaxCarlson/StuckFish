@@ -79,11 +79,9 @@ namespace Search {
 	void clear();
 	int searchRoot(BitBoards & board, int depth, int alpha, int beta, searchStack * ss);
 
-	//int quiescent(BitBoards & board, int alpha, int beta, searchStack * ss, int isPV);
-
 	void updateContinuationHistories(searchStack * ss, int piece, int to, int bonus);
 
-	void updateStats(const BitBoards & board, Move move, searchStack * ss, int depth, Move * quiets, int qCount, int bonus);
+	void updateStats(const BitBoards & board, Move move, searchStack * ss,  Move * quiets, int qCount, int bonus);
 
 	void print(int bestScore, int depth, const BitBoards &board);
 

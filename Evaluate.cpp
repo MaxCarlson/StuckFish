@@ -40,7 +40,7 @@ U64 center[STAGE] = {
 	(FileCBB | FileDBB | FileEBB | FileFBB) & (RankMasks8[6] | RankMasks8[5] | RankMasks8[4])
 };
 
-const U64 full = 0xffffffffffffffffULL;
+//const U64 full = 0xffffffffffffffffULL;
 
 //Scores used for ease of use calcuating and 
 //weighting mid and end game scores at the same time.
@@ -150,7 +150,7 @@ void Evaluate::generateKingZones(const BitBoards & boards, EvalInfo & ev)
 	//draw zone around king all 8 tiles around him, plus three in front -- north = front for white, south black
 	
 	for (int side = 0; side < 2; ++side) {
-		U64 kZone, tkz;
+		U64 kZone;
 
 		if (side) kZone = boards.byColorPiecesBB[BLACK][KING];
 		else kZone = boards.byColorPiecesBB[WHITE][KING];
@@ -292,7 +292,7 @@ Scores evaluatePieces(const BitBoards & boards, EvalInfo & ev, U64 * mobilityAre
 }
 
 template<> //get rid of recursive function too complex error, also return when piece type hits king
-Scores evaluatePieces<KING, WHITE>(const BitBoards & boards, EvalInfo & ev, U64 * mobility) { return S(0, 0); };
+Scores evaluatePieces<KING, WHITE>(const BitBoards &, EvalInfo &, U64 *) { return S(0, 0); };
 
 template<int color>
 int centerControl(const BitBoards & boards, const EvalInfo & ev) {
@@ -798,7 +798,6 @@ int Evaluate::bKingShield(const BitBoards & boards)
 void Evaluate::blockedPieces(int side, const BitBoards& boards, EvalInfo & ev) //REPLACE THIS SOON, DEF BETTER WAY
 {
 	U64 pawn, epawn, knight, bishop, rook, king;
-	U64 empty = boards.EmptyTiles;
 	U64 emptyLoc = 1LL;
 	int oppo = !side;
 

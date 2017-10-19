@@ -10,10 +10,10 @@
 
 
 //totally full bitboard
-const U64 full  = 0xffffffffffffffffULL;
+//const U64 full  = 0xffffffffffffffffULL;
 //files to keep pieces from moving left or right off board
-const U64 notAFile = 0x7f7f7f7f7f7f7f7f; // ~0x8080808080808080
-const U64 notHFile = 0xfefefefefefefefe; // ~0x0101010101010101
+//const U64 notAFile = 0x7f7f7f7f7f7f7f7f; // ~0x8080808080808080
+//const U64 notHFile = 0xfefefefefefefefe; // ~0x0101010101010101
 const U64 rank4 = 1095216660480L;
 const U64 rank5=4278190080L;
 const U64 rank6 = rank5 >> 8;
@@ -41,7 +41,7 @@ const U64 FILE_AB = FileABB + FileBBB;
 const U64 FILE_GH = FileGBB + FileHBB;
 
 template<int Shift, int genType>
-SMove * generatePromotions(const BitBoards& boards, U64 pawns, SMove *mlist, U64 target) {
+SMove * generatePromotions(U64 pawns, SMove *mlist, U64 target) {
 
 	U64 moves = shift_bb<Shift>(pawns) & target;
 
@@ -119,9 +119,9 @@ SMove* pawnMoves(const BitBoards& boards, SMove *mlist, U64 target) {
 		if (genType == EVASIONS)
 			targetP &= target;
 	
-		mlist = generatePromotions<Up,    genType>(boards, candidatePawns, mlist, targetP);
-		mlist = generatePromotions<Right, genType>(boards, candidatePawns, mlist,  enemys);
-		mlist = generatePromotions<Left,  genType>(boards, candidatePawns, mlist,  enemys);	
+		mlist = generatePromotions<Up,    genType>(candidatePawns, mlist, targetP);
+		mlist = generatePromotions<Right, genType>(candidatePawns, mlist,  enemys);
+		mlist = generatePromotions<Left,  genType>(candidatePawns, mlist,  enemys);	
 	}
 
 

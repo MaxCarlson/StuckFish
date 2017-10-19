@@ -412,7 +412,7 @@ int Search::searchRoot(BitBoards& board, int depth, int alpha, int beta, searchS
 
 	
 	if (alpha >= beta && !flagInCheck && !board.capture_or_promotion(bestMove)) {
-		updateStats(board, bestMove, ss, depth, quiets, quietsCount, stat_bonus(depth));
+		updateStats(board, bestMove, ss, quiets, quietsCount, stat_bonus(depth));
 	}
 		
     return alpha;
@@ -494,7 +494,7 @@ int alphaBeta(BitBoards& board, int depth, int alpha, int beta, Search::searchSt
 			if (ttValue >= beta)
 			{
 				if (!board.capture_or_promotion(ttMove))
-					updateStats(board, ttMove, ss, depth, nullptr, 0, stat_bonus(depth));
+					updateStats(board, ttMove, ss, nullptr, 0, stat_bonus(depth));
 
 				// Penalty if the TT move from previous ply is quiet and gets refuted
 				if ((ss - 1)->moveCount == 1 && !board.captured_piece())
@@ -819,7 +819,7 @@ int alphaBeta(BitBoards& board, int depth, int alpha, int beta, Search::searchSt
 		// Update heuristics for Quiet best move.
 		// Decrease score for other quiets, update killers, counters, etc.
 		if(!board.capture_or_promotion(bestMove))
-			updateStats(board, bestMove, ss, depth, quiets, quietsCount, stat_bonus(depth));
+			updateStats(board, bestMove, ss, quiets, quietsCount, stat_bonus(depth));
 
 		// Penalty if the TT move from previous ply is quiet and gets refuted
 		if ((ss - 1)->moveCount == 1 && !board.captured_piece())
@@ -942,7 +942,7 @@ int quiescent(BitBoards& board, int alpha, int beta, Search::searchStack *ss)
 	return alpha;
 }
 
-void Search::updateStats(const BitBoards & board, Move move, searchStack * ss, int depth, Move * quiets, int qCount, int bonus)
+void Search::updateStats(const BitBoards & board, Move move, searchStack * ss, Move * quiets, int qCount, int bonus)
 {	
 	//update Killers for ply
 	//make sure killer is different
@@ -955,13 +955,13 @@ void Search::updateStats(const BitBoards & board, Move move, searchStack * ss, i
 
 	const int color = board.stm();
 
-	//update historys, increasing the cutoffs score, decreasing every other moves score
-	int val = 4 * depth * depth;  //Possibly change how this bonus is handled??
+	// Testing!!!
+	//int val = 4 * depth * depth;  //Possibly change how this bonus is handled??
 
 	Thread * thisThread = board.this_thread();
 
-	thisThread->mainHistory.update(color, move, val);
-	updateContinuationHistories(ss, board.pieceOnSq(from_sq(move)), to_sq(move), val);
+	thisThread->mainHistory.update(color, move, bonus);
+	updateContinuationHistories(ss, board.pieceOnSq(from_sq(move)), to_sq(move), bonus);
 	
 	// Update counter moves
 	if (is_ok((ss - 1)->currentMove)) {
@@ -972,8 +972,8 @@ void Search::updateStats(const BitBoards & board, Move move, searchStack * ss, i
 
 	// Penalize the remaing quiet moves that weren't the best move
 	for(int i = 0; i < qCount; ++i){
-		thisThread->mainHistory.update(color, quiets[i], -val);
-		updateContinuationHistories(ss, board.pieceOnSq(from_sq(quiets[i])), to_sq(move), -val);
+		thisThread->mainHistory.update(color, quiets[i], -bonus);
+		updateContinuationHistories(ss, board.pieceOnSq(from_sq(quiets[i])), to_sq(move), -bonus);
 	}
 }
 
@@ -1131,3 +1131,59 @@ U64 Search::perftDivide(BitBoards & board, int depth)
 }
 
 template U64 Search::perftDivide<true>(BitBoards & board, int depth);
+
+class pThreads {
+	Mutex mutex;
+	ConditionVariable cv;
+
+public:
+	int it;
+
+	BitBoards board;
+
+	U64 nodes;
+};
+
+class pTPool : public std::vector<pThreads*>
+{
+		
+};
+
+void perftInit(BitBoards & board, int depth, int nthreads)
+{
+	ThreadPool perftThreads;
+	perftThreads.initialize();
+
+	if(perftThreads.size() != nthreads)
+		perftThreads.numberOfThreads(nthreads);
+
+
+	// Generate all the legal root moves from position
+	RootMoves rootMoves;
+
+	for (const auto & m : MoveList<LEGAL>(board))
+		rootMoves.emplace_back(m);
+
+	StateListPtr states(new std::deque<StateInfo>(1));
+
+	for (Thread * th : perftThreads)
+	{
+		th->board = board;
+		th->board.set_state(&states->back(), th);
+	}
+
+	// make the rm iterator into an atomic inside a new thread class
+	// increment with each completion of rootmove serch by thread.
+	// Unload move count for move into U64 vector with use of iterator returned to index moves
+	// if perft, count moves total and print. If divide loop through vector and print moves and count
+
+	int rmSize = MoveList<LEGAL>(board).size();
+
+	int rit = 0;
+	std::vector<U64> rootMovesDivCount;
+
+	while (rit < rootMoves.size()) 
+	{
+
+	}
+}
