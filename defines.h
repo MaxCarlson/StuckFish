@@ -32,7 +32,7 @@
 #  define FORCE_INLINE  inline
 #endif
 
-/*
+///*
 inline void prefetch(void* addr) {
 
 #  if defined(__INTEL_COMPILER)
@@ -47,7 +47,7 @@ inline void prefetch(void* addr) {
 	__builtin_prefetch(addr);
 #  endif
 }
-*/
+//*/
 
 
 typedef std::chrono::milliseconds::rep TimePoint; // A value in milliseconds

@@ -181,6 +181,22 @@ void BitBoards::initBoards()
 	}	
 }
 
+U64 BitBoards::nextKey(Move m)
+{
+	U64 k = st->Key;
+	const int color = stm();
+	const int to = to_sq(m);
+	const int captured = pieceOnSq(to);
+
+	k ^= Zobrist::ZobArray[color][pieceOnSq(from_sq(m))][to];
+	k ^= Zobrist::Color;
+
+	if (captured)
+		k ^= Zobrist::ZobArray[color][captured][to];
+
+	return k;
+}
+
 void BitBoards::constructBoards(const std::string* FEN, Thread * th, StateInfo * si) //replace this with fen string reader
 {
 	// Set our internal state pointer to that
@@ -725,7 +741,7 @@ void BitBoards::makeMove(const Move& m, StateInfo& newSt, int color)
 
 	// prefetch TT entry into cache ~THIS IS WAY TOO TIME INTENSIVE? 6.1% on just this call from here?
 	// SWITCH TT to single address lookup instead of cluster of two?
-	_mm_prefetch((char *)TT.first_entry(st->Key), _MM_HINT_NTA);
+	prefetch(TT.first_entry(st->Key));
 
 	st->checkers = 0LL;
 

@@ -82,7 +82,7 @@ inline int stat_bonus(int depth) // This needs to be played with value wise agai
 
 // Defined here for easy access to play testing values!
 const int razor_margin[] = { 0, 275, 320, 257 };
-int futile_margin(int depth) { return 85 * depth; } //best margin 85 so far! //test value 73
+int futile_margin(int depth) { return 85 * depth; } //best margin 85 so far! 
 
 
 
@@ -92,7 +92,7 @@ void Search::initSearch()
 		for (int d = 1; d < 64; ++d)
 			for (int mc = 1; mc < 64; ++mc)
 			{
-				double r = log(d) * log(mc) / 2.45; // Best value so far, 2.45!
+				double r = log(d) * log(mc) / 2.40; // Best value so far, 2.45! Testing 2.40
 
 				reductions[NonPv][imp][d][mc] = int(std::round(r));
 				reductions[PV][imp][d][mc]    = std::max(reductions[NonPv][imp][d][mc] - 1, 0);
@@ -330,6 +330,8 @@ int Search::searchRoot(BitBoards& board, int depth, int alpha, int beta, searchS
 		if (!board.isLegal(newMove, ci.pinned)) {
 			continue;
 		}
+
+		prefetch(TT.first_entry(board.nextKey(newMove)));
 
         board.makeMove(newMove, st, color);  
 
@@ -913,7 +915,8 @@ int quiescent(BitBoards& board, int alpha, int beta, Search::searchStack *ss)
 		//Don't search losing capture moves if not in PV
 		if (!isPV && board.SEE(newMove, color, true) < 0) 
 			continue; 
-		
+
+		prefetch(TT.first_entry(board.nextKey(newMove)));	
 
 		board.makeMove(newMove, st, color);
 
@@ -954,9 +957,6 @@ void Search::updateStats(const BitBoards & board, Move move, searchStack * ss, M
 	}
 
 	const int color = board.stm();
-
-	// Testing!!!
-	//int val = 4 * depth * depth;  //Possibly change how this bonus is handled??
 
 	Thread * thisThread = board.this_thread();
 
@@ -1132,44 +1132,77 @@ U64 Search::perftDivide(BitBoards & board, int depth)
 
 template U64 Search::perftDivide<true>(BitBoards & board, int depth);
 
-class pThreads {
+class pThread {
 	Mutex mutex;
 	ConditionVariable cv;
 
-public:
-	int it;
+	
 
+public:
+	std::thread stdThread;
+	void searchMove(Move m, int depth);
+
+	bool searching = false;
+	int it = 0;
+
+	~pThread() { stdThread.join(); }
+
+	template<bool root>
+	U64 perftDivide(int depth);
+
+	StateInfo si;
 	BitBoards board;
 
-	U64 nodes;
+	U64 nodes = 0;
 };
 
-class pTPool : public std::vector<pThreads*>
+class pThreadsPool : std::vector<pThread*>
 {
-		
+public:
+	
+	std::vector<Move> rootMoves;
 };
+
+void pThread::searchMove(Move m, int depth)
+{
+	const int color = board.stm();
+	// Make move and record state to threads internal stateInfo
+	board.makeMove(m, si, color);
+	searching = true;
+
+	perftDivide<true>(depth);
+
+	board.unmakeMove(m, color);
+
+	std::lock_guard<Mutex> lock(mutex);
+
+	searching = false;
+}
 
 void perftInit(BitBoards & board, int depth, int nthreads)
 {
-	ThreadPool perftThreads;
-	perftThreads.initialize();
+	const int color = board.stm();
 
-	if(perftThreads.size() != nthreads)
-		perftThreads.numberOfThreads(nthreads);
+	std::vector<pThread*> perftThreads;
+
+	if (perftThreads.size() != nthreads)
+		for(int i = 0; i < nthreads; ++i)
+			perftThreads.push_back(new pThread);
 
 
 	// Generate all the legal root moves from position
-	RootMoves rootMoves;
+	std::vector<Move> rootMoves;
+	std::vector<U64> rootMovesDivCount;
 
-	for (const auto & m : MoveList<LEGAL>(board))
+	for (const auto & m : MoveList<LEGAL>(board)) {
 		rootMoves.emplace_back(m);
+		rootMovesDivCount.push_back(0);
+	}
 
-	StateListPtr states(new std::deque<StateInfo>(1));
-
-	for (Thread * th : perftThreads)
+	for (pThread * th : perftThreads)
 	{
 		th->board = board;
-		th->board.set_state(&states->back(), th);
+
 	}
 
 	// make the rm iterator into an atomic inside a new thread class
@@ -1179,11 +1212,46 @@ void perftInit(BitBoards & board, int depth, int nthreads)
 
 	int rmSize = MoveList<LEGAL>(board).size();
 
-	int rit = 0;
-	std::vector<U64> rootMovesDivCount;
+	int rIt = 0;
 
-	while (rit < rootMoves.size()) 
-	{
-
-	}
 }
+
+template<bool root>
+U64 pThread::perftDivide(int depth)
+{
+	StateInfo st;
+	U64 count, nodes = 0, tNodes = 0;
+
+	SMove mlist[256];
+	SMove * end = generate<LEGAL>(board, mlist);
+
+	int RootMoves = 0;
+
+	const bool leaf = (depth == 1);
+
+	if (depth == 0)
+		return;
+
+	for (SMove * i = mlist; i != end; ++i)
+	{
+		Move m = i->move;
+
+		if (depth == 1)
+			nodes++;
+
+		board.makeMove(m, st, board.stm());
+
+		count = perftDivide<false>(depth - 1);
+
+		nodes += count;
+
+		board.unmakeMove(m, !board.stm());		
+	}
+
+	if (root)
+		searching = false;
+
+	return nodes;
+}
+template U64 pThread::perftDivide< true>(int depth);
+template U64 pThread::perftDivide<false>(int depth);

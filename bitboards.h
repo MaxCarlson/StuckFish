@@ -74,6 +74,8 @@ public:
 	//holds zobrist key and arrays neccasary for modifying key
 	ZobristH zobrist; //REMOVE THIS FROM THE OBJECT WHEN YOU CAN
 
+	U64 nextKey(Move m);
+
     //builds boards through reading an array
     void constructBoards(const std::string* FEN, Thread * th, StateInfo * si);
 

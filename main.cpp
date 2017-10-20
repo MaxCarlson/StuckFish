@@ -7,7 +7,7 @@
 #include "bitboards.h"
 #include "TranspositionT.h"
 
-//#include <vld.h> //memory leak detection in visual studio
+// Compiler inline size flags to be tested /Qinline-max-size=1024 /Qinline-max-total-size=4000  
 
 // number of half turns
 int turns = 0;
