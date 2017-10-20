@@ -89,6 +89,9 @@ void UCI::uciLoop()
 		else if (token == "perft") {
 			perftUCI(newBoard, is);
 		}
+		else if (token == "stop") {
+			Threads.stop = true;
+		}
 		else if (token == "divide") {  
 			divideUCI(newBoard, is);
 		}
@@ -421,6 +424,8 @@ void UCI::helpUCI()
 	std::cout << "position x moves x.......Sets position fen or startpos and makes input moves "<< std::endl;
 	std::cout << "go wtime x  btime y......Starts search with white remaining time x and black remaining time y"<< std::endl;
 	std::cout << "go depth x...............Starts search and will search to x depth"<< std::endl;
+	std::cout << "go infinite..............Searches until the user types 'stop' or the GUI sends the command" << std::endl;
+	std::cout << "stop.....................Stops search as soon as possible" << std::endl;
 	std::cout << "test.....................Runs through a test suite of positions at a fixed depth, designed for benchmarking search"<< std::endl;
 	std::cout << "threads x................Sets program to use x number of threads." << std::endl;
 	std::cout << "quit.....................Quits engine"<< std::endl;

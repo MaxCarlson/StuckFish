@@ -331,8 +331,6 @@ int Search::searchRoot(BitBoards& board, int depth, int alpha, int beta, searchS
 			continue;
 		}
 
-		prefetch(TT.first_entry(board.nextKey(newMove)));
-
         board.makeMove(newMove, st, color);  
 
         ss->moveCount   = ++legalMoves;
@@ -646,6 +644,8 @@ int alphaBeta(BitBoards& board, int depth, int alpha, int beta, Search::searchSt
 		if (!board.isLegal(newMove, ci.pinned)) {
 			continue;
 		}
+
+		prefetch(TT.first_entry(board.nextKey(newMove)));
 
 		int movedPiece     = board.moved_piece(newMove);
 		captureOrPromotion = board.capture_or_promotion(newMove);
