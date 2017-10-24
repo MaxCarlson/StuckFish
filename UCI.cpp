@@ -388,9 +388,11 @@ void UCI::perftUCI(BitBoards & newBoard, std::istringstream & input)
 	if (d == 0)
 		d = 1;
 
-	U64 result = Search::perft<true>(newBoard, d);
+	//U64 result = Search::perft<true>(newBoard, d);
 
-	std::cout << result << std::endl;
+	Search::perftInit(newBoard, d);
+
+	//std::cout << result << std::endl;
 }
 
 void UCI::divideUCI(BitBoards & newBoard, std::istringstream & input)

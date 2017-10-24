@@ -6,6 +6,18 @@
 
 ThreadPool Threads;
 
+std::ostream& operator<<(std::ostream& os, SyncOut sc)
+{
+	static Mutex m;
+
+	if (sc == OUT_LOCK)
+		m.lock();
+
+	if (sc == OUT_UNLOCK)
+		m.unlock();
+
+	return os;
+}
 
 // Create the thread, set our interal ID,
 // and put it in idle loop

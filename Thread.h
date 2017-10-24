@@ -33,6 +33,14 @@ private:
 	CRITICAL_SECTION cs;
 };
 
+// Avoids printing to std::cout at the same time 
+// when using multiple threads.
+enum SyncOut { OUT_LOCK, OUT_UNLOCK };
+std::ostream& operator<<(std::ostream&, SyncOut);
+
+#define  sync_out std::cout << OUT_LOCK
+#define sync_endl std::endl << OUT_UNLOCK
+
 typedef std::condition_variable_any ConditionVariable;
 
 // Holds all things that need to be 

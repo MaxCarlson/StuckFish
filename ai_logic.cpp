@@ -47,6 +47,7 @@ enum NodeType {
 inline int valueFromTT(int val, int ply);
 inline int valueToTT(int val, int ply);
 
+// Update PV and child PV if there is one
 void update_pv(Move *pv, Move m, Move *childPv) {
 	for (*pv++ = m; childPv && *childPv != MOVE_NONE; )
 		*pv++ = *childPv++;
@@ -92,7 +93,7 @@ void Search::initSearch()
 		for (int d = 1; d < 64; ++d)
 			for (int mc = 1; mc < 64; ++mc)
 			{
-				double r = log(d) * log(mc) / 2.40; // Best value so far, 2.45! Testing 2.40
+				double r = log(d) * log(mc) / 2.45; // Best value so far, 2.45!
 
 				reductions[NonPv][imp][d][mc] = int(std::round(r));
 				reductions[PV][imp][d][mc]    = std::max(reductions[NonPv][imp][d][mc] - 1, 0);
@@ -102,7 +103,7 @@ void Search::initSearch()
 					reductions[NonPv][imp][d][mc]++;
 			}
 
-	for (int d = 0; d < 32; ++d)
+	for (int d = 0; d < 32; ++d) // Not in use currently
 	{
 		futileMoveCounts[0][d] = int(2.4 + 0.222 * pow(d * 2 + 0.00, 1.8));
 		futileMoveCounts[1][d] = int(3.0 + 0.300 * pow(d * 2 + 0.98, 1.8));
@@ -145,7 +146,7 @@ void MainThread::search()
 	// Start mainThread search
 	Thread::search();
 
-	// Sit and wait for stop
+	// Sit and wait for stop if not already stopped
 	while (!Threads.stop) {}
 
 	Threads.stop = true;
@@ -210,7 +211,7 @@ void Thread::search()
 	int bestScore, alpha = -INF, beta = INF;
 
 
-	//iterative deepening loop starts at depth 1, iterates up till max depth or time cutoff
+	// Iterative deepening loop starts at depth 1, iterates up till max depth, time/depth/search stop command
 	while (  rootDepth < MAX_PLY 
 		&& ! Threads.stop
 		&& !(SearchControl.depth && mainThread && rootDepth > SearchControl.depth)) 
@@ -218,6 +219,7 @@ void Thread::search()
 		// If not main thread..
 		if (threadID)
 		{
+			// Skip blocks for threads other than main thread
 			int s = (threadID - 1) % 12;
 			if ((rootDepth + turns + thSkipSize1[s] / thSkipSize0[s]) % 2){
 				++rootDepth;
@@ -265,7 +267,8 @@ void Thread::search()
 
 				int improvingFactor = std::max(229, std::min(715, 357 + 119 * -6 * p0)); // Need to play with these numbers or completely redo this!!
 
-				if (timeM.elapsed() > timeM.optimum() * unstablePv * improvingFactor / 628) // Does timeM maximum allocate too much time? Play testing seems to indicate so. Lower ratio?
+				if (rootMoves.size() == 1
+					|| timeM.elapsed() > timeM.optimum() * unstablePv * improvingFactor / 628) // Does timeM maximum allocate too much time? Play testing seems to indicate so. Lower ratio?
 					Threads.stop = true;
 
 				//double tDiff = timeM.maximum() - timeM.optimum();
@@ -273,7 +276,7 @@ void Thread::search()
 		}
 		else
 			break;
-		//increment depth 
+
 		rootDepth++;
 	}
 
@@ -308,7 +311,6 @@ int Search::searchRoot(BitBoards& board, int depth, int alpha, int beta, searchS
 	ss->contiHistory = &thisThread->contiHistory[PIECE_EMPTY][0];
 
 	const HashEntry* ttentry = TT.probe(board.TTKey());
-	//Move ttMove = ttentry ? ttentry->move() : MOVE_NONE;
 	Move ttMove = thisThread->rootMoves[0].pv[0];
 
 	ss->ply = 1;
@@ -325,7 +327,7 @@ int Search::searchRoot(BitBoards& board, int depth, int alpha, int beta, searchS
 
     while((newMove = mp.nextMove()) != MOVE_NONE){
 	//for (RootMove& rm : thisThread->rootMoves){     // Will have to test and see if drawing from the root moves is faster or not!!
-		//newMove = rm.pv[0];						  // They are scored and sorted perfectly with the results from previous searches. Although they do not get the benifit
+	//	newMove = rm.pv[0];						  // They are scored and sorted perfectly with the results from previous searches. Although they do not get the benifit
 													  // of MovePicker if we do this.
 		if (!board.isLegal(newMove, ci.pinned)) {
 			continue;
@@ -1030,12 +1032,9 @@ void Search::print(int bestScore, int depth, const BitBoards &board)
 	std::cout << ss.str() << std::endl;
 }
 
-
-
 template<bool Root>
 U64 Search::perft(BitBoards & board, int depth)
 {
-
 	StateInfo st;
 	U64 count, nodes = 0;
 	SMove mlist[256];
@@ -1135,117 +1134,149 @@ template U64 Search::perftDivide<true>(BitBoards & board, int depth);
 class pThread {
 	Mutex mutex;
 	ConditionVariable cv;
-
-	
+	std::thread stdThread;
 
 public:
-	std::thread stdThread;
+	pThread::pThread() : stdThread(&pThread::idle, this) {};
+	~pThread() { stdThread.join(); }
+
+	void idle();
+
+	void startSearch();
+	void notify() { cv.notify_one(); }
+	
 	void searchMove(Move m, int depth);
 
 	bool searching = false;
-	int it = 0;
 
-	~pThread() { stdThread.join(); }
+	int it;
+	int depth;
+	U64 mnodes = 0;
+	std::vector<Move> myMoves;
+	std::vector<U64 > counts;
 
 	template<bool root>
 	U64 perftDivide(int depth);
 
 	StateInfo si;
 	BitBoards board;
-
-	U64 nodes = 0;
 };
 
-class pThreadsPool : std::vector<pThread*>
+void pThread::idle() {
+	while (true)
+	{
+		std::unique_lock<Mutex> lock(mutex);
+		it = 0;
+		searching = false;
+		cv.notify_one();
+
+		// Threads wait here until notified to start searching!
+		cv.wait(lock, [&] { return searching; });
+
+		lock.unlock();
+
+		startSearch();
+	}
+}
+
+void pThread::startSearch() 
 {
-public:
-	
-	std::vector<Move> rootMoves;
-};
+	searching = true;
+
+	for (const auto & m : myMoves) {
+		searchMove(m, depth);
+		sync_out << Uci::moveToStr(m) << " " << counts[it - 1] << sync_endl;
+	}
+
+	std::unique_lock<Mutex> lock(mutex);
+	searching = false;
+	//cv.wait(lock, [&] { return searching; });
+	//idle();
+}
+
 
 void pThread::searchMove(Move m, int depth)
 {
 	const int color = board.stm();
 	// Make move and record state to threads internal stateInfo
 	board.makeMove(m, si, color);
-	searching = true;
 
-	perftDivide<true>(depth);
+	mnodes = perftDivide<true>(depth - 1);
 
 	board.unmakeMove(m, color);
 
 	std::lock_guard<Mutex> lock(mutex);
 
-	searching = false;
+	counts.push_back(mnodes);
+	mnodes = 0;
+	++it;
 }
 
-void perftInit(BitBoards & board, int depth, int nthreads)
+void Search::perftInit(BitBoards & board, int depth)
 {
 	const int color = board.stm();
 
 	std::vector<pThread*> perftThreads;
 
-	if (perftThreads.size() != nthreads)
-		for(int i = 0; i < nthreads; ++i)
+	int pthreads = Threads.size();
+
+	if (perftThreads.size() != pthreads)
+		for(int i = 0; i < pthreads; ++i)
 			perftThreads.push_back(new pThread);
 
 
 	// Generate all the legal root moves from position
 	std::vector<Move> rootMoves;
-	std::vector<U64> rootMovesDivCount;
 
+	int i = 0;
 	for (const auto & m : MoveList<LEGAL>(board)) {
 		rootMoves.emplace_back(m);
-		rootMovesDivCount.push_back(0);
+
+		// Distribute moves across threads
+		perftThreads[i % pthreads]->myMoves.emplace_back(m);
+		++i;
 	}
 
 	for (pThread * th : perftThreads)
 	{
 		th->board = board;
-
+		th->depth = depth;
+		th->searching = true;
+		th->notify();
 	}
 
-	// make the rm iterator into an atomic inside a new thread class
-	// increment with each completion of rootmove serch by thread.
-	// Unload move count for move into U64 vector with use of iterator returned to index moves
-	// if perft, count moves total and print. If divide loop through vector and print moves and count
+	for (pThread * th : perftThreads)
+	{
+		while (th->searching) {}
 
-	int rmSize = MoveList<LEGAL>(board).size();
-
-	int rIt = 0;
-
+	}
 }
 
 template<bool root>
 U64 pThread::perftDivide(int depth)
 {
 	StateInfo st;
-	U64 count, nodes = 0, tNodes = 0;
+	U64 count, nodes = 0;
 
 	SMove mlist[256];
 	SMove * end = generate<LEGAL>(board, mlist);
 
+	const int color = board.stm();
 	int RootMoves = 0;
 
-	const bool leaf = (depth == 1);
-
-	if (depth == 0)
-		return;
+	const bool leaf = (depth == 2);
 
 	for (SMove * i = mlist; i != end; ++i)
 	{
 		Move m = i->move;
 
-		if (depth == 1)
-			nodes++;
+		board.makeMove(m, st, color);
 
-		board.makeMove(m, st, board.stm());
-
-		count = perftDivide<false>(depth - 1);
+		count = leaf ? MoveList<LEGAL>(board).size() : perftDivide<false>(depth - 1);
 
 		nodes += count;
 
-		board.unmakeMove(m, !board.stm());		
+		board.unmakeMove(m, color);		
 	}
 
 	if (root)
