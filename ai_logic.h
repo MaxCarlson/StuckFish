@@ -86,13 +86,6 @@ namespace Search {
 	void print(int bestScore, int depth, const BitBoards &board);
 
 	void perftInit(BitBoards & board, bool isDivide, int depth);
-
-	template<bool Root>
-	U64 perft(BitBoards & board, int depth);
-
-	template<bool Root>
-	U64 perftDivide(BitBoards & board, int depth);
-
 }// namespace
 
 #endif // AI_LOGIC_H

@@ -1032,107 +1032,8 @@ void Search::print(int bestScore, int depth, const BitBoards &board)
 	std::cout << ss.str() << std::endl;
 }
 
-template<bool Root>
-U64 Search::perft(BitBoards & board, int depth)
-{
-	StateInfo st;
-	U64 count, nodes = 0;
-	SMove mlist[256];
-	SMove * end = generate<PERFT_TESTING>(board, mlist);
-
-	for (SMove * i = mlist; i != end; ++i)
-	{
-		if (depth == 1)
-			nodes++;
-
-		else {
-
-			board.makeMove(i->move, st, board.stm());
-
-			count = perft<false>(board, depth - 1);
-
-			nodes += count;
-
-			board.unmakeMove(i->move, !board.stm());
-		}
-	}
-
-	return nodes;
-}
-
-template U64 Search::perft<true>(BitBoards & board, int depth);
-
-std::string flipsL[8] = { "a", "b", "c", "d", "e", "f", "g", "h" };
-int flipsN[8]		  = {   8,   7,   6,   5,   4,   3,   2,   1 };
-
-template<bool Root>
-U64 Search::perftDivide(BitBoards & board, int depth)
-{
-	StateInfo st;
-	U64 count, nodes = 0, tNodes = 0;
-	SMove mlist[256];
-	SMove * end = generate<PERFT_TESTING>(board, mlist);
-	int RootMoves = 0;
-
-	const bool leaf = (depth == 1);
-
-	if (depth == 0)
-		return 0;
-
-	for (SMove * i = mlist; i != end; ++i)
-	{
-		Move m = i->move;
-
-		if (depth == 1)
-			nodes++;
-
-
-		if (Root) {
-			
-
-			int x = file_of(from_sq(m));
-			int y = rank_of(from_sq(m)) ^ 7; // Note: Move scheme was changed and too lazy to change array
-			int x1 = file_of(to_sq(m));
-			int y1 = rank_of(to_sq(m)) ^ 7;
-
-			board.makeMove(m, st, board.stm());
-
-			RootMoves++;
-
-			U64 nodesFromMove = perftDivide<false>(board, depth - 1);
-
-			tNodes += nodesFromMove;
-
-			std::cout << flipsL[x] << flipsN[y] << flipsL[x1] << flipsN[y1] << "   " << nodesFromMove << std::endl;
-
-			board.unmakeMove(m, !board.stm());
-		}
-
-		if(!Root && depth != 1)
-		{
-			board.makeMove(m, st, board.stm());
-
-			count = perftDivide<false>(board, depth - 1);
-
-			nodes += count;
-
-			board.unmakeMove(m, !board.stm());
-		}
-	}
-
-	if (Root)
-	{
-		std::cout << std::endl << "Nodes: " << tNodes << std::endl;
-		std::cout << "Moves: " << RootMoves << std::endl;
-	}
-
-	return nodes;
-}
-
-template U64 Search::perftDivide<true>(BitBoards & board, int depth);
-
-class perftThPool;
-
+// Threads for perft and divide.
+// Possibly eventually merge this with normal threads?
 class pThread {
 	Mutex mutex;
 	ConditionVariable cv;
@@ -1150,8 +1051,8 @@ public:
 	
 	void searchMove(Move m, int depth);
 
-	bool isDivide  = false;
-	bool searching = false;
+	bool isDivide = false;
+	bool searching;
 
 	int depth;
 	U64 moveNodes = 0;
@@ -1230,23 +1131,28 @@ void Search::perftInit(BitBoards & board, bool isDivide, int depth)
 		++i;
 	}
 
+	U64 totalNodes = 0;
+
 	// Copy depth and board to individual threads
 	// Wake threads up and start the perft/divide search
-	for (pThread * th : perftThreads)
-	{
-		th->board = board;
-		th->depth = depth;
-		th->searching = true;
+	//if (depth > 1)
+		for (pThread * th : perftThreads)
+		{
+			th->board = board;
+			th->depth = depth;
+			th->searching = true;
 
-		if (isDivide)
-			th->isDivide = true;
+			if (isDivide)
+				th->isDivide = true;
 
-		th->notify();
-	}
+			th->notify();
+		}
+	//else
+		//totalNodes += MoveList<LEGAL>(board).size();
+
 
 	// Wait for all threads to finish searching
 	// and increment total node count
-	U64 totalNodes = 0;
 	for (pThread * th : perftThreads) 
 	{
 		while (!th->stdThread.joinable()) {}
@@ -1271,6 +1177,11 @@ U64 pThread::perftDivide(int depth)
 
 	SMove mlist[256];
 	SMove * end = generate<LEGAL>(board, mlist);
+
+	// Handles perft/divide 1 fine.
+	// Do you really need to perft < 0?
+	if (depth <= 0)
+		return 1;
 
 	const int color = board.stm();
 	int RootMoves = 0;
