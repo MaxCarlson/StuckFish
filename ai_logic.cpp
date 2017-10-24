@@ -1042,7 +1042,6 @@ class pThread {
 public:
 	std::thread stdThread;
 	pThread::pThread() : stdThread(&pThread::idle, this) {};
-	~pThread() { stdThread.join(); }
 
 	void idle();
 
@@ -1068,6 +1067,8 @@ public:
 	BitBoards board;
 };
 
+// Thread gets placed in here when created to await
+// notification and search = true
 void pThread::idle() {
 
 	std::unique_lock<Mutex> lock(mutex);
@@ -1093,6 +1094,7 @@ void pThread::startSearch()
 		
 		totalNodes += moveNodes;
 	}
+	searching = false;
 }
 
 void pThread::searchMove(Move m, int depth)
@@ -1111,12 +1113,10 @@ void Search::perftInit(BitBoards & board, bool isDivide, int depth)
 {
 	TimePoint start = now();
 
-	const int color = board.stm();
-
-	std::vector<pThread*> perftThreads;
-
 	// Create a new thread for each thread the user has previously specified
 	// they'd like to be using
+
+	std::vector<pThread*> perftThreads;
 	int pthreads = Threads.size();
 
 	if (perftThreads.size() != pthreads)
@@ -1131,34 +1131,39 @@ void Search::perftInit(BitBoards & board, bool isDivide, int depth)
 		++i;
 	}
 
-	U64 totalNodes = 0;
-
 	// Copy depth and board to individual threads
 	// Wake threads up and start the perft/divide search
-	//if (depth > 1)
-		for (pThread * th : perftThreads)
-		{
-			th->board = board;
-			th->depth = depth;
-			th->searching = true;
+	// No need to detach state pointer from origional board and recalc state because we 
+	// never modify or read the base state, always starting at (st + 1) in searchMove
+	for (pThread * th : perftThreads)
+	{
+		th->board = board;
+		th->depth = depth;
+		th->searching = true;
 
-			if (isDivide)
-				th->isDivide = true;
+		// Mark whether we'd like to print out individual move counts
+		if (isDivide)
+			th->isDivide = true;
 
-			th->notify();
-		}
-	//else
-		//totalNodes += MoveList<LEGAL>(board).size();
+		// Start the perft/dividing for each thread
+		th->notify();
+	}
 
 
 	// Wait for all threads to finish searching
 	// and increment total node count
+	U64 totalNodes = 0;
 	for (pThread * th : perftThreads) 
 	{
-		while (!th->stdThread.joinable()) {}
+		std::unique_lock<Mutex> lock;
+		ConditionVariable cv;
+		if(th->searching)
+			cv.wait(lock, [&] { return th->searching; });
+		//while (!th->stdThread.joinable()) {} // Are too many unneccesary cycles spent here? Should we pass this function off to a mainThread instead of super thread?
 		th->stdThread.join();
 		totalNodes += th->totalNodes;
 	}
+
 
 	// If we're in perft this is the first info printed
 	// If in divide however, this is the last with all move counts before this.
@@ -1206,5 +1211,5 @@ U64 pThread::perftDivide(int depth)
 
 	return nodes;
 }
-template U64 pThread::perftDivide< true>(int depth);
-template U64 pThread::perftDivide<false>(int depth);
+template U64 pThread::perftDivide<true>(int depth);
+
