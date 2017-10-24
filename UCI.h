@@ -32,7 +32,7 @@ public:
 
 	void test(BitBoards& newBoard, StateListPtr& states);
 
-	void perftUCI(BitBoards& newBoard, std::istringstream & input);
+	void perftUCI(BitBoards& newBoard, bool isDivide, std::istringstream & input);
 
 	void divideUCI(BitBoards& newBoard, std::istringstream & input);
 

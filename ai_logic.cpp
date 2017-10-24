@@ -1131,12 +1131,15 @@ U64 Search::perftDivide(BitBoards & board, int depth)
 
 template U64 Search::perftDivide<true>(BitBoards & board, int depth);
 
+class perftThPool;
+
 class pThread {
 	Mutex mutex;
 	ConditionVariable cv;
-	std::thread stdThread;
+	
 
 public:
+	std::thread stdThread;
 	pThread::pThread() : stdThread(&pThread::idle, this) {};
 	~pThread() { stdThread.join(); }
 
@@ -1147,11 +1150,13 @@ public:
 	
 	void searchMove(Move m, int depth);
 
+	bool isDivide  = false;
 	bool searching = false;
 
-	int it;
 	int depth;
-	U64 mnodes = 0;
+	U64 moveNodes = 0;
+	U64 totalNodes = 0;
+
 	std::vector<Move> myMoves;
 	std::vector<U64 > counts;
 
@@ -1163,37 +1168,31 @@ public:
 };
 
 void pThread::idle() {
-	while (true)
-	{
-		std::unique_lock<Mutex> lock(mutex);
-		it = 0;
-		searching = false;
-		cv.notify_one();
 
-		// Threads wait here until notified to start searching!
-		cv.wait(lock, [&] { return searching; });
+	std::unique_lock<Mutex> lock(mutex);
+	searching = false;
+	cv.notify_one();
 
-		lock.unlock();
+	// Threads wait here until notified to start searching!
+	cv.wait(lock, [&] { return searching; });
 
-		startSearch();
-	}
+	lock.unlock();
+
+	startSearch();
 }
 
 void pThread::startSearch() 
 {
-	searching = true;
-
-	for (const auto & m : myMoves) {
+	for (const auto & m : myMoves) 
+	{
 		searchMove(m, depth);
-		sync_out << Uci::moveToStr(m) << " " << counts[it - 1] << sync_endl;
+
+		if (isDivide)
+			sync_out << Uci::moveToStr(m) << " " << moveNodes << sync_endl;
+		
+		totalNodes += moveNodes;
 	}
-
-	std::unique_lock<Mutex> lock(mutex);
-	searching = false;
-	//cv.wait(lock, [&] { return searching; });
-	//idle();
 }
-
 
 void pThread::searchMove(Move m, int depth)
 {
@@ -1201,55 +1200,67 @@ void pThread::searchMove(Move m, int depth)
 	// Make move and record state to threads internal stateInfo
 	board.makeMove(m, si, color);
 
-	mnodes = perftDivide<true>(depth - 1);
+	moveNodes = perftDivide<true>(depth - 1);
 
 	board.unmakeMove(m, color);
-
-	std::lock_guard<Mutex> lock(mutex);
-
-	counts.push_back(mnodes);
-	mnodes = 0;
-	++it;
 }
 
-void Search::perftInit(BitBoards & board, int depth)
+// Multi threaded perft and divide function combined.
+void Search::perftInit(BitBoards & board, bool isDivide, int depth)
 {
+	TimePoint start = now();
+
 	const int color = board.stm();
 
 	std::vector<pThread*> perftThreads;
 
+	// Create a new thread for each thread the user has previously specified
+	// they'd like to be using
 	int pthreads = Threads.size();
 
 	if (perftThreads.size() != pthreads)
-		for(int i = 0; i < pthreads; ++i)
+		for (int i = 0; i < pthreads; ++i) 
 			perftThreads.push_back(new pThread);
+		
 
-
-	// Generate all the legal root moves from position
-	std::vector<Move> rootMoves;
-
+	// Generate and distribute moves across threads
 	int i = 0;
 	for (const auto & m : MoveList<LEGAL>(board)) {
-		rootMoves.emplace_back(m);
-
-		// Distribute moves across threads
 		perftThreads[i % pthreads]->myMoves.emplace_back(m);
 		++i;
 	}
 
+	// Copy depth and board to individual threads
+	// Wake threads up and start the perft/divide search
 	for (pThread * th : perftThreads)
 	{
 		th->board = board;
 		th->depth = depth;
 		th->searching = true;
+
+		if (isDivide)
+			th->isDivide = true;
+
 		th->notify();
 	}
 
-	for (pThread * th : perftThreads)
+	// Wait for all threads to finish searching
+	// and increment total node count
+	U64 totalNodes = 0;
+	for (pThread * th : perftThreads) 
 	{
-		while (th->searching) {}
-
+		while (!th->stdThread.joinable()) {}
+		th->stdThread.join();
+		totalNodes += th->totalNodes;
 	}
+
+	// If we're in perft this is the first info printed
+	// If in divide however, this is the last with all move counts before this.
+	sync_indent;
+	sync_out << "Total time taken: " << double((now() + 1 - start)) / 1000 << " seconds" << sync_endl;
+	sync_out << "Total nodes for depth " << depth << ": " << totalNodes << sync_endl;	
+	sync_out << "Total number of moves for this position: " << i << sync_endl;
+	sync_indent;
 }
 
 template<bool root>

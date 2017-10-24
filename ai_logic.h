@@ -85,7 +85,7 @@ namespace Search {
 
 	void print(int bestScore, int depth, const BitBoards &board);
 
-	void perftInit(BitBoards & board, int depth);
+	void perftInit(BitBoards & board, bool isDivide, int depth);
 
 	template<bool Root>
 	U64 perft(BitBoards & board, int depth);

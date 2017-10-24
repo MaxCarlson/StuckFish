@@ -40,6 +40,7 @@ std::ostream& operator<<(std::ostream&, SyncOut);
 
 #define  sync_out std::cout << OUT_LOCK
 #define sync_endl std::endl << OUT_UNLOCK
+#define sync_indent sync_out << sync_endl
 
 typedef std::condition_variable_any ConditionVariable;
 

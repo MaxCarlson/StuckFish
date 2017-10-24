@@ -42,13 +42,10 @@ void UCI::uciLoop()
 	// Make sure that the outputs are sent straight away to the GUI
 	std::cout.setf(std::ios::unitbuf);
 
-	//printOptions();
-
 	newGame(newBoard, states);
 	Search::initSearch();
-	//Threads.numberOfThreads(2);
 
-	std::cout << "Type 'help' for list of engine options." << std::endl;
+	sync_out << "Type 'help' or '?' for list of engine options." << sync_endl;
 
 	while (std::getline(std::cin, line))
 	{
@@ -60,14 +57,14 @@ void UCI::uciLoop()
 
 		if (token == "uci")
 		{
-			std::cout << "id name " << ENGINE_NAME << std::endl;
-			std::cout << "id author Maxwell Carlson" << std::endl;
+			sync_out << "id name " << ENGINE_NAME << sync_endl;
+			sync_out << "id author Maxwell Carlson" << sync_endl;
 			printOptions();
-			std::cout << "uciok" << std::endl;
+			sync_out << "uciok" << sync_endl;
 		}
 		else if (token == "isready")
 		{
-			std::cout << "readyok" << std::endl;
+			sync_out << "readyok" << sync_endl;
 		}
 
 		else if (token == "setoption") {
@@ -85,15 +82,13 @@ void UCI::uciLoop()
 			is >> token;
 			Threads.numberOfThreads(stoi(token));
 		}
+		else if (token == "perft" || token == "divide") {
+			bool div = token == "divide";
 
-		else if (token == "perft") {
-			perftUCI(newBoard, is);
+			perftUCI(newBoard, div, is);
 		}
 		else if (token == "stop") {
 			Threads.stop = true;
-		}
-		else if (token == "divide") {  
-			divideUCI(newBoard, is);
 		}
 		else if (token == "position") {
 			updatePosition(newBoard, is, states);
@@ -112,12 +107,12 @@ void UCI::uciLoop()
 
 		else if (token == "quit")
 		{
-			std::cout << "Terminating.." << std::endl;
+			sync_out << "Terminating.." << sync_endl;
 			break;
 		}
 		else
 			// Command not handled
-			std::cout << "what?" << std::endl;
+			sync_out << "what?" << sync_endl;
 	}
 }
 
@@ -186,9 +181,9 @@ void UCI::newGame(BitBoards& newBoard, StateListPtr& states)
 void UCI::printOptions()
 {
 	// Print the options avaibible to us. 
-	std::cout << "option name Hash type spin default 1024 min 1 max 1048576" << std::endl;
-	std::cout << "option name Threads type spin default 1 min 1 max 128" << std::endl;
-	std::cout << "option name Clear Hash type button" << std::endl;
+	sync_out << "option name Hash type spin default 1024 min 1 max 1048576" << sync_endl;
+	sync_out << "option name Threads type spin default 1 min 1 max 128" << sync_endl;
+	sync_out << "option name Clear Hash type button" << sync_endl;
 
 	//other options ....
 }
@@ -245,7 +240,7 @@ void UCI::go(BitBoards & newBoard, std::istringstream & input, StateListPtr& sta
 	Threads.searchStart(newBoard, states, scs);
 
 	// Moved print move into search.
-	//std::cout << "bestmove " << Uci::moveToStr(m) << std::endl;
+	//sync_out << "bestmove " << Uci::moveToStr(m) << sync_endl;
 
 	isWhite = !isWhite; //switch color after move 					
 	turns += 1;    //// IS this and ^^ redundant? state isn't saved unless run through update pos from beginning anyways, TEST
@@ -372,12 +367,12 @@ void UCI::test(BitBoards & newBoard, StateListPtr& states)		// Give this an inpu
 
 	long endTotalTime = (endtimer - starttimer);
 
-	std::cout << "Total time taken    : " << endTotalTime << " seconds." << std::endl;
-	std::cout << "Total nodes searched: " << nodes << std::endl;
-	std::cout << "Nodes per second    : " << nodes / endTotalTime << std::endl;
+	sync_out << "Total time taken    : " << endTotalTime << " seconds." << sync_endl;
+	sync_out << "Total nodes searched: " << nodes << sync_endl;
+	sync_out << "Nodes per second    : " << nodes / endTotalTime << sync_endl;
 }
 
-void UCI::perftUCI(BitBoards & newBoard, std::istringstream & input)
+void UCI::perftUCI(BitBoards & newBoard, bool isDivide, std::istringstream & input)
 {
 	std::string tk;
 
@@ -385,28 +380,7 @@ void UCI::perftUCI(BitBoards & newBoard, std::istringstream & input)
 
 	int d = std::stoi(tk);
 
-	if (d == 0)
-		d = 1;
-
-	//U64 result = Search::perft<true>(newBoard, d);
-
-	Search::perftInit(newBoard, d);
-
-	//std::cout << result << std::endl;
-}
-
-void UCI::divideUCI(BitBoards & newBoard, std::istringstream & input)
-{
-	std::string tk;
-
-	input >> tk;
-
-	int d = std::stoi(tk);
-
-	if (d == 0)
-		d = 1;
-
-	Search::perftDivide<true>(newBoard, d);
+	Search::perftInit(newBoard, isDivide, d);
 }
 
 void UCI::drawUCI(BitBoards & newBoard)
@@ -416,20 +390,23 @@ void UCI::drawUCI(BitBoards & newBoard)
 
 void UCI::helpUCI()
 {
-	std::cout << std::endl << ENGINE_NAME << " by Max Carlson" << std::endl;
-	std::cout << "ucinewgame...............Resets current position to a clean slate. Clears TTable as well" << std::endl;
-	std::cout << "draw.....................Draws ASCI representation of the current board"<< std::endl;
-	std::cout << "perft x..................Perft results for current position at depth x" << std::endl;
-	std::cout << "divide y.................Like perft, but move counts for all root moves are printed instead of just a total count." << std::endl;
-	std::cout << "position fen <FEN>.......Sets position to input fen string"<< std::endl;
-	std::cout << "position startpos........Sets position to start position"<< std::endl;
-	std::cout << "position x moves x.......Sets position fen or startpos and makes input moves "<< std::endl;
-	std::cout << "go wtime x  btime y......Starts search with white remaining time x and black remaining time y"<< std::endl;
-	std::cout << "go depth x...............Starts search and will search to x depth"<< std::endl;
-	std::cout << "go infinite..............Searches until the user types 'stop' or the GUI sends the command" << std::endl;
-	std::cout << "stop.....................Stops search as soon as possible" << std::endl;
-	std::cout << "test.....................Runs through a test suite of positions at a fixed depth, designed for benchmarking search"<< std::endl;
-	std::cout << "threads x................Sets program to use x number of threads." << std::endl;
-	std::cout << "quit.....................Quits engine"<< std::endl;
+	sync_indent;
+	sync_out <<  ENGINE_NAME << " by Max Carlson" << sync_endl;
+	sync_out << "ucinewgame...............Resets current position to a clean slate. Clears TTable as well" << sync_endl;
+	sync_out << "draw.....................Draws ASCI representation of the current board"<< sync_endl;
+	sync_out << "perft x..................Perft results for current position at depth x" << sync_endl;
+	sync_out << "divide y.................Like perft, but move counts for all root moves are printed instead of just a total count." << sync_endl;
+	sync_out << "(Note! Perft and divide can be multi-threaded, specify threads first)" << sync_endl << sync_endl;
+	sync_out << "position fen <FEN>.......Sets position to input fen string"<< sync_endl;
+	sync_out << "position startpos........Sets position to start position"<< sync_endl;
+	sync_out << "position x moves x.......Sets position fen or startpos and makes input moves "<< sync_endl;
+	sync_out << "go wtime x  btime y......Starts search with white remaining time x and black remaining time y"<< sync_endl;
+	sync_out << "go depth x...............Starts search and will search to x depth"<< sync_endl;
+	sync_out << "go infinite..............Searches until the user types 'stop' or the GUI sends the command" << sync_endl;
+	sync_out << "stop.....................Stops search as soon as possible" << sync_endl;
+	sync_out << "test.....................Runs through a test suite of positions at a fixed depth, designed for benchmarking search"<< sync_endl;
+	sync_out << "threads x................Sets program to use x number of threads." << sync_endl;
+	sync_out << "quit.....................Quits engine"<< sync_endl;
+	sync_indent;
 }
 
