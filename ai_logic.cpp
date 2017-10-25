@@ -1049,7 +1049,7 @@ public:
 	void startSearch();
 	void notify() { cv.notify_one(); }
 	
-	void searchMove(Move m, int depth);
+	void searchMove(Move m, int d);
 
 	bool isDivide = false;
 
@@ -1061,7 +1061,7 @@ public:
 	std::vector<U64 > counts;
 
 	template<bool root>
-	U64 perftDivide(int depth);
+	U64 perftDivide(int d);
 
 	StateInfo si;
 	BitBoards board;
@@ -1097,13 +1097,13 @@ void pThread::startSearch()
 
 // Make one of the moves in the threads vector of moves,
 // record nodes, unmake move.
-void pThread::searchMove(Move m, int depth)
+void pThread::searchMove(Move m, int d)
 {
 	const int color = board.stm();
 	
 	board.makeMove(m, si, color);
 
-	moveNodes = perftDivide<true>(depth - 1);
+	moveNodes = perftDivide<true>(d - 1);
 
 	board.unmakeMove(m, color);
 }
@@ -1174,7 +1174,7 @@ void Search::perftInit(BitBoards & board, bool isDivide, int depth)
 }
 
 template<bool root>
-U64 pThread::perftDivide(int depth)
+U64 pThread::perftDivide(int d)
 {
 	StateInfo st;
 	U64 count, nodes = 0;
@@ -1184,13 +1184,13 @@ U64 pThread::perftDivide(int depth)
 
 	// Handles perft/divide 1 fine.
 	// Do you really need to perft < 0?
-	if (depth <= 0)
+	if (d <= 0)
 		return 1;
 
 	const int color = board.stm();
 	int RootMoves = 0;
 
-	const bool leaf = (depth == 2);
+	const bool leaf = (d == 2);
 
 	for (SMove * i = mlist; i != end; ++i)
 	{
@@ -1198,7 +1198,7 @@ U64 pThread::perftDivide(int depth)
 
 		board.makeMove(m, st, color);
 
-		count = leaf ? MoveList<LEGAL>(board).size() : perftDivide<false>(depth - 1);
+		count = leaf ? MoveList<LEGAL>(board).size() : perftDivide<false>(d - 1);
 
 		nodes += count;
 
