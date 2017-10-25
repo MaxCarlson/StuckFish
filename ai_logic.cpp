@@ -1040,6 +1040,8 @@ class pThread {
 	
 
 public:
+	bool searching = false;
+
 	std::thread stdThread;
 	pThread::pThread() : stdThread(&pThread::idle, this) {};
 
@@ -1051,7 +1053,6 @@ public:
 	void searchMove(Move m, int depth);
 
 	bool isDivide = false;
-	bool searching;
 
 	int depth;
 	U64 moveNodes = 0;
@@ -1072,8 +1073,6 @@ public:
 void pThread::idle() {
 
 	std::unique_lock<Mutex> lock(mutex);
-	searching = false;
-	cv.notify_one();
 
 	// Threads wait here until notified to start searching!
 	cv.wait(lock, [&] { return searching; });
@@ -1153,6 +1152,7 @@ void Search::perftInit(BitBoards & board, bool isDivide, int depth)
 	// Wait for all threads to finish searching
 	// and increment total node count
 	U64 totalNodes = 0;
+	int it = 0;
 	for (pThread * th : perftThreads) 
 	{
 		std::unique_lock<Mutex> lock;
@@ -1160,10 +1160,13 @@ void Search::perftInit(BitBoards & board, bool isDivide, int depth)
 		if(th->searching)
 			cv.wait(lock, [&] { return th->searching; });
 		//while (!th->stdThread.joinable()) {} // Are too many unneccesary cycles spent here? Should we pass this function off to a mainThread instead of super thread?
-		th->stdThread.join();
+											   // Also! Why don't tests indicate a difference in speed with this vs. above? when using the opposite condition test it will sit at full core usage checking condition.
+											   // Why doesn't it do that with this test condition? Ask Stackoverflow!
 		totalNodes += th->totalNodes;
-	}
 
+		th->stdThread.join();
+		delete perftThreads[it++];
+	}
 
 	// If we're in perft this is the first info printed
 	// If in divide however, this is the last with all move counts before this.
