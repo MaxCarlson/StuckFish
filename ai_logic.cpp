@@ -1073,12 +1073,12 @@ public:
 void pThread::idle() {
 
 	std::unique_lock<Mutex> lock(mutex);
+	cv.notify_one();
 
 	// Threads wait here until notified to start searching!
 	cv.wait(lock, [&] { return searching; });
-
 	lock.unlock();
-
+	
 	startSearch();
 }
 
@@ -1093,7 +1093,13 @@ void pThread::startSearch()
 		
 		totalNodes += moveNodes;
 	}
+
 	searching = false;
+	std::unique_lock<Mutex> lock(mutex);
+	cv.wait(lock, [&] { return !searching; });
+	lock.unlock();
+
+	cv.notify_all();
 }
 
 void pThread::searchMove(Move m, int depth)
@@ -1108,6 +1114,7 @@ void pThread::searchMove(Move m, int depth)
 }
 
 // Multi threaded perft and divide function combined.
+// Scales with more threads up to the number of moves from root position.
 void Search::perftInit(BitBoards & board, bool isDivide, int depth)
 {
 	TimePoint start = now();
@@ -1155,13 +1162,15 @@ void Search::perftInit(BitBoards & board, bool isDivide, int depth)
 	int it = 0;
 	for (pThread * th : perftThreads) 
 	{
-		std::unique_lock<Mutex> lock;
-		ConditionVariable cv;
-		if(th->searching)
-			cv.wait(lock, [&] { return th->searching; });
-		//while (!th->stdThread.joinable()) {} // Are too many unneccesary cycles spent here? Should we pass this function off to a mainThread instead of super thread?
-											   // Also! Why don't tests indicate a difference in speed with this vs. above? when using the opposite condition test it will sit at full core usage checking condition.
-											   // Why doesn't it do that with this test condition? Ask Stackoverflow!
+		//Mutex m;
+		//std::unique_lock<Mutex> lock(m);
+		//ConditionVariable cv;
+		//if (th->searching) 
+		//	cv.wait(lock, [&] { return !th->searching; });
+
+		while (th->searching) {} // Temporary solution. Need to refactor code so we have a shared mutex, possibly run this entire function on another created thread and share an atmoic?
+								 // Main thread does not respond to a cv.notify_all(), is that because mutex isn't the same? Ask StackOverflow.
+		
 		totalNodes += th->totalNodes;
 
 		th->stdThread.join();
@@ -1208,9 +1217,6 @@ U64 pThread::perftDivide(int depth)
 
 		board.unmakeMove(m, color);		
 	}
-
-	if (root)
-		searching = false;
 
 	return nodes;
 }
