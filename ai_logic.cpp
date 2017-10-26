@@ -189,7 +189,6 @@ void MainThread::search()
 
 void Thread::search() 
 {
-	//reset ply
 	int ply   = 0;
 	int color = board.stm();
 
@@ -198,8 +197,8 @@ void Thread::search()
 	if (mainThread)
 		mainThread->bestMoveChanges = 0;
 
-	//create array of stack objects starting at +2 so we can look two plys back
-	//in order to see if a node has improved, as well as prior stats
+	// Array of stack objects starting at + 4 so we can look four plys back (and two forward at max ply)
+	// In order to see if a node has improved, as well as prior stats
 	Search::searchStack stack[MAX_PLY + 6], *ss = stack + 4;
 	std::memset(ss - 4, 0, 7 * sizeof(Search::searchStack));
 
@@ -220,6 +219,7 @@ void Thread::search()
 		if (threadID)
 		{
 			// Skip blocks for threads other than main thread
+			// This is racey right now due to turns, for the most part should not matter.
 			int s = (threadID - 1) % 12;
 			if ((rootDepth + turns + thSkipSize1[s] / thSkipSize0[s]) % 2){
 				++rootDepth;
@@ -245,22 +245,27 @@ void Thread::search()
 		std::stable_sort(rootMoves.begin(), rootMoves.end()); 
 
 		
-		// Need stop if mate in X code here
+		// Need stop search if mate in X code here
 
-		//if the search is not cutoff
+		// If the search is not cutoff
 		if (!Threads.stop) {
 
 			bestMove = rootMoves[0].pv[0];
 
 			completedDepth = rootDepth;
 
-			//print data on search 
-			if (mainThread)					 //threadID == X for testing jump amounts with thread ID's
+			// Print data on search 
+			if (mainThread)					 
 				print(bestScore, rootDepth, board);
 
 
 			if (SearchControl.use_time() && mainThread)
 			{
+				// If root move size is one, no reason to search deeper.
+				// If we have a very stable pv and low improving factor quit once time goes above optimum
+				// Otherwise run till either max time or the ratio of PV instibility and improvment from prior node 
+				// times time optimum is greater than our current seach time.
+
 				int p0 = bestScore - mainThread->previousScore;
 
 				double unstablePv = 1 + mainThread->bestMoveChanges;
@@ -280,11 +285,13 @@ void Thread::search()
 		rootDepth++;
 	}
 
+	// Stop at max search depth if using depth control
 	if (mainThread && SearchControl.depth)
 		Threads.stop = true;
 
+	// Make final move on bitboards 
+	// Only useful for drawing the board after search since board is reset next move. 
 	StateInfo st;
-	//make final move on bitboards + draw board
 	board.makeMove(bestMove, st, color);
 }
 
@@ -326,9 +333,7 @@ int Search::searchRoot(BitBoards& board, int depth, int alpha, int beta, searchS
 	Move newMove, bestMove = MOVE_NONE;
 
     while((newMove = mp.nextMove()) != MOVE_NONE){
-	//for (RootMove& rm : thisThread->rootMoves){     // Will have to test and see if drawing from the root moves is faster or not!!
-	//	newMove = rm.pv[0];						  // They are scored and sorted perfectly with the results from previous searches. Although they do not get the benifit
-													  // of MovePicker if we do this.
+
 		if (!board.isLegal(newMove, ci.pinned)) {
 			continue;
 		}
@@ -396,7 +401,6 @@ int Search::searchRoot(BitBoards& board, int depth, int alpha, int beta, searchS
 
         if(score > alpha){
 
-
             if(score > beta){
 				hashFlag = TT_BETA;
 				alpha = beta;
@@ -409,10 +413,10 @@ int Search::searchRoot(BitBoards& board, int depth, int alpha, int beta, searchS
 		
     }
 
-	//save info and move to TT
+	// Save info and move to TT
 	TT.save(bestMove, board.TTKey(), depth, valueToTT(alpha, ss->ply), hashFlag);
 
-	
+	// Update stats
 	if (alpha >= beta && !flagInCheck && !board.capture_or_promotion(bestMove)) {
 		updateStats(board, bestMove, ss, quiets, quietsCount, stat_bonus(depth));
 	}

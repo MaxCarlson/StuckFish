@@ -2,13 +2,13 @@
 
 #include <iostream>
 
-//global transposition table
+// Global transposition table
 TranspositionT TT; 
 
 
 void TranspositionT::resize(size_t mbSize)
 {
-	//create transposition table array of the same size as mbSize in megabytes
+	// Create transposition table array of the same size as mbSize in megabytes
 	size_t newClusterCount = size_t(1) << msb((mbSize * 1024 * 1024) / sizeof(TTCluster));
 
 	if (newClusterCount == clusterCount)
@@ -62,13 +62,15 @@ void TranspositionT::save(Move m, const U64 zkey, U8 depth, S16 eval, U8 flag)
 
 		if (!tte->zobrist64 || tte->zobrist64 == zkey) {
 
-			if (!m) m = tte->move(); //if there's no move in new entry, don't overwrite existing move
+			// If there's no move in new entry, don't overwrite existing move
+			if (!m) m = tte->move(); 
 			
 			replace = tte;
 			break;
 		}
 
-		if (tte->depth8 <= depth) replace = tte;	//needs refinement!!!
+		if (tte->depth8 <= depth) //needs refinement!!!
+			replace = tte;	
 
 	}
 

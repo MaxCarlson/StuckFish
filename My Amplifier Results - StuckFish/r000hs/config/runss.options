@@ -1,0 +1,15 @@
+-r
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\My Amplifier Results - StuckFish\r000hs
+--stack-stitching
+--data-limit-mb=500
+--disk-space-limit=100
+--mrte-type=java,dotnet,python
+--itt-config=frame
+--stackwalk=offline
+--type=cswitch
+--mrte-mode=auto
+--type=cpu:counters:nostack
+--type=cpu:stack
+--interval=6
+--
+C:\Users\C-60\Desktop\cppPrograms\StuckFish\x64\Release\StuckFish.exe

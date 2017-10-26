@@ -38,7 +38,7 @@ private:
 
 const unsigned TTClusterSize = 2;
 
-//main TTable cluster
+// Main TTable cluster
 struct TTCluster { //32 Bytes per cluster, 16 bytes per entry
 
 	HashEntry entry[TTClusterSize];
@@ -50,20 +50,19 @@ class TranspositionT
 public:
 	~TranspositionT() { free(mem); };
 
-	//probes TTable for a hit
+	// Probes TTable for a hit
 	const HashEntry* probe(const U64 key) const;
 
-	//grabs pointer to first entry in search TTable
+	// Grabs pointer to first entry in search TTable
 	HashEntry* first_entry(const U64 key) const;
 
-	//save TT entry
 	void save(Move m, const U64 zkey, U8 depth, S16 eval, U8 flag);
 
-	//resize TT to a size in megabytes
+	// Resize TT to a size in megabytes
 	void resize(size_t mbSize);
 
 
-	//clear the table completely
+	// Clear the table completely
 	void clearTable();
 
 private:	
@@ -79,7 +78,7 @@ extern TranspositionT TT;
 
 
 inline HashEntry* TranspositionT::first_entry(const U64 key) const {
-	//return a pointer to the first entry in the cluster,
-	//indexed by key bitwise & number of total clusters - 1 in TTable
+	// Return a pointer to the first entry in the cluster,
+	// Indexed by lowest o
 	return &table[(size_t)key & (clusterCount - 1)].entry[0];
 }
