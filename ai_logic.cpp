@@ -317,7 +317,8 @@ int Search::searchRoot(BitBoards& board, int depth, int alpha, int beta, searchS
 	ss->currentMove = ss->excludedMove = MOVE_NONE;
 	ss->contiHistory = &thisThread->contiHistory[PIECE_EMPTY][0];
 
-	const HashEntry* ttentry = TT.probe(board.TTKey());
+	bool ttHit;
+	HashEntry* ttentry = TT.probe(board.TTKey(), ttHit);
 	Move ttMove = thisThread->rootMoves[0].pv[0];
 
 	ss->ply = 1;
@@ -414,7 +415,8 @@ int Search::searchRoot(BitBoards& board, int depth, int alpha, int beta, searchS
     }
 
 	// Save info and move to TT
-	TT.save(bestMove, board.TTKey(), depth, valueToTT(alpha, ss->ply), hashFlag);
+	//TT.save(bestMove, board.TTKey(), depth, valueToTT(alpha, ss->ply), hashFlag);
+	ttentry->save(board.TTKey(), depth, valueToTT(alpha, ss->ply), bestMove, hashFlag);
 
 	// Update stats
 	if (alpha >= beta && !flagInCheck && !board.capture_or_promotion(bestMove)) {
@@ -480,16 +482,17 @@ int alphaBeta(BitBoards& board, int depth, int alpha, int beta, Search::searchSt
 	if (alpha >= beta)
 		return alpha;
 
-	const HashEntry *ttentry;
+	HashEntry *ttentry;
 	Move ttMove;
 	int ttValue;
+	bool ttHit;
 
-	ttentry = TT.probe(board.TTKey());
-	ttMove  = ttentry ? ttentry->move() : MOVE_NONE; //is there a move stored in transposition table?
-	ttValue = ttentry ? valueFromTT(ttentry->eval(), ss->ply) : 0; //if there is a TT entry, grab its value
+	ttentry = TT.probe(board.TTKey(), ttHit);
+	ttMove  = ttHit ? ttentry->move() : MOVE_NONE; //is there a move stored in transposition table?
+	ttValue = ttHit ? valueFromTT(ttentry->eval(), ss->ply) : 0; //if there is a TT entry, grab its value
 
 	if(!isPV 
-		&& ttentry
+		&& ttHit
 		&& ttentry->depth() >= depth
 		&& (ttValue >= beta
 			? ttentry->flag() == TT_BETA
@@ -616,8 +619,8 @@ int alphaBeta(BitBoards& board, int depth, int alpha, int beta, Search::searchSt
 
 		alphaBeta<NT>(board, d, alpha, beta, ss, NO_NULL);
 
-		ttentry = TT.probe(board.TTKey());
-		ttMove = ttentry ? ttentry->move() : MOVE_NONE;
+		ttentry = TT.probe(board.TTKey(), ttHit);
+		ttMove = ttHit ? ttentry->move() : MOVE_NONE;
 	}
 
 
@@ -721,7 +724,7 @@ int alphaBeta(BitBoards& board, int depth, int alpha, int beta, Search::searchSt
 					depthR -= 1;
 
 				// If we had an exact PV match, reduce reduction
-				if (ttentry && ttentry->flag() == TT_EXACT)
+				if (ttHit && ttentry->flag() == TT_EXACT)
 					depthR -= 1;
 
 				// If the ttmove was a capture 
@@ -841,7 +844,8 @@ int alphaBeta(BitBoards& board, int depth, int alpha, int beta, Search::searchSt
 	
 
 	//save info + move to transposition table 
-	TT.save(bestMove, board.TTKey(), depth, valueToTT(alpha, ss->ply), hashFlag);
+	//TT.save(bestMove, board.TTKey(), depth, valueToTT(alpha, ss->ply), hashFlag);
+	ttentry->save(board.TTKey(), depth, valueToTT(alpha, ss->ply), bestMove, hashFlag);
 	
 	return alpha;
 }
@@ -853,7 +857,8 @@ int quiescent(BitBoards& board, int alpha, int beta, Search::searchStack *ss)
 	const int color = board.stm();
 	const bool isPV = NT == PV;
 
-	const HashEntry *ttentry;
+	HashEntry *ttentry;
+	bool ttHit;
 	int ttValue;
 	int oldAlpha, bestScore, score;
 
@@ -865,11 +870,11 @@ int quiescent(BitBoards& board, int alpha, int beta, Search::searchStack *ss)
 	if (board.isDraw(ss->ply) || ss->ply == MAX_PLY)
 		return DrawValue[color];
 
-	ttentry = TT.probe(board.TTKey());
-	ttMove  = ttentry ? ttentry->move() : MOVE_NONE; //is there a move stored in transposition table?
-	ttValue = ttentry ? valueFromTT(ttentry->eval(), ss->ply) : 0; //if there is a TT entry, grab its value
+	ttentry = TT.probe(board.TTKey(), ttHit);
+	ttMove  = ttHit ? ttentry->move() : MOVE_NONE; //is there a move stored in transposition table?
+	ttValue = ttHit ? valueFromTT(ttentry->eval(), ss->ply) : 0; //if there is a TT entry, grab its value
 
-	if (ttentry
+	if (ttHit
 		&& ttentry->depth() >= DEPTH_QS
 		&& (isPV ? ttentry->flag() == TT_EXACT
 			: ttValue >= beta ? ttentry->flag() == TT_BETA
@@ -886,8 +891,9 @@ int quiescent(BitBoards& board, int alpha, int beta, Search::searchStack *ss)
 
 	if (standingPat >= beta) {
 
-		if (!ttentry) 
-			TT.save(MOVE_NONE, board.TTKey(), DEPTH_QS, valueToTT(standingPat, ss->ply), TT_BETA); //save to TT if there's no entry 
+		if (ttHit)
+			ttentry->save(board.TTKey(), DEPTH_QS, valueToTT(standingPat, ss->ply), MOVE_NONE, TT_BETA);
+			//TT.save(MOVE_NONE, board.TTKey(), DEPTH_QS, valueToTT(standingPat, ss->ply), TT_BETA); //save to TT if there's no entry 
 
 		return beta;
 	}
@@ -946,7 +952,8 @@ int quiescent(BitBoards& board, int alpha, int beta, Search::searchStack *ss)
 		}
 	}
 
-	TT.save(bestMove, board.TTKey(), DEPTH_QS, valueToTT(alpha, ss->ply), hashFlag);
+	//TT.save(bestMove, board.TTKey(), DEPTH_QS, valueToTT(alpha, ss->ply), hashFlag);
+	ttentry->save(board.TTKey(), DEPTH_QS, valueToTT(alpha, ss->ply), bestMove, hashFlag);
 
 	return alpha;
 }
