@@ -135,6 +135,8 @@ void MainThread::search()
 	//timeM.calcMoveTime(color, SearchControl); 
 	timeM.initTime(color, turns, SearchControl);
 
+	TT.newSearch();
+
 	// Wake up other threads
 	// that aren't this. They'll start from Thread:search()
 	for (Thread * th : Threads)
@@ -301,7 +303,7 @@ int Search::searchRoot(BitBoards& board, int depth, int alpha, int beta, searchS
     int score = 0;
     int best = -INF;
     int legalMoves = 0;
-	int hashFlag = TT_ALPHA;
+	Flag hashFlag = ALPHA;
 	Move pv[MAX_PLY + 1];
 	Move quiets[64];
 	int quietsCount;
@@ -403,20 +405,20 @@ int Search::searchRoot(BitBoards& board, int depth, int alpha, int beta, searchS
         if(score > alpha){
 
             if(score > beta){
-				hashFlag = TT_BETA;
+				hashFlag = BETA;
 				alpha = beta;
 				break;
             }
 			
-            alpha    =    score;
-			hashFlag = TT_ALPHA;
+            alpha    = score;
+			hashFlag = EXACT;
         }
 		
     }
 
 	// Save info and move to TT
 	//TT.save(bestMove, board.TTKey(), depth, valueToTT(alpha, ss->ply), hashFlag);
-	ttentry->save(board.TTKey(), depth, valueToTT(alpha, ss->ply), bestMove, hashFlag);
+	ttentry->save(board.TTKey(), depth, valueToTT(alpha, ss->ply), bestMove, hashFlag, TT.age());
 
 	// Update stats
 	if (alpha >= beta && !flagInCheck && !board.capture_or_promotion(bestMove)) {
@@ -495,8 +497,8 @@ int alphaBeta(BitBoards& board, int depth, int alpha, int beta, Search::searchSt
 		&& ttHit
 		&& ttentry->depth() >= depth
 		&& (ttValue >= beta
-			? ttentry->flag() == TT_BETA
-			: ttentry->flag() == TT_ALPHA))
+			? ttentry->bound() == BETA
+			: ttentry->bound() == ALPHA))
 	{
 		if (ttMove)
 		{
@@ -632,7 +634,8 @@ int alphaBeta(BitBoards& board, int depth, int alpha, int beta, Search::searchSt
 	|| ss->staticEval == 0
 	|| (ss - 2)->staticEval == 0;
 
-	int hashFlag = TT_ALPHA, legalMoves = 0, bestScore = -INF;
+	Flag hashFlag = ALPHA;
+	int legalMoves = 0, bestScore = -INF;
 	score = bestScore;
 
 	bool ttMoveCapture = false, doFullDepthSearch;
@@ -724,7 +727,7 @@ int alphaBeta(BitBoards& board, int depth, int alpha, int beta, Search::searchSt
 					depthR -= 1;
 
 				// If we had an exact PV match, reduce reduction
-				if (ttHit && ttentry->flag() == TT_EXACT)
+				if (ttHit && ttentry->bound() == EXACT)
 					depthR -= 1;
 
 				// If the ttmove was a capture 
@@ -807,7 +810,7 @@ int alphaBeta(BitBoards& board, int depth, int alpha, int beta, Search::searchSt
 
 				//if move causes a beta cutoff stop searching current branch
 				if (score >= beta) {
-					hashFlag = TT_BETA;
+					hashFlag = BETA;
 					//stop search and return beta
 					alpha = beta;
 					break;
@@ -815,7 +818,7 @@ int alphaBeta(BitBoards& board, int depth, int alpha, int beta, Search::searchSt
 				//new best move
 				alpha = score;
 				//if we've gained a new alpha set hash Flag equal to exact and store best move
-				hashFlag = TT_EXACT;
+				hashFlag = EXACT;
 			}
 		}
 	}
@@ -845,7 +848,7 @@ int alphaBeta(BitBoards& board, int depth, int alpha, int beta, Search::searchSt
 
 	//save info + move to transposition table 
 	//TT.save(bestMove, board.TTKey(), depth, valueToTT(alpha, ss->ply), hashFlag);
-	ttentry->save(board.TTKey(), depth, valueToTT(alpha, ss->ply), bestMove, hashFlag);
+	ttentry->save(board.TTKey(), depth, valueToTT(alpha, ss->ply), bestMove, hashFlag, TT.age());
 	
 	return alpha;
 }
@@ -876,9 +879,9 @@ int quiescent(BitBoards& board, int alpha, int beta, Search::searchStack *ss)
 
 	if (ttHit
 		&& ttentry->depth() >= DEPTH_QS
-		&& (isPV ? ttentry->flag() == TT_EXACT
-			: ttValue >= beta ? ttentry->flag() == TT_BETA
-			: ttentry->flag() == TT_ALPHA)
+		&& (isPV ? ttentry->bound() == EXACT
+			: ttValue >= beta ? ttentry->bound() == BETA
+			: ttentry->bound() == ALPHA)
 		) {
 
 		return ttValue;
@@ -892,7 +895,7 @@ int quiescent(BitBoards& board, int alpha, int beta, Search::searchStack *ss)
 	if (standingPat >= beta) {
 
 		if (ttHit)
-			ttentry->save(board.TTKey(), DEPTH_QS, valueToTT(standingPat, ss->ply), MOVE_NONE, TT_BETA);
+			ttentry->save(board.TTKey(), DEPTH_QS, valueToTT(standingPat, ss->ply), MOVE_NONE, BETA, TT.age());
 			//TT.save(MOVE_NONE, board.TTKey(), DEPTH_QS, valueToTT(standingPat, ss->ply), TT_BETA); //save to TT if there's no entry 
 
 		return beta;
@@ -903,7 +906,7 @@ int quiescent(BitBoards& board, int alpha, int beta, Search::searchStack *ss)
 	}
 
 	//set hash flag equal to alpha Flag
-	int hashFlag = TT_ALPHA;
+	Flag hashFlag = ALPHA;
 
 	CheckInfo ci(board);
 
@@ -942,18 +945,18 @@ int quiescent(BitBoards& board, int alpha, int beta, Search::searchStack *ss)
 
 			if (score >= beta) 
 			{
-				hashFlag = TT_BETA;
+				hashFlag = BETA;
 				alpha = beta;
 				break;
 			}
 
-			hashFlag = TT_EXACT;
+			hashFlag = EXACT;
 			alpha = score;
 		}
 	}
 
 	//TT.save(bestMove, board.TTKey(), DEPTH_QS, valueToTT(alpha, ss->ply), hashFlag);
-	ttentry->save(board.TTKey(), DEPTH_QS, valueToTT(alpha, ss->ply), bestMove, hashFlag);
+	ttentry->save(board.TTKey(), DEPTH_QS, valueToTT(alpha, ss->ply), bestMove, hashFlag, TT.age());
 
 	return alpha;
 }

@@ -345,12 +345,12 @@ const U64 FileMasks8[8] =/*from fileA to FileH*/
 #define TT_BETA 2
 #define TT_EXACT 3
 
-#define SORT_KING 400000000
-#define SORT_HASH 200000000
-#define SORT_CAPT 100000000
-#define SORT_PROM  90000000
-#define SORT_KILL  80000000
-
+enum Flag {
+	FLAG_NONE,
+	ALPHA,
+	BETA,
+	EXACT = ALPHA | BETA
+};
 
 #define MAX_PLY 128
 
