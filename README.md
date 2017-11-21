@@ -37,7 +37,7 @@ A UCI chess engine and learning expereince. Based on CPW Engine as well as Stock
 
 ### Misc Features
 
-"Perfect" perft tested to (mostly) max depth of positions found [here](https://chessprogramming.wikispaces.com/Perft+Results#Initial%20Position-Perft%2013)
+"Perfect" multi-threaded perft and divide functions tested to (mostly) max depth of positions found [here](https://chessprogramming.wikispaces.com/Perft+Results#Initial%20Position-Perft%2013)
 
 Also includes a divide utility (like perft) which prints the number of positions found for each root move of the current position up to a given input depth.
 
