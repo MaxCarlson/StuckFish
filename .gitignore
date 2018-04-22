@@ -49,6 +49,7 @@ Temporary Items
 /StuckFish.vcxproj.user
 /StuckFish.vcxproj.filters
 /StuckFish.VC.VC.opendb
+.vs
 
 # Performace Reports
 
@@ -74,4 +75,6 @@ Temporary Items
 *.lastcodeanalysissucceeded
 *.ilk
 *.optrpt
+*.ipch
+*.db
 
