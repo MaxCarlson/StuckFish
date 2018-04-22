@@ -2,6 +2,11 @@
 A UCI chess engine and learning expereince. Based on CPW Engine as well as StockFish. Converted from my Advanced-Qt-Chess repo, and before that my chess repo.
 
 
+### Demo
+60 seconds per player match between StuckFish and 
+![Video of Match](https://raw.githubusercontent.com/MaxCarlson/StuckFish/master/Images/StuckFish.webm)
+
+
 ### Search specific features include:
 
 * Principal Variation search
