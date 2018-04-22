@@ -3,7 +3,8 @@ A UCI chess engine and learning expereince. Based on CPW Engine as well as Stock
 
 
 ### Demo
-60 seconds per player match between StuckFish and 
+60 seconds per player match between StuckFish and [Hermann 2.8](http://www.nnuss.de/Hermann/index.html)
+
 ![Video of Match](https://raw.githubusercontent.com/MaxCarlson/StuckFish/master/Images/StuckFish.webm)
 
 
