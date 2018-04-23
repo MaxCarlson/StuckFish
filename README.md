@@ -3,10 +3,10 @@ A UCI chess engine and learning expereince. Based on CPW Engine as well as Stock
 
 
 ### Demo
-60 seconds per player match between StuckFish (White) and [Hermann 2.8](http://www.nnuss.de/Hermann/index.html)
+60 seconds per player match between StuckFish (White) and [Hermann 2.8](http://www.nnuss.de/Hermann/index.html) (2528 ELO)
 
 Click to see full match.
-![[](https://raw.githubusercontent.com/MaxCarlson/StuckFish/master/Images/StuckFish.webm)](https://github.com/MaxCarlson/StuckFish/blob/master/Images/StuckFishPlay.gif)
+[![Click](https://github.com/MaxCarlson/StuckFish/blob/master/Images/StuckFishPlay.gif)](https://raw.githubusercontent.com/MaxCarlson/StuckFish/master/Images/StuckFish.webm)
 
 
 ### Search specific features include:
