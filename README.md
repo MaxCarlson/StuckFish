@@ -1,6 +1,5 @@
 # StuckFish
-A UCI chess engine and learning expereince. Based on CPW Engine as well as StockFish. Converted from my Advanced-Qt-Chess repo, and before that my chess repo.
-
+A UCI chess engine and learning expereince. Based on CPW Engine as well as StockFish.
 
 ### Demo
 60 seconds per player match between StuckFish (White) and [Hermann 2.8](http://www.nnuss.de/Hermann/index.html) (2528 ELO)
