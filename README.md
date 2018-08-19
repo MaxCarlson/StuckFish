@@ -6,7 +6,7 @@ A UCI chess engine and learning expereince. Based on CPW Engine as well as Stock
 
 Click to see full match.
 
-(Stuckfish is much slower at the start as Hermann is using an opening book where Stuckfish is not)
+(Stuckfish is much slower at the start of the match than Hermann as Stuck is not using an opening book)
 [![Click](https://github.com/MaxCarlson/StuckFish/blob/master/Images/StuckFishPlay.gif)](https://raw.githubusercontent.com/MaxCarlson/StuckFish/master/Images/StuckFish.webm)
 
 
